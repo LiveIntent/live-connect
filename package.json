@@ -17,7 +17,7 @@
   },
   "scripts": {
     "test:unit": "npm run lint && nyc mocha --config test-config/mocha.unit.json --require @babel/register ",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t afd18558-b6c6-4cab-9f07-2d673e57080c",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run lint && npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run lint && npm run build && wdio test-config/wdio.docker.chrome.conf.js",
     "build": "npm run test:unit && rollup -c rollup-iife.config.js",
