@@ -49,7 +49,7 @@ references:
   set_ssh_key: &set_ssh_key
     add_ssh_keys:
       fingerprints:
-        - "21:b3:b4:d0:08:d3:ef:5f:02:61:45:3d:b2:43:dd:b5"
+        - ${SSH_KEY}
 
   reset_package_lock: &reset_package_lock
     run:
@@ -119,6 +119,9 @@ jobs:
       - *set_ssh_key
       - *reset_package_lock
       - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+      - run:
           name: release
           command: npm run release:ci:<< parameters.increment >>
 
@@ -138,6 +141,7 @@ workflows:
             - browserstack?
 
       - release?:
+          context: live-connect-publisher
           type: approval
           requires:
             - browserstack
@@ -146,10 +150,13 @@ workflows:
               only: master
 
       - release:
+          context: live-connect-publisher
           requires:
             - release?
 
+
       - release_minor?:
+          context: live-connect-publisher
           type: approval
           requires:
             - browserstack
@@ -158,12 +165,14 @@ workflows:
               only: master
 
       - release:
+          context: live-connect-publisher
           name: release_minor
           increment: "minor"
           requires:
             - release_minor?
 
       - release_major?:
+          context: live-connect-publisher
           type: approval
           requires:
             - browserstack
@@ -172,6 +181,7 @@ workflows:
               only: master
 
       - release:
+          context: live-connect-publisher
           name: release_major
           increment: "major"
           requires:
