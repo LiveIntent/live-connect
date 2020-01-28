@@ -49,7 +49,7 @@ references:
   set_ssh_key: &set_ssh_key
     add_ssh_keys:
       fingerprints:
-        - ${SSH_KEY}
+        - "17:a6:0f:32:c6:9e:b1:9e:cc:12:e6:d8:2d:9e:57:3e"
 
   reset_package_lock: &reset_package_lock
     run:
@@ -137,6 +137,7 @@ workflows:
             - simple_test
 
       - browserstack:
+          context: org-global
           requires:
             - browserstack?
 
