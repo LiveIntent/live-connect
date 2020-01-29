@@ -38,7 +38,7 @@ ___
 ## Main concepts
 ### Initialisation
 The initialisation part should be straight forward, considering the snippet:
-```$javascript
+```javascript
 import { LiveConnect } from 'live-connect-js/src/live-connect'
 const lc = LiveConnect(configOptions)
 ```
