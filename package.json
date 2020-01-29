@@ -10,7 +10,6 @@
   "licence": "Apache-2.0",
   "private": false,
   "name": "live-connect-js",
-  "main": "src/live-connect.js",
   "engines": {
     "node": ">=8"
   },
