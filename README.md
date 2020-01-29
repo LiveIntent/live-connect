@@ -17,7 +17,7 @@ To see what kind of data is being sent, check [what is being sent](#what-is-bein
 ## Contribute
 We're open to any ideas, fixes and improvements. Find out how to contribute [here](./CONTRIBUTING.md).
 
-##Testing
+## Testing
 ### Running Unit tests
 Unit are written using [Mocha](http://mochajs.org/) and [Chai](http://chaijs.com/).
 Check in [Quick start](#quick-start) how to run them.
