@@ -31,8 +31,10 @@ Add Browserstack keys to your env, where the setup would be as follows:
 user: process.env.BS_USER,
 key: process.env.BS_KEY,
 ```
-or, run Borwserstack tests locally, run:
+or, to run Borwserstack tests locally, run:
 ```BS_USER=${User} BS_KEY=${Key} npm run test:it:browserstack```
+
+The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
 ___
 
 ## Main concepts
