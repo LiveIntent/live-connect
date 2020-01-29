@@ -148,7 +148,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: master
+              only: transfer
 
       - release:
           context: live-connect-publisher
@@ -163,7 +163,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: master
+              only: transfer
 
       - release:
           context: live-connect-publisher
@@ -179,7 +179,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: master
+              only: transfer
 
       - release:
           context: live-connect-publisher
