@@ -2,10 +2,10 @@ const currentTime = Date.now()
 const commonCapabilities = {
   project: 'LiveConnect',
   build: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
-  'browserstack.video': false,
+  'browserstack.video': true,
   'browserstack.console': 'verbose',
-  'browserstack.debug': false,
-  'browserstack.networkLogs': false,
+  'browserstack.debug': true,
+  'browserstack.networkLogs': true,
   'browserstack.appium_version': '1.14.0'
 }
 
