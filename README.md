@@ -3,8 +3,8 @@
 [![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646) [![CircleCI](https://circleci.com/gh/liveintent-berlin/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/liveintent-berlin/live-connect/tree/master)[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
 
 # Main concepts
-LiveConnect module is used to gather first party identifiers of your choosing, and sends that information to a defined endpoint which is responsible for gathering an processing that data. 
-What LiveConnect provides is a simple interface to collect the identifiers from a page, and gather user interactions along with those identifiers. 
+LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sendind that information to a defined endpoint which is responsible for gathering and processing that data. 
+What LiveConnect provides is a simple interface to collect the identifiers from a page, and collect user interactions along with those identifiers. 
 To see what kind of data is being sent, check [what is being sent](#what-is-being-sent).
 
 ## Quick start
@@ -19,7 +19,7 @@ We're open to any ideas, fixes and improvements. Find out how to contribute [her
 
 ## Testing
 ### Running Unit tests
-Unit are written using [Mocha](http://mochajs.org/) and [Chai](http://chaijs.com/).
+Unit tests are written using [Mocha](http://mochajs.org/) and [Chai](http://chaijs.com/).
 Check in [Quick start](#quick-start) how to run them.
 
 ### Running Browserstack tests
@@ -43,12 +43,12 @@ import { LiveConnect } from 'live-connect-js/src/live-connect'
 const lc = LiveConnect(configOptions)
 ```
 
-What is returned after initialisation (`lc` in the snippet above) is an object exposing the following functions:
+The object returned after initialisation (`lc` in the snippet above) is exposing the following functions:
 - `push` accepts a custom event one would like to keep track of.
 - `fire` just fires a pixel, and can be considered as a simple page view
-- `peopleVerifiedId` returns the most likely first party cookie that can be used for identity resolution
-- `ready` flag, saying that the LC was loaded and ready.
-- `resolve` function accepts a callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The last parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key. 
+- `peopleVerifiedId` returns the most likely first party cookie that can be used for identity resolution.
+- `ready` flag, saying that the LC was loaded and ready, can be used when including LiveConnect as a global var on the window object.
+- `resolve` function accepts a callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The second parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key. 
 
 ### Configuration options
 Considering the snippet above, LiveConnect accepts a JSON with the config which determines its behaviour.
