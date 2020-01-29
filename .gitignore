@@ -1,0 +1,8 @@
+*.DS_Store
+dist
+node_modules
+test-results
+local.log
+.nyc_output
+*.cid
+coverage.lcov

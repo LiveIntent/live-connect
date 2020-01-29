@@ -1,0 +1,189 @@
+version: 2.1
+
+references:
+  restore_cache: &restore_cache
+    restore_cache:
+      key: dependency-cache-{{ checksum "package-lock.json" }}-{{ checksum "package.json" }}
+
+  save_cache: &save_cache
+    save_cache:
+      key: dependency-cache-{{ checksum "package-lock.json" }}-{{ checksum "package.json" }}
+      paths:
+        - ./node_modules
+
+  npm_install: &npm_install
+    run:
+      name: Npm install
+      command: npm install
+
+  host_setup: &host_setup
+    run:
+      name: Setup host entries for TLD tests
+      command: |
+        echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts
+        echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts
+        echo "127.0.0.1 me.idex.com" | sudo tee -a /etc/hosts
+
+  install_node: &install_node
+    run:
+      name: Install node v10.16.3
+      command: |
+        set +e
+        export NVM_DIR="/opt/circleci/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install v10.16.3
+        nvm alias default v10.16.3
+
+        # Each step uses the same `$BASH_ENV`, so need to modify it
+        echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+        echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
+
+  configure_git: &configure_git
+    run:
+      name: Configure Git
+      command: |
+        git config user.name "${CIRCLE_USERNAME}"
+        git config user.email "dev-berlin@liveintent.com"
+        git branch -u origin/${CIRCLE_BRANCH} ${CIRCLE_BRANCH}
+
+  set_ssh_key: &set_ssh_key
+    add_ssh_keys:
+      fingerprints:
+        - "17:a6:0f:32:c6:9e:b1:9e:cc:12:e6:d8:2d:9e:57:3e"
+
+  reset_package_lock: &reset_package_lock
+    run:
+      name: Reset package-lock.json
+      command: git checkout -- package-lock.json
+
+jobs:
+  simple_test:
+    parallelism: 1
+    machine:
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - *restore_cache
+      - *host_setup
+      - *install_node
+      - *npm_install
+      - *save_cache
+      - run:
+          name: Run unit tests
+          command: npm run test:unit
+      - run:
+          name: Run chrome tests in docker
+          command: npm run test:it:docker:chrome
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: ./test-results
+          destination: test-results
+      - run:
+          name: Code coverage
+          command: npm run coverage
+
+  browserstack:
+    parallelism: 1
+    machine:
+      docker_layer_caching: true
+    steps:
+      - checkout
+      - *restore_cache
+      - *host_setup
+      - *install_node
+      - *npm_install
+      - run:
+          name: Run browserstack tests
+          command: npm run test:it:browserstack
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: ./test-results
+          destination: test-results
+
+  release:
+    parallelism: 1
+    machine:
+      docker_layer_caching: true
+    parameters:
+      increment:
+        description: "Increment of release. Allowed values `patch`, `minor`, `major`"
+        default: "patch"
+        type: string
+    steps:
+      - checkout
+      - *install_node
+      - *npm_install
+      - *configure_git
+      - *set_ssh_key
+      - *reset_package_lock
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+      - run:
+          name: release
+          command: npm run release:ci:<< parameters.increment >>
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - simple_test
+
+      - browserstack?:
+          type: approval
+          requires:
+            - simple_test
+
+      - browserstack:
+          context: org-global
+          requires:
+            - browserstack?
+
+      - release?:
+          context: live-connect-publisher
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect-publisher
+          requires:
+            - release?
+
+
+      - release_minor?:
+          context: live-connect-publisher
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect-publisher
+          name: release_minor
+          increment: "minor"
+          requires:
+            - release_minor?
+
+      - release_major?:
+          context: live-connect-publisher
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect-publisher
+          name: release_major
+          increment: "major"
+          requires:
+            - release_major?

@@ -5,22 +5,20 @@
     "url": "https://github.com/liveintent-berlin/live-connect"
   },
   "description": "LiveConnect, The first party identity provider",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "versionPrefix": "live-connect-v",
-  "licence": "Apache-2.0",
+  "license": "Apache-2.0",
   "private": false,
-  "name": "live-connect",
-  "main": "src/live-connect.js",
-  "module": "lib/cjs/live-connect.js",
+  "name": "live-connect-js",
   "engines": {
     "node": ">=8"
   },
   "scripts": {
     "test:unit": "npm run lint && nyc mocha --config test-config/mocha.unit.json --require @babel/register ",
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov -t afd18558-b6c6-4cab-9f07-2d673e57080c",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run lint && npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run lint && npm run build && wdio test-config/wdio.docker.chrome.conf.js",
-    "build": "npm run test:unit && rollup -c rollup-iife.config.js",
+    "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "lint": "eslint \"src/**/*.js\"",
     "fix-js": "eslint \"src/**/*.js\" --fix || exit 0",
     "release:ci:patch": "release-it patch --ci",
