@@ -7,7 +7,7 @@
   "description": "LiveConnect, The first party identity provider",
   "version": "1.0.8",
   "versionPrefix": "live-connect-v",
-  "licence": "Apache-2.0",
+  "license": "Apache-2.0",
   "private": false,
   "name": "live-connect-js",
   "engines": {
@@ -18,7 +18,7 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run lint && npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run lint && npm run build && wdio test-config/wdio.docker.chrome.conf.js",
-    "build": "npm run test:unit && rollup -c rollup-iife.config.js",
+    "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "lint": "eslint \"src/**/*.js\"",
     "fix-js": "eslint \"src/**/*.js\" --fix || exit 0",
     "release:ci:patch": "release-it patch --ci",

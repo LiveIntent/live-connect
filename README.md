@@ -1,12 +1,23 @@
-## LiveConnect
+# LiveConnect
 
 [![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646) [![CircleCI](https://circleci.com/gh/liveintent-berlin/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/liveintent-berlin/live-connect/tree/master)[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
 
-### Features
-Minify and concatenate JavaScript
-- **ES6+ via Babel**  
-ES6+ support using [Babel](https://babeljs.io/). ES6+ source code will be automatically transpiled to ES5 for wide browser support.
-Pollyfill will also be taken care of automatically, if enabled.
+# Main concepts
+LiveConnect module is used to gather first party identifiers of your choosing, and sends that information to a defined endpoint which is responsible for gathering an processing that data. 
+What LiveConnect provides is a simple interface to collect the identifiers from a page, and gather user interactions along with those identifiers. 
+To see what kind of data is being sent, check [what is being sent](#what-is-being-sent).
+
+## Quick start
+- With [npm](https://www.npmjs.com/): `npm install`
+- Format the code according to the eslint file: `npm run fix-js`
+- Run unit tests: `npm run test:unit`
+- Run integration tests against a dockerized chrome: `npm run test:it:docker:chrome`
+- Run full integration tests on multiple browsers (requires properly set Browserstack credentials) : `npm run test:it:browserstack`
+
+##Testing
+### Running Unit tests
+Unit are written using [Mocha](http://mochajs.org/) and [Chai](http://chaijs.com/).
+Check in [Quick start](#quick-start) how to run them.
 
 ### Running Browserstack tests
 Tests are setting the cookies on eTLD+1 domain. For that, execute this command once:
@@ -19,48 +30,16 @@ key: process.env.BS_KEY,
 ```
 or, run Borwserstack tests locally, run:
 ```BS_USER=${User} BS_KEY=${Key} npm run test:it:browserstack```
+___
 
-### Babel & Rollup
-We use Rollup to bundle our code, which is then piped through Babel. Main Babel config is in `babel.config.js`.
-Currently, no polyfills will be included in the bundle.
-Babel will transpile the code to work with browsers specified in the `.browserslistrc` file.
-
-### Quick start
-- With [npm](https://www.npmjs.com/): `npm install`
-- Build for production: `npm run build`
-- Format the code according to the eslint file: `npm run fix-js`
-- Run unit tests: `npm run test:unit`
-- Run integration tests against a dockerized chrome: `npm run test:it:docker:chrome`
-- Run full integration tests on multiple browsers: `npm run test:it:browserstack`
-
-## GitHub Releases
-
-The "Releases" tab on GitHub projects links to a page to store the changelog cq. release notes. To add
-[GitHub releases](https://help.github.com/articles/creating-releases/) in your release-it flow:
-
-- Configure `github.release: true`.
-- Obtain a [personal access token](https://github.com/settings/tokens) (release-it only needs "repo" access; no "admin"
-  or other scopes).
-- Make sure the token is available as an environment variable. Example:
-
-```bash
-export GITHUB_TOKEN="f941e0..."
-```
-
-→ See [GitHub Releases](./docs/github-releases.md) for more details.
-
-# Main concepts
-LiveConnect module is used to gather first party identifiers of your choosing, and sends that information to a defined endpoint which is responsible for gathering an processing that data. 
-What LiveConnect provides is a simple interface to collect the identifiers from a page, and gather user interactions along with those identifiers.
-
-That being said, relevant pieces worth mentioning would be:
-
-## Initialisation
+## Main concepts
+### Initialisation
 The initialisation part should be straight forward, considering the snippet:
 ```$javascript
-const liveConnect = require('./live-connect')
-const lc = liveConnect.LiveConnect(configOptions)
+import { LiveConnect } from 'live-connect-js/src/live-connect'
+const lc = LiveConnect(configOptions)
 ```
+
 What is returned after initialisation (`lc` in the snippet above) is an object exposing the following functions:
 - `push` accepts a custom event one would like to keep track of.
 - `fire` just fires a pixel, and can be considered as a simple page view
@@ -259,7 +238,7 @@ The `enrichers` folder contains code responsible for extracting specific informa
 ### Page enrichment
 `enrichers/page.js` holds the logic which determines the real page url on which we're trying to capture user interactions
 
-### Cookies enrichment
+### Identifiers enrichment
 `enrichers/identifiers.js` is responsible for reading the `identifiersToResolve` configuration parameter to read any additional identifiers that customers want to share with us.
 
 ## Messaging between components via EventBus (`__li__evt_bus`) 
@@ -308,44 +287,44 @@ LiveConnect has a handler called `handlers/error-pixel.js` which is subscribed o
 ```
 Every time there's an exception in LiveConnect, this handler will create such a message, and LiveConnect will send the base64 url encoded message to the collector containing the details above.
 
-## Sending pixel signal
+# What is being sent?
 The user interaction is sent to a url specified in the inbound config, as `collectorUrl`, only if the information is present.
 For example, one of the parameters is `aid` which should send the value of the `appId` from the config, however, if it is not set, it will not be sent.
-### Query parameters in use:
-#### `aid`
+## Query parameters in use:
+### `aid`
 - contains the `appId`
-#### `se`
+### `se`
 - contains the b64 url encoded string of the JSON that was sent via `liveConnect.push` function
-#### `duid`
+### `duid`
 - contains the LiveConnect managed first party identifier, in the `${apexDomainHash}--${ULID}`, or `${iframeDomainHash}-${websiteUrlDomainHash}--${ULID}` format
-#### `lduid`
+### `lduid`
 - contains the legacy LiveConnect first party identifier
-#### `pfpi`
+### `pfpi`
 - contains the value of the provided first party identifier (e.g the cookie found for key = `config.providedIdentifierName`)
-#### `fpn`
+### `fpn`
 - contains the name passed as the key of the provided first party identifier, specifically the value of the `config.providedIdentifierName`
-#### `tna`
+### `tna`
 - contains the `config.trackerName`
-#### `pu`
+### `pu`
 - the url on which the event happened, which is populated by the `page` enricher
-#### `ae`
+### `ae`
 - contains a b64 encoded string of the JSON received on handled exceptions
-#### `scre`
+### `scre`
 - if one of the identifiersToResolve contains plain emails, we don't want to send that over the wire, so those are hashed and passed under the `scre` param
-#### `li_duid`
+### `li_duid`
 - contains a comma separated list of decision ids extracted from the url and decision storage
-#### `e`
+### `e`
 - similarly to `scre`, some information that is pushed to LiveConnect might contain clear text emails. Those are then hashed and sent under this field
-#### `wpn`
+### `wpn`
 - `config.wrapperName` value
-#### `ext_` parameters
+### `ext_` parameters
 - `config.identifiersToResolve` are considered as external, so for each identifier specified and found in any storage level, an additional `ext_` key value pair will be added.
-#### `us_privacy`
+### `us_privacy`
 - the value of the `config.usPrivacyString` config parameter.
-#### `dtstmp`
+### `dtstmp`
 - the UTC timestamp when the pixel was sent
 
-### Example of a request to a default collectorUrl:
+## Example of a request to a default collectorUrl:
 `https://rp.liadm.com/p?tna=v1.0.16&aid=a-00co&lduid=a-00co--bda8cda1-9000-4632-8c64-06e04fa8d113&duid=df9f30ab37f2--01dwcepmbbbqm0hvj4wytvyss4&pu=https%3A%2F%2Fwww.example.com%2F&se=eyJldmVudCI6InZpZXdIb21lUGFnZSJ9&dtstmp=1577968744235`
 
 
