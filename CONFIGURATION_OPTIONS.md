@@ -77,7 +77,7 @@ Example:
 }
 ```
 #### `identifiersToResolve` [Optional]
-The names of identifiers which can be found in local storage or in the cookie jar. Those key-value pairs will be sent along with the request.
+The names of identifiers which can be found in local storage or in the cookie jar. Those key-value pairs will be sent along with the request. Think of as a way to do first party cookie syncs, because you'll be able to receive multiple first party identifiers in the same request.
 
 Example:
 ```javascript
@@ -101,7 +101,7 @@ This configuration setting consists of the following
 
 ##### `identityResolutionConfig.url` [Optional, HasDefault]
 By default, `https://idx.liadm.com/idex`.
-This parameter can be in case you might have a specific CNAME per customer, so you can change settings between websites accordingly
+This parameter should be used in case you might have a specific CNAME per customer, so you can change settings between websites accordingly.
 Example:
 ```javascript
 {
@@ -126,7 +126,7 @@ sets the cookie expiration time to 4 days, which means that in a given browser, 
 
 ##### `identityResolutionConfig.ajaxTimeout` [Optional, HasDefault]
 By default, 1000 milliseconds.
-This configuration parameter the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. 
+This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. 
 Example:
 ```javascript
 {
