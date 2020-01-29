@@ -9,7 +9,7 @@
   "versionPrefix": "live-connect-v",
   "licence": "Apache-2.0",
   "private": false,
-  "name": "live-connect",
+  "name": "live-connect-js",
   "main": "src/live-connect.js",
   "engines": {
     "node": ">=8"
