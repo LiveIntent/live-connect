@@ -36,17 +36,17 @@ export function resolve (state) {
     const freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || [])
     const storedDecisions = storage.findSimilarInJar(DECISION_ID_COOKIE_NAMESPACE)
     freshDecisions
+      .map(trim)
+      .filter(_nonEmpty)
       .filter(_validUuid)
       .filter(_onlyUnique)
-      .filter(_nonEmpty)
-      .map(trim)
       .forEach(decision => _addDecisionId(decision, state.domain))
     const allDecisions = freshDecisions
       .concat(storedDecisions)
+      .map(trim)
+      .filter(_nonEmpty)
       .filter(_validUuid)
       .filter(_onlyUnique)
-      .filter(_nonEmpty)
-      .map(trim)
     ret = { decisionIds: allDecisions }
   } catch (e) {
     error.error('DecisionsResolve', 'Error while managing decision ids', e)

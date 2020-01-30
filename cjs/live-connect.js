@@ -66,7 +66,7 @@ function _objectSpread2(target) {
 }
 
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
-var uuidRegex = new RegExp(UUID, 'i');
+var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 /**
  * @param {*} value
  * @returns {string}
@@ -1835,10 +1835,10 @@ function resolve$2(state) {
     var params = state.pageUrl ? urlParams(state.pageUrl) || {} : {};
     var freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || []);
     var storedDecisions = findSimilarInJar(DECISION_ID_COOKIE_NAMESPACE);
-    freshDecisions.filter(_validUuid).filter(_onlyUnique).filter(_nonEmpty).map(trim).forEach(function (decision) {
+    freshDecisions.map(trim).filter(_nonEmpty).filter(_validUuid).filter(_onlyUnique).forEach(function (decision) {
       return _addDecisionId(decision, state.domain);
     });
-    var allDecisions = freshDecisions.concat(storedDecisions).filter(_validUuid).filter(_onlyUnique).filter(_nonEmpty).map(trim);
+    var allDecisions = freshDecisions.concat(storedDecisions).map(trim).filter(_nonEmpty).filter(_validUuid).filter(_onlyUnique);
     ret = {
       decisionIds: allDecisions
     };
