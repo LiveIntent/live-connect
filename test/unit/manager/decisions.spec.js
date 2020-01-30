@@ -66,8 +66,15 @@ describe('DecisionsManager for new decisions', () => {
     expect(storage.getCookie(`lidids.${decisionId}`)).to.eq(decisionId)
   })
 
+  it('should return the new decision id, and store it', function () {
+    const decisionId = uuid()
+    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` })
+    expect(resolutionResult.decisionIds).to.eql([decisionId])
+    expect(storage.getCookie(`lidids.${decisionId}`)).to.eq(decisionId)
+  })
+
   it('should not return the new decision id if its not a uuid', function () {
-    const decisionId = 'imateapot'
+    const decisionId = `${uuid()}sometghing`
     const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` })
     expect(resolutionResult.decisionIds).to.eql([])
   })
