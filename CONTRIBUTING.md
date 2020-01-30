@@ -13,7 +13,7 @@ If you have a documentation issue or pull request, please open a ticket or a PR.
 
 # Code quality
 Use the lint config attached, and you'll be fine, but to keep things consistent, we'd like to keep:
-- file names are all lowercased in kebab style ( e.g. `live-connect.js`)
+- file names are all lower-cased in kebab style ( e.g. `live-connect.js`)
 - use old school functions on the top level and write as much JS Doc as possible
 - one liner functions can use arrow functions
 - try to keep the hierarchy as is
