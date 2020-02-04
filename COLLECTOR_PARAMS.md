@@ -1,6 +1,5 @@
 ## Query parameters in use:
 
-
 ### `aid`
 - contains the `appId`
 ### `se`
