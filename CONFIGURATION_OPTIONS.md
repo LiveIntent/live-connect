@@ -27,7 +27,7 @@ Example for storing the identifiers in a cookie jar:
 or if putting the identifier in local storage is an option:
 ```javascript
 {
-  storageStrategy: 'localStorage'
+  storageStrategy: 'ls'
 }
 ```
 There's also an option for the module to never create any first party identifiers, and that can be achieved by setting this parameter as follows:
@@ -38,7 +38,7 @@ There's also an option for the module to never create any first party identifier
 ```
 #### `providedIdentifierName` [Optional]
 This parameter defines the name of an identifier that can be found in local storage or in the cookie jar that can be sent along with the request.
-This parameter should be used whenever a customer is able to provide the most stable identifier possible, e.g. a cookie which is et via HttpHeaders on the first party domain.
+This parameter should be used whenever a customer is able to provide the most stable identifier possible, e.g. a cookie which is set via HttpHeaders on the first party domain.
 
 ```javascript
 {
