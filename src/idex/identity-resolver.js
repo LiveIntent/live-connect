@@ -114,6 +114,9 @@ export function IdentityResolver (config, storageHandler) {
       resolve: (successCallback) => {
         fallback(successCallback)
         error('IdentityResolver.resolve', 'Resolve called on an uninitialised IdentityResolver', e)
+      },
+      getUrl: () => {
+        error('IdentityResolver.getUrl', 'getUrl called on an uninitialised IdentityResolver', e)
       }
     }
   }

@@ -107,7 +107,7 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload)
-    const resolver = idex.IdentityResolver(postManagedState.data)
+    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {
       push: _push,
