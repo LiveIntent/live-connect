@@ -74,7 +74,7 @@ describe('LiveConnect', () => {
     const trackingRequests = server.getTrackingRequests()
     const cookies = browser.getCookies()
     const tldCookie = cookies.filter(c => c.name === '_li_dcdm_c')[0].value
-    const fpcCookie = cookies.filter(c => c.name === '_lc2_duid')[0].value
+    const fpcCookie = cookies.filter(c => c.name === '_lc2_fpi')[0].value
     assert.strictEqual(trackingRequests.length, 1)
     expect(tldCookie).to.eql('.liveintent.com')
     expect(fpcCookie).to.eql(trackingRequests[0]['query']['duid'])
@@ -86,7 +86,7 @@ describe('LiveConnect', () => {
     const newTrackingRequests = server.getTrackingRequests()
     const newCookies = browser.getCookies()
     const newTldCookie = newCookies.filter(c => c.name === '_li_dcdm_c')[0].value
-    const newFpcCookie = newCookies.filter(c => c.name === '_lc2_duid')[0].value
+    const newFpcCookie = newCookies.filter(c => c.name === '_lc2_fpi')[0].value
     assert.strictEqual(newTrackingRequests.length, 1)
     expect(tldCookie).to.eql(newTldCookie)
     expect(fpcCookie).to.eql(newFpcCookie)
