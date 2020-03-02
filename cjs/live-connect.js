@@ -1547,7 +1547,7 @@ function resolve$2(state, storageHandler) {
 
   function _addDecisionId(key, cookieDomain) {
     if (key) {
-      storageHandler.setCookie("".concat(DECISION_ID_COOKIE_NAMESPACE).concat(key), key, DEFAULT_DECISION_ID_COOKIE_EXPIRES, undefined, cookieDomain);
+      storageHandler.setCookie("".concat(DECISION_ID_COOKIE_NAMESPACE).concat(key), key, DEFAULT_DECISION_ID_COOKIE_EXPIRES, 'Lax', cookieDomain);
     }
   }
 
