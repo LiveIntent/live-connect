@@ -31,7 +31,7 @@ Add Browserstack keys to your env, where the setup would be as follows:
 user: process.env.BS_USER,
 key: process.env.BS_KEY,
 ```
-or, to run Borwserstack tests locally, run:
+or, to run Browserstack tests locally, run:
 ```BS_USER=${User} BS_KEY=${Key} npm run test:it:browserstack```
 
 The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
@@ -50,12 +50,41 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 - `fire` just fires a pixel, and can be considered as a simple page view.
 - `peopleVerifiedId` returns the most likely first party cookie that can be used for identity resolution.
 - `ready` flag, saying that the LC was loaded and ready, can be used when including LiveConnect as a global var on the window object.
-- `resolve` function accepts a callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The second parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key. 
+- `resolve` function accepts a callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The second parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key.
+- `resolutionCallUrl` function returns the URL to be called in order to receive the resolution to a stable identifier.
+
+### Overriding the StorageHandler.
+LiveConnect can be initialized in a way so that it does not manipulate storage on the device on it's own. For example, if one wants to use it's own handler for storage, it is enough to send the storage handler in the constructor.
+The only thing one needs to adhere to is the signature of each function that's needed on the StorageHandler:
+- `function hasLocalStorage ()`
+- `function getCookie (key)`
+- `function getDataFromLocalStorage (key)`
+- `function findSimilarCookies (keyLike)`
+- `function setCookie (key, value, expires, sameSite, domain)`
+- `function removeDataFromLocalStorage (key)`
+- `function setDataInLocalStorage (key, value)`
+
+If one of the functions is not available in the external handler, LiveConnect will fallback to it's own implementation to ensure that the functionality isn't being affected.
+
+One way to achieve that is, for example, to initialize LC like this:
+```javascript
+import { LiveConnect } from 'live-connect-js/src/live-connect'
+const storageHandler = {
+  getCookie: (key) => {
+    let m = window.document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]*)\\s*(;|$)')
+    return m ? decodeURIComponent(m[2]) : null;
+  },
+  setCookie: (key, value, expires, sameSite, domain) => {
+    //
+  },
+  ...
+}
+const lc = LiveConnect(configOptions, storageHandler)
+``` 
 
 ### Configuration options
 Considering the snippet above, LiveConnect accepts a JSON with the config which determines its behaviour.
 You can learn more about available options [here](./CONFIGURATION_OPTIONS.md).
-
 
 ## Managers
 The code in the `manager` folder is responsible for browser state interaction and management, e.g. storage manipulation.
@@ -94,12 +123,12 @@ For example, there are three topics which anyone can hook to, and receive inform
 
 The following snippets can be used to hook up to one of the topics and receive events as they happen.
 ```javascript
-const lipsLogger = (message) => {console.info('Received a lips message, will continue receiving them', message)}
+const lipsLogger = (message) => { console.info('Received a lips message, will continue receiving them', message) }
 window.__li_evt_bus.on('lips', logger)
 ```
 or
 ```javascript
-const lipsLogger = (message) => {console.info('Received a lips message once, i will self destruct now.', message)}
+const lipsLogger = (message) => { console.info('Received a lips message once, i will self destruct now.', message) }
 window.__li_evt_bus.once('lips', logger)
 ```
 

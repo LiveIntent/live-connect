@@ -7,10 +7,8 @@
  * @property {(boolean|undefined)} [httponly]
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
-import { StorageStrategy } from '../model/storage-strategy'
 import * as cookies from 'browser-cookies'
 import * as emitter from './emitter'
-import { strEqualsIgnoreCase } from './types'
 
 let _hasLocalStorage = null
 
@@ -29,7 +27,7 @@ export function hasLocalStorage () {
  * @returns {boolean}
  * @private
  */
-export function _checkLocalStorage () {
+function _checkLocalStorage () {
   let enabled = false
   try {
     if (window && window.localStorage) {
@@ -42,15 +40,6 @@ export function _checkLocalStorage () {
     emitter.error('LSCheckError', 'Error while checking LS', e)
   }
   return enabled
-}
-
-/**
- * @param {number} days
- * @returns {number}
- * @private
- */
-function _addDays (days) {
-  return new Date().getTime() + (days * 864e5)
 }
 
 /**
@@ -74,7 +63,7 @@ function _unsafeGetFromLs (key) {
  * @param {string} key
  * @returns {string|null}
  */
-export function getFromLs (key) {
+export function getDataFromLocalStorage (key) {
   let ret = null
   if (hasLocalStorage()) {
     ret = _unsafeGetFromLs(key)
@@ -86,7 +75,7 @@ export function getFromLs (key) {
  * @param keyLike
  * @return {[String]}
  */
-export function findSimilarInJar (keyLike) {
+export function findSimilarCookies (keyLike) {
   const ret = []
   try {
     const allCookies = cookies.all()
@@ -104,58 +93,21 @@ export function findSimilarInJar (keyLike) {
 /**
  * @param {string} key
  * @param {string} value
+ * @param {number} expires
+ * @param {string} sameSite
+ * @param {string} domain
  * @param {StorageOptions} storageOptions
  * @returns void
  */
-export function setCookie (key, value, storageOptions) {
-  cookies.set(key, value, storageOptions)
-}
-
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns {string|null}
- * @private
- */
-function _cookieGetOrAdd (key, value, storageOptions) {
-  let ret = null
-  try {
-    const oldCookie = getCookie(key)
-    if (oldCookie) {
-      setCookie(key, oldCookie, storageOptions)
-    } else {
-      setCookie(key, value, storageOptions)
-    }
-    ret = getCookie(key)
-  } catch (e) {
-    emitter.error('CookieGetOrAdd', 'Failed manipulating cookie jar', e)
-  }
-  return ret
-}
-
-/**
- * @param {string} key
- * @returns {string|null}
- * @private
- */
-export function fetchFromLs (key) {
-  let ret = null
-  try {
-    if (hasLocalStorage()) {
-      ret = _unsafeGetFromLs(key)
-    }
-  } catch (e) {
-    emitter.error('LSFetch', 'Failed fething key from ls', e)
-  }
-  return ret
+export function setCookie (key, value, expires, sameSite, domain) {
+  cookies.set(key, value, { domain: domain, expires: expires, samesite: sameSite })
 }
 
 /**
  * @param {string} key
  * @returns {string|null}
  */
-export function removeFromLs (key) {
+export function removeDataFromLocalStorage (key) {
   if (hasLocalStorage()) {
     window.localStorage.removeItem(key)
   }
@@ -166,56 +118,8 @@ export function removeFromLs (key) {
  * @param {string} value
  * @returns {string|null}
  */
-export function addToLs (key, value) {
+export function setDataInLocalStorage (key, value) {
   if (hasLocalStorage()) {
     window.localStorage.setItem(key, value)
-  }
-}
-
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns {string|null}
- * @private
- */
-function _lsGetOrAdd (key, value, storageOptions) {
-  let ret = null
-  try {
-    if (hasLocalStorage()) {
-      const expirationKey = `${key}_exp`
-      const oldLsExpirationEntry = fetchFromLs(expirationKey)
-      const expiry = _addDays(storageOptions.expires)
-      if (oldLsExpirationEntry && parseInt(oldLsExpirationEntry) <= new Date().getTime()) {
-        removeFromLs(key)
-      }
-      const oldLsEntry = fetchFromLs(key)
-      if (!oldLsEntry) {
-        addToLs(key, value)
-      }
-      addToLs(expirationKey, `${expiry}`)
-      ret = fetchFromLs(key)
-    }
-  } catch (e) {
-    emitter.error('LSGetOrAdd', 'Error manipulating LS', e)
-  }
-  return ret
-}
-
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @param {string|null} storageStrategy
- * @returns {string|null}
- * @private
- */
-export function getOrAddWithExpiration (key, value, storageOptions, storageStrategy) {
-  if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
-    return _lsGetOrAdd(key, value, storageOptions)
-  } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
-    return null
-  } else {
-    return _cookieGetOrAdd(key, value, storageOptions)
   }
 }

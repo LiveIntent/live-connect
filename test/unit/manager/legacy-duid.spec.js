@@ -11,9 +11,9 @@ describe('LegacyDuidHelper', () => {
   })
 
   it('should create a local storage entry if it does not exit', function () {
-    expect(storage.getFromLs('_litra_id.edec')).to.eql(null)
-    resolve({ appId: 'a-XXXX' })
-    const legacyDuidString = storage.getFromLs('_litra_id.edec')
+    expect(storage.getDataFromLocalStorage('_litra_id.edec')).to.eql(null)
+    resolve({ appId: 'a-XXXX' }, storage)
+    const legacyDuidString = storage.getDataFromLocalStorage('_litra_id.edec')
     const legacyId = getLegacyId(legacyDuidString)
     expect(legacyId.duid).to.match(/a-XXXX--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)
     expect(parseInt(legacyId.currVisitTs)).to.be.closeTo(Math.round(new Date().getTime() / 1000), 3)
@@ -22,15 +22,15 @@ describe('LegacyDuidHelper', () => {
   })
 
   it('should  not create a local storage entry if the app id isn\'t present', function () {
-    expect(storage.getFromLs('_litra_id.edec')).to.eql(null)
-    resolve({})
-    expect(storage.getFromLs('_litra_id.edec')).to.eql(null)
+    expect(storage.getDataFromLocalStorage('_litra_id.edec')).to.eql(null)
+    resolve({}, storage)
+    expect(storage.getDataFromLocalStorage('_litra_id.edec')).to.eql(null)
   })
 
   it('should update the entry in local storage with fresh timestamps', function () {
-    storage.addToLs('_litra_id.edec', 'a-XXXX--e4f71227-70d0-4e54-b1c3-ACf80616bbb0.1538047703.39.1573030646.1550763182.eaff6045-fa6f-4073-9397-598a9e64ca12')
-    resolve({ appId: 'a-XXXX' })
-    const legacyDuidString = storage.getFromLs('_litra_id.edec')
+    storage.setDataInLocalStorage('_litra_id.edec', 'a-XXXX--e4f71227-70d0-4e54-b1c3-ACf80616bbb0.1538047703.39.1573030646.1550763182.eaff6045-fa6f-4073-9397-598a9e64ca12')
+    resolve({ appId: 'a-XXXX' }, storage)
+    const legacyDuidString = storage.getDataFromLocalStorage('_litra_id.edec')
     const legacyId = getLegacyId(legacyDuidString)
     expect(legacyId.duid).to.eql('a-XXXX--e4f71227-70d0-4e54-b1c3-ACf80616bbb0')
     expect(parseInt(legacyId.currVisitTs)).to.be.closeTo(Math.round(new Date().getTime() / 1000), 3)

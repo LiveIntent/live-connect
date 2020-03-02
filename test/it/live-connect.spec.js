@@ -74,7 +74,7 @@ describe('LiveConnect', () => {
     const trackingRequests = server.getTrackingRequests()
     const cookies = browser.getCookies()
     const tldCookie = cookies.filter(c => c.name === '_li_dcdm_c')[0].value
-    const fpcCookie = cookies.filter(c => c.name === '_lc2_duid')[0].value
+    const fpcCookie = cookies.filter(c => c.name === '_lc2_fpi')[0].value
     assert.strictEqual(trackingRequests.length, 1)
     expect(tldCookie).to.eql('.liveintent.com')
     expect(fpcCookie).to.eql(trackingRequests[0]['query']['duid'])
@@ -86,7 +86,7 @@ describe('LiveConnect', () => {
     const newTrackingRequests = server.getTrackingRequests()
     const newCookies = browser.getCookies()
     const newTldCookie = newCookies.filter(c => c.name === '_li_dcdm_c')[0].value
-    const newFpcCookie = newCookies.filter(c => c.name === '_lc2_duid')[0].value
+    const newFpcCookie = newCookies.filter(c => c.name === '_lc2_fpi')[0].value
     assert.strictEqual(newTrackingRequests.length, 1)
     expect(tldCookie).to.eql(newTldCookie)
     expect(fpcCookie).to.eql(newFpcCookie)
@@ -129,14 +129,14 @@ describe('LiveConnect', () => {
     }
   })
 
-  it('should prepend duid cookie with hashed apex domain and hashed parent window domain', () => {
+  it('should prepend duid cookie with hashed apex domain', () => {
     server.openPage('bln.test.liveintent.com', 'framed')
     sendEventInIframe({}, 1, server)
 
     if (probeLS()) {
       const trackingRequests = server.getTrackingRequests()
       assert.strictEqual(trackingRequests.length, 1)
-      expect(trackingRequests[0]['query']['duid']).to.match(/c8873205d21e-4728df16f0d5--.*/) // hash(.liveintent.com)-hash(bln.test.liveintent.com)--ulid
+      expect(trackingRequests[0]['query']['duid']).to.match(/c8873205d21e--.*/) // hash(.liveintent.com)--ulid
     } else {
       const applicationErrors = server.getApplicationErrors()
       assert.strictEqual(applicationErrors.length, 1)

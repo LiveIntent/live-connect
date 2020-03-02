@@ -44,17 +44,17 @@ describe('LiveConnect', () => {
 
   it('should set the cookie', function () {
     LiveConnect({})
-    expect(storage.getCookie('_lc2_duid')).to.not.eql(null)
+    expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
   it('should not break if the config is a bust', function () {
     LiveConnect(null)
-    expect(storage.getCookie('_lc2_duid')).to.not.eql(null)
+    expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
   it('should not break if the config is a string', function () {
     LiveConnect('hello dave')
-    expect(storage.getCookie('_lc2_duid')).to.not.eql(null)
+    expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
   it('should accept a single event and send it', function () {
@@ -105,6 +105,11 @@ describe('LiveConnect', () => {
       const params = urlParams(image.src)
       expect(params.duid).to.eql(lc.peopleVerifiedId)
     })
+  })
+
+  it('should return the resolution Url', function () {
+    const lc = LiveConnect({})
+    expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--.*/)
   })
 
   it('emit an error if the pushed value is not an object', function () {

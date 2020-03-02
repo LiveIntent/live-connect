@@ -124,6 +124,15 @@ function isObject(obj) {
 function isFunction(fun) {
   return fun && typeof fun === 'function';
 }
+/**
+ * Returns the string representation when something should expire
+ * @param expires
+ * @return {string}
+ */
+
+function expiresInDays(expires) {
+  return new Date(new Date().getTime() + expires * 864e5).toUTCString();
+}
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -896,7 +905,7 @@ var _pMap = {
  * @constructor
  */
 
-function StateWrapper(state) {
+function StateWrapper(state, storageHandler) {
   /**
    * @type {State}
    */
@@ -932,7 +941,7 @@ function StateWrapper(state) {
 
 
   function _combineWith(newInfo) {
-    return new StateWrapper(_objectSpread2({}, _state, {}, newInfo));
+    return new StateWrapper(_objectSpread2({}, _state, {}, newInfo), storageHandler);
   }
   /**
    * @returns {string [][]}
@@ -974,7 +983,8 @@ function StateWrapper(state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel
+    sendsPixel: _sendsPixel,
+    storageHandler: storageHandler
   };
 }
 
@@ -1017,342 +1027,6 @@ var tinyUuid4 = createCommonjsModule(function (module, exports) {
 });
 
 /**
- * @typedef {Object} StorageStrategy
- * @type {{cookie: string, localStorage: string, none: string}}
- */
-var StorageStrategy = {
-  cookie: 'cookie',
-  localStorage: 'ls',
-  none: 'none'
-};
-
-var browserCookies = createCommonjsModule(function (module, exports) {
-  exports.defaults = {};
-
-  exports.set = function (name, value, options) {
-    // Retrieve options and defaults
-    var opts = options || {};
-    var defaults = exports.defaults; // Apply default value for unspecified options
-
-    var expires = opts.expires || defaults.expires;
-    var domain = opts.domain || defaults.domain;
-    var path = opts.path !== undefined ? opts.path : defaults.path !== undefined ? defaults.path : '/';
-    var secure = opts.secure !== undefined ? opts.secure : defaults.secure;
-    var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
-    var samesite = opts.samesite !== undefined ? opts.samesite : defaults.samesite; // Determine cookie expiration date
-    // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
-
-    var expDate = expires ? new Date( // in case expires is an integer, it should specify the number of days till the cookie expires
-    typeof expires === 'number' ? new Date().getTime() + expires * 864e5 : // else expires should be either a Date object or in a format recognized by Date.parse()
-    expires) : 0; // Set cookie
-
-    document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent) // Encode cookie name
-    .replace('(', '%28').replace(')', '%29') + '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) + ( // Encode cookie value (RFC6265)
-    expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + ( // Add expiration date
-    domain ? ';domain=' + domain : '') + ( // Add domain
-    path ? ';path=' + path : '') + ( // Add path
-    secure ? ';secure' : '') + ( // Add secure option
-    httponly ? ';httponly' : '') + ( // Add httponly option
-    samesite ? ';samesite=' + samesite : ''); // Add samesite option
-  };
-
-  exports.get = function (name) {
-    var cookies = document.cookie.split(';'); // Iterate all cookies
-
-    while (cookies.length) {
-      var cookie = cookies.pop(); // Determine separator index ("name=value")
-
-      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
-
-      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex;
-      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, '')); // Return cookie value if the name matches
-
-      if (cookie_name === name) {
-        return decodeURIComponent(cookie.slice(separatorIndex + 1));
-      }
-    } // Return `null` as the cookie was not found
-
-
-    return null;
-  };
-
-  exports.erase = function (name, options) {
-    exports.set(name, '', {
-      expires: -1,
-      domain: options && options.domain,
-      path: options && options.path,
-      secure: 0,
-      httponly: 0
-    });
-  };
-
-  exports.all = function () {
-    var all = {};
-    var cookies = document.cookie.split(';'); // Iterate all cookies
-
-    while (cookies.length) {
-      var cookie = cookies.pop(); // Determine separator index ("name=value")
-
-      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
-
-      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex; // add the cookie name and value to the `all` object
-
-      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, ''));
-      all[cookie_name] = decodeURIComponent(cookie.slice(separatorIndex + 1));
-    }
-
-    return all;
-  };
-});
-var browserCookies_1 = browserCookies.defaults;
-var browserCookies_2 = browserCookies.set;
-var browserCookies_3 = browserCookies.get;
-var browserCookies_4 = browserCookies.erase;
-var browserCookies_5 = browserCookies.all;
-
-/**
- * @typedef {Object} StorageOptions
- * @property {(number| Date |undefined)} [expires]
- * @property {(string|undefined)} [domain]
- * @property {(string|undefined)} [path]
- * @property {(boolean|undefined)} [secure]
- * @property {(boolean|undefined)} [httponly]
- * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
- */
-var _hasLocalStorage = null;
-/**
- * @returns {boolean}
- * @private
- */
-
-function hasLocalStorage() {
-  if (_hasLocalStorage == null) {
-    _hasLocalStorage = _checkLocalStorage();
-  }
-
-  return _hasLocalStorage;
-}
-/**
- * @returns {boolean}
- * @private
- */
-
-function _checkLocalStorage() {
-  var enabled = false;
-
-  try {
-    if (window && window.localStorage) {
-      var key = Math.random().toString();
-      window.localStorage.setItem(key, key);
-      enabled = window.localStorage.getItem(key) === key;
-      window.localStorage.removeItem(key);
-    }
-  } catch (e) {
-    error('LSCheckError', 'Error while checking LS', e);
-  }
-
-  return enabled;
-}
-/**
- * @param {number} days
- * @returns {number}
- * @private
- */
-
-function _addDays(days) {
-  return new Date().getTime() + days * 864e5;
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-
-function getCookie(key) {
-  return browserCookies_3(key);
-}
-/**
- * @param key
- * @return {string|null}
- * @private
- */
-
-function _unsafeGetFromLs(key) {
-  return window.localStorage.getItem(key);
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-
-function getFromLs(key) {
-  var ret = null;
-
-  if (hasLocalStorage()) {
-    ret = _unsafeGetFromLs(key);
-  }
-
-  return ret;
-}
-/**
- * @param keyLike
- * @return {[String]}
- */
-
-function findSimilarInJar(keyLike) {
-  var ret = [];
-
-  try {
-    var allCookies = browserCookies_5();
-
-    for (var cookieName in allCookies) {
-      if (allCookies[cookieName] && cookieName.indexOf(keyLike) >= 0) {
-        ret.push(browserCookies_3(cookieName));
-      }
-    }
-  } catch (e) {
-    error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e);
-  }
-
-  return ret;
-}
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns void
- */
-
-function setCookie(key, value, storageOptions) {
-  browserCookies_2(key, value, storageOptions);
-}
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns {string|null}
- * @private
- */
-
-function _cookieGetOrAdd(key, value, storageOptions) {
-  var ret = null;
-
-  try {
-    var oldCookie = getCookie(key);
-
-    if (oldCookie) {
-      setCookie(key, oldCookie, storageOptions);
-    } else {
-      setCookie(key, value, storageOptions);
-    }
-
-    ret = getCookie(key);
-  } catch (e) {
-    error('CookieGetOrAdd', 'Failed manipulating cookie jar', e);
-  }
-
-  return ret;
-}
-/**
- * @param {string} key
- * @returns {string|null}
- * @private
- */
-
-
-function fetchFromLs(key) {
-  var ret = null;
-
-  try {
-    if (hasLocalStorage()) {
-      ret = _unsafeGetFromLs(key);
-    }
-  } catch (e) {
-    error('LSFetch', 'Failed fething key from ls', e);
-  }
-
-  return ret;
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-function removeFromLs(key) {
-  if (hasLocalStorage()) {
-    window.localStorage.removeItem(key);
-  }
-}
-/**
- * @param {string} key
- * @param {string} value
- * @returns {string|null}
- */
-
-function addToLs(key, value) {
-  if (hasLocalStorage()) {
-    window.localStorage.setItem(key, value);
-  }
-}
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns {string|null}
- * @private
- */
-
-function _lsGetOrAdd(key, value, storageOptions) {
-  var ret = null;
-
-  try {
-    if (hasLocalStorage()) {
-      var expirationKey = "".concat(key, "_exp");
-      var oldLsExpirationEntry = fetchFromLs(expirationKey);
-
-      var expiry = _addDays(storageOptions.expires);
-
-      if (oldLsExpirationEntry && parseInt(oldLsExpirationEntry) <= new Date().getTime()) {
-        removeFromLs(key);
-      }
-
-      var oldLsEntry = fetchFromLs(key);
-
-      if (!oldLsEntry) {
-        addToLs(key, value);
-      }
-
-      addToLs(expirationKey, "".concat(expiry));
-      ret = fetchFromLs(key);
-    }
-  } catch (e) {
-    error('LSGetOrAdd', 'Error manipulating LS', e);
-  }
-
-  return ret;
-}
-/**
- * @param {string} key
- * @param {string} value
- * @param {StorageOptions} storageOptions
- * @param {string|null} storageStrategy
- * @returns {string|null}
- * @private
- */
-
-
-function getOrAddWithExpiration(key, value, storageOptions, storageStrategy) {
-  if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
-    return _lsGetOrAdd(key, value, storageOptions);
-  } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
-    return null;
-  } else {
-    return _cookieGetOrAdd(key, value, storageOptions);
-  }
-}
-
-/**
  * @returns {boolean}
  */
 function isIframe() {
@@ -1369,15 +1043,6 @@ function isIframe() {
 
 function getPage() {
   return isIframe() ? window.top.location.href : document.location.href;
-}
-/**
- * @returns {string} hostname of the website if we are in an iFrame
- */
-
-function parentHostname() {
-  var parser = document.createElement('a');
-  parser.href = document.referrer;
-  return parser.hostname;
 }
 /**
  * @return {string}
@@ -1448,16 +1113,17 @@ var _now = function _now() {
 };
 /**
  * @param {State} state
+ * @param {StorageHandler} storageHandler
  */
 
 
-function resolve(state) {
+function resolve(state, storageHandler) {
 
   try {
     var duidLsKey = getLegacyIdentifierKey();
 
     if (state.appId) {
-      var previousIdentifier = getFromLs(duidLsKey);
+      var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
       var legacyIdToStore = getLegacyId(previousIdentifier);
 
       if (previousIdentifier && legacyIdToStore) {
@@ -1474,7 +1140,7 @@ function resolve(state) {
         };
       }
 
-      addToLs(duidLsKey, legacyIdAsString(legacyIdToStore));
+      storageHandler.setDataInLocalStorage(duidLsKey, legacyIdAsString(legacyIdToStore));
     }
   } catch (e) {
     error('LegacyDuidResolve', 'Error while managing legacy duid', e);
@@ -1698,79 +1364,137 @@ var dist_8 = dist.randomChar;
 var dist_9 = dist.replaceCharAt;
 var dist_10 = dist.ulid;
 
-var NEXT_GEN_FP_NAME = '_lc2_duid';
+/**
+ * @typedef {Object} StorageStrategy
+ * @type {{cookie: string, localStorage: string, none: string}}
+ */
+var StorageStrategy = {
+  cookie: 'cookie',
+  localStorage: 'ls',
+  none: 'none'
+};
+
+var NEXT_GEN_FP_NAME = '_lc2_fpi';
 var TLD_CACHE_KEY = '_li_dcdm_c';
 var DEFAULT_EXPIRATION_DAYS = 730;
 /**
- *
- * @returns {string}
- */
-
-function determineTld() {
-  var cachedDomain = getCookie(TLD_CACHE_KEY);
-
-  if (cachedDomain) {
-    return cachedDomain;
-  }
-
-  var domain = loadedDomain();
-  var arr = domain.split('.').reverse();
-
-  for (var i = 1; i < arr.length; i++) {
-    var newD = ".".concat(arr.slice(0, i).reverse().join('.'));
-    setCookie(TLD_CACHE_KEY, newD, {
-      domain: newD
-    });
-
-    if (getCookie(TLD_CACHE_KEY)) {
-      return newD;
-    }
-  }
-
-  return ".".concat(domain);
-}
-/**
- * @return {LegacyId|null|undefined}
- * @private
- */
-
-function _legacyDuid() {
-  var _legacyEntry = getFromLs(getLegacyIdentifierKey());
-
-  return getLegacyId(_legacyEntry);
-}
-/**
- * @param {string} apexDomain
- * @returns {string}
- * @private
- */
-
-
-function _generateCookie(apexDomain) {
-  var ulid = dist_10();
-  var cookie;
-
-  if (isIframe()) {
-    cookie = "".concat(domainHash(apexDomain), "-").concat(domainHash(parentHostname()), "--").concat(ulid);
-  } else {
-    cookie = "".concat(domainHash(apexDomain), "--").concat(ulid);
-  }
-
-  return cookie.toLocaleLowerCase();
-}
-/**
  * @param {State} state
+ * @param {StorageHandler} storageHandler
  */
 
-
-function resolve$1(state) {
+function resolve$1(state, storageHandler) {
   try {
+
+    var determineTld = function determineTld() {
+      var cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY);
+
+      if (cachedDomain) {
+        return cachedDomain;
+      }
+
+      var domain = loadedDomain();
+      var arr = domain.split('.').reverse();
+
+      for (var i = 1; i < arr.length; i++) {
+        var newD = ".".concat(arr.slice(0, i).reverse().join('.'));
+        storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, undefined, newD);
+
+        if (storageHandler.getCookie(TLD_CACHE_KEY)) {
+          return newD;
+        }
+      }
+
+      return ".".concat(domain);
+    };
+
+    var addDays = function addDays(days) {
+      return new Date().getTime() + days * 864e5;
+    };
+
+    var lsGetOrAdd = function lsGetOrAdd(key, value, storageOptions) {
+      var ret = null;
+
+      try {
+        if (storageHandler.hasLocalStorage()) {
+          var expirationKey = "".concat(key, "_exp");
+          var oldLsExpirationEntry = storageHandler.getDataFromLocalStorage(expirationKey);
+
+          var _expiry = addDays(storageOptions.expires);
+
+          if (oldLsExpirationEntry && parseInt(oldLsExpirationEntry) <= new Date().getTime()) {
+            storageHandler.removeDataFromLocalStorage(key);
+          }
+
+          var oldLsEntry = storageHandler.getDataFromLocalStorage(key);
+
+          if (!oldLsEntry) {
+            storageHandler.setDataInLocalStorage(key, value);
+          }
+
+          storageHandler.setDataInLocalStorage(expirationKey, "".concat(_expiry));
+          ret = storageHandler.getDataFromLocalStorage(key);
+        }
+      } catch (e) {
+        error('LSGetOrAdd', 'Error manipulating LS', e);
+      }
+
+      return ret;
+    };
+
+    var cookieGetOrAdd = function cookieGetOrAdd(key, value, storageOptions) {
+      var ret = null;
+
+      try {
+        var oldCookie = storageHandler.getCookie(key);
+
+        if (oldCookie) {
+          storageHandler.setCookie(key, oldCookie, expiresInDays(storageOptions.expires), 'Lax', storageOptions.domain);
+        } else {
+          storageHandler.setCookie(key, value, expiresInDays(storageOptions.expires), 'Lax', storageOptions.domain);
+        }
+
+        ret = storageHandler.getCookie(key);
+      } catch (e) {
+        error('CookieGetOrAdd', 'Failed manipulating cookie jar', e);
+      }
+
+      return ret;
+    };
+
+    var getOrAddWithExpiration = function getOrAddWithExpiration(key, value, storageOptions, storageStrategy) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
+        return lsGetOrAdd(key, value, storageOptions);
+      } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
+        return null;
+      } else {
+        return cookieGetOrAdd(key, value, storageOptions);
+      }
+    };
+
+    var _legacyDuid = function _legacyDuid() {
+      var _legacyEntry = storageHandler.getDataFromLocalStorage(getLegacyIdentifierKey());
+
+      return getLegacyId(_legacyEntry);
+    };
+    /**
+     * @param {string} apexDomain
+     * @returns {string}
+     * @private
+     */
+
+
+    var generateCookie = function generateCookie(apexDomain) {
+      var ulid = dist_10();
+      var cookie = "".concat(domainHash(apexDomain), "--").concat(ulid);
+      return cookie.toLocaleLowerCase();
+    };
+
     var expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS;
     var cookieDomain = determineTld();
     var providedFirstPartyIdentifier = null;
 
     if (state.providedIdentifierName) {
-      providedFirstPartyIdentifier = getCookie(state.providedIdentifierName) || getFromLs(state.providedIdentifierName);
+      providedFirstPartyIdentifier = storageHandler.getCookie(state.providedIdentifierName) || storageHandler.getDataFromLocalStorage(state.providedIdentifierName);
     }
 
     var storageOptions = {
@@ -1780,7 +1504,7 @@ function resolve$1(state) {
 
     var legacyDuid = _legacyDuid();
 
-    var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, _generateCookie(cookieDomain), storageOptions, state.storageStrategy);
+    var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, generateCookie(cookieDomain), storageOptions, state.storageStrategy);
     return {
       domain: cookieDomain,
       legacyId: legacyDuid,
@@ -1793,20 +1517,9 @@ function resolve$1(state) {
   }
 }
 
-var DEFAULT_DECISION_ID_COOKIE_TTL_MILLIS = 30 * 864e530;
-var DEFAULT_DECISION_ID_COOKIE_PATH = '/';
+var DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30);
 var DECISION_ID_QUERY_PARAM_NAME = 'li_did';
 var DECISION_ID_COOKIE_NAMESPACE = 'lidids.';
-
-function _addDecisionId(key, cookieDomain) {
-  if (key) {
-    setCookie("".concat(DECISION_ID_COOKIE_NAMESPACE).concat(key), key, {
-      domain: cookieDomain,
-      expires: DEFAULT_DECISION_ID_COOKIE_TTL_MILLIS,
-      path: DEFAULT_DECISION_ID_COOKIE_PATH
-    });
-  }
-}
 
 var _onlyUnique = function _onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
@@ -1821,16 +1534,23 @@ var _nonEmpty = function _nonEmpty(value) {
 };
 /**
  * @param {State} state
+ * @param {StorageHandler} storageHandler
  */
 
 
-function resolve$2(state) {
+function resolve$2(state, storageHandler) {
   var ret = {};
+
+  function _addDecisionId(key, cookieDomain) {
+    if (key) {
+      storageHandler.setCookie("".concat(DECISION_ID_COOKIE_NAMESPACE).concat(key), key, DEFAULT_DECISION_ID_COOKIE_EXPIRES, 'Lax', cookieDomain);
+    }
+  }
 
   try {
     var params = state.pageUrl ? urlParams(state.pageUrl) || {} : {};
     var freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || []);
-    var storedDecisions = findSimilarInJar(DECISION_ID_COOKIE_NAMESPACE);
+    var storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE);
     freshDecisions.map(trim).filter(_nonEmpty).filter(_validUuid).filter(_onlyUnique).forEach(function (decision) {
       return _addDecisionId(decision, state.domain);
     });
@@ -1848,33 +1568,34 @@ function resolve$2(state) {
 var REPLACEMENT_THRESHOLD_MILLIS = 181 * 864e5;
 var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
 
-function _setPeopleVerifiedStore(id) {
+function _setPeopleVerifiedStore(id, storageHandler) {
   if (id) {
-    addToLs(PEOPLE_VERIFIED_LS_ENTRY, id);
+    storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, id);
   }
 }
 /**
  * @param {State} state
+ * @param {StorageHandler} storageHandler
  */
 
 
-function resolve$3(state) {
+function resolve$3(state, storageHandler) {
 
   try {
     var timeBefore = (new Date().getTime() - REPLACEMENT_THRESHOLD_MILLIS) / 1000;
     var legacyIdentifier = state.legacyId || {};
     var lastVisit = legacyIdentifier.currVisitTs ? parseInt(legacyIdentifier.currVisitTs) : 0; // Only overwrite the peopleVerified id if the entry for the legacy identifier exists, and it's old
 
-    if (legacyIdentifier.currVisitTs && timeBefore > lastVisit) {
-      _setPeopleVerifiedStore(state.liveConnectId);
+    if (legacyIdentifier.currVisitTs && timeBefore > lastVisit && state.liveConnectId) {
+      _setPeopleVerifiedStore(state.liveConnectId, storageHandler);
     }
 
-    if (!getFromLs(PEOPLE_VERIFIED_LS_ENTRY)) {
-      _setPeopleVerifiedStore(legacyIdentifier.duid || state.liveConnectId);
+    if (!storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)) {
+      _setPeopleVerifiedStore(legacyIdentifier.duid || state.liveConnectId, storageHandler);
     }
 
     return {
-      peopleVerifiedId: getFromLs(PEOPLE_VERIFIED_LS_ENTRY)
+      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
     };
   } catch (e) {
     error('PeopleVerifiedResolve', 'Error while managing people verified', e);
@@ -2088,12 +1809,13 @@ function register(state) {
  */
 /**
  * @param {State} state
+ * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
 
-function enrich$1(state) {
+function enrich$1(state, storageHandler) {
   try {
-    return _getIdentifiers(_parseIdentifiersToResolve(state));
+    return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler);
   } catch (e) {
     error('IdentifiersEnricher', 'Error while retrieving fp identifiers', e);
     return {};
@@ -2124,18 +1846,20 @@ function _parseIdentifiersToResolve(state) {
 }
 /**
  * @param {string[]} cookieNames
+ * @param {State} state
+ * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]}}
  * @private
  */
 
 
-function _getIdentifiers(cookieNames) {
+function _getIdentifiers(cookieNames, storageHandler) {
   var identifiers = [];
   var hashes = [];
 
   for (var i = 0; i < cookieNames.length; i++) {
     var identifierName = cookieNames[i];
-    var identifierValue = getCookie(identifierName) || getFromLs(identifierName);
+    var identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
 
     if (identifierValue) {
       var cookieAndHashes = _findAndReplaceRawEmails(safeToString(identifierValue));
@@ -2295,7 +2019,7 @@ var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 var DEFAULT_EXPIRATION_DAYS$1 = 1;
 var DEFAULT_AJAX_TIMEOUT = 1000;
 
-function _responseReceived(domain, expirationDays, successCallback) {
+function _responseReceived(storageHandler, domain, expirationDays, successCallback) {
   return function (response) {
     var responseObj = {};
 
@@ -2308,10 +2032,7 @@ function _responseReceived(domain, expirationDays, successCallback) {
     }
 
     try {
-      setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), {
-        domain: domain,
-        expires: expirationDays
-      });
+      storageHandler.setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), expiresInDays(expirationDays), 'Lax', domain);
     } catch (ex) {
       error('IdentityResolverStorage', 'Error putting the Idex response in a cookie jar', ex);
     }
@@ -2337,12 +2058,13 @@ var _additionalParams = function _additionalParams(params) {
 };
 /**
  * @param {State} config
- * @return {{resolve: function(callback: function, additionalParams: Object)}}
+ * @param {StorageHandler} storageHandler
+ * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
 
 
-function IdentityResolver(config) {
+function IdentityResolver(config, storageHandler) {
   var encodedOrNull = function encodedOrNull(value) {
     return value && encodeURIComponent(value);
   };
@@ -2364,6 +2086,7 @@ function IdentityResolver(config) {
     var timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT;
     var tuples = [];
     tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)]);
+    tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)]);
     tuples.push([encodedOrNull(nonNullConfig.providedIdentifierName), encodedOrNull(nonNullConfig.providedIdentifier)]);
     externalIds.forEach(function (retrievedIdentifier) {
       var key = encodedOrNull(retrievedIdentifier.name);
@@ -2371,16 +2094,20 @@ function IdentityResolver(config) {
       tuples.push([key, value]);
     });
 
-    var unsafeResolve = function unsafeResolve(successCallback, additionalParams) {
+    var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(_additionalParams(additionalParams));
       var params = toParams(originalParams);
-      var finalUrl = "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
-      var storedCookie = getCookie(IDEX_STORAGE_KEY);
+      return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
+    };
+
+    var unsafeResolve = function unsafeResolve(successCallback, additionalParams) {
+      var finalUrl = composeUrl(additionalParams);
+      var storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY);
 
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        get(finalUrl, _responseReceived(nonNullConfig.domain, expirationDays, successCallback), function () {
+        get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
           return fallback(successCallback);
         }, timeout);
       }
@@ -2394,6 +2121,9 @@ function IdentityResolver(config) {
           fallback(callback);
           error('IdentityResolve', 'Resolve threw an unhandled exception', e);
         }
+      },
+      getUrl: function getUrl(additionalParams) {
+        return composeUrl(additionalParams);
       }
     };
   } catch (e) {
@@ -2402,9 +2132,293 @@ function IdentityResolver(config) {
       resolve: function resolve(successCallback) {
         fallback(successCallback);
         error('IdentityResolver.resolve', 'Resolve called on an uninitialised IdentityResolver', e);
+      },
+      getUrl: function getUrl() {
+        error('IdentityResolver.getUrl', 'getUrl called on an uninitialised IdentityResolver', e);
       }
     };
   }
+}
+
+var browserCookies = createCommonjsModule(function (module, exports) {
+  exports.defaults = {};
+
+  exports.set = function (name, value, options) {
+    // Retrieve options and defaults
+    var opts = options || {};
+    var defaults = exports.defaults; // Apply default value for unspecified options
+
+    var expires = opts.expires || defaults.expires;
+    var domain = opts.domain || defaults.domain;
+    var path = opts.path !== undefined ? opts.path : defaults.path !== undefined ? defaults.path : '/';
+    var secure = opts.secure !== undefined ? opts.secure : defaults.secure;
+    var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
+    var samesite = opts.samesite !== undefined ? opts.samesite : defaults.samesite; // Determine cookie expiration date
+    // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
+
+    var expDate = expires ? new Date( // in case expires is an integer, it should specify the number of days till the cookie expires
+    typeof expires === 'number' ? new Date().getTime() + expires * 864e5 : // else expires should be either a Date object or in a format recognized by Date.parse()
+    expires) : 0; // Set cookie
+
+    document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent) // Encode cookie name
+    .replace('(', '%28').replace(')', '%29') + '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) + ( // Encode cookie value (RFC6265)
+    expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + ( // Add expiration date
+    domain ? ';domain=' + domain : '') + ( // Add domain
+    path ? ';path=' + path : '') + ( // Add path
+    secure ? ';secure' : '') + ( // Add secure option
+    httponly ? ';httponly' : '') + ( // Add httponly option
+    samesite ? ';samesite=' + samesite : ''); // Add samesite option
+  };
+
+  exports.get = function (name) {
+    var cookies = document.cookie.split(';'); // Iterate all cookies
+
+    while (cookies.length) {
+      var cookie = cookies.pop(); // Determine separator index ("name=value")
+
+      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
+
+      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex;
+      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, '')); // Return cookie value if the name matches
+
+      if (cookie_name === name) {
+        return decodeURIComponent(cookie.slice(separatorIndex + 1));
+      }
+    } // Return `null` as the cookie was not found
+
+
+    return null;
+  };
+
+  exports.erase = function (name, options) {
+    exports.set(name, '', {
+      expires: -1,
+      domain: options && options.domain,
+      path: options && options.path,
+      secure: 0,
+      httponly: 0
+    });
+  };
+
+  exports.all = function () {
+    var all = {};
+    var cookies = document.cookie.split(';'); // Iterate all cookies
+
+    while (cookies.length) {
+      var cookie = cookies.pop(); // Determine separator index ("name=value")
+
+      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
+
+      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex; // add the cookie name and value to the `all` object
+
+      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, ''));
+      all[cookie_name] = decodeURIComponent(cookie.slice(separatorIndex + 1));
+    }
+
+    return all;
+  };
+});
+var browserCookies_1 = browserCookies.defaults;
+var browserCookies_2 = browserCookies.set;
+var browserCookies_3 = browserCookies.get;
+var browserCookies_4 = browserCookies.erase;
+var browserCookies_5 = browserCookies.all;
+
+/**
+ * @typedef {Object} StorageOptions
+ * @property {(number| Date |undefined)} [expires]
+ * @property {(string|undefined)} [domain]
+ * @property {(string|undefined)} [path]
+ * @property {(boolean|undefined)} [secure]
+ * @property {(boolean|undefined)} [httponly]
+ * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
+ */
+var _hasLocalStorage = null;
+/**
+ * @returns {boolean}
+ * @private
+ */
+
+function hasLocalStorage() {
+  if (_hasLocalStorage == null) {
+    _hasLocalStorage = _checkLocalStorage();
+  }
+
+  return _hasLocalStorage;
+}
+/**
+ * @returns {boolean}
+ * @private
+ */
+
+function _checkLocalStorage() {
+  var enabled = false;
+
+  try {
+    if (window && window.localStorage) {
+      var key = Math.random().toString();
+      window.localStorage.setItem(key, key);
+      enabled = window.localStorage.getItem(key) === key;
+      window.localStorage.removeItem(key);
+    }
+  } catch (e) {
+    error('LSCheckError', 'Error while checking LS', e);
+  }
+
+  return enabled;
+}
+/**
+ * @param {string} key
+ * @returns {string|null}
+ */
+
+
+function getCookie(key) {
+  return browserCookies_3(key);
+}
+/**
+ * @param key
+ * @return {string|null}
+ * @private
+ */
+
+function _unsafeGetFromLs(key) {
+  return window.localStorage.getItem(key);
+}
+/**
+ * @param {string} key
+ * @returns {string|null}
+ */
+
+
+function getDataFromLocalStorage(key) {
+  var ret = null;
+
+  if (hasLocalStorage()) {
+    ret = _unsafeGetFromLs(key);
+  }
+
+  return ret;
+}
+/**
+ * @param keyLike
+ * @return {[String]}
+ */
+
+function findSimilarCookies(keyLike) {
+  var ret = [];
+
+  try {
+    var allCookies = browserCookies_5();
+
+    for (var cookieName in allCookies) {
+      if (allCookies[cookieName] && cookieName.indexOf(keyLike) >= 0) {
+        ret.push(browserCookies_3(cookieName));
+      }
+    }
+  } catch (e) {
+    error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e);
+  }
+
+  return ret;
+}
+/**
+ * @param {string} key
+ * @param {string} value
+ * @param {number} expires
+ * @param {string} sameSite
+ * @param {string} domain
+ * @param {StorageOptions} storageOptions
+ * @returns void
+ */
+
+function setCookie(key, value, expires, sameSite, domain) {
+  browserCookies_2(key, value, {
+    domain: domain,
+    expires: expires,
+    samesite: sameSite
+  });
+}
+/**
+ * @param {string} key
+ * @returns {string|null}
+ */
+
+function removeDataFromLocalStorage(key) {
+  if (hasLocalStorage()) {
+    window.localStorage.removeItem(key);
+  }
+}
+/**
+ * @param {string} key
+ * @param {string} value
+ * @returns {string|null}
+ */
+
+function setDataInLocalStorage(key, value) {
+  if (hasLocalStorage()) {
+    window.localStorage.setItem(key, value);
+  }
+}
+
+var lcStorage = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  hasLocalStorage: hasLocalStorage,
+  getCookie: getCookie,
+  getDataFromLocalStorage: getDataFromLocalStorage,
+  findSimilarCookies: findSimilarCookies,
+  setCookie: setCookie,
+  removeDataFromLocalStorage: removeDataFromLocalStorage,
+  setDataInLocalStorage: setDataInLocalStorage
+});
+
+/**
+ * @typedef {Object} StorageHandler
+ * @property {function} [hasLocalStorage]
+ * @property {function} [getCookie]
+ * @property {function} [setCookie]
+ * @property {function} [getDataFromLocalStorage]
+ * @property {function} [removeDataFromLocalStorage]
+ * @property {function} [setDataInLocalStorage]
+ * @property {function} [findSimilarCookies]
+ */
+
+var _noOp = function _noOp() {
+  return undefined;
+};
+/**
+ *
+ * @param {string} storageStrategy
+ * @param {StorageHandler} [externalStorageHandler]
+ * @return {StorageHandler}
+ * @constructor
+ */
+
+
+function StorageHandler(storageStrategy, externalStorageHandler) {
+  function _externalOrDefault(functionName) {
+    var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
+
+    if (hasExternal) {
+      return externalStorageHandler[functionName];
+    } else {
+      return lcStorage[functionName] || _noOp();
+    }
+  }
+
+  var _orElseNoOp = function _orElseNoOp(fName) {
+    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrDefault(fName);
+  };
+
+  return {
+    hasLocalStorage: _orElseNoOp('hasLocalStorage'),
+    getCookie: _externalOrDefault('getCookie'),
+    setCookie: _orElseNoOp('setCookie'),
+    getDataFromLocalStorage: _externalOrDefault('getDataFromLocalStorage'),
+    removeDataFromLocalStorage: _orElseNoOp('removeDataFromLocalStorage'),
+    setDataInLocalStorage: _orElseNoOp('setDataInLocalStorage'),
+    findSimilarCookies: _externalOrDefault('findSimilarCookies')
+  };
 }
 
 var hemStore = {};
@@ -2447,12 +2461,13 @@ function _processArgs(args, pixelClient, enrichedState) {
 }
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
  * @returns {LiveConnect}
  * @constructor
  */
 
 
-function LiveConnect(liveConnectConfig) {
+function LiveConnect(liveConnectConfig, externalStorageHandler) {
   var configuration = {};
 
   try {
@@ -2463,8 +2478,10 @@ function LiveConnect(liveConnectConfig) {
   }
 
   try {
+    var storageHandler = StorageHandler(configuration.storageStrategy, externalStorageHandler);
+
     var reducer = function reducer(accumulator, func) {
-      return accumulator.combineWith(func(accumulator.data));
+      return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
 
     var managers = [resolve, resolve$1, resolve$3, resolve$2];
@@ -2485,7 +2502,7 @@ function LiveConnect(liveConnectConfig) {
     };
 
     var pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload);
-    var resolver = IdentityResolver(postManagedState.data);
+    var resolver = IdentityResolver(postManagedState.data, storageHandler);
 
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -2502,7 +2519,8 @@ function LiveConnect(liveConnectConfig) {
       },
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
       ready: true,
-      resolve: resolver.resolve
+      resolve: resolver.resolve,
+      resolutionCallUrl: resolver.getUrl
     };
   } catch (x) {
     error('LCConstruction', 'Failed to build LC', x);
