@@ -2329,16 +2329,6 @@ function findSimilarCookies(keyLike) {
 /**
  * @param {string} key
  * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns void
- */
-
-function setCookieInt(key, value, storageOptions) {
-  browserCookies_2(key, value, storageOptions);
-}
-/**
- * @param {string} key
- * @param {string} value
  * @param {number} expires
  * @param {string} sameSite
  * @param {string} domain
@@ -2346,9 +2336,8 @@ function setCookieInt(key, value, storageOptions) {
  * @returns void
  */
 
-
 function setCookie(key, value, expires, sameSite, domain) {
-  setCookieInt(key, value, {
+  browserCookies_2(key, value, {
     domain: domain,
     expires: expires,
     samesite: sameSite

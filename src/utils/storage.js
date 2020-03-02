@@ -93,16 +93,6 @@ export function findSimilarCookies (keyLike) {
 /**
  * @param {string} key
  * @param {string} value
- * @param {StorageOptions} storageOptions
- * @returns void
- */
-function setCookieInt (key, value, storageOptions) {
-  cookies.set(key, value, storageOptions)
-}
-
-/**
- * @param {string} key
- * @param {string} value
  * @param {number} expires
  * @param {string} sameSite
  * @param {string} domain
@@ -110,7 +100,7 @@ function setCookieInt (key, value, storageOptions) {
  * @returns void
  */
 export function setCookie (key, value, expires, sameSite, domain) {
-  setCookieInt(key, value, { domain: domain, expires: expires, samesite: sameSite })
+  cookies.set(key, value, { domain: domain, expires: expires, samesite: sameSite })
 }
 
 /**
