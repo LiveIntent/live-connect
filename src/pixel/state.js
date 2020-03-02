@@ -41,6 +41,7 @@
  * @property {function} asQueryString
  * @property {function} combineWith
  * @property {function} sendsPixel
+ * @property {StorageManager} storageHandler
  */
 
 import * as b64 from '../utils/b64'
@@ -129,7 +130,7 @@ const _pMap = {
  * @returns {StateWrapper}
  * @constructor
  */
-export function StateWrapper (state) {
+export function StateWrapper (state, storageHandler) {
   /**
    * @type {State}
    */
@@ -163,7 +164,7 @@ export function StateWrapper (state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper({ ..._state, ...newInfo })
+    return new StateWrapper({ ..._state, ...newInfo }, storageHandler)
   }
 
   /**
@@ -201,6 +202,7 @@ export function StateWrapper (state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel
+    sendsPixel: _sendsPixel,
+    storageHandler: storageHandler
   }
 }

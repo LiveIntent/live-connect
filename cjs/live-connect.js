@@ -99,7 +99,6 @@ function trim(value) {
  * @param {*} str
  * @returns {boolean}
  */
-
 function isString(str) {
   return typeof str === 'string';
 }
@@ -116,7 +115,6 @@ function strEqualsIgnoreCase(fistStr, secondStr) {
  * @param obj
  * @return {boolean}
  */
-
 function isObject(obj) {
   return !!obj && _typeof(obj) === 'object' && !isArray(obj);
 }

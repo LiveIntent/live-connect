@@ -1,15 +1,14 @@
 import { get } from '../utils/ajax'
 import { toParams } from '../utils/url'
-import { getCookie, setCookie } from '../utils/storage'
 import { error } from '../utils/emitter'
-import { isFunction, isObject } from '../utils/types'
+import { expiresInDays, isFunction, isObject } from '../utils/types'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
 const DEFAULT_EXPIRATION_DAYS = 1
 const DEFAULT_AJAX_TIMEOUT = 1000
 
-function _responseReceived (domain, expirationDays, successCallback) {
+function _responseReceived (storageHandler, domain, expirationDays, successCallback) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -21,13 +20,12 @@ function _responseReceived (domain, expirationDays, successCallback) {
       }
     }
     try {
-      setCookie(
+      storageHandler.setCookie(
         IDEX_STORAGE_KEY,
         JSON.stringify(responseObj),
-        {
-          domain: domain,
-          expires: expirationDays
-        })
+        expiresInDays(expirationDays),
+        'Lax',
+        domain)
     } catch (ex) {
       console.error('Error storing response to cookies', ex)
       error('IdentityResolverStorage', 'Error putting the Idex response in a cookie jar', ex)
@@ -53,10 +51,11 @@ const _additionalParams = (params) => {
 
 /**
  * @param {State} config
- * @return {{resolve: function(callback: function, additionalParams: Object)}}
+ * @param {StorageHandler} storageHandler
+ * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
-export function IdentityResolver (config) {
+export function IdentityResolver (config, storageHandler) {
   const encodedOrNull = (value) => value && encodeURIComponent(value)
   const fallback = (successCallback) => {
     if (isFunction(successCallback)) {
@@ -74,21 +73,26 @@ export function IdentityResolver (config) {
     const timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT
     const tuples = []
     tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)])
+    tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)])
     tuples.push([encodedOrNull(nonNullConfig.providedIdentifierName), encodedOrNull(nonNullConfig.providedIdentifier)])
     externalIds.forEach(retrievedIdentifier => {
       const key = encodedOrNull(retrievedIdentifier.name)
       const value = encodedOrNull(retrievedIdentifier.value)
       tuples.push([key, value])
     })
-    const unsafeResolve = (successCallback, additionalParams) => {
+
+    const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(_additionalParams(additionalParams))
       const params = toParams(originalParams)
-      const finalUrl = `${url}/${source}/${publisherId}${params}`
-      const storedCookie = getCookie(IDEX_STORAGE_KEY)
+      return `${url}/${source}/${publisherId}${params}`
+    }
+    const unsafeResolve = (successCallback, additionalParams) => {
+      const finalUrl = composeUrl(additionalParams)
+      const storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY)
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie))
       } else {
-        get(finalUrl, _responseReceived(nonNullConfig.domain, expirationDays, successCallback), () => fallback(successCallback), timeout)
+        get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), () => fallback(successCallback), timeout)
       }
     }
     return {
@@ -100,7 +104,8 @@ export function IdentityResolver (config) {
           fallback(callback)
           error('IdentityResolve', 'Resolve threw an unhandled exception', e)
         }
-      }
+      },
+      getUrl: (additionalParams) => composeUrl(additionalParams)
     }
   } catch (e) {
     console.error('IdentityResolver', e)

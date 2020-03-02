@@ -29,7 +29,7 @@ describe('IdentityResolver', () => {
 
   it('should invoke callback on success, store the result in a cookie', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver()
+    const identityResolver = IdentityResolver({}, storage)
     const successCallback = (responseAsJson) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty
@@ -46,7 +46,7 @@ describe('IdentityResolver', () => {
 
   it('should invoke callback on success, if storing the result in a cookie fails', function () {
     const setCookieStub = sinon.createSandbox().stub(storage, 'setCookie').throws()
-    const identityResolver = IdentityResolver()
+    const identityResolver = IdentityResolver({}, storage)
     let jsonResponse = null
     const successCallback = (responseAsJson) => {
       jsonResponse = responseAsJson
@@ -66,7 +66,7 @@ describe('IdentityResolver', () => {
 
   it('should attach the duid', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' })
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987')
       expect(errors).to.be.empty
@@ -79,7 +79,7 @@ describe('IdentityResolver', () => {
 
   it('should attach additional params', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' })
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
       expect(errors).to.be.empty
@@ -91,7 +91,7 @@ describe('IdentityResolver', () => {
   })
 
   it('should not attach an empty tuple', function (done) {
-    const identityResolver = IdentityResolver({ peopleVerifiedId: null })
+    const identityResolver = IdentityResolver({ peopleVerifiedId: null }, storage)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(errors).to.be.empty
@@ -116,7 +116,7 @@ describe('IdentityResolver', () => {
           value: 'AnotherId'
         }
       ]
-    })
+    }, storage)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pubcid=exexex&some-id=AnotherId')
       expect(errors).to.be.empty
@@ -128,7 +128,7 @@ describe('IdentityResolver', () => {
   })
 
   it('should return the default empty response and emit error if response is not a json', function (done) {
-    const identityResolver = IdentityResolver()
+    const identityResolver = IdentityResolver({}, storage)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(responseAsJson).to.be.eql({})

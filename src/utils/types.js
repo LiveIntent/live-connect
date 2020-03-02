@@ -63,3 +63,12 @@ export function isObject (obj) {
 export function isFunction (fun) {
   return fun && typeof fun === 'function'
 }
+
+/**
+ * Returns the string representation when something should expire
+ * @param expires
+ * @return {string}
+ */
+export function expiresInDays (expires) {
+  return new Date((new Date().getTime() + (expires * 864e5))).toUTCString()
+}

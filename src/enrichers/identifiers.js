@@ -3,8 +3,6 @@
  * @property {string} name
  * @property {string} value
  */
-
-import * as storage from '../utils/storage'
 import { containsEmailField, isEmail, listEmailsInString } from '../utils/email'
 import { hashEmail } from '../utils/hash'
 import { safeToString, isString, isArray } from '../utils/types'
@@ -12,11 +10,12 @@ import * as emitter from '../utils/emitter'
 
 /**
  * @param {State} state
+ * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
-export function enrich (state) {
+export function enrich (state, storageHandler) {
   try {
-    return _getIdentifiers(_parseIdentifiersToResolve(state))
+    return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
     emitter.error('IdentifiersEnricher', 'Error while retrieving fp identifiers', e)
     return {}
@@ -45,15 +44,17 @@ function _parseIdentifiersToResolve (state) {
 
 /**
  * @param {string[]} cookieNames
+ * @param {State} state
+ * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]}}
  * @private
  */
-function _getIdentifiers (cookieNames) {
+function _getIdentifiers (cookieNames, storageHandler) {
   const identifiers = []
   let hashes = []
   for (let i = 0; i < cookieNames.length; i++) {
     const identifierName = cookieNames[i]
-    const identifierValue = storage.getCookie(identifierName) || storage.getFromLs(identifierName)
+    const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
     if (identifierValue) {
       const cookieAndHashes = _findAndReplaceRawEmails(safeToString(identifierValue))
       identifiers.push({
