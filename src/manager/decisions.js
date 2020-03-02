@@ -23,7 +23,7 @@ export function resolve (state, storageHandler) {
         `${DECISION_ID_COOKIE_NAMESPACE}${key}`,
         key,
         DEFAULT_DECISION_ID_COOKIE_EXPIRES,
-        undefined,
+        'Lax',
         cookieDomain)
     }
   }
