@@ -129,14 +129,14 @@ describe('LiveConnect', () => {
     }
   })
 
-  it('should prepend duid cookie with hashed apex domain and hashed parent window domain', () => {
+  it('should prepend duid cookie with hashed apex domain', () => {
     server.openPage('bln.test.liveintent.com', 'framed')
     sendEventInIframe({}, 1, server)
 
     if (probeLS()) {
       const trackingRequests = server.getTrackingRequests()
       assert.strictEqual(trackingRequests.length, 1)
-      expect(trackingRequests[0]['query']['duid']).to.match(/c8873205d21e-4728df16f0d5--.*/) // hash(.liveintent.com)-hash(bln.test.liveintent.com)--ulid
+      expect(trackingRequests[0]['query']['duid']).to.match(/c8873205d21e--.*/) // hash(.liveintent.com)--ulid
     } else {
       const applicationErrors = server.getApplicationErrors()
       assert.strictEqual(applicationErrors.length, 1)
