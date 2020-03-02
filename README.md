@@ -51,7 +51,7 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 - `peopleVerifiedId` returns the most likely first party cookie that can be used for identity resolution.
 - `ready` flag, saying that the LC was loaded and ready, can be used when including LiveConnect as a global var on the window object.
 - `resolve` function accepts a callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The second parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key.
-- `resolutionCallUrl` function receives the URL to be called in order to receive the resolution to a stable identifier.
+- `resolutionCallUrl` function returns the URL to be called in order to receive the resolution to a stable identifier.
 
 ### Overriding the StorageHandler.
 LiveConnect can be initialized in a way so that it does not manipulate storage on the device on it's own. For example, if one wants to use it's own handler for storage, it is enough to send the storage handler in the constructor.
@@ -66,7 +66,7 @@ The only thing one needs to adhere to is the signature of each function that's n
 
 If one of the functions is not available in the external handler, LiveConnect will fallback to it's own implementation to ensure that the functionality isn't being affected.
 
-One way to acheive that is, for example, to initialize LC like this:
+One way to achieve that is, for example, to initialize LC like this:
 ```javascript
 import { LiveConnect } from 'live-connect-js/src/live-connect'
 const storageHandler = {
@@ -76,7 +76,8 @@ const storageHandler = {
   },
   setCookie: (key, value, expires, sameSite, domain) => {
     //
-  }
+  },
+  ...
 }
 const lc = LiveConnect(configOptions, storageHandler)
 ``` 
