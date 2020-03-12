@@ -17,7 +17,7 @@ export function enrich (state, storageHandler) {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
-    emitter.error('IdentifiersEnricher', 'Error while retrieving fp identifiers', e)
+    emitter.error('IdentifiersEnricher', e.message, e)
     return {}
   }
 }

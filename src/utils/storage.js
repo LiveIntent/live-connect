@@ -37,7 +37,7 @@ function _checkLocalStorage () {
       window.localStorage.removeItem(key)
     }
   } catch (e) {
-    emitter.error('LSCheckError', 'Error while checking LS', e)
+    emitter.error('LSCheckError', e.message, e)
   }
   return enabled
 }
@@ -96,7 +96,6 @@ export function findSimilarCookies (keyLike) {
  * @param {number} expires
  * @param {string} sameSite
  * @param {string} domain
- * @param {StorageOptions} storageOptions
  * @returns void
  */
 export function setCookie (key, value, expires, sameSite, domain) {

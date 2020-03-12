@@ -1,7 +1,6 @@
 import * as Ulid from '@kiosked/ulid'
 import * as emitter from '../utils/emitter'
 import { loadedDomain } from '../utils/page'
-import { getLegacyId, getLegacyIdentifierKey } from '../utils/legacy'
 import { domainHash } from '../utils/hash'
 import { expiresInDays, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
@@ -16,7 +15,7 @@ const DEFAULT_EXPIRATION_DAYS = 730
  */
 export function resolve (state, storageHandler) {
   try {
-    console.log('identifiers.resolve', state, storageHandler)
+    console.log('identifiers.resolve', state)
 
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
@@ -27,7 +26,7 @@ export function resolve (state, storageHandler) {
       const arr = domain.split('.').reverse()
       for (let i = 1; i < arr.length; i++) {
         const newD = `.${arr.slice(0, i).reverse().join('.')}`
-        storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, undefined, newD)
+        storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, 'Lax', newD)
         if (storageHandler.getCookie(TLD_CACHE_KEY)) {
           return newD
         }
@@ -86,11 +85,6 @@ export function resolve (state, storageHandler) {
       }
     }
 
-    const _legacyDuid = () => {
-      const _legacyEntry = storageHandler.getDataFromLocalStorage(getLegacyIdentifierKey())
-      return getLegacyId(_legacyEntry)
-    }
-
     /**
      * @param {string} apexDomain
      * @returns {string}
@@ -113,7 +107,6 @@ export function resolve (state, storageHandler) {
       expires: expiry,
       domain: cookieDomain
     }
-    const legacyDuid = _legacyDuid()
     const liveConnectIdentifier = getOrAddWithExpiration(
       NEXT_GEN_FP_NAME,
       generateCookie(cookieDomain),
@@ -121,7 +114,6 @@ export function resolve (state, storageHandler) {
       state.storageStrategy)
     return {
       domain: cookieDomain,
-      legacyId: legacyDuid,
       liveConnectId: liveConnectIdentifier,
       providedIdentifier: providedFirstPartyIdentifier
     }

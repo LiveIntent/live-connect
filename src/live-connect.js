@@ -95,14 +95,14 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
     const storageHandler = StorageHandler(configuration.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
-    const managers = [legacyDuid.resolve, identifiers.resolve, peopleVerified.resolve, decisions.resolve]
     const enrichers = [pageEnricher.enrich, cookies.enrich]
+    const managers = [legacyDuid.resolve, identifiers.resolve, peopleVerified.resolve, decisions.resolve]
 
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
-    console.log('LiveConnect.postManagedState', postManagedState)
     console.log('LiveConnect.enrichedState', enrichedState)
+    console.log('LiveConnect.postManagedState', postManagedState)
     const syncContainerData = { ...liveConnectConfig, ...{ peopleVerifiedId: postManagedState.data.peopleVerifiedId } }
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
