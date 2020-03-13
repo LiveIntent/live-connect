@@ -9,10 +9,10 @@ const _now = () => Math.round(new Date().getTime() / 1000)
  * @param {StorageHandler} storageHandler
  */
 export function resolve (state, storageHandler) {
-  console.log('legacy-duid.resolve', state, storageHandler)
+  console.log('legacy-duid.resolve', state)
+  const duidLsKey = getLegacyIdentifierKey()
   try {
-    const duidLsKey = getLegacyIdentifierKey()
-    if (state.appId) {
+    if (state.appId && storageHandler.hasLocalStorage()) {
       const previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey)
       let legacyIdToStore = getLegacyId(previousIdentifier)
       if (previousIdentifier && legacyIdToStore) {
@@ -29,6 +29,10 @@ export function resolve (state, storageHandler) {
         }
       }
       storageHandler.setDataInLocalStorage(duidLsKey, legacyIdAsString(legacyIdToStore))
+      const stored = storageHandler.getDataFromLocalStorage(duidLsKey)
+      return {
+        legacyId: getLegacyId(stored)
+      }
     }
   } catch (e) {
     emitter.error('LegacyDuidResolve', 'Error while managing legacy duid', e)

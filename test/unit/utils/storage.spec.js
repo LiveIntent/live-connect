@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import * as storage from '../../../src/utils/storage'
 import jsdom from 'mocha-jsdom'
-import { StorageStrategy } from '../../../src/model/storage-strategy'
 
 describe('Storage', () => {
   jsdom({

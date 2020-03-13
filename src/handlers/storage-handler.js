@@ -27,7 +27,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     if (hasExternal) {
       return externalStorageHandler[functionName]
     } else {
-      return lcStorage[functionName] || _noOp()
+      return lcStorage[functionName] || _noOp
     }
   }
   const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrDefault(fName)

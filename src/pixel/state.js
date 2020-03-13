@@ -121,7 +121,7 @@ const _pMap = {
     return _asParamOrEmpty('us_privacy', encodeURIComponent(usps), (s) => encodeURIComponent(s))
   },
   wrapperName: wrapper => {
-    return _asParamOrEmpty('wrpn', encodeURIComponent(wrapper), (s) => encodeURIComponent(wrapper))
+    return _asParamOrEmpty('wpn', encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
   }
 }
 
@@ -130,7 +130,7 @@ const _pMap = {
  * @returns {StateWrapper}
  * @constructor
  */
-export function StateWrapper (state, storageHandler) {
+export function StateWrapper (state) {
   /**
    * @type {State}
    */
@@ -164,7 +164,7 @@ export function StateWrapper (state, storageHandler) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper({ ..._state, ...newInfo }, storageHandler)
+    return new StateWrapper({ ..._state, ...newInfo })
   }
 
   /**
@@ -202,7 +202,6 @@ export function StateWrapper (state, storageHandler) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel,
-    storageHandler: storageHandler
+    sendsPixel: _sendsPixel
   }
 }

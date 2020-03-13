@@ -52,22 +52,6 @@ describe('IdentifiersManager', () => {
     expect(resolutionResult.liveConnectId).to.eql(id)
   })
 
-  it('should read the legacyId', function () {
-    expect(storage.getCookie('_lc2_fpi')).to.eql(null)
-    storage.setDataInLocalStorage('_litra_id.2a0b', 'a-0z68--e4f71227-70d0-4e54-b1c3-ACf80616bbb0.1538047703.39.1573030646.1550763182.eaff6045-fa6f-4073-9397-598a9e64ca12')
-    const resolutionResult = identifiers.resolve({}, storage)
-    expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect({
-      duid: 'a-0z68--e4f71227-70d0-4e54-b1c3-ACf80616bbb0',
-      creationTs: '1538047703',
-      sessionCount: '39',
-      currVisitTs: '1573030646',
-      lastSessionVisitTs: '1550763182',
-      sessionId: 'eaff6045-fa6f-4073-9397-598a9e64ca12'
-
-    }).to.eql(resolutionResult.legacyId)
-  })
-
   it('should read provided first party identifier from a cookie first', function () {
     storage.setCookie('pfpcn', 'cookie-identifier')
     const resolutionResult = identifiers.resolve({ providedIdentifierName: 'pfpcn' }, storage)

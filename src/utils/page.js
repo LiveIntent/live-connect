@@ -18,15 +18,6 @@ export function getPage () {
 }
 
 /**
- * @returns {string} hostname of the website if we are in an iFrame
- */
-export function parentHostname () {
-  const parser = document.createElement('a')
-  parser.href = document.referrer
-  return parser.hostname
-}
-
-/**
  * @return {string}
  */
 export function loadedDomain () {

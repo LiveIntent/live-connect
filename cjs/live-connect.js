@@ -898,8 +898,8 @@ var _pMap = {
     });
   },
   wrapperName: function wrapperName(wrapper) {
-    return _asParamOrEmpty('wrpn', encodeURIComponent(wrapper), function (s) {
-      return encodeURIComponent(wrapper);
+    return _asParamOrEmpty('wpn', encodeURIComponent(wrapper), function (s) {
+      return encodeURIComponent(s);
     });
   }
 };
@@ -909,7 +909,7 @@ var _pMap = {
  * @constructor
  */
 
-function StateWrapper(state, storageHandler) {
+function StateWrapper(state) {
   /**
    * @type {State}
    */
@@ -945,7 +945,7 @@ function StateWrapper(state, storageHandler) {
 
 
   function _combineWith(newInfo) {
-    return new StateWrapper(_objectSpread2({}, _state, {}, newInfo), storageHandler);
+    return new StateWrapper(_objectSpread2({}, _state, {}, newInfo));
   }
   /**
    * @returns {string [][]}
@@ -987,8 +987,7 @@ function StateWrapper(state, storageHandler) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel,
-    storageHandler: storageHandler
+    sendsPixel: _sendsPixel
   };
 }
 
@@ -1122,11 +1121,10 @@ var _now = function _now() {
 
 
 function resolve(state, storageHandler) {
+  var duidLsKey = getLegacyIdentifierKey();
 
   try {
-    var duidLsKey = getLegacyIdentifierKey();
-
-    if (state.appId) {
+    if (state.appId && storageHandler.hasLocalStorage()) {
       var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
       var legacyIdToStore = getLegacyId(previousIdentifier);
 
@@ -1145,6 +1143,10 @@ function resolve(state, storageHandler) {
       }
 
       storageHandler.setDataInLocalStorage(duidLsKey, legacyIdAsString(legacyIdToStore));
+      var stored = storageHandler.getDataFromLocalStorage(duidLsKey);
+      return {
+        legacyId: getLegacyId(stored)
+      };
     }
   } catch (e) {
     error('LegacyDuidResolve', 'Error while managing legacy duid', e);
@@ -1401,7 +1403,7 @@ function resolve$1(state, storageHandler) {
 
       for (var i = 1; i < arr.length; i++) {
         var newD = ".".concat(arr.slice(0, i).reverse().join('.'));
-        storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, undefined, newD);
+        storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, 'Lax', newD);
 
         if (storageHandler.getCookie(TLD_CACHE_KEY)) {
           return newD;
@@ -1474,12 +1476,6 @@ function resolve$1(state, storageHandler) {
         return cookieGetOrAdd(key, value, storageOptions);
       }
     };
-
-    var _legacyDuid = function _legacyDuid() {
-      var _legacyEntry = storageHandler.getDataFromLocalStorage(getLegacyIdentifierKey());
-
-      return getLegacyId(_legacyEntry);
-    };
     /**
      * @param {string} apexDomain
      * @returns {string}
@@ -1505,13 +1501,9 @@ function resolve$1(state, storageHandler) {
       expires: expiry,
       domain: cookieDomain
     };
-
-    var legacyDuid = _legacyDuid();
-
     var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, generateCookie(cookieDomain), storageOptions, state.storageStrategy);
     return {
       domain: cookieDomain,
-      legacyId: legacyDuid,
       liveConnectId: liveConnectIdentifier,
       providedIdentifier: providedFirstPartyIdentifier
     };
@@ -1821,7 +1813,7 @@ function enrich$1(state, storageHandler) {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler);
   } catch (e) {
-    error('IdentifiersEnricher', 'Error while retrieving fp identifiers', e);
+    error('IdentifiersEnricher', e.message, e);
     return {};
   }
 }
@@ -2266,7 +2258,7 @@ function _checkLocalStorage() {
       window.localStorage.removeItem(key);
     }
   } catch (e) {
-    error('LSCheckError', 'Error while checking LS', e);
+    error('LSCheckError', e.message, e);
   }
 
   return enabled;
@@ -2332,7 +2324,6 @@ function findSimilarCookies(keyLike) {
  * @param {number} expires
  * @param {string} sameSite
  * @param {string} domain
- * @param {StorageOptions} storageOptions
  * @returns void
  */
 
@@ -2406,7 +2397,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
     if (hasExternal) {
       return externalStorageHandler[functionName];
     } else {
-      return lcStorage[functionName] || _noOp();
+      return lcStorage[functionName] || _noOp;
     }
   }
 
@@ -2488,8 +2479,8 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
 
-    var managers = [resolve, resolve$1, resolve$3, resolve$2];
     var enrichers = [enrich, enrich$1];
+    var managers = [resolve, resolve$1, resolve$3, resolve$2];
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration));
     var postManagedState = managers.reduce(reducer, enrichedState);
 

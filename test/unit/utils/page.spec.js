@@ -1,18 +1,47 @@
 import jsdom from 'mocha-jsdom'
 import { expect } from 'chai'
-import { parentHostname } from '../../../src/utils/page'
+import { getPage, isIframe, loadedDomain } from '../../../src/utils/page';
 
 describe('Page Utils', () => {
-
   jsdom({
-    url: 'https://liveinte.com',
-    referrer: 'https://first.example.com?key=value'
+    url: 'https://liveintent.com',
+    referrer: 'https://first.example.com?key=value',
+    useEach: true
   })
 
-  it('should get hostname of a referrer', function () {
-    const hostName = parentHostname()
+  it('isIframe should return true if exception is thrown', function () {
+    Object.defineProperty(window, 'self', {
+      get: () => { throw Error('FailedOnPurpose') }
+    })
+    expect(isIframe()).to.be.true
+  })
 
-    expect(hostName).to.eql('first.example.com')
+  it('getPage should return the actual url', function () {
+    expect(getPage()).to.be.eql('https://liveintent.com/')
+  })
+
+  it('getPage should return the parent url if within an iframe', function () {
+    Object.defineProperty(window, 'self', {
+      get: () => { throw Error('FailedOnPurpose') }
+    })
+    Object.defineProperty(window, 'top', {
+      get: () => {
+        return {
+          location: {
+            href: 'https://parent.liveintent.com'
+          }
+        }
+      }
+    })
+    expect(getPage()).to.be.eql('https://parent.liveintent.com')
+  })
+
+  it('loaded domain should return the host', function () {
+    expect(loadedDomain()).to.be.eql('liveintent.com')
+    document.domain = null
+    expect(loadedDomain()).to.be.eql('liveintent.com')
+    document.location = null
+    expect(loadedDomain()).to.be.eql('liveintent.com')
   })
 
 })
