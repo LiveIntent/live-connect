@@ -142,7 +142,7 @@ workflows:
             - browserstack?
 
       - release?:
-          context: live-connect-publisher
+          context: live-connect
           type: approval
           requires:
             - browserstack
@@ -151,13 +151,13 @@ workflows:
               only: master
 
       - release:
-          context: live-connect-publisher
+          context: live-connect
           requires:
             - release?
 
 
       - release_minor?:
-          context: live-connect-publisher
+          context: live-connect
           type: approval
           requires:
             - browserstack
@@ -166,14 +166,14 @@ workflows:
               only: master
 
       - release:
-          context: live-connect-publisher
+          context: live-connect
           name: release_minor
           increment: "minor"
           requires:
             - release_minor?
 
       - release_major?:
-          context: live-connect-publisher
+          context: live-connect
           type: approval
           requires:
             - browserstack
@@ -182,7 +182,7 @@ workflows:
               only: master
 
       - release:
-          context: live-connect-publisher
+          context: live-connect
           name: release_major
           increment: "major"
           requires:
