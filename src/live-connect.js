@@ -31,7 +31,6 @@
 
 import { PixelSender } from './pixel/sender'
 import { StateWrapper } from './pixel/state'
-import * as legacyDuid from './manager/legacy-duid'
 import * as identifiers from './manager/identifiers'
 import * as decisions from './manager/decisions'
 import * as peopleVerified from './manager/people-verified'
@@ -96,7 +95,7 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnricher.enrich, cookies.enrich]
-    const managers = [legacyDuid.resolve, identifiers.resolve, peopleVerified.resolve, decisions.resolve]
+    const managers = [identifiers.resolve, peopleVerified.resolve, decisions.resolve]
 
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration))
     const postManagedState = managers.reduce(reducer, enrichedState)
