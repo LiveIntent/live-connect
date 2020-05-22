@@ -40,6 +40,7 @@ import * as emitter from './utils/emitter'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import * as cookies from './enrichers/identifiers'
+import * as legacyDuid from './enrichers/legacy-duid'
 import { isArray, isObject } from './utils/types'
 import * as idex from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
@@ -94,7 +95,7 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
     const storageHandler = StorageHandler(configuration.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
-    const enrichers = [pageEnricher.enrich, cookies.enrich]
+    const enrichers = [pageEnricher.enrich, cookies.enrich, legacyDuid.enrich]
     const managers = [identifiers.resolve, peopleVerified.resolve, decisions.resolve]
 
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration))
