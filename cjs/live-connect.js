@@ -3,6 +3,8 @@
 Object.defineProperty(exports, '__esModule', { value: true });
 
 function _typeof(obj) {
+  "@babel/helpers - typeof";
+
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     _typeof = function (obj) {
       return typeof obj;
@@ -50,13 +52,13 @@ function _objectSpread2(target) {
     var source = arguments[i] != null ? arguments[i] : {};
 
     if (i % 2) {
-      ownKeys(source, true).forEach(function (key) {
+      ownKeys(Object(source), true).forEach(function (key) {
         _defineProperty(target, key, source[key]);
       });
     } else if (Object.getOwnPropertyDescriptors) {
       Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
     } else {
-      ownKeys(source).forEach(function (key) {
+      ownKeys(Object(source)).forEach(function (key) {
         Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
       });
     }
@@ -690,14 +692,14 @@ function _provided(state) {
       if (extractedEmail) {
         var hashes = hashEmail(decodeURIComponent(extractedEmail));
         var hashesArray = [hashes.md5, hashes.sha1, hashes.sha256];
-        return _objectSpread2({}, {
+        return _objectSpread2(_objectSpread2({}, {
           hashedEmail: hashesArray
-        }, {}, state);
+        }), state);
       } else if (extractedHash && isHash(extractedHash)) {
         var _hashesArray = [extractedHash.toLowerCase()];
-        return _objectSpread2({}, {
+        return _objectSpread2(_objectSpread2({}, {
           hashedEmail: _hashesArray
-        }, {}, state);
+        }), state);
       }
     }
   }
@@ -720,7 +722,7 @@ function _itemsLimiter(state) {
 var fiddlers = [_provided, _itemsLimiter];
 function fiddle(state) {
   var reducer = function reducer(accumulator, func) {
-    return _objectSpread2({}, accumulator, {}, func(accumulator));
+    return _objectSpread2(_objectSpread2({}, accumulator), func(accumulator));
   };
 
   if (isObject(state.eventSource)) {
@@ -945,7 +947,7 @@ function StateWrapper(state) {
 
 
   function _combineWith(newInfo) {
-    return new StateWrapper(_objectSpread2({}, _state, {}, newInfo));
+    return new StateWrapper(_objectSpread2(_objectSpread2({}, _state), newInfo));
   }
   /**
    * @returns {string [][]}
@@ -997,162 +999,6 @@ function unwrapExports (x) {
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var tinyUuid4 = createCommonjsModule(function (module, exports) {
-  /**
-   * Tiny UUID version 4 for Client and Server
-   *
-   * @author Jason Mulligan <jason.mulligan@avoidwork.com>
-   * @copyright 2015
-   * @license BSD-3-Clause
-   * @link http://avoidwork.github.io/tiny-uuid4
-   * @version 1.0.1
-   */
-
-  (function (global) {
-    var r = [8, 9, "a", "b"];
-
-    function s() {
-      return ((1 + Math.random()) * 0x10000 | 0).toString(16).substring(1);
-    }
-
-    function uuid() {
-      return s() + s() + "-" + s() + "-4" + s().substr(0, 3) + "-" + r[Math.floor(Math.random() * 4)] + s().substr(0, 3) + "-" + s() + s() + s();
-    }
-
-    uuid.version = "1.0.1"; // Node, AMD & window supported
-
-    {
-      module.exports = uuid;
-    }
-  })();
-});
-
-/**
- * @returns {boolean}
- */
-function isIframe() {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
-  }
-}
-/**
- * @returns {string}
- * @private
- */
-
-function getPage() {
-  return isIframe() ? window.top.location.href : document.location.href;
-}
-/**
- * @return {string}
- */
-
-function loadedDomain() {
-  return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
-}
-
-var APP_ID = '[a-z]-[a-z0-9]{4}';
-var NUMBERS = '\\+?\\d+';
-var LEGACY_COOKIE_FORMAT = "(".concat(APP_ID, "--").concat(UUID, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(UUID, ")");
-var LEGACY_COOKIE_REGEX = new RegExp(LEGACY_COOKIE_FORMAT, 'i');
-var LEGACY_IDENTIFIER_PREFIX = '_litra_id.';
-
-function _fixupDomain(domain) {
-  var dl = domain.length; // remove trailing '.'
-
-  if (domain.charAt(--dl) === '.') {
-    domain = domain.slice(0, dl);
-  } // remove leading '*'
-
-
-  if (domain.slice(0, 2) === '*.') {
-    domain = domain.slice(1);
-  }
-
-  return domain;
-}
-
-function getLegacyIdentifierKey() {
-  var domain = loadedDomain();
-  var domainKey = domainHash(_fixupDomain(domain) + '/', 4);
-  return "".concat(LEGACY_IDENTIFIER_PREFIX).concat(domainKey);
-}
-/**
- * @return {LegacyId|null|undefined}
- * @private
- */
-
-function getLegacyId(entry) {
-  if (entry) {
-    var matches = entry.match(LEGACY_COOKIE_REGEX);
-
-    if (matches && matches.length === 7) {
-      return {
-        duid: matches[1],
-        creationTs: matches[2],
-        sessionCount: matches[3],
-        currVisitTs: matches[4],
-        lastSessionVisitTs: matches[5],
-        sessionId: matches[6]
-      };
-    }
-  }
-}
-/**
- * @param {LegacyId} legacyId
- * @return {string}
- */
-
-function legacyIdAsString(legacyId) {
-  return "".concat(legacyId.duid, ".").concat(legacyId.creationTs, ".").concat(legacyId.sessionCount, ".").concat(legacyId.currVisitTs, ".").concat(legacyId.lastSessionVisitTs, ".").concat(legacyId.sessionId);
-}
-
-var _now = function _now() {
-  return Math.round(new Date().getTime() / 1000);
-};
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- */
-
-
-function resolve(state, storageHandler) {
-  var duidLsKey = getLegacyIdentifierKey();
-
-  try {
-    if (state.appId && storageHandler.hasLocalStorage()) {
-      var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
-      var legacyIdToStore = getLegacyId(previousIdentifier);
-
-      if (previousIdentifier && legacyIdToStore) {
-        legacyIdToStore.lastSessionVisitTs = legacyIdToStore.currVisitTs;
-        legacyIdToStore.currVisitTs = "".concat(_now());
-      } else {
-        legacyIdToStore = {
-          duid: "".concat(state.appId, "--").concat(tinyUuid4()),
-          creationTs: _now(),
-          sessionCount: 1,
-          currVisitTs: _now(),
-          lastSessionVisitTs: _now(),
-          sessionId: tinyUuid4()
-        };
-      }
-
-      storageHandler.setDataInLocalStorage(duidLsKey, legacyIdAsString(legacyIdToStore));
-      var stored = storageHandler.getDataFromLocalStorage(duidLsKey);
-      return {
-        legacyId: getLegacyId(stored)
-      };
-    }
-  } catch (e) {
-    error('LegacyDuidResolve', 'Error while managing legacy duid', e);
-  }
-
-  return {};
 }
 
 var dist = createCommonjsModule(function (module, exports) {
@@ -1371,6 +1217,32 @@ var dist_9 = dist.replaceCharAt;
 var dist_10 = dist.ulid;
 
 /**
+ * @returns {boolean}
+ */
+function isIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+/**
+ * @returns {string}
+ * @private
+ */
+
+function getPage() {
+  return isIframe() ? window.top.location.href : document.location.href;
+}
+/**
+ * @return {string}
+ */
+
+function loadedDomain() {
+  return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
+}
+
+/**
  * @typedef {Object} StorageStrategy
  * @type {{cookie: string, localStorage: string, none: string}}
  */
@@ -1388,7 +1260,7 @@ var DEFAULT_EXPIRATION_DAYS = 730;
  * @param {StorageHandler} storageHandler
  */
 
-function resolve$1(state, storageHandler) {
+function resolve(state, storageHandler) {
   try {
 
     var determineTld = function determineTld() {
@@ -1534,7 +1406,7 @@ var _nonEmpty = function _nonEmpty(value) {
  */
 
 
-function resolve$2(state, storageHandler) {
+function resolve$1(state, storageHandler) {
   var ret = {};
 
   function _addDecisionId(key, cookieDomain) {
@@ -1575,7 +1447,7 @@ function _setPeopleVerifiedStore(id, storageHandler) {
  */
 
 
-function resolve$3(state, storageHandler) {
+function resolve$2(state, storageHandler) {
 
   try {
     var timeBefore = (new Date().getTime() - REPLACEMENT_THRESHOLD_MILLIS) / 1000;
@@ -2480,11 +2352,11 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
     };
 
     var enrichers = [enrich, enrich$1];
-    var managers = [resolve, resolve$1, resolve$3, resolve$2];
+    var managers = [resolve, resolve$2, resolve$1];
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration));
     var postManagedState = managers.reduce(reducer, enrichedState);
 
-    var syncContainerData = _objectSpread2({}, liveConnectConfig, {}, {
+    var syncContainerData = _objectSpread2(_objectSpread2({}, liveConnectConfig), {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
     });
 

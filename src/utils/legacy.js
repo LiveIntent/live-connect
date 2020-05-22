@@ -47,11 +47,3 @@ export function getLegacyId (entry) {
     }
   }
 }
-
-/**
- * @param {LegacyId} legacyId
- * @return {string}
- */
-export function legacyIdAsString (legacyId) {
-  return `${legacyId.duid}.${legacyId.creationTs}.${legacyId.sessionCount}.${legacyId.currVisitTs}.${legacyId.lastSessionVisitTs}.${legacyId.sessionId}`
-}

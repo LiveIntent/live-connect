@@ -1,6 +1,6 @@
 # LiveConnect
 
-[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646) [![CircleCI](https://circleci.com/gh/liveintent-berlin/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/liveintent-berlin/live-connect/tree/master)[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
+[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646) [![CircleCI](https://circleci.com/gh/LiveIntent/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/LiveIntent/live-connect/tree/master) [![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
 
 # Main concepts
 LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sendind that information to a defined endpoint which is responsible for gathering and processing that data. 
@@ -99,9 +99,6 @@ Where the LiveConnect identifiers are stored (Cookie vs LocalStorage) depends on
 How long those identifiers will live is configured in the `config.expirationDays` parameter. In case the `storageStrategy` is set to Cookie, the browser will ensure that the cookie expires.
 In case of localStorage, Identifiers Manager and it's underlying `utils/storage.js` helper will ensure that on the next load, the entry is removed from localstorage in case it's obsolete.
 
-### Legacy duid manager
-`managers/legacy-diud.js` or, legacy domainUserId manager, is responsible for maintaining the legacy LiveConnect cookies, which were created and maintained by previous versions of LiveConnect 
-
 ### People Verified manager
 `managers/people-verified.js` makes sure that either of the selected identifiers is stored as the `_li_duid` key in local storage, as some integrations are using the information stored there. 
 
@@ -113,6 +110,9 @@ The `enrichers` folder contains code responsible for extracting specific informa
 
 ### Identifiers enrichment
 `enrichers/identifiers.js` is responsible for reading the `identifiersToResolve` configuration parameter to read any additional identifiers that customers want to share with us.
+
+### Legacy duid enricher
+`enrichers/legacy-duid.js` or, legacy domainUserId enricher, is responsible for reading the potential value of a local storage entry which was historically set by the old LiveConnect
 
 ## Messaging between components via EventBus (`__li__evt_bus`) 
 LiveConnect exposes an object on the window level (`window.__li_evt_bus`) which is responsible for communicating various information based on different fields of interests.
