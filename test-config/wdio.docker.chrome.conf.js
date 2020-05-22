@@ -104,7 +104,8 @@ exports.config = {
     healthCheck: 'http://bln.test.liveintent.com:4444',
     options: {
       p: ['4444:4444'],
-      shmSize: '1g'
+      shmSize: '1g',
+      network: 'host'
     }
   },
   // Framework you want to run your specs with.
