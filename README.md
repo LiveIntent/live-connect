@@ -99,9 +99,6 @@ Where the LiveConnect identifiers are stored (Cookie vs LocalStorage) depends on
 How long those identifiers will live is configured in the `config.expirationDays` parameter. In case the `storageStrategy` is set to Cookie, the browser will ensure that the cookie expires.
 In case of localStorage, Identifiers Manager and it's underlying `utils/storage.js` helper will ensure that on the next load, the entry is removed from localstorage in case it's obsolete.
 
-### Legacy duid manager
-`managers/legacy-diud.js` or, legacy domainUserId manager, is responsible for maintaining the legacy LiveConnect cookies, which were created and maintained by previous versions of LiveConnect 
-
 ### People Verified manager
 `managers/people-verified.js` makes sure that either of the selected identifiers is stored as the `_li_duid` key in local storage, as some integrations are using the information stored there. 
 
