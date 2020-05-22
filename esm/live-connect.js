@@ -1809,6 +1809,77 @@ function _deduplicateHashes(hashes) {
   return result;
 }
 
+var APP_ID = '[a-z]-[a-z0-9]{4}';
+var NUMBERS = '\\+?\\d+';
+var LEGACY_COOKIE_FORMAT = "(".concat(APP_ID, "--").concat(UUID, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(UUID, ")");
+var LEGACY_COOKIE_REGEX = new RegExp(LEGACY_COOKIE_FORMAT, 'i');
+var LEGACY_IDENTIFIER_PREFIX = '_litra_id.';
+
+function _fixupDomain(domain) {
+  var dl = domain.length; // remove trailing '.'
+
+  if (domain.charAt(--dl) === '.') {
+    domain = domain.slice(0, dl);
+  } // remove leading '*'
+
+
+  if (domain.slice(0, 2) === '*.') {
+    domain = domain.slice(1);
+  }
+
+  return domain;
+}
+
+function getLegacyIdentifierKey() {
+  var domain = loadedDomain();
+  var domainKey = domainHash(_fixupDomain(domain) + '/', 4);
+  return "".concat(LEGACY_IDENTIFIER_PREFIX).concat(domainKey);
+}
+/**
+ * @return {LegacyId|null|undefined}
+ * @private
+ */
+
+function getLegacyId(entry) {
+  if (entry) {
+    var matches = entry.match(LEGACY_COOKIE_REGEX);
+
+    if (matches && matches.length === 7) {
+      return {
+        duid: matches[1],
+        creationTs: matches[2],
+        sessionCount: matches[3],
+        currVisitTs: matches[4],
+        lastSessionVisitTs: matches[5],
+        sessionId: matches[6]
+      };
+    }
+  }
+}
+
+/**
+ * @param {State} state
+ * @param {StorageHandler} storageHandler
+ */
+
+function enrich$2(state, storageHandler) {
+  var duidLsKey = getLegacyIdentifierKey();
+
+  try {
+    if (state.appId && storageHandler.hasLocalStorage()) {
+      var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
+      var legacyId = getLegacyId(previousIdentifier);
+      return {
+        legacyId: legacyId
+      };
+    }
+  } catch (e) {
+    error('LegacyDuidEnrich', 'Error while getting legacy duid', e);
+  }
+
+  return {};
+}
+
 /**
  * @param url
  * @param responseHandler
@@ -2347,7 +2418,7 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
 
-    var enrichers = [enrich, enrich$1];
+    var enrichers = [enrich, enrich$1, enrich$2];
     var managers = [resolve, resolve$2, resolve$1];
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration));
     var postManagedState = managers.reduce(reducer, enrichedState);
