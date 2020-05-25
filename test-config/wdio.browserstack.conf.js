@@ -6,7 +6,7 @@ const commonCapabilities = {
   'browserstack.console': 'verbose',
   'browserstack.debug': false,
   'browserstack.networkLogs': true,
-  'browserstack.appium_version': '1.14.0'
+  'browserstack.appium_version': '1.17.1'
 }
 
 const allCapabilities = [
