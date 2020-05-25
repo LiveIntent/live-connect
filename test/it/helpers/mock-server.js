@@ -10,9 +10,12 @@ const corsOptions = {
 }
 const port = 3001
 
+const compression = require('compression')
+
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const app = express()
+  app.use(compression())
   let history = []
   let idex = []
   app.get('/page', (req, res) => {
