@@ -1,4 +1,4 @@
-const WAIT_UNTIL_TIMEOUT_MILLIS = 1000
+const WAIT_UNTIL_TIMEOUT_MILLIS = 500
 const WAIT_UNTIL_INTERVAL = 15
 
 export function sendEvent (event, expectedRequests, server) {
@@ -7,7 +7,7 @@ export function sendEvent (event, expectedRequests, server) {
     browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
     browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "sendEvent timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, `sendEvent timed out`, WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
