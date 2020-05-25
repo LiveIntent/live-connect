@@ -12,11 +12,11 @@ import {
 const packageJson = require('../../package')
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
-describe('LiveConnect', () => {
+describe('LiveConnect', function () {
   this.retries(4)
   let server
 
-  before(() => {
+  before(function () {
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
@@ -37,11 +37,11 @@ describe('LiveConnect', () => {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Finishing the test: '${this.currentTest.fullTitle()}'`)
   })
 
-  after(() => {
+  after(function () {
     server.stop()
   })
 
-  it('should send decisionIds', () => {
+  it('should send decisionIds', function () {
     const decisionIdOne = '4ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const decisionIdTwo = '5ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const supportsLS = probeLS()
@@ -58,7 +58,7 @@ describe('LiveConnect', () => {
     expect(`${decisionIdTwo},${decisionIdOne}`).to.eq(secondTrackingRequest['query']['li_did'])
   })
 
-  it('should send and receive results of IdentityResolution', () => {
+  it('should send and receive results of IdentityResolution', function () {
     server.openPage('bln.test.liveintent.com', 'page')
     resolveIdentity(1, server)
     const idexRequests = server.getIdexHistory()
@@ -67,7 +67,7 @@ describe('LiveConnect', () => {
     expect(idexValue).to.eq(JSON.stringify({ unifiedId: 'some-id' }))
   })
 
-  it('should send http request to pixel endpoint, and reuse cookies across subdomains', () => {
+  it('should send http request to pixel endpoint, and reuse cookies across subdomains', function () {
     server.openPage('bln.test.liveintent.com', 'page?li_did=something')
     const supportsLS = probeLS()
     const expectedRequests = supportsLS ? 1 : 2
@@ -100,7 +100,7 @@ describe('LiveConnect', () => {
     }
   })
 
-  it('should send http request to pixel endpoint with scraped cookies and hashes', () => {
+  it('should send http request to pixel endpoint with scraped cookies and hashes', function () {
     const cookie = {
       name: COOKIE_TO_SCRAPE_NAME,
       value: 'sample@liveintent.com'
@@ -130,7 +130,7 @@ describe('LiveConnect', () => {
     }
   })
 
-  it('should prepend duid cookie with hashed apex domain', () => {
+  it('should prepend duid cookie with hashed apex domain', function () {
     server.openPage('bln.test.liveintent.com', 'framed')
     sendEventInIframe({}, 1, server)
 
