@@ -2,9 +2,9 @@ const currentTime = Date.now()
 const commonCapabilities = {
   project: 'LiveConnect',
   build: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
-  'browserstack.video': true,
+  'browserstack.video': false,
   'browserstack.console': 'verbose',
-  'browserstack.debug': true,
+  'browserstack.debug': false,
   'browserstack.networkLogs': true,
   'browserstack.appium_version': '1.14.0'
 }
@@ -114,7 +114,7 @@ exports.config = {
   baseUrl: 'http://localhost',
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 60000,
+  waitforTimeout: 5,
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
