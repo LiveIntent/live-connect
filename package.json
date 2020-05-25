@@ -54,6 +54,7 @@
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
     "codecov": "^3.7.0",
+    "compression": "^1.7.4",
     "core-js": "^3.6.5",
     "cors": "^2.8.5",
     "eslint": "^7.0.0",

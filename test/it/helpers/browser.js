@@ -1,12 +1,15 @@
+const WAIT_UNTIL_TIMEOUT_MILLIS = 500
+const WAIT_UNTIL_INTERVAL = 15
+
 export function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
     browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
     browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
-    }, 5000)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, "sendEvent timed out", WAIT_UNTIL_INTERVAL)
   } catch (e) {
-    console.error(e)
+    console.error(e, server.getHistory().length, expectedRequests)
   }
 }
 
@@ -15,9 +18,9 @@ export function resolveIdentity (expectedRequests, server) {
     browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
     browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
-    }, 5000)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, "resolveIdentity timed out", WAIT_UNTIL_INTERVAL)
   } catch (e) {
-    console.error(e)
+    console.error(e, server.getHistory().length, expectedRequests)
   }
 }
 
@@ -26,7 +29,7 @@ export function fetchResolvedIdentity () {
     browser.waitUntil(() => {
       console.log($('#idex').getText())
       return $('#idex').getText() !== 'None'
-    }, 4000)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, "fetchResolvedIdentity timed out", WAIT_UNTIL_INTERVAL)
     return $('#idex').getText()
   } catch (e) {
     console.error('Error', e)
@@ -39,7 +42,7 @@ export function sendEventInIframe (event, expectedRequests, server) {
     switchToIFrame($('#iframe-id')) || switchToIFrame('iframe-name')
     sendEvent(event, expectedRequests, server)
   } catch (e) {
-    console.error(e)
+    console.error(e, server.getHistory().length, expectedRequests)
   }
 }
 

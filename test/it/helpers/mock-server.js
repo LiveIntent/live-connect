@@ -10,9 +10,15 @@ const corsOptions = {
 }
 const port = 3001
 
+const compression = require('compression')
+
+const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
+
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
+  const fullContent =  preamble + bundle
   const app = express()
+  app.use(compression())
   let history = []
   let idex = []
   app.get('/page', (req, res) => {
@@ -54,11 +60,8 @@ export function MockServerFactory (config) {
   })
 
   app.get('/tracker.js', (req, res) => {
-    fs.readFile('dist/bundle.iife.js', 'utf8', (error, data) => {
-      if (error) throw error
-      res.send(preamble + data)
-      console.log('Returned data')
-    })
+    res.send(fullContent)
+    console.log('Returned data')
   })
 
   app.get('/p', (req, res) => {
