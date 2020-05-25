@@ -60,11 +60,8 @@ export function MockServerFactory (config) {
   })
 
   app.get('/tracker.js', (req, res) => {
-    fs.readFile('dist/bundle.iife.js', 'utf8', (error, data) => {
-      if (error) throw error
-      res.send(fullContent)
-      console.log('Returned data')
-    })
+    res.send(fullContent)
+    console.log('Returned data')
   })
 
   app.get('/p', (req, res) => {
