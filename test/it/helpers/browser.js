@@ -1,10 +1,13 @@
+const WAIT_UNTIL_TIMEOUT = 15000
+
+
 export function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
     browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
     browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
-    }, 5000)
+    }, WAIT_UNTIL_TIMEOUT)
   } catch (e) {
     console.error(e)
   }
@@ -15,7 +18,7 @@ export function resolveIdentity (expectedRequests, server) {
     browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
     browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
-    }, 5000)
+    }, WAIT_UNTIL_TIMEOUT)
   } catch (e) {
     console.error(e)
   }
@@ -26,7 +29,7 @@ export function fetchResolvedIdentity () {
     browser.waitUntil(() => {
       console.log($('#idex').getText())
       return $('#idex').getText() !== 'None'
-    }, 4000)
+    }, WAIT_UNTIL_TIMEOUT)
     return $('#idex').getText()
   } catch (e) {
     console.error('Error', e)
