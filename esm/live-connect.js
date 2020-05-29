@@ -2405,6 +2405,15 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
   var configuration = {};
 
   try {
+    window.liQ = window.liQ || [];
+
+    if (isFunction(window.liQ.ready)) {
+      var error$1 = new Error();
+      error$1.name = 'Additional configuration received';
+      error$1.message = JSON.stringify(liveConnectConfig);
+      error('LCDuplication', 'Did not load an additional LC', error$1);
+    }
+
     configuration = isObject(liveConnectConfig) && liveConnectConfig;
     init();
     register(configuration);
@@ -2446,7 +2455,7 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
       return _processArgs(args, pixelClient, postManagedState);
     };
 
-    return {
+    var liQ = {
       push: _push,
       fire: function fire() {
         return _push({});
@@ -2456,10 +2465,12 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl
     };
+    window.liQ = liQ;
   } catch (x) {
     error('LCConstruction', 'Failed to build LC', x);
-    return window.liQ;
   }
+
+  return window.liQ;
 }
 
 export { LiveConnect };

@@ -41,7 +41,7 @@ import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import * as cookies from './enrichers/identifiers'
 import * as legacyDuid from './enrichers/legacy-duid'
-import { isArray, isObject } from './utils/types'
+import { isArray, isFunction, isObject } from './utils/types'
 import * as idex from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 
@@ -84,6 +84,13 @@ function _processArgs (args, pixelClient, enrichedState) {
 export function LiveConnect (liveConnectConfig, externalStorageHandler) {
   let configuration = {}
   try {
+    window.liQ = window.liQ || []
+    if (isFunction(window.liQ.ready)) {
+      const error = new Error()
+      error.name = 'Additional configuration received'
+      error.message = JSON.stringify(liveConnectConfig)
+      emitter.error('LCDuplication', 'Did not load an additional LC', error)
+    }
     configuration = isObject(liveConnectConfig) && liveConnectConfig
     eventBus.init()
     errorHandler.register(configuration)
@@ -109,7 +116,7 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
     const pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload)
     const resolver = idex.IdentityResolver(postManagedState.data, storageHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
-    return {
+    const liQ = {
       push: _push,
       fire: () => _push({}),
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
@@ -117,9 +124,10 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl
     }
+    window.liQ = liQ
   } catch (x) {
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)
-    return window.liQ
   }
+  return window.liQ
 }
