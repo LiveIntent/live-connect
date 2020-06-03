@@ -151,7 +151,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
  * @constructor
  */
 export function LiveConnect (liveConnectConfig, externalStorageHandler) {
-  console.log('Initializing liveCOnnect')
+  console.log('Initializing LiveConnect')
   try {
     window && (window.liQ = window.liQ || [])
     const configuration = isObject(liveConnectConfig) && liveConnectConfig
