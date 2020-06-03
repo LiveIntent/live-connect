@@ -84,7 +84,7 @@ function _processArgs (args, pixelClient, enrichedState) {
  */
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
-    if (window && window.liQ.ready) {
+    if (window && window.liQ && window.liQ.ready) {
       const error = new Error()
       error.name = 'ConfigSent'
       error.message = 'Additional configuration received'
