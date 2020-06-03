@@ -2394,25 +2394,43 @@ function _processArgs(args, pixelClient, enrichedState) {
   }
 }
 /**
+ *
  * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @returns {LiveConnect}
- * @constructor
+ * @return {LiveConnect|null}
+ * @private
  */
 
 
-function LiveConnect(liveConnectConfig, externalStorageHandler) {
-  var configuration = {};
-
+function _getInitializedLiveConnect(liveConnectConfig) {
   try {
-    configuration = isObject(liveConnectConfig) && liveConnectConfig;
+    if (window && window.liQ.ready) {
+      var error$1 = new Error();
+      error$1.name = 'ConfigSent';
+      error$1.message = 'Additional configuration received';
+      var receivedConfig = JSON.stringify(liveConnectConfig);
+      error('LCDuplication', receivedConfig, error$1);
+      return window.liQ;
+    }
+  } catch (e) {
+  }
+}
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @returns {LiveConnect}
+ * @private
+ */
+
+
+function _standardInitialization(liveConnectConfig, externalStorageHandler) {
+  try {
     init();
-    register(configuration);
+    register(liveConnectConfig);
   } catch (e) {
   }
 
   try {
-    var storageHandler = StorageHandler(configuration.storageStrategy, externalStorageHandler);
+    var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
 
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
@@ -2420,7 +2438,7 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
 
     var enrichers = [enrich, enrich$1, enrich$2];
     var managers = [resolve, resolve$2, resolve$1];
-    var enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration));
+    var enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig));
     var postManagedState = managers.reduce(reducer, enrichedState);
 
     var syncContainerData = _objectSpread2(_objectSpread2({}, liveConnectConfig), {
@@ -2454,12 +2472,38 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
-      resolutionCallUrl: resolver.getUrl
+      resolutionCallUrl: resolver.getUrl,
+      config: liveConnectConfig
     };
   } catch (x) {
     error('LCConstruction', 'Failed to build LC', x);
-    return window.liQ;
   }
+}
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @returns {LiveConnect}
+ * @constructor
+ */
+
+
+function LiveConnect(liveConnectConfig, externalStorageHandler) {
+
+  try {
+    var queue = window.liQ || [];
+    var configuration = isObject(liveConnectConfig) && liveConnectConfig;
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue);
+
+    if (isArray(queue)) {
+      for (var i = 0; i < queue.length; i++) {
+        window.liQ.push(queue[i]);
+      }
+    }
+  } catch (x) {
+    error('LCConstruction', 'Failed to build LC', x);
+  }
+
+  return window.liQ;
 }
 
 export { LiveConnect };

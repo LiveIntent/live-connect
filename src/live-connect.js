@@ -6,6 +6,7 @@
  * @property {(boolean)} ready
  * @property {(function)} resolve
  * @property {(function)} resolutionCallUrl
+ * @property {(LiveConnectConfiguration)} config
  */
 
 /**
@@ -76,29 +77,48 @@ function _processArgs (args, pixelClient, enrichedState) {
 }
 
 /**
+ *
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @return {LiveConnect|null}
+ * @private
+ */
+function _getInitializedLiveConnect (liveConnectConfig) {
+  try {
+    if (window && window.liQ.ready) {
+      const error = new Error()
+      error.name = 'ConfigSent'
+      error.message = 'Additional configuration received'
+      const receivedConfig = JSON.stringify(liveConnectConfig)
+      emitter.error('LCDuplication', receivedConfig, error)
+      return window.liQ
+    }
+  } catch (e) {
+    console.error('Could not initialize error bus')
+  }
+}
+
+/**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @returns {LiveConnect}
- * @constructor
+ * @private
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler) {
-  let configuration = {}
+function _standardInitialization (liveConnectConfig, externalStorageHandler) {
   try {
-    configuration = isObject(liveConnectConfig) && liveConnectConfig
     eventBus.init()
-    errorHandler.register(configuration)
+    errorHandler.register(liveConnectConfig)
   } catch (e) {
     console.error('Could not initialize error bus')
   }
 
   try {
-    const storageHandler = StorageHandler(configuration.storageStrategy, externalStorageHandler)
+    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnricher.enrich, cookies.enrich, legacyDuid.enrich]
     const managers = [identifiers.resolve, peopleVerified.resolve, decisions.resolve]
 
-    const enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration))
+    const enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
     console.log('LiveConnect.enrichedState', enrichedState)
@@ -115,11 +135,35 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
-      resolutionCallUrl: resolver.getUrl
+      resolutionCallUrl: resolver.getUrl,
+      config: liveConnectConfig
     }
   } catch (x) {
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)
-    return window.liQ
   }
+}
+
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @returns {LiveConnect}
+ * @constructor
+ */
+export function LiveConnect (liveConnectConfig, externalStorageHandler) {
+  console.log('Initializing LiveConnect')
+  try {
+    const queue = window.liQ || []
+    const configuration = isObject(liveConnectConfig) && liveConnectConfig
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue)
+    if (isArray(queue)) {
+      for (let i = 0; i < queue.length; i++) {
+        window.liQ.push(queue[i])
+      }
+    }
+  } catch (x) {
+    console.error(x)
+    emitter.error('LCConstruction', 'Failed to build LC', x)
+  }
+  return window.liQ
 }

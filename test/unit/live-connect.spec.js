@@ -42,6 +42,54 @@ describe('LiveConnect', () => {
     expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')
   })
 
+  it('should expose liQ', function () {
+    expect(window.liQ).to.be.undefined
+    LiveConnect({})
+    expect(window.liQ.ready).to.be.true
+  })
+
+  it('should expose liQ, emit error for any subsequent initialization', function () {
+    LiveConnect({appId:"a-00xx"})
+    let liQ = window.liQ
+    expect(liQ.ready).to.be.true
+    liQ.push( { event: "viewProduct", name: "a-00xx"} )
+    LiveConnect({ appId: "config" })
+    liQ = window.liQ
+    expect(liQ.ready).to.be.true
+    liQ.push( { event: "viewProduct", name:"config"} )
+    expect(imagePixelsCreated.length).to.eql(3)
+    const firstAppIdEventSrc = imagePixelsCreated[0].src
+    const duplicationNotificationSrc = imagePixelsCreated[1].src
+    const secondAppIdEventSrc = imagePixelsCreated[2].src
+
+    const firstCallParams = urlParams(firstAppIdEventSrc)
+    const duplicationParams = urlParams(duplicationNotificationSrc)
+    const secondCallParams = urlParams(secondAppIdEventSrc)
+    expect(firstCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(firstCallParams.aid).to.eql('a-00xx')
+    expect(firstCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"a-00xx"}'))
+    expect(duplicationParams.aid).to.eql('a-00xx')
+    expect(duplicationParams.ae).to.not.be.empty
+    expect(secondCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(secondCallParams.aid).to.eql('a-00xx')
+    expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
+  })
+
+  it('should process a previously initialized liQ', function () {
+    window.liQ = []
+    window.liQ.push({ event: "viewProduct", name: "first"}, { event: "viewProduct", name: "second"})
+    LiveConnect({appId:"a-00xx"})
+    let liQ = window.liQ
+    expect(liQ.ready).to.be.true
+    liQ.push( { event: "viewProduct", name: "third"} )
+    expect(imagePixelsCreated.length).to.eql(3)
+    imagePixelsCreated.forEach(image => {
+      const params = urlParams(image.src)
+      expect(params.duid).to.eql(liQ.peopleVerifiedId)
+      expect(params.aid).to.eql('a-00xx')
+    })
+  })
+
   it('should set the cookie', function () {
     LiveConnect({})
     expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
@@ -112,9 +160,24 @@ describe('LiveConnect', () => {
     expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--.*/)
   })
 
+  it('should expose the config', function () {
+    const config = { appId: "a-00xx"}
+    const lc = LiveConnect(config)
+    expect(lc.config).to.eql(config)
+  })
+
   it('emit an error if the pushed value is not an object', function () {
     const lc = LiveConnect({})
     lc.push([[[[[':)']]]]])
+    expect(imagePixelsCreated.length).to.eql(1)
+    const params = urlParams(imagePixelsCreated[0].src)
+    // I don't want to check the full content here, i'm fine with just being present
+    expect(params.ae).to.not.eq(undefined)
+  })
+
+  it('emit an error if the pushed value is a config', function () {
+    const lc = LiveConnect({})
+    lc.push({ config: {} })
     expect(imagePixelsCreated.length).to.eql(1)
     const params = urlParams(imagePixelsCreated[0].src)
     // I don't want to check the full content here, i'm fine with just being present
