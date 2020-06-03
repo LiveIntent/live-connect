@@ -6,6 +6,7 @@
  * @property {(boolean)} ready
  * @property {(function)} resolve
  * @property {(function)} resolutionCallUrl
+ * @property {(LiveConnectConfiguration)} config
  */
 
 /**
@@ -41,7 +42,7 @@ import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import * as cookies from './enrichers/identifiers'
 import * as legacyDuid from './enrichers/legacy-duid'
-import { isArray, isFunction, isObject } from './utils/types'
+import { isArray, isObject } from './utils/types'
 import * as idex from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 
@@ -76,36 +77,48 @@ function _processArgs (args, pixelClient, enrichedState) {
 }
 
 /**
+ *
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @return {LiveConnect|null}
+ * @private
+ */
+function _getInitializedLiveConnect (liveConnectConfig) {
+  try {
+    if (window && window.liQ.ready) {
+      const error = new Error()
+      error.name = 'ConfigSent'
+      error.message = 'Additional configuration received'
+      const receivedConfig = JSON.stringify(liveConnectConfig)
+      emitter.error('LCDuplication', receivedConfig, error)
+      return window.liQ
+    }
+  } catch (e) {
+    console.error('Could not initialize error bus')
+  }
+}
+
+/**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @returns {LiveConnect}
- * @constructor
+ * @private
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler) {
-  let configuration = {}
+function _standardInitialization (liveConnectConfig, externalStorageHandler) {
   try {
-    window.liQ = window.liQ || []
-    if (isFunction(window.liQ.ready)) {
-      const error = new Error()
-      error.name = 'Additional configuration received'
-      error.message = JSON.stringify(liveConnectConfig)
-      emitter.error('LCDuplication', 'Did not load an additional LC', error)
-    }
-    configuration = isObject(liveConnectConfig) && liveConnectConfig
     eventBus.init()
-    errorHandler.register(configuration)
+    errorHandler.register(liveConnectConfig)
   } catch (e) {
     console.error('Could not initialize error bus')
   }
 
   try {
-    const storageHandler = StorageHandler(configuration.storageStrategy, externalStorageHandler)
+    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnricher.enrich, cookies.enrich, legacyDuid.enrich]
     const managers = [identifiers.resolve, peopleVerified.resolve, decisions.resolve]
 
-    const enrichedState = enrichers.reduce(reducer, new StateWrapper(configuration))
+    const enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
     console.log('LiveConnect.enrichedState', enrichedState)
@@ -116,15 +129,33 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
     const pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload)
     const resolver = idex.IdentityResolver(postManagedState.data, storageHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
-    const liQ = {
+    return {
       push: _push,
       fire: () => _push({}),
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
-      resolutionCallUrl: resolver.getUrl
+      resolutionCallUrl: resolver.getUrl,
+      config: liveConnectConfig
     }
-    window.liQ = liQ
+  } catch (x) {
+    console.error(x)
+    emitter.error('LCConstruction', 'Failed to build LC', x)
+  }
+}
+
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @returns {LiveConnect}
+ * @constructor
+ */
+export function LiveConnect (liveConnectConfig, externalStorageHandler) {
+  console.log('Initializing liveCOnnect')
+  try {
+    window && (window.liQ = window.liQ || [])
+    const configuration = isObject(liveConnectConfig) && liveConnectConfig
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || window.liQ)
   } catch (x) {
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)
