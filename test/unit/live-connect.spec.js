@@ -75,6 +75,21 @@ describe('LiveConnect', () => {
     expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
   })
 
+  it('should process a previously initialized liQ', function () {
+    window.liQ = []
+    window.liQ.push({ event: "viewProduct", name: "first"}, { event: "viewProduct", name: "second"})
+    LiveConnect({appId:"a-00xx"})
+    let liQ = window.liQ
+    expect(liQ.ready).to.be.true
+    liQ.push( { event: "viewProduct", name: "third"} )
+    expect(imagePixelsCreated.length).to.eql(3)
+    imagePixelsCreated.forEach(image => {
+      const params = urlParams(image.src)
+      expect(params.duid).to.eql(liQ.peopleVerifiedId)
+      expect(params.aid).to.eql('a-00xx')
+    })
+  })
+
   it('should set the cookie', function () {
     LiveConnect({})
     expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
@@ -154,6 +169,15 @@ describe('LiveConnect', () => {
   it('emit an error if the pushed value is not an object', function () {
     const lc = LiveConnect({})
     lc.push([[[[[':)']]]]])
+    expect(imagePixelsCreated.length).to.eql(1)
+    const params = urlParams(imagePixelsCreated[0].src)
+    // I don't want to check the full content here, i'm fine with just being present
+    expect(params.ae).to.not.eq(undefined)
+  })
+
+  it('emit an error if the pushed value is a config', function () {
+    const lc = LiveConnect({})
+    lc.push({ config: {} })
     expect(imagePixelsCreated.length).to.eql(1)
     const params = urlParams(imagePixelsCreated[0].src)
     // I don't want to check the full content here, i'm fine with just being present

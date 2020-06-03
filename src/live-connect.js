@@ -153,9 +153,14 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
 export function LiveConnect (liveConnectConfig, externalStorageHandler) {
   console.log('Initializing LiveConnect')
   try {
-    window && (window.liQ = window.liQ || [])
+    const queue = window.liQ || []
     const configuration = isObject(liveConnectConfig) && liveConnectConfig
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || window.liQ)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue)
+    if (isArray(queue)) {
+      for (let i = 0; i < queue.length; i++) {
+        window.liQ.push(queue[i])
+      }
+    }
   } catch (x) {
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)

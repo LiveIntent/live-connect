@@ -2494,9 +2494,15 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler) {
 function LiveConnect(liveConnectConfig, externalStorageHandler) {
 
   try {
-    window && (window.liQ = window.liQ || []);
+    var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig;
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || window.liQ);
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue);
+
+    if (isArray(queue)) {
+      for (var i = 0; i < queue.length; i++) {
+        window.liQ.push(queue[i]);
+      }
+    }
   } catch (x) {
     error('LCConstruction', 'Failed to build LC', x);
   }
