@@ -145,7 +145,7 @@ describe('LiveConnect', () => {
     expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--.*/)
   })
 
-  t('should expose the config', function () {
+  it('should expose the config', function () {
     const config = { appId: "a-00xx"}
     const lc = LiveConnect(config)
     expect(lc.config).to.eql(config)
