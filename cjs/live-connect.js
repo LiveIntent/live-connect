@@ -2411,11 +2411,11 @@ function _getInitializedLiveConnect(liveConnectConfig) {
       var previousConfig = JSON.stringify(window.liQ.config);
       var newConfig = JSON.stringify(liveConnectConfig);
 
-      if (previousConfig && previousConfig !== newConfig) {
+      if (window.liQ.config && previousConfig !== newConfig) {
         var error$1 = new Error();
         error$1.name = 'ConfigSent';
         error$1.message = 'Additional configuration received';
-        error('LCDuplication', newConfig, error$1);
+        error('LCDuplication', "".concat(newConfig, "::").concat(previousConfig), error$1);
       }
 
       return window.liQ;
