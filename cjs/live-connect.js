@@ -2511,7 +2511,7 @@ function LiveConnect(liveConnectConfig, externalStorageHandler) {
 
   try {
     var queue = window.liQ || [];
-    var configuration = isObject(liveConnectConfig) && liveConnectConfig;
+    var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
     window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue);
 
     if (isArray(queue)) {
