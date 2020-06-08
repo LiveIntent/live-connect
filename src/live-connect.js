@@ -171,7 +171,7 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
-    const configuration = isObject(liveConnectConfig) && liveConnectConfig
+    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
