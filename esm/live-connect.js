@@ -2407,7 +2407,7 @@ function _getInitializedLiveConnect(liveConnectConfig) {
       var previousConfig = JSON.stringify(window.liQ.config);
       var newConfig = JSON.stringify(liveConnectConfig);
 
-      if (previousConfig !== newConfig) {
+      if (previousConfig && previousConfig !== newConfig) {
         var error$1 = new Error();
         error$1.name = 'ConfigSent';
         error$1.message = 'Additional configuration received';
