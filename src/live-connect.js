@@ -85,11 +85,14 @@ function _processArgs (args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      const error = new Error()
-      error.name = 'ConfigSent'
-      error.message = 'Additional configuration received'
-      const receivedConfig = JSON.stringify(liveConnectConfig)
-      emitter.error('LCDuplication', receivedConfig, error)
+      const previousConfig = JSON.stringify(window.liQ.config)
+      const newConfig = JSON.stringify(liveConnectConfig)
+      if (previousConfig !== newConfig) {
+        const error = new Error()
+        error.name = 'ConfigSent'
+        error.message = 'Additional configuration received'
+        emitter.error('LCDuplication', newConfig, error)
+      }
       return window.liQ
     }
   } catch (e) {
