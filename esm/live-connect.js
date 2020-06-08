@@ -2404,10 +2404,10 @@ function _processArgs(args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect(liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      var previousConfig = JSON.stringify(window.liQ && window.liQ.config);
+      var previousConfig = JSON.stringify(window.liQ.config);
       var newConfig = JSON.stringify(liveConnectConfig);
 
-      if (window.liQ.config && previousConfig !== newConfig) {
+      if (previousConfig !== newConfig) {
         var error$1 = new Error();
         error$1.name = 'ConfigSent';
         error$1.message = 'Additional configuration received';
