@@ -48,7 +48,7 @@ describe('LiveConnect', () => {
     expect(window.liQ.ready).to.be.true
   })
 
-  it('should expose liQ, emit error for any subsequent initialization', function () {
+  it('should expose liQ, emit error for any subsequent initialization with different config', function () {
     LiveConnect({appId:"a-00xx"})
     let liQ = window.liQ
     expect(liQ.ready).to.be.true
@@ -70,6 +70,29 @@ describe('LiveConnect', () => {
     expect(firstCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"a-00xx"}'))
     expect(duplicationParams.aid).to.eql('a-00xx')
     expect(duplicationParams.ae).to.not.be.empty
+    expect(secondCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(secondCallParams.aid).to.eql('a-00xx')
+    expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
+  })
+
+  it('should expose liQ, and not emit error when the config has not changed ', function () {
+    LiveConnect({appId:"a-00xx"})
+    let liQ = window.liQ
+    expect(liQ.ready).to.be.true
+    liQ.push( { event: "viewProduct", name: "a-00xx"} )
+    LiveConnect({ appId: "a-00xx" })
+    liQ = window.liQ
+    expect(liQ.ready).to.be.true
+    liQ.push( { event: "viewProduct", name:"config"} )
+    expect(imagePixelsCreated.length).to.eql(2)
+    const firstAppIdEventSrc = imagePixelsCreated[0].src
+    const secondAppIdEventSrc = imagePixelsCreated[1].src
+
+    const firstCallParams = urlParams(firstAppIdEventSrc)
+    const secondCallParams = urlParams(secondAppIdEventSrc)
+    expect(firstCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(firstCallParams.aid).to.eql('a-00xx')
+    expect(firstCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"a-00xx"}'))
     expect(secondCallParams.duid).to.eql(liQ.peopleVerifiedId)
     expect(secondCallParams.aid).to.eql('a-00xx')
     expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
