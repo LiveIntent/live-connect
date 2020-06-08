@@ -27,6 +27,7 @@
  * @property {(string|undefined)} usPrivacyString
  * @property {(number|undefined)} expirationDays
  * @property {{string[]|undefined}} identifiersToResolve
+ * @property {string|undefined} wrapperName
  * @property {{IdexConfig|undefined}} identityResolutionConfig
  */
 
@@ -60,6 +61,19 @@ function _pushSingleEvent (event, pixelClient, enrichedState) {
   }
 }
 
+/**
+ *
+ * @param {LiveConnectConfiguration} previousConfig
+ * @param {LiveConnectConfiguration} newConfig
+ * @return {boolean}
+ * @private
+ */
+function _configMatcher (previousConfig, newConfig) {
+  return previousConfig.appId === newConfig.appId &&
+    previousConfig.wrapperName === newConfig.wrapperName &&
+    previousConfig.collectorUrl === newConfig.collectorUrl
+}
+
 function _processArgs (args, pixelClient, enrichedState) {
   try {
     args.forEach(arg => {
@@ -85,9 +99,9 @@ function _processArgs (args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      const previousConfig = JSON.stringify(window.liQ.config)
-      const newConfig = JSON.stringify(liveConnectConfig)
-      if (window.liQ.config && previousConfig !== newConfig) {
+      if (window.liQ.config && !_configMatcher(window.liQ.config, liveConnectConfig)) {
+        const previousConfig = JSON.stringify(window.liQ.config)
+        const newConfig = JSON.stringify(liveConnectConfig)
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'

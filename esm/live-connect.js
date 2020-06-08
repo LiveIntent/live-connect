@@ -2375,6 +2375,18 @@ function _pushSingleEvent(event, pixelClient, enrichedState) {
     pixelClient.send(enrichedState.combineWith(withHemStore));
   }
 }
+/**
+ *
+ * @param {LiveConnectConfiguration} previousConfig
+ * @param {LiveConnectConfiguration} newConfig
+ * @return {boolean}
+ * @private
+ */
+
+
+function _configMatcher(previousConfig, newConfig) {
+  return previousConfig.appId === newConfig.appId && previousConfig.wrapperName === newConfig.wrapperName && previousConfig.collectorUrl === newConfig.collectorUrl;
+}
 
 function _processArgs(args, pixelClient, enrichedState) {
   try {
@@ -2404,10 +2416,9 @@ function _processArgs(args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect(liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      var previousConfig = JSON.stringify(window.liQ.config);
-      var newConfig = JSON.stringify(liveConnectConfig);
-
-      if (window.liQ.config && previousConfig !== newConfig) {
+      if (window.liQ.config && !_configMatcher(window.liQ.config, liveConnectConfig)) {
+        var previousConfig = JSON.stringify(window.liQ.config);
+        var newConfig = JSON.stringify(liveConnectConfig);
         var error$1 = new Error();
         error$1.name = 'ConfigSent';
         error$1.message = 'Additional configuration received';
