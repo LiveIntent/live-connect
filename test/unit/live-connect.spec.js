@@ -75,7 +75,7 @@ describe('LiveConnect', () => {
     expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
   })
 
-  it('should expose liQ, and not emit error when the config has not changed ', function () {
+  it('should expose liQ, and not emit error when the config has not changed', function () {
     LiveConnect({appId:"a-00xx"})
     let liQ = window.liQ
     expect(liQ.ready).to.be.true
