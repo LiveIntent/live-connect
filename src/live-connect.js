@@ -22,7 +22,6 @@
  * @typedef {Object} LiveConnectConfiguration
  * @property {(string|undefined)} appId
  * @property {(StorageStrategy|null)} storageStrategy
- * @property {(string|undefined)} providedIdentifierName
  * @property {(string|undefined)} collectorUrl
  * @property {(string|undefined)} usPrivacyString
  * @property {(number|undefined)} expirationDays

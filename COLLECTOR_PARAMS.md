@@ -8,10 +8,6 @@
 - contains the LiveConnect managed first party identifier, in the `${apexDomainHash}--${ULID}`, or `${iframeDomainHash}-${websiteUrlDomainHash}--${ULID}` format
 ### `lduid`
 - contains the legacy LiveConnect first party identifier
-### `pfpi`
-- contains the value of the provided first party identifier (e.g the cookie found for key = `config.providedIdentifierName`)
-### `fpn`
-- contains the name passed as the key of the provided first party identifier, specifically the value of the `config.providedIdentifierName`
 ### `tna`
 - contains the `config.trackerName`
 ### `pu`
