@@ -24,16 +24,7 @@ describe('Page Utils', () => {
     Object.defineProperty(window, 'self', {
       get: () => { throw Error('FailedOnPurpose') }
     })
-    Object.defineProperty(window, 'top', {
-      get: () => {
-        return {
-          location: {
-            href: 'https://parent.liveintent.com'
-          }
-        }
-      }
-    })
-    expect(getPage()).to.be.eql('https://parent.liveintent.com')
+    expect(getPage()).to.be.eql('https://first.example.com?key=value')
   })
 
   it('loaded domain should return the host', function () {
