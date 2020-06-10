@@ -14,7 +14,11 @@ export function isIframe () {
  * @private
  */
 export function getPage () {
-  return isIframe() ? window.top.location.href : document.location.href
+  try {
+    return isIframe() ? document.referrer : document.location.href
+  } catch (e) {
+    return document.location.href
+  }
 }
 
 /**
