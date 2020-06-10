@@ -22,7 +22,6 @@
  * @typedef {Object} LiveConnectConfiguration
  * @property {(string|undefined)} appId
  * @property {(StorageStrategy|null)} storageStrategy
- * @property {(string|undefined)} providedIdentifierName
  * @property {(string|undefined)} collectorUrl
  * @property {(string|undefined)} usPrivacyString
  * @property {(number|undefined)} expirationDays
@@ -65,13 +64,20 @@ function _pushSingleEvent (event, pixelClient, enrichedState) {
  *
  * @param {LiveConnectConfiguration} previousConfig
  * @param {LiveConnectConfiguration} newConfig
- * @return {boolean}
+ * @return {Object|null}
  * @private
  */
 function _configMatcher (previousConfig, newConfig) {
-  return previousConfig.appId === newConfig.appId &&
+  const equalConfigs = previousConfig.appId === newConfig.appId &&
     previousConfig.wrapperName === newConfig.wrapperName &&
     previousConfig.collectorUrl === newConfig.collectorUrl
+  if (!equalConfigs) {
+    return {
+      appId: [previousConfig.appId, newConfig.appId],
+      wrapperName: [previousConfig.wrapperName, newConfig.wrapperName],
+      collectorUrl: [previousConfig.collectorUrl, newConfig.collectorUrl]
+    }
+  }
 }
 
 function _processArgs (args, pixelClient, enrichedState) {
@@ -99,13 +105,12 @@ function _processArgs (args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (window.liQ.config && !_configMatcher(window.liQ.config, liveConnectConfig)) {
-        const previousConfig = JSON.stringify(window.liQ.config)
-        const newConfig = JSON.stringify(liveConnectConfig)
+      const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
+      if (mismatchedConfig) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
-        emitter.error('LCDuplication', `${newConfig}::${previousConfig}`, error)
+        emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window.liQ
     }

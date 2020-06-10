@@ -94,7 +94,7 @@ It's sometimes important in which order the managers are invoked, as one might d
 `managers/decision.js` is responsible for keeping state in the browser with all the recent `li_did` parameters picked up from urls where LiveConnect was loaded.
 
 ### Identifiers manager
-`managers/identifiers.js` takes care of LiveConnect first party identifiers being created (if not present) and picked up so that they can be sent as signal pixels, or if the customers set the `providedIdentifierName`, that this information is also relayed to the pipeline.
+`managers/identifiers.js` takes care of LiveConnect first party identifiers being created (if not present) and picked up so that they can be sent as signal pixels containing that information.
 Where the LiveConnect identifiers are stored (Cookie vs LocalStorage) depends on the `config.storageStrategy` option.
 How long those identifiers will live is configured in the `config.expirationDays` parameter. In case the `storageStrategy` is set to Cookie, the browser will ensure that the cookie expires.
 In case of localStorage, Identifiers Manager and it's underlying `utils/storage.js` helper will ensure that on the next load, the entry is removed from localstorage in case it's obsolete.

@@ -52,18 +52,6 @@ describe('IdentifiersManager', () => {
     expect(resolutionResult.liveConnectId).to.eql(id)
   })
 
-  it('should read provided first party identifier from a cookie first', function () {
-    storage.setCookie('pfpcn', 'cookie-identifier')
-    const resolutionResult = identifiers.resolve({ providedIdentifierName: 'pfpcn' }, storage)
-    expect(resolutionResult.providedIdentifier).to.eql('cookie-identifier')
-  })
-
-  it('should read provided first party identifier from ls, if it cannot be found in a cookie', function () {
-    storage.setDataInLocalStorage('pfpcn', 'ls-identifier')
-    const resolutionResult = identifiers.resolve({ providedIdentifierName: 'pfpcn' }, storage)
-    expect(resolutionResult.providedIdentifier).to.eql('ls-identifier')
-  })
-
   it('should ignore a malformed legacy id', function () {
     expect(storage.getCookie('_lc2_fpi')).to.eql(null)
     storage.setDataInLocalStorage('_litra_id.2a0b', 'some-mumbo-jumbo')

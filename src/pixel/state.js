@@ -13,8 +13,6 @@
  * @property {(string|null)} [appId]
  * @property {(object|undefined)} [eventSource]
  * @property {(string|undefined)} [liveConnectId]
- * @property {(string|undefined)} [providedIdentifier]
- * @property {(string|undefined)} [providedIdentifierName]
  * @property {(string|undefined)} [trackerName]
  * @property {(string|undefined)} [pageUrl]
  * @property {(string|undefined)} [domain]
@@ -23,7 +21,7 @@
  * @property {(string|undefined)} [wrapperName]
  * @property {(HashedEmail[])} [hashesFromIdentifiers]
  * @property {(string[]|undefined)} [identifiersToResolve]
- * @property {[]string} [decisionIds]
+ * @property {string[]} [decisionIds]
  * @property {string | undefined} [peopleVerifiedId]
  * @property {(string|undefined)} [storageStrategy]
  * @property {LegacyId} [legacyId]
@@ -81,12 +79,6 @@ const _pMap = {
   },
   legacyId: legacyFpc => {
     return _asParamOrEmpty('lduid', legacyFpc && legacyFpc.duid, (s) => encodeURIComponent(s))
-  },
-  providedIdentifier: pfpi => {
-    return _asParamOrEmpty('pfpi', pfpi, (s) => encodeURIComponent(s))
-  },
-  providedIdentifierName: fpn => {
-    return _asParamOrEmpty('fpn', fpn, (s) => encodeURIComponent(s))
   },
   trackerName: tn => {
     return _asParamOrEmpty('tna', tn || 'unknown', (s) => encodeURIComponent(s))

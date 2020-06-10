@@ -98,11 +98,6 @@ export function resolve (state, storageHandler) {
 
     const expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS
     const cookieDomain = determineTld()
-    let providedFirstPartyIdentifier = null
-    if (state.providedIdentifierName) {
-      providedFirstPartyIdentifier = storageHandler.getCookie(state.providedIdentifierName) ||
-        storageHandler.getDataFromLocalStorage(state.providedIdentifierName)
-    }
     const storageOptions = {
       expires: expiry,
       domain: cookieDomain
@@ -114,8 +109,7 @@ export function resolve (state, storageHandler) {
       state.storageStrategy)
     return {
       domain: cookieDomain,
-      liveConnectId: liveConnectIdentifier,
-      providedIdentifier: providedFirstPartyIdentifier
+      liveConnectId: liveConnectIdentifier
     }
   } catch (e) {
     emitter.error('IdentifiersResolve', 'Error while managing identifiers', e)

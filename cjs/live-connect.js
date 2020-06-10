@@ -837,16 +837,6 @@ var _pMap = {
       return encodeURIComponent(s);
     });
   },
-  providedIdentifier: function providedIdentifier(pfpi) {
-    return _asParamOrEmpty('pfpi', pfpi, function (s) {
-      return encodeURIComponent(s);
-    });
-  },
-  providedIdentifierName: function providedIdentifierName(fpn) {
-    return _asParamOrEmpty('fpn', fpn, function (s) {
-      return encodeURIComponent(s);
-    });
-  },
   trackerName: function trackerName(tn) {
     return _asParamOrEmpty('tna', tn || 'unknown', function (s) {
       return encodeURIComponent(s);
@@ -1363,12 +1353,6 @@ function resolve(state, storageHandler) {
 
     var expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS;
     var cookieDomain = determineTld();
-    var providedFirstPartyIdentifier = null;
-
-    if (state.providedIdentifierName) {
-      providedFirstPartyIdentifier = storageHandler.getCookie(state.providedIdentifierName) || storageHandler.getDataFromLocalStorage(state.providedIdentifierName);
-    }
-
     var storageOptions = {
       expires: expiry,
       domain: cookieDomain
@@ -1376,8 +1360,7 @@ function resolve(state, storageHandler) {
     var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, generateCookie(cookieDomain), storageOptions, state.storageStrategy);
     return {
       domain: cookieDomain,
-      liveConnectId: liveConnectIdentifier,
-      providedIdentifier: providedFirstPartyIdentifier
+      liveConnectId: liveConnectIdentifier
     };
   } catch (e) {
     error('IdentifiersResolve', 'Error while managing identifiers', e);
@@ -2026,7 +2009,6 @@ function IdentityResolver(config, storageHandler) {
     var tuples = [];
     tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)]);
     tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)]);
-    tuples.push([encodedOrNull(nonNullConfig.providedIdentifierName), encodedOrNull(nonNullConfig.providedIdentifier)]);
     externalIds.forEach(function (retrievedIdentifier) {
       var key = encodedOrNull(retrievedIdentifier.name);
       var value = encodedOrNull(retrievedIdentifier.value);
@@ -2383,13 +2365,21 @@ function _pushSingleEvent(event, pixelClient, enrichedState) {
  *
  * @param {LiveConnectConfiguration} previousConfig
  * @param {LiveConnectConfiguration} newConfig
- * @return {boolean}
+ * @return {Object|null}
  * @private
  */
 
 
 function _configMatcher(previousConfig, newConfig) {
-  return previousConfig.appId === newConfig.appId && previousConfig.wrapperName === newConfig.wrapperName && previousConfig.collectorUrl === newConfig.collectorUrl;
+  var equalConfigs = previousConfig.appId === newConfig.appId && previousConfig.wrapperName === newConfig.wrapperName && previousConfig.collectorUrl === newConfig.collectorUrl;
+
+  if (!equalConfigs) {
+    return {
+      appId: [previousConfig.appId, newConfig.appId],
+      wrapperName: [previousConfig.wrapperName, newConfig.wrapperName],
+      collectorUrl: [previousConfig.collectorUrl, newConfig.collectorUrl]
+    };
+  }
 }
 
 function _processArgs(args, pixelClient, enrichedState) {
@@ -2420,13 +2410,13 @@ function _processArgs(args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect(liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (window.liQ.config && !_configMatcher(window.liQ.config, liveConnectConfig)) {
-        var previousConfig = JSON.stringify(window.liQ.config);
-        var newConfig = JSON.stringify(liveConnectConfig);
+      var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
+
+      if (mismatchedConfig) {
         var error$1 = new Error();
         error$1.name = 'ConfigSent';
         error$1.message = 'Additional configuration received';
-        error('LCDuplication', "".concat(newConfig, "::").concat(previousConfig), error$1);
+        error('LCDuplication', JSON.stringify(mismatchedConfig), error$1);
       }
 
       return window.liQ;

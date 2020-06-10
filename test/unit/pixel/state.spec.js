@@ -66,17 +66,6 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource], ['lduid', legacyDuid]])
   })
 
-  it('should send the pfpi', function () {
-    const legacyDuid = 'a-0z68--e4f71227-70d0-4e54-b1c3-ACf80616bbb0'
-    const pixelData = {
-      providedIdentifier: legacyDuid,
-      providedIdentifierName: 'someName'
-    }
-    const event = new StateWrapper(pixelData)
-    expect(event.asQueryString()).to.eql(`?pfpi=${legacyDuid}&fpn=someName`)
-    assert.includeDeepMembers(event.asTuples(), [['pfpi', legacyDuid], ['fpn', 'someName']])
-  })
-
   it('should send the tracker name', function () {
     const trackerName = 'some-name'
     const pixelData = {
