@@ -1403,7 +1403,7 @@ function resolve$1(state, storageHandler) {
   }
 
   try {
-    var params = state.pageUrl ? urlParams(state.pageUrl) || {} : {};
+    var params = state.pageUrl && urlParams(state.pageUrl) || {};
     var freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || []);
     var storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE);
     freshDecisions.map(trim).filter(_nonEmpty).filter(_validUuid).filter(_onlyUnique).forEach(function (decision) {

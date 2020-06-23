@@ -28,7 +28,7 @@ export function resolve (state, storageHandler) {
     }
   }
   try {
-    const params = state.pageUrl ? urlParams(state.pageUrl) || {} : {}
+    const params = (state.pageUrl && urlParams(state.pageUrl)) || {}
     const freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || [])
     const storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
     freshDecisions
