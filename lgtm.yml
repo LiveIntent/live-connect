@@ -1,0 +1,6 @@
+extraction:
+  javascript:
+    source:
+      exclude:
+        - cjs
+        - esm
