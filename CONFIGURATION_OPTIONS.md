@@ -59,6 +59,27 @@ Example:
   usPrivacyString:"1YYY"
 }
 ```
+
+#### `gdprApplies` [Optional]
+The IAB (https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20Consent%20string%20and%20vendor%20list%20formats%20v2.md) flag that notifies us whether GDPR policies apply.
+
+Example:
+```javascript
+{
+  gdprApplies: true
+}
+```
+
+#### `gdprConsent` [Optional]
+The IAB (https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20Consent%20string%20and%20vendor%20list%20formats%20v2.md) consent string.
+
+Example:
+```javascript
+{
+  gdprConsent: 'base64url-encoded TC string with segments'
+}
+```
+
 #### `expirationDays` [Optional, HasDefault]
 The expiration time of an identifier created and updated by LiveConnect.
 By default, 730 days.

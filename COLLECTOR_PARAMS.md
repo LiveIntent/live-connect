@@ -26,6 +26,10 @@
 - `config.identifiersToResolve` are considered as external, so for each identifier specified and found in any storage level, an additional `ext_` key value pair will be added.
 ### `us_privacy`
 - the value of the `config.usPrivacyString` config parameter.
+### `gdpr`
+- the value of the `config.gdprApplies` config parameter.
+### `gdprConsent`
+- the value of the `config.gdprConsent` config parameter.
 ### `dtstmp`
 - the UTC timestamp when the pixel was sent
 
