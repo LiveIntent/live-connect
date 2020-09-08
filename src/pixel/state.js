@@ -22,7 +22,7 @@
  * @property {(HashedEmail[])} [hashesFromIdentifiers]
  * @property {(string[]|undefined)} [identifiersToResolve]
  * @property {string[]} [decisionIds]
- * @property {string | undefined} [peopleVerifiedId]
+ * @property {string|undefined} [peopleVerifiedId]
  * @property {(string|undefined)} [storageStrategy]
  * @property {LegacyId} [legacyId]
  * @property {ErrorDetails} [errorDetails]
@@ -30,6 +30,8 @@
  * @property {HashedEmail[]} [hashedEmail]
  * @property {string} [providedHash]
  * @property {(IdexConfig|undefined)} [identityResolutionConfig]
+ * @property {(boolean|undefined)} [gdprApplies]
+ * @property {(string|undefined)} [gdprConsent]
  */
 
 /**
@@ -114,6 +116,12 @@ const _pMap = {
   },
   wrapperName: wrapper => {
     return _asParamOrEmpty('wpn', encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
+  },
+  gdprApplies: gdprApplies => {
+    return _asParamOrEmpty('gdpr', encodeURIComponent(gdprApplies), (s) => encodeURIComponent(s))
+  },
+  gdprConsent: gdprConsentString => {
+    return _asParamOrEmpty('gdpr_consent', encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
   }
 }
 
