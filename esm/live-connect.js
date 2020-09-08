@@ -889,6 +889,16 @@ var _pMap = {
     return _asParamOrEmpty('wpn', encodeURIComponent(wrapper), function (s) {
       return encodeURIComponent(s);
     });
+  },
+  gdprApplies: function gdprApplies(_gdprApplies) {
+    return _asParamOrEmpty('gdpr', encodeURIComponent(_gdprApplies), function (s) {
+      return encodeURIComponent(s);
+    });
+  },
+  gdprConsent: function gdprConsent(gdprConsentString) {
+    return _asParamOrEmpty('gdpr_consent', encodeURIComponent(gdprConsentString), function (s) {
+      return encodeURIComponent(s);
+    });
   }
 };
 /**
