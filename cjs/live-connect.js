@@ -885,12 +885,22 @@ var _pMap = {
     });
   },
   usPrivacyString: function usPrivacyString(usps) {
-    return _asParamOrEmpty('us_privacy', encodeURIComponent(usps), function (s) {
+    return _asParamOrEmpty('us_privacy', usps && encodeURIComponent(usps), function (s) {
       return encodeURIComponent(s);
     });
   },
   wrapperName: function wrapperName(wrapper) {
-    return _asParamOrEmpty('wpn', encodeURIComponent(wrapper), function (s) {
+    return _asParamOrEmpty('wpn', wrapper && encodeURIComponent(wrapper), function (s) {
+      return encodeURIComponent(s);
+    });
+  },
+  gdprApplies: function gdprApplies(_gdprApplies) {
+    return _asParamOrEmpty('gdpr', _gdprApplies && encodeURIComponent(_gdprApplies), function (s) {
+      return encodeURIComponent(s);
+    });
+  },
+  gdprConsent: function gdprConsent(gdprConsentString) {
+    return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), function (s) {
       return encodeURIComponent(s);
     });
   },

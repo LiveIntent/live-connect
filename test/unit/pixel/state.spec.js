@@ -89,6 +89,20 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })
 
+  it('should ignore nullable fields for consent', function () {
+    const trackerName = 'some-name'
+    const pixelData = {
+      trackerName: trackerName,
+      usPrivacyString: null,
+      gdprApplies: null,
+      gdprConsent: undefined,
+      wrapperName: undefined
+    }
+    const event = new StateWrapper(pixelData)
+    expect(event.asQueryString()).to.eql(`?tna=${trackerName}`)
+    assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
+  })
+
   it('should send the page url', function () {
     const pageUrl = 'https://wwww.example.com?sss'
     const pixelData = {
