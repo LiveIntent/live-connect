@@ -115,7 +115,7 @@ const _pMap = {
     return _asParamOrEmpty('us_privacy', usps && encodeURIComponent(usps), (s) => encodeURIComponent(s))
   },
   wrapperName: wrapper => {
-    return _asParamOrEmpty('wpn',wrapper && encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
+    return _asParamOrEmpty('wpn', wrapper && encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
   },
   gdprApplies: gdprApplies => {
     return _asParamOrEmpty('gdpr', gdprApplies && encodeURIComponent(gdprApplies), (s) => encodeURIComponent(s))
