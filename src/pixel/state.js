@@ -112,16 +112,16 @@ const _pMap = {
     return _asParamOrEmpty('e', he.join(','), (s) => encodeURIComponent(s))
   },
   usPrivacyString: usps => {
-    return _asParamOrEmpty('us_privacy', encodeURIComponent(usps), (s) => encodeURIComponent(s))
+    return _asParamOrEmpty('us_privacy', usps && encodeURIComponent(usps), (s) => encodeURIComponent(s))
   },
   wrapperName: wrapper => {
-    return _asParamOrEmpty('wpn', encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
+    return _asParamOrEmpty('wpn',wrapper && encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
   },
   gdprApplies: gdprApplies => {
-    return _asParamOrEmpty('gdpr', encodeURIComponent(gdprApplies), (s) => encodeURIComponent(s))
+    return _asParamOrEmpty('gdpr', gdprApplies && encodeURIComponent(gdprApplies), (s) => encodeURIComponent(s))
   },
   gdprConsent: gdprConsentString => {
-    return _asParamOrEmpty('gdpr_consent', encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
+    return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
   }
 }
 
