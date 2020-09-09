@@ -77,6 +77,12 @@ var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 function safeToString(value) {
   return _typeof(value) === 'object' ? JSON.stringify(value) : '' + value;
 }
+/**
+ * Checks whether the param NOT `null` and NOT `undefined`
+ * @param {*} value
+ * @returns {boolean}
+ */
+
 function isNonEmpty(value) {
   return typeof value !== 'undefined' && value !== null;
 }
