@@ -77,6 +77,9 @@ var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 function safeToString(value) {
   return _typeof(value) === 'object' ? JSON.stringify(value) : '' + value;
 }
+function isNonEmpty(value) {
+  return typeof value !== 'undefined' && value !== null;
+}
 function isUUID(value) {
   return value && uuidRegex.test(trim(value));
 }
@@ -809,7 +812,7 @@ function urlParams(url) {
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
 
 function _asParamOrEmpty(param, value, transform) {
-  if (value && trim(value).length > 0) {
+  if (isNonEmpty(value) && trim(value).length > 0) {
     return [param, isFunction(transform) ? transform(value) : value];
   } else {
     return [];
@@ -895,22 +898,12 @@ var _pMap = {
     });
   },
   gdprApplies: function gdprApplies(_gdprApplies) {
-    return _asParamOrEmpty('gdpr', _gdprApplies && encodeURIComponent(_gdprApplies), function (s) {
-      return encodeURIComponent(s);
+    return _asParamOrEmpty('gdpr', _gdprApplies, function (s) {
+      return encodeURIComponent(s ? 1 : 0);
     });
   },
   gdprConsent: function gdprConsent(gdprConsentString) {
     return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), function (s) {
-      return encodeURIComponent(s);
-    });
-  },
-  gdprApplies: function gdprApplies(_gdprApplies) {
-    return _asParamOrEmpty('gdpr', encodeURIComponent(_gdprApplies), function (s) {
-      return encodeURIComponent(s);
-    });
-  },
-  gdprConsent: function gdprConsent(gdprConsentString) {
-    return _asParamOrEmpty('gdpr_consent', encodeURIComponent(gdprConsentString), function (s) {
       return encodeURIComponent(s);
     });
   }
