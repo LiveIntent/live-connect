@@ -9,9 +9,15 @@ export function safeToString (value) {
   return typeof value === 'object' ? JSON.stringify(value) : ('' + value)
 }
 
+/**
+ * Checks whether the param NOT `null` and NOT `undefined`
+ * @param {*} value
+ * @returns {boolean}
+ */
 export function isNonEmpty (value) {
   return typeof value !== 'undefined' && value !== null
 }
+
 export function isUUID (value) {
   return value && uuidRegex.test(trim(value))
 }
