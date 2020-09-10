@@ -48,7 +48,7 @@ import * as b64 from '../utils/b64'
 import * as emitter from '../utils/emitter'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isFunction, isObject, trim } from '../utils/types'
+import { isFunction, isNonEmpty, isObject, trim } from '../utils/types'
 import { toParams } from '../utils/url'
 
 /**
@@ -62,7 +62,7 @@ import { toParams } from '../utils/url'
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
 function _asParamOrEmpty (param, value, transform) {
-  if (value && trim(value).length > 0) {
+  if (isNonEmpty(value) && trim(value).length > 0) {
     return [param, isFunction(transform) ? transform(value) : value]
   } else {
     return []
@@ -118,7 +118,7 @@ const _pMap = {
     return _asParamOrEmpty('wpn', wrapper && encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
   },
   gdprApplies: gdprApplies => {
-    return _asParamOrEmpty('gdpr', gdprApplies && encodeURIComponent(gdprApplies), (s) => encodeURIComponent(s))
+    return _asParamOrEmpty('gdpr', gdprApplies, (s) => encodeURIComponent(s ? 1 : 0))
   },
   gdprConsent: gdprConsentString => {
     return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
