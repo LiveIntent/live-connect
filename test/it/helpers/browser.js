@@ -7,7 +7,7 @@ export function sendEvent (event, expectedRequests, server) {
     browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
     browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "sendEvent timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'sendEvent timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
@@ -18,7 +18,7 @@ export function resolveIdentity (expectedRequests, server) {
     browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
     browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "resolveIdentity timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
@@ -29,7 +29,7 @@ export function fetchResolvedIdentity () {
     browser.waitUntil(() => {
       console.log($('#idex').getText())
       return $('#idex').getText() !== 'None'
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "fetchResolvedIdentity timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
     return $('#idex').getText()
   } catch (e) {
     console.error('Error', e)
@@ -37,9 +37,11 @@ export function fetchResolvedIdentity () {
   }
 }
 
-export function sendEventInIframe (event, expectedRequests, server) {
+export function sendEventInIframe (event, expectedRequests, server, iframesNumber) {
   try {
-    switchToIFrame($('#iframe-id')) || switchToIFrame('iframe-name')
+    for (let i = 0; i < iframesNumber; i++) {
+      switchToIFrame($('#iframe-id')) || switchToIFrame('iframe-name')
+    }
     sendEvent(event, expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)

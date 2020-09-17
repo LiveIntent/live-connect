@@ -122,6 +122,9 @@ const _pMap = {
   },
   gdprConsent: gdprConsentString => {
     return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
+  },
+  referrer: referrer => {
+    return _asParamOrEmpty('refr', referrer, (s) => encodeURIComponent(s))
   }
 }
 

@@ -912,6 +912,11 @@ var _pMap = {
     return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), function (s) {
       return encodeURIComponent(s);
     });
+  },
+  referrer: function referrer(_referrer) {
+    return _asParamOrEmpty('refr', _referrer, function (s) {
+      return encodeURIComponent(s);
+    });
   }
 };
 /**
@@ -1226,14 +1231,10 @@ var dist_9 = dist.replaceCharAt;
 var dist_10 = dist.ulid;
 
 /**
- * @returns {boolean}
+ * @return {string}
  */
-function isIframe() {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
-  }
+function loadedDomain() {
+  return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
 }
 /**
  * @returns {string}
@@ -1242,17 +1243,105 @@ function isIframe() {
 
 function getPage() {
   try {
-    return isIframe() ? document.referrer : document.location.href;
+    var levels = _getLevels();
+
+    return {
+      referrer: _getReferrer(levels),
+      pageUrl: _getPageUrl(levels)
+    };
   } catch (e) {
-    return document.location.href;
+    return {
+      pageUrl: undefined,
+      referrer: undefined
+    };
   }
 }
+
+function _getLevels() {
+  var levels = _windowsTopDown();
+
+  var ancestors = _getAncestorOrigins();
+
+  if (ancestors) {
+    for (var i = 0; i < ancestors.length; i++) {
+      levels[i].ancestor = ancestors[i];
+    }
+  }
+
+  return levels;
+}
+
+function _windowsTopDown() {
+  var windows = [];
+  var currentWindow;
+
+  do {
+    try {
+      currentWindow = currentWindow ? currentWindow.parent : window;
+
+      try {
+        windows.push({
+          referrer: currentWindow.document.referrer,
+          location: currentWindow.location.href
+        });
+      } catch (e) {
+        windows.push({
+          referrer: null,
+          location: null
+        });
+      }
+    } catch (e) {
+      windows.push({
+        referrer: null,
+        location: null
+      });
+      return windows;
+    }
+  } while (currentWindow !== window.top);
+
+  return windows;
+}
 /**
- * @return {string}
+ * Returns a read-only array of hostnames for all the parent frames.
+ * win.location.ancestorOrigins is only supported in webkit browsers. For non-webkit browsers it will return undefined.
+ * @returns {(undefined|string[])} Ancestor origins or undefined
  */
 
-function loadedDomain() {
-  return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
+
+function _getAncestorOrigins() {
+  try {
+    return window.location.ancestorOrigins;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+function _getReferrer(levels) {
+  var detectedReferer = null;
+
+  for (var i = levels.length - 1; i >= 0 && !detectedReferer; i--) {
+    var currentWindow = levels[i];
+    if (currentWindow.referrer) detectedReferer = currentWindow.referrer; // else if (currentWindow.location) detectedReferer = currentWindow.location
+    // else if (currentWindow.ancestor) detectedReferer = currentWindow.ancestor
+  }
+
+  return detectedReferer;
+}
+
+function _getPageUrl(levels) {
+  var detectedPageUrl = null;
+
+  for (var i = levels.length - 1; i >= 0 && !detectedPageUrl; i--) {
+    var currentWindow = levels[i];
+    if (currentWindow.location) detectedPageUrl = currentWindow.location;else if (i !== 0) {
+      var nestedWindow = levels[i - 1];
+      var nestedReferrer = nestedWindow.referrer; // const nestedAncestor = nestedWindow.ancestor
+
+      if (nestedReferrer) detectedPageUrl = nestedReferrer; // else if (nestedAncestor) detectedPageUrl = nestedAncestor
+    }
+  }
+
+  return detectedPageUrl;
 }
 
 /**
@@ -1598,9 +1687,7 @@ function enrich(state) {
     _currentPage = getPage();
   }
 
-  return {
-    pageUrl: _currentPage
-  };
+  return _currentPage;
 }
 
 var _state = null;

@@ -16,9 +16,9 @@
   "scripts": {
     "test:unit": "npm run lint && nyc mocha --config test-config/mocha.unit.json --require @babel/register ",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "test:it:browserstack": "npm run lint && npm run build && wdio test-config/wdio.browserstack.conf.js",
-    "test:it:docker:chrome": "npm run lint && npm run build && wdio test-config/wdio.docker.chrome.conf.js",
-    "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
+    "test:it:browserstack": "npm run build && wdio test-config/wdio.browserstack.conf.js",
+    "test:it:docker:chrome": "npm run build && wdio test-config/wdio.docker.chrome.conf.js",
+    "build": "rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "lint": "eslint \"src/**/*.js\"",
     "fix-js": "eslint \"src/**/*.js\" --fix || exit 0",
     "release:ci:patch": "release-it patch --ci",

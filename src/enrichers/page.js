@@ -13,5 +13,5 @@ export function enrich (state) {
   if (!_currentPage) {
     _currentPage = getPage()
   }
-  return { pageUrl: _currentPage }
+  return _currentPage
 }

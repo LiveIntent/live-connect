@@ -16,7 +16,7 @@ const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
 
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
-  const fullContent =  preamble + bundle
+  const fullContent = preamble + bundle
   const app = express()
   app.use(compression())
   let history = []
@@ -59,6 +59,38 @@ export function MockServerFactory (config) {
     )
   })
 
+  app.get('/double-framed', (req, res) => {
+    res.send(
+      `<!DOCTYPE html>
+            <html lang="en">
+            <head><title></title>
+            </head>
+            <body>
+            <div id="before">Before</div>
+            <iframe id="iframe-id" name="iframe-name" src="http://framed.test.liveintent.com:3001/framed"></iframe>
+            <div id="after">After</div>
+            </body>
+            </html>`
+    )
+  })
+
+  app.get('/referrer', (req, res) => {
+    const uri = req.query.uri
+
+    res.send(
+      `<!DOCTYPE html>
+            <html lang="en">
+            <head><title></title>
+            </head>
+            <body>
+            <div id="before">Before</div>
+            <a href="${uri}" id="page" target="_self">Page</a>
+            <div id="after">After</div>
+            </body>
+            </html>`
+    )
+  })
+
   app.get('/tracker.js', (req, res) => {
     res.send(fullContent)
     console.log('Returned data')
@@ -81,12 +113,24 @@ export function MockServerFactory (config) {
   })
 
   return {
-    openPage: (uri, page) => {
-      browser.url(`http://${uri}:3001/${page}`)
+    openPage: (domain, page) => {
+      browser.url(`http://${domain}:3001/${page}`)
       const before = $('#before').getText()
       assert.strictEqual(before, 'Before')
       const after = $('#after').getText()
       assert.strictEqual(after, 'After')
+    },
+    openUriViaReferrer: (referrerDomain, pageDomain, page) => {
+      browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
+      const before = $('#before').getText()
+      assert.strictEqual(before, 'Before')
+      const after = $('#after').getText()
+      assert.strictEqual(after, 'After')
+      $('#page').click()
+      const beforePage = $('#before').getText()
+      assert.strictEqual(beforePage, 'Before')
+      const afterPage = $('#after').getText()
+      assert.strictEqual(afterPage, 'After')
     },
     getHistory: () => {
       return history
@@ -95,10 +139,10 @@ export function MockServerFactory (config) {
       return idex
     },
     getTrackingRequests: () => {
-      return history.filter(req => req['query']['ae'] === undefined)
+      return history.filter(req => req.query.ae === undefined)
     },
     getApplicationErrors: () => {
-      return history.filter(req => req['query']['ae'] !== undefined)
+      return history.filter(req => req.query.ae !== undefined)
     },
     clearHistory: () => {
       idex = []
