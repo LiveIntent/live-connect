@@ -11,10 +11,12 @@ export function loadedDomain () {
  */
 export function getPage () {
   try {
-    const levels = _getLevels()
+    const levels = _windowsTopDown()
     return {
-      referrer: _getReferrer(levels),
-      pageUrl: _getPageUrl(levels)
+      referrer: _getReferrer(levels.levels),
+      pageUrl: _getPageUrl(levels.levels),
+      levels: levels.levels,
+      ancestors: levels.ancestors
     }
   } catch (e) {
     return {
@@ -24,56 +26,46 @@ export function getPage () {
   }
 }
 
-function _getLevels () {
-  const levels = _windowsTopDown()
-  const ancestors = _getAncestorOrigins()
-
-  if (ancestors) {
-    for (let i = 0; i < ancestors.length; i++) {
-      levels[i].ancestor = ancestors[i]
-    }
-  }
-  return levels
-}
-
 function _windowsTopDown () {
+  const ancestorOrigins = _getAncestorOrigins()
   const windows = []
+
   let currentWindow
-  do {
-    try {
+  let i = 0
+  try {
+    do {
       currentWindow = currentWindow ? currentWindow.parent : window
       try {
         windows.push({
           referrer: currentWindow.document.referrer,
-          location: currentWindow.location.href
+          location: currentWindow.location.href,
+          ancestorOrigin: ancestorOrigins[i]
         })
       } catch (e) {
         windows.push({
           referrer: null,
-          location: null
+          location: null,
+          ancestorOrigin: ancestorOrigins[i]
         })
       }
-    } catch (e) {
-      windows.push({
-        referrer: null,
-        location: null
-      })
-      return windows
-    }
-  } while (currentWindow !== window.top)
-  return windows
+      i++
+    } while (currentWindow !== window.top)
+  } catch (e) {
+    windows.push({
+      referrer: null,
+      location: null,
+      ancestorOrigin: null
+    })
+  }
+
+  return { levels: windows, ancestors: ancestorOrigins }
 }
 
-/**
- * Returns a read-only array of hostnames for all the parent frames.
- * win.location.ancestorOrigins is only supported in webkit browsers. For non-webkit browsers it will return undefined.
- * @returns {(undefined|string[])} Ancestor origins or undefined
- */
 function _getAncestorOrigins () {
   try {
-    return window.location.ancestorOrigins
+    return window.location.ancestorOrigins || {}
   } catch (e) {
-    return undefined
+    return {}
   }
 }
 
@@ -83,8 +75,7 @@ function _getReferrer (levels) {
   for (let i = levels.length - 1; i >= 0 && !detectedReferer; i--) {
     const currentWindow = levels[i]
     if (currentWindow.referrer) detectedReferer = currentWindow.referrer
-    // else if (currentWindow.location) detectedReferer = currentWindow.location
-    // else if (currentWindow.ancestor) detectedReferer = currentWindow.ancestor
+    else if (currentWindow.ancestorOrigin) detectedReferer = currentWindow.ancestorOrigin
   }
   return detectedReferer
 }
@@ -98,11 +89,8 @@ function _getPageUrl (levels) {
     if (currentWindow.location) detectedPageUrl = currentWindow.location
     else if (i !== 0) {
       const nestedWindow = levels[i - 1]
-      const nestedReferrer = nestedWindow.referrer
-      // const nestedAncestor = nestedWindow.ancestor
-
-      if (nestedReferrer) detectedPageUrl = nestedReferrer
-      // else if (nestedAncestor) detectedPageUrl = nestedAncestor
+      if (nestedWindow.referrer) detectedPageUrl = nestedWindow.referrer
+      else if (nestedWindow.ancestorOrigin) detectedPageUrl = nestedWindow.ancestorOrigin
     }
   }
   return detectedPageUrl

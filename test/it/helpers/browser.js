@@ -5,9 +5,17 @@ export function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
     browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
+    waitForRequests(expectedRequests, server)
+  } catch (e) {
+    console.error(e, server.getHistory().length, expectedRequests)
+  }
+}
+
+export function waitForRequests (expectedRequests, server) {
+  try {
     browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'sendEvent timed out', WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
@@ -37,11 +45,9 @@ export function fetchResolvedIdentity () {
   }
 }
 
-export function sendEventInIframe (event, expectedRequests, server, iframesNumber) {
+export function sendEventInIframe (event, expectedRequests, server) {
   try {
-    for (let i = 0; i < iframesNumber; i++) {
-      switchToIFrame($('#iframe-id')) || switchToIFrame('iframe-name')
-    }
+    switchToIFrame($('#iframe-id')) || switchToIFrame('iframe-name')
     sendEvent(event, expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
@@ -100,4 +106,29 @@ export function deleteAllCookies () {
   } catch (e) {
     console.error('Error while Deleting all cookies', e)
   }
+}
+
+export const MOBILE_SAFARI_INITIAL_URI = 'http://mobile-internet-check.browserstack.com/'
+
+export function isMobileSafari () {
+  return browser.capabilities.browserName === 'safari' && browser.capabilities.real_mobile
+}
+
+export const SAFARI_7_1_INITIAL_URI = 'http://localhost:8884/connect.html?url=ws%3A%2F%2Flocalhost%3A8884'
+
+export function isSafari71 () {
+  return browser.capabilities.browserName === 'safari' && browser.capabilities.version.startsWith('7.1')
+}
+
+export function isIE () {
+  return browser.capabilities.browserName === 'internet explorer'
+}
+
+export function isIE9Or10 () {
+  return browser.capabilities.browserName === 'internet explorer' &&
+    (browser.capabilities.version === '10' || browser.capabilities.version === '9')
+}
+
+export function isFirefox () {
+  return browser.capabilities.browserName === 'firefox'
 }

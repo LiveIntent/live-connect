@@ -37,9 +37,28 @@ export function MockServerFactory (config) {
     )
   })
 
+  app.get('/self-triggered-page', (req, res) => {
+    res.send(
+      `<!DOCTYPE html>
+            <html lang="en">
+            <head><title></title>
+            </head>
+            <body>
+            <div id="before">Before</div>
+            <script src="http://bln.test.liveintent.com:3001/tracker.js"></script>
+            <script>
+               liQ.push({just: 'dance'})
+            </script>
+            <div id="after">After</div>
+            <div id="idex">None</div>
+            </body>
+            </html>`
+    )
+  })
+
   app.options('/idex/unknown/any', cors(corsOptions))
   app.get('/idex/unknown/any', cors(corsOptions), (req, res) => {
-    console.log(`IDEX :: Received request '${JSON.stringify(req.query)}'`)
+    console.log(`IDEX :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
     idex.push(req)
     res.json({ unifiedId: 'some-id' })
   })
@@ -52,7 +71,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/page"></iframe>
+            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggered-page"></iframe>
             <div id="after">After</div>
             </body>
             </html>`
@@ -75,17 +94,15 @@ export function MockServerFactory (config) {
   })
 
   app.get('/referrer', (req, res) => {
-    const uri = req.query.uri
-
     res.send(
       `<!DOCTYPE html>
             <html lang="en">
             <head><title></title>
             </head>
             <body>
-            <div id="before">Before</div>
-            <a href="${uri}" id="page" target="_self">Page</a>
-            <div id="after">After</div>
+            <div id="referrer-before">Before</div>
+            <a href="${req.query.uri}" id="page" target="_self">Page</a>
+            <div id="referrer-after">After</div>
             </body>
             </html>`
     )
@@ -97,7 +114,7 @@ export function MockServerFactory (config) {
   })
 
   app.get('/p', (req, res) => {
-    console.log(`PIXEL :: Received request '${JSON.stringify(req.query)}'`)
+    console.log(`PIXEL :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
     history.push(req)
     res.sendStatus(200)
   })
@@ -122,9 +139,9 @@ export function MockServerFactory (config) {
     },
     openUriViaReferrer: (referrerDomain, pageDomain, page) => {
       browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
-      const before = $('#before').getText()
+      const before = $('#referrer-before').getText()
       assert.strictEqual(before, 'Before')
-      const after = $('#after').getText()
+      const after = $('#referrer-after').getText()
       assert.strictEqual(after, 'After')
       $('#page').click()
       const beforePage = $('#before').getText()
