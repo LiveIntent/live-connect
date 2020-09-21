@@ -913,16 +913,6 @@ var _pMap = {
     return _asParamOrEmpty('refr', _referrer, function (s) {
       return encodeURIComponent(s);
     });
-  },
-  levels: function levels(_levels) {
-    return _asParamOrEmpty('levels', _levels, function (s) {
-      return base64UrlEncode(JSON.stringify(s));
-    });
-  },
-  ancestors: function ancestors(_ancestors) {
-    return _asParamOrEmpty('ancestors', _ancestors, function (s) {
-      return base64UrlEncode(JSON.stringify(s));
-    });
   }
 };
 /**
@@ -1249,13 +1239,11 @@ function loadedDomain() {
 
 function getPage() {
   try {
-    var levels = _windowsTopDown();
+    var windows = _windowsTopDown();
 
     return {
-      referrer: _getReferrer(levels.levels),
-      pageUrl: _getPageUrl(levels.levels),
-      levels: levels.levels,
-      ancestors: levels.ancestors
+      referrer: _getReferrer(windows),
+      pageUrl: _getPageUrl(windows)
     };
   } catch (e) {
     return {
@@ -1300,10 +1288,7 @@ function _windowsTopDown() {
     });
   }
 
-  return {
-    levels: windows,
-    ancestors: ancestorOrigins
-  };
+  return windows;
 }
 
 function _getAncestorOrigins() {

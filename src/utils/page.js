@@ -6,17 +6,21 @@ export function loadedDomain () {
 }
 
 /**
- * @returns {string}
+ * @typedef {Object} PageAndReferrer
+ * @property {(string|undefined)} [referrer]
+ * @property {(string|undefined)} [pageUrl]
+ */
+
+/**
+ * @returns {PageAndReferrer}
  * @private
  */
 export function getPage () {
   try {
-    const levels = _windowsTopDown()
+    const windows = _windowsTopDown()
     return {
-      referrer: _getReferrer(levels.levels),
-      pageUrl: _getPageUrl(levels.levels),
-      levels: levels.levels,
-      ancestors: levels.ancestors
+      referrer: _getReferrer(windows),
+      pageUrl: _getPageUrl(windows)
     }
   } catch (e) {
     return {
@@ -58,7 +62,7 @@ function _windowsTopDown () {
     })
   }
 
-  return { levels: windows, ancestors: ancestorOrigins }
+  return windows
 }
 
 function _getAncestorOrigins () {
@@ -69,26 +73,25 @@ function _getAncestorOrigins () {
   }
 }
 
-function _getReferrer (levels) {
+function _getReferrer (windows) {
   let detectedReferer = null
 
-  for (let i = levels.length - 1; i >= 0 && !detectedReferer; i--) {
-    const currentWindow = levels[i]
+  for (let i = windows.length - 1; i >= 0 && !detectedReferer; i--) {
+    const currentWindow = windows[i]
     if (currentWindow.referrer) detectedReferer = currentWindow.referrer
     else if (currentWindow.ancestorOrigin) detectedReferer = currentWindow.ancestorOrigin
   }
   return detectedReferer
 }
 
-function _getPageUrl (levels) {
+function _getPageUrl (windows) {
   let detectedPageUrl = null
 
-  for (let i = levels.length - 1; i >= 0 && !detectedPageUrl; i--) {
-    const currentWindow = levels[i]
-
+  for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
+    const currentWindow = windows[i]
     if (currentWindow.location) detectedPageUrl = currentWindow.location
     else if (i !== 0) {
-      const nestedWindow = levels[i - 1]
+      const nestedWindow = windows[i - 1]
       if (nestedWindow.referrer) detectedPageUrl = nestedWindow.referrer
       else if (nestedWindow.ancestorOrigin) detectedPageUrl = nestedWindow.ancestorOrigin
     }

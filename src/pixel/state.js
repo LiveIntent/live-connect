@@ -125,12 +125,6 @@ const _pMap = {
   },
   referrer: referrer => {
     return _asParamOrEmpty('refr', referrer, (s) => encodeURIComponent(s))
-  },
-  levels: levels => {
-    return _asParamOrEmpty('levels', levels, (s) => b64.base64UrlEncode(JSON.stringify(s)))
-  },
-  ancestors: ancestors => {
-    return _asParamOrEmpty('ancestors', ancestors, (s) => b64.base64UrlEncode(JSON.stringify(s)))
   }
 }
 
