@@ -9,7 +9,10 @@ import {
   waitForRequests,
   isIE,
   isFirefox,
-  isMobileSafari, isSafari71, MOBILE_SAFARI_INITIAL_URI, SAFARI_7_1_INITIAL_URI, sendEventInIframe, isIE9Or10
+  isMobileSafari,
+  isSafari71,
+  isIE9Or10,
+  isEdgeBefore79
 } from './helpers/browser'
 
 const packageJson = require('../../package')
@@ -151,12 +154,13 @@ describe('LiveConnect', function () {
 
   // - Main page http://bln.test.liveintent.com:3001/self-triggered-page
   it('should send only the page url when the tracker is in the top window and there is no referrer', function () {
-    // if (isSafari71() || isMobileSafari()) this.skip()
     server.openPage('bln.test.liveintent.com', 'page')
     sendEvent({}, probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    expect(firstTrackingRequest.query.refr).to.be.undefined
+    if (!isSafari71() && !isMobileSafari()) {
+      expect(firstTrackingRequest.query.refr).to.be.undefined
+    }
     expect('http://bln.test.liveintent.com:3001/page').to.eq(firstTrackingRequest.query.pu)
   })
 
@@ -164,12 +168,13 @@ describe('LiveConnect', function () {
   // ---->
   // - Main page http://bln.test.liveintent.com:3001/self-triggered-page
   it('should send the referrer and the page url when the tracker is in the top window', function () {
-    // if (isSafari71() || isIE9Or10()) this.skip()
     server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggered-page')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggered-page').to.eq(firstTrackingRequest.query.refr)
+    if (!isSafari71() && !isIE9Or10()) {
+      expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggered-page').to.eq(firstTrackingRequest.query.refr)
+    }
     expect('http://bln.test.liveintent.com:3001/self-triggered-page').to.eq(firstTrackingRequest.query.pu)
   })
 
@@ -178,12 +183,13 @@ describe('LiveConnect', function () {
   // - Main page http://bln.test.liveintent.com:3001/framed
   // - - Iframe1 http://bln.test.liveintent.com:3001/self-triggered-page
   it('should send the referrer and the page url when the tracker is in the iframe', function () {
-    // if (isSafari71() || isIE9Or10()) this.skip()
     server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'framed')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.refr)
+    if (!isSafari71() && !isIE9Or10()) {
+      expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.refr)
+    }
     expect('http://bln.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
   })
 
@@ -197,7 +203,9 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/double-framed').to.eq(firstTrackingRequest.query.refr)
+    if (!isSafari71() && !isIE9Or10()) {
+      expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/double-framed').to.eq(firstTrackingRequest.query.refr)
+    }
     expect('http://bln.test.liveintent.com:3001/double-framed').to.eq(firstTrackingRequest.query.pu)
   })
 
@@ -212,7 +220,7 @@ describe('LiveConnect', function () {
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
 
-    if (isIE() || isFirefox()) {
+    if (isIE() || isFirefox() || isEdgeBefore79()) {
       expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.refr)
       expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
     } else {

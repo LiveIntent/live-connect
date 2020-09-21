@@ -108,16 +108,17 @@ export function deleteAllCookies () {
   }
 }
 
-export const MOBILE_SAFARI_INITIAL_URI = 'http://mobile-internet-check.browserstack.com/'
-
 export function isMobileSafari () {
   return browser.capabilities.browserName === 'safari' && browser.capabilities.real_mobile
 }
 
-export const SAFARI_7_1_INITIAL_URI = 'http://localhost:8884/connect.html?url=ws%3A%2F%2Flocalhost%3A8884'
-
 export function isSafari71 () {
   return browser.capabilities.browserName === 'safari' && browser.capabilities.version.startsWith('7.1')
+}
+
+export function isEdgeBefore79 () {
+  return browser.capabilities.browserName === 'MicrosoftEdge' &&
+    parseInt(browser.capabilities.browserVersion.substring(0, 2)) < 79
 }
 
 export function isIE () {
