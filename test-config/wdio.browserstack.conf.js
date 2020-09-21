@@ -10,10 +10,12 @@ const commonCapabilities = {
 }
 
 const allCapabilities = [
+  { ...commonCapabilities, browserName: 'Chrome', browser_version: '85.0', os: 'Windows', os_version: '10' },
   { ...commonCapabilities, browserName: 'Chrome', browser_version: '74.0', os: 'Windows', os_version: '10' },
   { ...commonCapabilities, browserName: 'Chrome', browser_version: '40.0', os: 'Windows', os_version: '7' },
   { ...commonCapabilities, browserName: 'firefox', browser_version: '67.0', os: 'Windows', os_version: '10' },
   { ...commonCapabilities, browserName: 'firefox', browser_version: '52.0', os: 'Windows', os_version: '7' },
+  { ...commonCapabilities, browserName: 'Safari', browser_version: '13.1', os: 'OS X', os_version: 'Catalina' },
   { ...commonCapabilities, browserName: 'Safari', browser_version: '12.0', os: 'OS X', os_version: 'Mojave' },
   { ...commonCapabilities, browserName: 'Safari', browser_version: '11.1', os: 'OS X', os_version: 'High Sierra' },
   { ...commonCapabilities, browserName: 'Safari', browser_version: '10.1', os: 'OS X', os_version: 'Sierra' },
