@@ -152,7 +152,7 @@ describe('LiveConnect', function () {
     }
   })
 
-  // - Main page http://bln.test.liveintent.com:3001/self-triggered-page
+  // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send only the page url when the tracker is in the top window and there is no referrer', function () {
     server.openPage('bln.test.liveintent.com', 'page')
     sendEvent({}, probeLS() ? 1 : 2, server)
@@ -164,24 +164,24 @@ describe('LiveConnect', function () {
     expect('http://bln.test.liveintent.com:3001/page').to.eq(firstTrackingRequest.query.pu)
   })
 
-  // - Referrer http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggered-page
+  // - Referrer http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggering-page
   // ---->
-  // - Main page http://bln.test.liveintent.com:3001/self-triggered-page
+  // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the top window', function () {
-    server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggered-page')
+    server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggering-page')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (!isSafari71() && !isIE9Or10()) {
-      expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggered-page').to.eq(firstTrackingRequest.query.refr)
+      expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggering-page').to.eq(firstTrackingRequest.query.refr)
     }
-    expect('http://bln.test.liveintent.com:3001/self-triggered-page').to.eq(firstTrackingRequest.query.pu)
+    expect('http://bln.test.liveintent.com:3001/self-triggering-page').to.eq(firstTrackingRequest.query.pu)
   })
 
   // - Referrer http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/framed
   // ---->
   // - Main page http://bln.test.liveintent.com:3001/framed
-  // - - Iframe1 http://bln.test.liveintent.com:3001/self-triggered-page
+  // - - Iframe1 http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the iframe', function () {
     server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'framed')
     waitForRequests(probeLS() ? 1 : 2, server)
@@ -197,7 +197,7 @@ describe('LiveConnect', function () {
   // ---->
   // - Main page http://bln.test.liveintent.com:3001/double-framed
   // - - Iframe1 http://framed.test.liveintent.com:3001/framed
-  // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggered-page
+  // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the nested iframe', function () {
     server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'double-framed')
     waitForRequests(probeLS() ? 1 : 2, server)
@@ -213,7 +213,7 @@ describe('LiveConnect', function () {
   // ---->
   // - Main page http://double-framed.test.liveintent.com:3001/double-framed
   // - - Iframe1 http://framed.test.liveintent.com:3001/framed
-  // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggered-page
+  // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the nested iframe and the iframe is cross-domain', function () {
     server.openUriViaReferrer('schmoogle.com', 'double-framed.test.liveintent.com', 'double-framed')
     waitForRequests(probeLS() ? 1 : 2, server)

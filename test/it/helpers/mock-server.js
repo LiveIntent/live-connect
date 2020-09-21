@@ -37,7 +37,7 @@ export function MockServerFactory (config) {
     )
   })
 
-  app.get('/self-triggered-page', (req, res) => {
+  app.get('/self-triggering-page', (req, res) => {
     res.send(
       `<!DOCTYPE html>
             <html lang="en">
@@ -71,7 +71,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggered-page"></iframe>
+            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggering-page"></iframe>
             <div id="after">After</div>
             </body>
             </html>`
