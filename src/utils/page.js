@@ -18,12 +18,11 @@ export function getReferrer (win = window) {
 export function getPage (win = window) {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
-  const windows = []
-  let currentWindow
-  do {
-    currentWindow = currentWindow ? currentWindow.parent : win
+  const windows = [win]
+  
+  for (let currentWindow = win; currentWindow !== top; currentWindow = currentWindow.parent) {
     windows.push(currentWindow)
-  } while (currentWindow !== top)
+  }
 
   let detectedPageUrl
   for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
