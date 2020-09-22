@@ -6,95 +6,41 @@ export function loadedDomain () {
 }
 
 /**
- * @typedef {Object} PageAndReferrer
- * @property {(string|undefined)} [referrer]
- * @property {(string|undefined)} [pageUrl]
+ * @return {string|undefined}
  */
+export function getReferrer (win = window) {
+  return _safeGet(() => win.top.document.referrer)
+}
 
 /**
- * @returns {PageAndReferrer}
- * @private
+ * @return {string|undefined}
  */
-export function getPage () {
-  try {
-    const windows = _windowsTopDown()
-    return {
-      referrer: _getReferrer(windows),
-      pageUrl: _getPageUrl(windows)
-    }
-  } catch (e) {
-    return {
-      pageUrl: undefined,
-      referrer: undefined
-    }
-  }
-}
+export function getPage (win = window) {
+  const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
-function _windowsTopDown () {
-  const ancestorOrigins = _getAncestorOrigins()
   const windows = []
-
   let currentWindow
-  let i = 0
-  try {
-    do {
-      currentWindow = currentWindow ? currentWindow.parent : window
-      try {
-        windows.push({
-          referrer: currentWindow.document.referrer,
-          location: currentWindow.location.href,
-          ancestorOrigin: ancestorOrigins[i]
-        })
-      } catch (e) {
-        windows.push({
-          referrer: null,
-          location: null,
-          ancestorOrigin: ancestorOrigins[i]
-        })
-      }
-      i++
-    } while (currentWindow !== window.top)
-  } catch (e) {
-    windows.push({
-      referrer: null,
-      location: null,
-      ancestorOrigin: null
-    })
-  }
+  do {
+    currentWindow = currentWindow ? currentWindow.parent : win
+    windows.push(currentWindow)
+  } while (currentWindow !== top)
 
-  return windows
-}
-
-function _getAncestorOrigins () {
-  try {
-    return window.location.ancestorOrigins || {}
-  } catch (e) {
-    return {}
-  }
-}
-
-function _getReferrer (windows) {
-  let detectedReferer = null
-
-  for (let i = windows.length - 1; i >= 0 && !detectedReferer; i--) {
-    const currentWindow = windows[i]
-    if (currentWindow.referrer) detectedReferer = currentWindow.referrer
-    else if (currentWindow.ancestorOrigin) detectedReferer = currentWindow.ancestorOrigin
-  }
-  return detectedReferer
-}
-
-function _getPageUrl (windows) {
-  let detectedPageUrl = null
-
+  let detectedPageUrl
   for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
-    const currentWindow = windows[i]
-    if (currentWindow.location) detectedPageUrl = currentWindow.location
-    else if (i !== 0) {
-      const nestedWindow = windows[i - 1]
-      if (nestedWindow.referrer) detectedPageUrl = nestedWindow.referrer
-      else if (nestedWindow.ancestorOrigin) detectedPageUrl = nestedWindow.ancestorOrigin
+    detectedPageUrl = _safeGet(() => windows[i].location.href)
+    if (i !== 0) {
+      if (!detectedPageUrl) detectedPageUrl = _safeGet(() => windows[i - 1].document.referrer)
+      if (!detectedPageUrl) detectedPageUrl = ancestorOrigins[i - 1]
     }
   }
+
   return detectedPageUrl
+}
+
+function _safeGet (getter) {
+  try {
+    return getter()
+  } catch (e) {
+    return undefined
+  }
 }

@@ -1233,95 +1233,60 @@ function loadedDomain() {
   return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
 }
 /**
- * @returns {string}
- * @private
+ * @return {string|undefined}
+ */
+
+function getReferrer() {
+  var win = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+  return _safeGet(function () {
+    return win.top.document.referrer;
+  });
+}
+/**
+ * @return {string|undefined}
  */
 
 function getPage() {
-  try {
-    var windows = _windowsTopDown();
-
-    return {
-      referrer: _getReferrer(windows),
-      pageUrl: _getPageUrl(windows)
-    };
-  } catch (e) {
-    return {
-      pageUrl: undefined,
-      referrer: undefined
-    };
-  }
-}
-
-function _windowsTopDown() {
-  var ancestorOrigins = _getAncestorOrigins();
-
+  var win = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+  var ancestorOrigins = _safeGet(function () {
+    return win.location.ancestorOrigins;
+  }) || {};
   var windows = [];
   var currentWindow;
-  var i = 0;
 
-  try {
-    do {
-      currentWindow = currentWindow ? currentWindow.parent : window;
+  do {
+    currentWindow = currentWindow ? currentWindow.parent : win;
+    windows.push(currentWindow);
+  } while (currentWindow !== top);
 
-      try {
-        windows.push({
-          referrer: currentWindow.document.referrer,
-          location: currentWindow.location.href,
-          ancestorOrigin: ancestorOrigins[i]
-        });
-      } catch (e) {
-        windows.push({
-          referrer: null,
-          location: null,
-          ancestorOrigin: ancestorOrigins[i]
-        });
-      }
+  var detectedPageUrl;
 
-      i++;
-    } while (currentWindow !== window.top);
-  } catch (e) {
-    windows.push({
-      referrer: null,
-      location: null,
-      ancestorOrigin: null
+  var _loop = function _loop(i) {
+    detectedPageUrl = _safeGet(function () {
+      return windows[i].location.href;
     });
-  }
 
-  return windows;
-}
-
-function _getAncestorOrigins() {
-  try {
-    return window.location.ancestorOrigins || {};
-  } catch (e) {
-    return {};
-  }
-}
-
-function _getReferrer(levels) {
-  var detectedReferer = null;
-
-  for (var i = levels.length - 1; i >= 0 && !detectedReferer; i--) {
-    var currentWindow = levels[i];
-    if (currentWindow.referrer) detectedReferer = currentWindow.referrer;else if (currentWindow.ancestorOrigin) detectedReferer = currentWindow.ancestorOrigin;
-  }
-
-  return detectedReferer;
-}
-
-function _getPageUrl(levels) {
-  var detectedPageUrl = null;
-
-  for (var i = levels.length - 1; i >= 0 && !detectedPageUrl; i--) {
-    var currentWindow = levels[i];
-    if (currentWindow.location) detectedPageUrl = currentWindow.location;else if (i !== 0) {
-      var nestedWindow = levels[i - 1];
-      if (nestedWindow.referrer) detectedPageUrl = nestedWindow.referrer;else if (nestedWindow.ancestorOrigin) detectedPageUrl = nestedWindow.ancestorOrigin;
+    if (i !== 0) {
+      if (!detectedPageUrl) detectedPageUrl = _safeGet(function () {
+        return windows[i - 1].document.referrer;
+      });
+      if (!detectedPageUrl) detectedPageUrl = ancestorOrigins[i - 1];
     }
+  };
+
+  for (var i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
+    _loop(i);
   }
 
   return detectedPageUrl;
+}
+
+function _safeGet(getter) {
+  try {
+    return getter();
+  } catch (e) {
+    return undefined;
+  }
 }
 
 /**
@@ -1659,12 +1624,15 @@ function init(size, errorCallback) {
 var _currentPage = null;
 /**
  * @param state
- * @return {{pageUrl: *}}
+ * @return {{pageUrl: string|undefined, referrer: string|undefined}}
  */
 
 function enrich(state) {
   if (!_currentPage) {
-    _currentPage = getPage();
+    _currentPage = {
+      pageUrl: getPage(),
+      referrer: getReferrer()
+    };
   }
 
   return _currentPage;

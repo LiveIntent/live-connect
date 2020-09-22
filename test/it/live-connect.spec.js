@@ -220,11 +220,10 @@ describe('LiveConnect', function () {
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
 
+    expect(firstTrackingRequest.query.refr).to.be.undefined
     if (isIE() || isFirefox() || isEdgeBefore79()) {
-      expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.refr)
       expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
     } else {
-      expect('http://double-framed.test.liveintent.com:3001').to.eq(firstTrackingRequest.query.refr)
       expect('http://double-framed.test.liveintent.com:3001').to.eq(firstTrackingRequest.query.pu)
     }
   })
