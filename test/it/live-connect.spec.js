@@ -2,24 +2,25 @@ import { assert, expect } from 'chai'
 import * as serverUtil from './helpers/mock-server'
 import {
   deleteAllCookies,
-  probeLS,
-  sendEvent,
-  resolveIdentity,
   fetchResolvedIdentity,
-  waitForRequests,
-  isIE,
+  isEdgeBefore79,
   isFirefox,
+  isIE,
+  isIE9Or10,
   isMobileSafari,
   isSafari71,
-  isIE9Or10,
-  isEdgeBefore79
+  probeLS,
+  resolveIdentity,
+  sendEvent,
+  waitForBakerRequests,
+  waitForRequests
 } from './helpers/browser'
 
 const packageJson = require('../../package')
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
 describe('LiveConnect', function () {
-  this.retries(4)
+  // this.retries(4)
   let server
 
   before(function () {
@@ -226,5 +227,13 @@ describe('LiveConnect', function () {
     } else {
       expect('http://double-framed.test.liveintent.com:3001').to.eq(firstTrackingRequest.query.pu)
     }
+  })
+
+  it('should call the baker when the domain has a baker', function () {
+    server.openPage('baked.liveintent.com', 'page')
+    sendEvent({}, probeLS() ? 1 : 2, server)
+    waitForBakerRequests(2, server)
+
+    expect(server.getBakerHistory().length).to.eq(2)
   })
 })

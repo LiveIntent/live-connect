@@ -11,7 +11,8 @@ import { hashEmail } from '../../src/utils/hash'
 describe('LiveConnect', () => {
   const sandbox = sinon.createSandbox()
   let imgStub = null
-  let imagePixelsCreated = []
+  let pixelCalls = []
+  let errorCalls = []
   jsdom({
     url: 'http://www.example.com/?sad=0&dsad=iou',
     useEach: true
@@ -22,13 +23,19 @@ describe('LiveConnect', () => {
   })
 
   beforeEach(() => {
-    imagePixelsCreated = []
+    pixelCalls = []
+    errorCalls = []
+    global.XDomainRequest = null
+    global.XMLHttpRequest = sandbox.useFakeXMLHttpRequest()
+    global.XMLHttpRequest.onCreate = function (xhr) {
+      pixelCalls.push(xhr)
+    }
     const onload = () => 1
     imgStub = sandbox.stub(window, 'Image').callsFake(() => {
       const obj = {
         onload: onload
       }
-      imagePixelsCreated.push(obj)
+      errorCalls.push(obj)
       return obj
     })
   })
@@ -49,18 +56,19 @@ describe('LiveConnect', () => {
   })
 
   it('should expose liQ, emit error for any subsequent initialization with different config', function () {
-    LiveConnect({appId:"a-00xx"})
+    LiveConnect({ appId: 'a-00xx' })
     let liQ = window.liQ
     expect(liQ.ready).to.be.true
-    liQ.push( { event: "viewProduct", name: "a-00xx"} )
-    LiveConnect({ appId: "config" })
+    liQ.push({ event: 'viewProduct', name: 'a-00xx' })
+    LiveConnect({ appId: 'config' })
     liQ = window.liQ
     expect(liQ.ready).to.be.true
-    liQ.push( { event: "viewProduct", name:"config"} )
-    expect(imagePixelsCreated.length).to.eql(3)
-    const firstAppIdEventSrc = imagePixelsCreated[0].src
-    const duplicationNotificationSrc = imagePixelsCreated[1].src
-    const secondAppIdEventSrc = imagePixelsCreated[2].src
+    liQ.push({ event: 'viewProduct', name: 'config' })
+    expect(pixelCalls.length).to.eql(2)
+    expect(errorCalls.length).to.eql(1)
+    const firstAppIdEventSrc = pixelCalls[0].url
+    const duplicationNotificationSrc = errorCalls[0].src
+    const secondAppIdEventSrc = pixelCalls[1].url
 
     const firstCallParams = urlParams(firstAppIdEventSrc)
     const duplicationParams = urlParams(duplicationNotificationSrc)
@@ -76,17 +84,18 @@ describe('LiveConnect', () => {
   })
 
   it('should expose liQ, and not emit error when the config has not changed', function () {
-    LiveConnect({appId:"a-00xx"})
+    LiveConnect({ appId: 'a-00xx' })
     let liQ = window.liQ
     expect(liQ.ready).to.be.true
-    liQ.push( { event: "viewProduct", name: "a-00xx"} )
-    LiveConnect({ appId: "a-00xx" })
+    liQ.push({ event: 'viewProduct', name: 'a-00xx' })
+    LiveConnect({ appId: 'a-00xx' })
     liQ = window.liQ
     expect(liQ.ready).to.be.true
-    liQ.push( { event: "viewProduct", name:"config"} )
-    expect(imagePixelsCreated.length).to.eql(2)
-    const firstAppIdEventSrc = imagePixelsCreated[0].src
-    const secondAppIdEventSrc = imagePixelsCreated[1].src
+    liQ.push({ event: 'viewProduct', name: 'config' })
+    expect(pixelCalls.length).to.eql(2)
+    expect(errorCalls.length).to.eql(0)
+    const firstAppIdEventSrc = pixelCalls[0].url
+    const secondAppIdEventSrc = pixelCalls[1].url
 
     const firstCallParams = urlParams(firstAppIdEventSrc)
     const secondCallParams = urlParams(secondAppIdEventSrc)
@@ -100,14 +109,14 @@ describe('LiveConnect', () => {
 
   it('should process a previously initialized liQ', function () {
     window.liQ = []
-    window.liQ.push({ event: "viewProduct", name: "first"}, { event: "viewProduct", name: "second"})
-    LiveConnect({appId:"a-00xx"})
-    let liQ = window.liQ
+    window.liQ.push({ event: 'viewProduct', name: 'first' }, { event: 'viewProduct', name: 'second' })
+    LiveConnect({ appId: 'a-00xx' })
+    const liQ = window.liQ
     expect(liQ.ready).to.be.true
-    liQ.push( { event: "viewProduct", name: "third"} )
-    expect(imagePixelsCreated.length).to.eql(3)
-    imagePixelsCreated.forEach(image => {
-      const params = urlParams(image.src)
+    liQ.push({ event: 'viewProduct', name: 'third' })
+    expect(pixelCalls.length).to.eql(3)
+    pixelCalls.forEach(call => {
+      const params = urlParams(call.url)
       expect(params.duid).to.eql(liQ.peopleVerifiedId)
       expect(params.aid).to.eql('a-00xx')
     })
@@ -131,19 +140,19 @@ describe('LiveConnect', () => {
   it('should accept a single event and send it', function () {
     const lc = LiveConnect({})
     lc.push({ event: 'some' })
-    expect(imagePixelsCreated.length).to.eql(1)
-    const params = urlParams(imagePixelsCreated[0].src)
+    expect(pixelCalls.length).to.eql(1)
+    const params = urlParams(pixelCalls[0].url)
     expect(params.duid).to.eql(lc.peopleVerifiedId)
     expect(params.se).to.eql(base64UrlEncode('{"event":"some"}'))
   })
 
   it('should accept an emailHash, not send an event, and then include the HEM in the next call', function () {
     const lc = LiveConnect({})
-    lc.push({ event: 'setEmail', email:'    steve@liveIntent.com   ' })
-    lc.push({ event: 'pageView'})
-    expect(imagePixelsCreated.length).to.eql(1)
+    lc.push({ event: 'setEmail', email: '    steve@liveIntent.com   ' })
+    lc.push({ event: 'pageView' })
+    expect(pixelCalls.length).to.eql(1)
     const hashes = hashEmail('steve@liveintent.com')
-    const params = urlParams(imagePixelsCreated[0].src)
+    const params = urlParams(pixelCalls[0].url)
     expect(params.duid).to.eql(lc.peopleVerifiedId)
     expect(params.se).to.eql(base64UrlEncode('{"event":"pageView"}'))
     expect(params.e).to.eql(`${hashes.md5},${hashes.sha1},${hashes.sha256}`)
@@ -152,8 +161,8 @@ describe('LiveConnect', () => {
   it('send an empty event when fired', function () {
     const lc = LiveConnect({})
     lc.fire()
-    expect(imagePixelsCreated.length).to.eql(1)
-    const params = urlParams(imagePixelsCreated[0].src)
+    expect(pixelCalls.length).to.eql(1)
+    const params = urlParams(pixelCalls[0].url)
     expect(params.duid).to.eql(lc.peopleVerifiedId)
     expect(params.se).to.eql(base64UrlEncode('{}'))
   })
@@ -161,9 +170,9 @@ describe('LiveConnect', () => {
   it('should accept multiple events and send them', function () {
     const lc = LiveConnect({})
     lc.push({ event: 'some' }, { event: 'another' })
-    expect(imagePixelsCreated.length).to.eql(2)
-    imagePixelsCreated.forEach(image => {
-      const params = urlParams(image.src)
+    expect(pixelCalls.length).to.eql(2)
+    pixelCalls.forEach(call => {
+      const params = urlParams(call.url)
       expect(params.duid).to.eql(lc.peopleVerifiedId)
     })
   })
@@ -171,9 +180,9 @@ describe('LiveConnect', () => {
   it('should accept multiple events in an array and send them', function () {
     const lc = LiveConnect({})
     lc.push([{ event: 'some' }, { event: 'another' }])
-    expect(imagePixelsCreated.length).to.eql(2)
-    imagePixelsCreated.forEach(image => {
-      const params = urlParams(image.src)
+    expect(pixelCalls.length).to.eql(2)
+    pixelCalls.forEach(call => {
+      const params = urlParams(call.url)
       expect(params.duid).to.eql(lc.peopleVerifiedId)
     })
   })
@@ -184,7 +193,7 @@ describe('LiveConnect', () => {
   })
 
   it('should expose the config', function () {
-    const config = { appId: "a-00xx"}
+    const config = { appId: 'a-00xx' }
     const lc = LiveConnect(config)
     expect(lc.config).to.eql(config)
   })
@@ -192,8 +201,8 @@ describe('LiveConnect', () => {
   it('emit an error if the pushed value is not an object', function () {
     const lc = LiveConnect({})
     lc.push([[[[[':)']]]]])
-    expect(imagePixelsCreated.length).to.eql(1)
-    const params = urlParams(imagePixelsCreated[0].src)
+    expect(errorCalls.length).to.eql(1)
+    const params = urlParams(errorCalls[0].src)
     // I don't want to check the full content here, i'm fine with just being present
     expect(params.ae).to.not.eq(undefined)
   })
@@ -201,8 +210,8 @@ describe('LiveConnect', () => {
   it('emit an error if the pushed value is a config', function () {
     const lc = LiveConnect({})
     lc.push({ config: {} })
-    expect(imagePixelsCreated.length).to.eql(1)
-    const params = urlParams(imagePixelsCreated[0].src)
+    expect(errorCalls.length).to.eql(1)
+    const params = urlParams(errorCalls[0].src)
     // I don't want to check the full content here, i'm fine with just being present
     expect(params.ae).to.not.eq(undefined)
   })

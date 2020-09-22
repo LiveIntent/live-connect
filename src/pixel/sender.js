@@ -4,7 +4,10 @@
  * @returns {{send: *}}
  * @constructor
  */
-import { isFunction } from '../utils/types'
+import { get } from '../utils/ajax'
+import { isArray, isFunction } from '../utils/types'
+import { sendPixel } from '../utils/pixel'
+import { safeParseJson } from '../utils/json'
 
 export function PixelSender (liveConnectConfig, onload, presend) {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
@@ -13,25 +16,50 @@ export function PixelSender (liveConnectConfig, onload, presend) {
    * @param {StateWrapper} state
    * @private
    */
-  function _send (state) {
+  function _sendAjax (state) {
+    _sendState(state, 'j', uri => {
+      get(uri, responseBody => {
+        if (isFunction(onload)) onload()
+        const bakers = safeParseJson(responseBody).bakers
+        if (isArray(bakers)) {
+          for (let i = 0; i < bakers.length; i++) sendPixel(`${bakers[i]}?dtstmp=${utcMillis()}`)
+        }
+      })
+    })
+  }
+
+  /**
+   * @param {StateWrapper} state
+   * @private
+   */
+  function _sendPixel (state) {
+    _sendState(state, 'p', uri => {
+      sendPixel(uri, onload)
+    })
+  }
+
+  function _sendState (state, endpoint, makeCall) {
     if (state.sendsPixel()) {
       if (isFunction(presend)) {
         presend()
       }
-      const img = new window.Image()
-      const now = new Date()
-      const utcMillis = new Date(now.toUTCString()).getTime() + now.getMilliseconds()
-      const latest = `dtstmp=${utcMillis}`
+
+      const latest = `dtstmp=${utcMillis()}`
       const queryString = state.asQueryString()
       const withDt = queryString ? `&${latest}` : `?${latest}`
-      img.src = `${url}/p${queryString}${withDt}`
-      if (isFunction(onload)) {
-        img.onload = onload
-      }
+      const uri = `${url}/${endpoint}${queryString}${withDt}`
+
+      makeCall(uri)
     }
   }
 
+  function utcMillis () {
+    const now = new Date()
+    return new Date(now.toUTCString()).getTime() + now.getMilliseconds()
+  }
+
   return {
-    send: _send
+    sendAjax: _sendAjax,
+    sendPixel: _sendPixel
   }
 }

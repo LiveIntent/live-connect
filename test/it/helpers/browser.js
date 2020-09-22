@@ -21,6 +21,16 @@ export function waitForRequests (expectedRequests, server) {
   }
 }
 
+export function waitForBakerRequests (expectedRequests, server) {
+  try {
+    browser.waitUntil(() => {
+      return server.getBakerHistory().length === expectedRequests
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
+  } catch (e) {
+    console.error(e, server.getBakerHistory().length, expectedRequests)
+  }
+}
+
 export function resolveIdentity (expectedRequests, server) {
   try {
     browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')

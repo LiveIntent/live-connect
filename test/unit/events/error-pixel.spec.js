@@ -11,7 +11,7 @@ describe('ErrorPixel', () => {
   let windowBus = null
   let errors = []
   const stub = sandbox.stub(pixelSender, 'PixelSender').returns({
-    send: (data) => errors.push(data),
+    sendPixel: (data) => errors.push(data),
     mock: true
   })
   jsdom({
@@ -50,7 +50,7 @@ describe('ErrorPixel', () => {
 
   it('should truncate the excessive text', function () {
     const longText = 'x'.repeat(200)
-    const error =  new Error(longText)
+    const error = new Error(longText)
     const result = errorPixel.asErrorDetails(error)
     expect(result.errorDetails.message.length).to.eq(123)
   })

@@ -67,6 +67,97 @@ function _objectSpread2(target) {
   return target;
 }
 
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PIXEL_SENT_PREFIX = 'lips';
+var PRELOAD_PIXEL = 'pre_lips';
+
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+}
+
+function send(prefix, message) {
+  _emit(prefix, message);
+}
+function error(name, message, e) {
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+
+  _emit(ERRORS_PREFIX, wrapped);
+}
+
+/**
+ * @param url
+ * @param responseHandler
+ * @param fallback
+ * @param timeout
+ */
+
+var get = function get(url, responseHandler) {
+  var fallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+  var timeout = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1000;
+
+  function errorCallback(name, message, error$1, request) {
+    error(name, message, error$1);
+    fallback();
+  }
+
+  function xhrCall() {
+    var xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4) {
+        var status = xhr.status;
+
+        if (status >= 200 && status < 300 || status === 304) {
+          responseHandler(xhr.responseText, xhr);
+        } else {
+          var error = new Error("Incorrect status received : ".concat(status));
+          errorCallback('XHRError', "Error during XHR call: ".concat(status, ", url: ").concat(url), error);
+        }
+      }
+    };
+
+    return xhr;
+  }
+
+  function xdrCall() {
+    var xdr = new window.XDomainRequest();
+
+    xdr.onprogress = function () {};
+
+    xdr.onerror = function () {
+      var error = new Error("XDR Error received: ".concat(xdr.responseText));
+      errorCallback('XDRError', "Error during XDR call: ".concat(xdr.responseText, ", url: ").concat(url), error);
+    };
+
+    xdr.onload = function () {
+      return responseHandler(xdr.responseText, xdr);
+    };
+
+    return xdr;
+  }
+
+  try {
+    var request = window && window.XDomainRequest ? xdrCall() : xhrCall();
+
+    request.ontimeout = function () {
+      var error = new Error("Timeout after ".concat(timeout, ", url : ").concat(url));
+      errorCallback('AjaxTimeout', "Timeout after ".concat(timeout), error, request);
+    };
+
+    request.open('GET', url, true);
+    request.timeout = timeout;
+    request.withCredentials = true;
+    request.send();
+  } catch (error) {
+    errorCallback('AjaxCompositionError', "Error while constructing ajax request, ".concat(error), error);
+  }
+};
+
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 /**
@@ -150,6 +241,35 @@ function expiresInDays(expires) {
 }
 
 /**
+ * Send a Get request via a pixel call
+ * @param uri the pixel uri
+ * @param onload a function that is executed if the image is successfully loaded
+ */
+
+function sendPixel(uri, onload) {
+  var img = new window.Image();
+
+  if (isFunction(onload)) {
+    img.onload = onload;
+  }
+
+  img.src = uri;
+}
+
+/**
+ * Parses the string as json. If the string is not a valid json, then an empty json is returned.
+ * @param json a json string
+ * @returns {{}}
+ */
+function safeParseJson(json) {
+  try {
+    return JSON.parse(json);
+  } catch (e) {
+    return {};
+  }
+}
+
+/**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {function} onload
  * @returns {{send: *}}
@@ -162,28 +282,54 @@ function PixelSender(liveConnectConfig, onload, presend) {
    * @private
    */
 
-  function _send(state) {
+  function _sendAjax(state) {
+    _sendState(state, 'j', function (uri) {
+      get(uri, function (responseBody) {
+        if (isFunction(onload)) onload();
+        var bakers = safeParseJson(responseBody).bakers;
+
+        if (isArray(bakers)) {
+          for (var i = 0; i < bakers.length; i++) {
+            sendPixel("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
+          }
+        }
+      });
+    });
+  }
+  /**
+   * @param {StateWrapper} state
+   * @private
+   */
+
+
+  function _sendPixel(state) {
+    _sendState(state, 'p', function (uri) {
+      sendPixel(uri, onload);
+    });
+  }
+
+  function _sendState(state, endpoint, makeCall) {
     if (state.sendsPixel()) {
       if (isFunction(presend)) {
         presend();
       }
 
-      var img = new window.Image();
-      var now = new Date();
-      var utcMillis = new Date(now.toUTCString()).getTime() + now.getMilliseconds();
-      var latest = "dtstmp=".concat(utcMillis);
+      var latest = "dtstmp=".concat(utcMillis());
       var queryString = state.asQueryString();
       var withDt = queryString ? "&".concat(latest) : "?".concat(latest);
-      img.src = "".concat(url, "/p").concat(queryString).concat(withDt);
-
-      if (isFunction(onload)) {
-        img.onload = onload;
-      }
+      var uri = "".concat(url, "/").concat(endpoint).concat(queryString).concat(withDt);
+      makeCall(uri);
     }
   }
 
+  function utcMillis() {
+    var now = new Date();
+    return new Date(now.toUTCString()).getTime() + now.getMilliseconds();
+  }
+
   return {
-    send: _send
+    sendAjax: _sendAjax,
+    sendPixel: _sendPixel
   };
 }
 
@@ -445,28 +591,6 @@ function base64UrlEncode(s) {
   }
 
   return btoa(utf8Bytes).replace(_base64encodeRegex, _replaceBase64Chars);
-}
-
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PIXEL_SENT_PREFIX = 'lips';
-var PRELOAD_PIXEL = 'pre_lips';
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-
-function send(prefix, message) {
-  _emit(prefix, message);
-}
-function error(name, message, e) {
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-
-  _emit(ERRORS_PREFIX, wrapped);
 }
 
 var emailRegex = function emailRegex() {
@@ -1698,7 +1822,7 @@ function asErrorDetails(e) {
 function _pixelError(error) {
 
   if (_pixelSender) {
-    _pixelSender.send(new StateWrapper(asErrorDetails(error)).combineWith(_state || {}).combineWith(enrich()));
+    _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error)).combineWith(_state || {}).combineWith(enrich()));
   }
 }
 
@@ -1928,75 +2052,6 @@ function enrich$2(state, storageHandler) {
 
   return {};
 }
-
-/**
- * @param url
- * @param responseHandler
- * @param fallback
- * @param timeout
- */
-
-var get = function get(url, responseHandler) {
-  var fallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-  var timeout = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1000;
-
-  function errorCallback(name, message, error$1, request) {
-    error(name, message, error$1);
-    fallback();
-  }
-
-  function xhrCall() {
-    var xhr = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        var status = xhr.status;
-
-        if (status >= 200 && status < 300 || status === 304) {
-          responseHandler(xhr.responseText, xhr);
-        } else {
-          var error = new Error("Incorrect status received : ".concat(status));
-          errorCallback('XHRError', "Error during XHR call: ".concat(status, ", url: ").concat(url), error);
-        }
-      }
-    };
-
-    return xhr;
-  }
-
-  function xdrCall() {
-    var xdr = new window.XDomainRequest();
-
-    xdr.onprogress = function () {};
-
-    xdr.onerror = function () {
-      var error = new Error("XDR Error received: ".concat(xdr.responseText));
-      errorCallback('XDRError', "Error during XDR call: ".concat(xdr.responseText, ", url: ").concat(url), error);
-    };
-
-    xdr.onload = function () {
-      return responseHandler(xdr.responseText, xdr);
-    };
-
-    return xdr;
-  }
-
-  try {
-    var request = window && window.XDomainRequest ? xdrCall() : xhrCall();
-
-    request.ontimeout = function () {
-      var error = new Error("Timeout after ".concat(timeout, ", url : ").concat(url));
-      errorCallback('AjaxTimeout', "Timeout after ".concat(timeout), error, request);
-    };
-
-    request.open('GET', url, true);
-    request.timeout = timeout;
-    request.withCredentials = true;
-    request.send();
-  } catch (error) {
-    errorCallback('AjaxCompositionError', "Error while constructing ajax request, ".concat(error), error);
-  }
-};
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
@@ -2420,7 +2475,7 @@ function _pushSingleEvent(event, pixelClient, enrichedState) {
       eventSource: event
     }, hemStore);
 
-    pixelClient.send(enrichedState.combineWith(withHemStore));
+    pixelClient.sendAjax(enrichedState.combineWith(withHemStore));
   }
 }
 /**

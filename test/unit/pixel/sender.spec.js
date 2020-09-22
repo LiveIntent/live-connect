@@ -1,59 +1,124 @@
 import { expect } from 'chai'
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
+import * as pixelUtils from '../../../src/utils/pixel'
 import { PixelSender } from '../../../src/pixel/sender'
 
 describe('PixelSender', () => {
+  let ajaxRequests = []
+  let pixelRequests = []
+  const sandbox = sinon.createSandbox()
+  let pixelStub
+
   jsdom({
     url: 'http://www.example.com',
     useEach: true
   })
 
-  it('exposes the send function', function () {
+  beforeEach(() => {
+    ajaxRequests = []
+    pixelRequests = []
+    global.XDomainRequest = null
+    global.XMLHttpRequest = sandbox.useFakeXMLHttpRequest()
+    global.XMLHttpRequest.onCreate = function (xhr) {
+      ajaxRequests.push(xhr)
+    }
+    pixelStub = sandbox.stub(pixelUtils, 'sendPixel').callsFake(
+      (uri, onload) => {
+        pixelRequests.push({
+          uri: uri,
+          onload: onload
+        })
+      }
+    )
+  })
+
+  afterEach(() => {
+    pixelStub.restore()
+  })
+
+  it('exposes the send and sendPixel functions', function () {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, null)
-    expect(typeof sender.send).to.eql('function')
+    expect(typeof sender.sendAjax).to.eql('function')
+    expect(typeof sender.sendPixel).to.eql('function')
   })
 
-  it('default to production if none set', function () {
-    const sandbox = sinon.createSandbox()
-    const obj = {}
-    const imgStub = sandbox.stub(window, 'Image').returns(obj)
+  it('defaults to production if none set when sendAjax', function (done) {
+    const successCallback = () => {
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?xxx=yyy&dtstmp=\d+/)
+      done()
+    }
+    const sender = new PixelSender({}, successCallback)
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
+  })
+
+  it('sends a request to a custom collector url when sendAjax', function (done) {
+    const successCallback = () => {
+      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?xxx=yyy&dtstmp=\d+/)
+      done()
+    }
+    const sender = new PixelSender({ collectorUrl: 'http://localhost' }, successCallback)
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
+  })
+
+  it('calls bakers when sendAjax', function (done) {
+    pixelStub.restore()
+    let bakersCount = 0
+    pixelStub = sandbox.stub(pixelUtils, 'sendPixel').callsFake((uri) => {
+      bakersCount++
+      if (bakersCount === 1) {
+        expect(uri).to.match(/https:\/\/baker1.com\/baker\?dtstmp=\d+/)
+      }
+      if (bakersCount === 2) {
+        expect(uri).to.match(/https:\/\/baker2.com\/baker\?dtstmp=\d+/)
+        done()
+      }
+    })
+
     const sender = new PixelSender({})
-    sender.send({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
-    expect(obj.src).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
-    imgStub.restore()
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
   })
 
-  it('send an image pixel and call onload if request succeeds', function () {
-    const sandbox = sinon.createSandbox()
-    const obj = {}
-    const imgStub = sandbox.stub(window, 'Image').returns(obj)
+  it('defaults to production if none set when sendAjax', function (done) {
+    const successCallback = () => {
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?xxx=yyy&dtstmp=\d+/)
+      done()
+    }
+    const sender = new PixelSender({}, successCallback)
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
+  })
+
+  it('calls a presend function when sendAjax', function (done) {
+    const presend = () => {
+      expect(ajaxRequests).to.be.empty
+      done()
+    }
+    const sender = new PixelSender({ }, null, presend)
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+  })
+
+  it('defaults to production if none set when sendPixel', function () {
+    const sender = new PixelSender({})
+    sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
+    expect(pixelRequests[0].onload).to.be.undefined
+  })
+
+  it('sends an image pixel and call onload if request succeeds when sendPixel', function () {
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, onload)
-    sender.send({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
-    expect(obj.src).to.match(/http:\/\/localhost\/p\?xxx=yyy&dtstmp=\d+/)
-    expect(obj.onload).to.eql(onload)
-    imgStub.restore()
+    sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    expect(pixelRequests[0].uri).to.match(/http:\/\/localhost\/p\?xxx=yyy&dtstmp=\d+/)
+    expect(pixelRequests[0].onload).to.eql(onload)
   })
 
-  it('send an image pixel and call onerror request fails', function () {
-    const sandbox = sinon.createSandbox()
-    const obj = {}
-    const imgStub = sandbox.stub(window, 'Image').returns(obj)
+  it('does not send an image pixel if sendsPixel resolves to false when sendPixel', function () {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, null)
-    sender.send({ asQueryString: () => '?zzz=ccc', sendsPixel: () => true })
-    expect(obj.src).to.match(/http:\/\/localhost\/p\?zzz=ccc&dtstmp=\d+/)
-    expect(obj.onload).to.eql(undefined)
-    imgStub.restore()
-  })
-
-  it('does not send an image pixel if sendsPixel resolves to false', function () {
-    const sandbox = sinon.createSandbox()
-    const obj = {}
-    const imgStub = sandbox.stub(window, 'Image').returns(obj)
-    const sender = new PixelSender({ collectorUrl: 'http://localhost' }, null)
-    sender.send({ asQueryString: () => '?zzz=ccc', sendsPixel: () => false })
-    expect(obj.onload).to.eql(undefined)
-    imgStub.restore()
+    sender.sendPixel({ asQueryString: () => '?zzz=ccc', sendsPixel: () => false })
+    expect(pixelRequests).to.be.empty
   })
 })
