@@ -19,11 +19,12 @@ export function getPage (win = window) {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
   const windows = []
-  let currentWindow
-  do {
-    currentWindow = currentWindow ? currentWindow.parent : win
+  let currentWindow = win
+  while (currentWindow !== top) {
     windows.push(currentWindow)
-  } while (currentWindow !== top)
+    currentWindow = currentWindow.parent
+  }
+  windows.push(currentWindow)
 
   let detectedPageUrl
   for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
