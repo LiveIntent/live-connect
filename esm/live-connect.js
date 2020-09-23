@@ -908,6 +908,11 @@ var _pMap = {
     return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), function (s) {
       return encodeURIComponent(s);
     });
+  },
+  referrer: function referrer(_referrer) {
+    return _asParamOrEmpty('refr', _referrer, function (s) {
+      return encodeURIComponent(s);
+    });
   }
 };
 /**
@@ -1222,33 +1227,66 @@ var dist_9 = dist.replaceCharAt;
 var dist_10 = dist.ulid;
 
 /**
- * @returns {boolean}
+ * @return {string}
  */
-function isIframe() {
-  try {
-    return window.self !== window.top;
-  } catch (e) {
-    return true;
-  }
+function loadedDomain() {
+  return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
 }
 /**
- * @returns {string}
- * @private
+ * @return {string|undefined}
+ */
+
+function getReferrer() {
+  var win = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+  return _safeGet(function () {
+    return win.top.document.referrer;
+  });
+}
+/**
+ * @return {string|undefined}
  */
 
 function getPage() {
-  try {
-    return isIframe() ? document.referrer : document.location.href;
-  } catch (e) {
-    return document.location.href;
-  }
-}
-/**
- * @return {string}
- */
+  var win = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window;
+  var ancestorOrigins = _safeGet(function () {
+    return win.location.ancestorOrigins;
+  }) || {};
+  var windows = [];
+  var currentWindow;
 
-function loadedDomain() {
-  return document.domain || document.location && document.location.host || window && window.location && window.location.host || 'localhost';
+  do {
+    currentWindow = currentWindow ? currentWindow.parent : win;
+    windows.push(currentWindow);
+  } while (currentWindow !== top);
+
+  var detectedPageUrl;
+
+  var _loop = function _loop(i) {
+    detectedPageUrl = _safeGet(function () {
+      return windows[i].location.href;
+    });
+
+    if (i !== 0) {
+      if (!detectedPageUrl) detectedPageUrl = _safeGet(function () {
+        return windows[i - 1].document.referrer;
+      });
+      if (!detectedPageUrl) detectedPageUrl = ancestorOrigins[i - 1];
+    }
+  };
+
+  for (var i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
+    _loop(i);
+  }
+
+  return detectedPageUrl;
+}
+
+function _safeGet(getter) {
+  try {
+    return getter();
+  } catch (e) {
+    return undefined;
+  }
 }
 
 /**
@@ -1586,17 +1624,18 @@ function init(size, errorCallback) {
 var _currentPage = null;
 /**
  * @param state
- * @return {{pageUrl: *}}
+ * @return {{pageUrl: string|undefined, referrer: string|undefined}}
  */
 
 function enrich(state) {
   if (!_currentPage) {
-    _currentPage = getPage();
+    _currentPage = {
+      pageUrl: getPage(),
+      referrer: getReferrer()
+    };
   }
 
-  return {
-    pageUrl: _currentPage
-  };
+  return _currentPage;
 }
 
 var _state = null;

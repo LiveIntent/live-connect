@@ -5,9 +5,17 @@ export function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
     browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
+    waitForRequests(expectedRequests, server)
+  } catch (e) {
+    console.error(e, server.getHistory().length, expectedRequests)
+  }
+}
+
+export function waitForRequests (expectedRequests, server) {
+  try {
     browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "sendEvent timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
@@ -18,7 +26,7 @@ export function resolveIdentity (expectedRequests, server) {
     browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
     browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "resolveIdentity timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
@@ -29,7 +37,7 @@ export function fetchResolvedIdentity () {
     browser.waitUntil(() => {
       console.log($('#idex').getText())
       return $('#idex').getText() !== 'None'
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, "fetchResolvedIdentity timed out", WAIT_UNTIL_INTERVAL)
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
     return $('#idex').getText()
   } catch (e) {
     console.error('Error', e)
@@ -98,4 +106,30 @@ export function deleteAllCookies () {
   } catch (e) {
     console.error('Error while Deleting all cookies', e)
   }
+}
+
+export function isMobileSafari () {
+  return browser.capabilities.browserName === 'safari' && browser.capabilities.real_mobile
+}
+
+export function isSafari71 () {
+  return browser.capabilities.browserName === 'safari' && browser.capabilities.version.startsWith('7.1')
+}
+
+export function isEdgeBefore79 () {
+  return browser.capabilities.browserName === 'MicrosoftEdge' &&
+    parseInt(browser.capabilities.browserVersion.substring(0, 2)) < 79
+}
+
+export function isIE () {
+  return browser.capabilities.browserName === 'internet explorer'
+}
+
+export function isIE9Or10 () {
+  return browser.capabilities.browserName === 'internet explorer' &&
+    (browser.capabilities.version === '10' || browser.capabilities.version === '9')
+}
+
+export function isFirefox () {
+  return browser.capabilities.browserName === 'firefox'
 }
