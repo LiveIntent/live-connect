@@ -12,6 +12,8 @@
 - contains the `config.trackerName`
 ### `pu`
 - the url on which the event happened, which is populated by the `page` enricher
+### `refr`
+- the url of the referrer, which is populated by the `page` enricher
 ### `ae`
 - contains a b64 encoded string of the JSON received on handled exceptions
 ### `scre`
