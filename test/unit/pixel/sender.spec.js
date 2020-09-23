@@ -3,6 +3,8 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import * as pixelUtils from '../../../src/utils/pixel'
 import { PixelSender } from '../../../src/pixel/sender'
+import * as C from '../../../src/utils/consts'
+import * as bus from '../../../src/events/bus'
 
 describe('PixelSender', () => {
   let ajaxRequests = []
@@ -80,6 +82,18 @@ describe('PixelSender', () => {
     const sender = new PixelSender({})
     sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
+  })
+
+  it('calls emit an error when the pixel response is not a json when sendAjax', function (done) {
+    bus.init()
+    window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, (e) => {
+      expect(e.name).to.eq('CallBakers')
+      done()
+    })
+
+    const sender = new PixelSender({})
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
   it('defaults to production if none set when sendAjax', function (done) {
