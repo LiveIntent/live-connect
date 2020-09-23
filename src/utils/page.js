@@ -19,7 +19,6 @@ export function getPage (win = window) {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
   const windows = [win]
-  
   for (let currentWindow = win; currentWindow !== top; currentWindow = currentWindow.parent) {
     windows.push(currentWindow)
   }
