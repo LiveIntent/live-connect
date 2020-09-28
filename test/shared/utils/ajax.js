@@ -1,4 +1,4 @@
-import * as emitter from '../utils/emitter'
+import * as emitter from '../../../src/utils/emitter'
 
 /**
  * @param url

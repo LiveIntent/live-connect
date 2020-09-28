@@ -6,6 +6,7 @@ import { LiveConnect } from '../../src/live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
 import * as storage from '../shared/utils/storage'
+import * as ajax from '../shared/utils/ajax'
 import { hashEmail } from '../../src/utils/hash'
 
 describe('LiveConnect', () => {
@@ -51,16 +52,16 @@ describe('LiveConnect', () => {
 
   it('should expose liQ', function () {
     expect(window.liQ).to.be.undefined
-    LiveConnect({}, storage)
+    LiveConnect({}, storage, ajax)
     expect(window.liQ.ready).to.be.true
   })
 
   it('should expose liQ, emit error for any subsequent initialization with different config', function () {
-    LiveConnect({ appId: 'a-00xx' }, storage)
+    LiveConnect({ appId: 'a-00xx' }, storage, ajax)
     let liQ = window.liQ
     expect(liQ.ready).to.be.true
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
-    LiveConnect({ appId: 'config' }, storage)
+    LiveConnect({ appId: 'config' }, storage, ajax)
     liQ = window.liQ
     expect(liQ.ready).to.be.true
     liQ.push({ event: 'viewProduct', name: 'config' })
@@ -84,11 +85,11 @@ describe('LiveConnect', () => {
   })
 
   it('should expose liQ, and not emit error when the config has not changed', function () {
-    LiveConnect({ appId: 'a-00xx' }, storage)
+    LiveConnect({ appId: 'a-00xx' }, storage, ajax)
     let liQ = window.liQ
     expect(liQ.ready).to.be.true
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
-    LiveConnect({ appId: 'a-00xx' }, storage)
+    LiveConnect({ appId: 'a-00xx' }, storage, ajax)
     liQ = window.liQ
     expect(liQ.ready).to.be.true
     liQ.push({ event: 'viewProduct', name: 'config' })
@@ -110,7 +111,7 @@ describe('LiveConnect', () => {
   it('should process a previously initialized liQ', function () {
     window.liQ = []
     window.liQ.push({ event: 'viewProduct', name: 'first' }, { event: 'viewProduct', name: 'second' })
-    LiveConnect({ appId: 'a-00xx' }, storage)
+    LiveConnect({ appId: 'a-00xx' }, storage, ajax)
     const liQ = window.liQ
     expect(liQ.ready).to.be.true
     liQ.push({ event: 'viewProduct', name: 'third' })
@@ -123,22 +124,22 @@ describe('LiveConnect', () => {
   })
 
   it('should set the cookie', function () {
-    LiveConnect({}, storage)
+    LiveConnect({}, storage, ajax)
     expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
   it('should not break if the config is a bust', function () {
-    LiveConnect(null, storage)
+    LiveConnect(null, storage, ajax)
     expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
   it('should not break if the config is a string', function () {
-    LiveConnect('hello dave', storage)
+    LiveConnect('hello dave', storage, ajax)
     expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
   it('should accept a single event and send it', function () {
-    const lc = LiveConnect({}, storage)
+    const lc = LiveConnect({}, storage, ajax)
     lc.push({ event: 'some' })
     expect(pixelCalls.length).to.eql(1)
     const params = urlParams(pixelCalls[0].url)
@@ -147,7 +148,7 @@ describe('LiveConnect', () => {
   })
 
   it('should accept an emailHash, not send an event, and then include the HEM in the next call', function () {
-    const lc = LiveConnect({}, storage)
+    const lc = LiveConnect({}, storage, ajax)
     lc.push({ event: 'setEmail', email: '    steve@liveIntent.com   ' })
     lc.push({ event: 'pageView' })
     expect(pixelCalls.length).to.eql(1)
@@ -159,7 +160,7 @@ describe('LiveConnect', () => {
   })
 
   it('send an empty event when fired', function () {
-    const lc = LiveConnect({}, storage)
+    const lc = LiveConnect({}, storage, ajax)
     lc.fire()
     expect(pixelCalls.length).to.eql(1)
     const params = urlParams(pixelCalls[0].url)
@@ -168,7 +169,7 @@ describe('LiveConnect', () => {
   })
 
   it('should accept multiple events and send them', function () {
-    const lc = LiveConnect({}, storage)
+    const lc = LiveConnect({}, storage, ajax)
     lc.push({ event: 'some' }, { event: 'another' })
     expect(pixelCalls.length).to.eql(2)
     pixelCalls.forEach(call => {
@@ -178,7 +179,7 @@ describe('LiveConnect', () => {
   })
 
   it('should accept multiple events in an array and send them', function () {
-    const lc = LiveConnect({}, storage)
+    const lc = LiveConnect({}, storage, ajax)
     lc.push([{ event: 'some' }, { event: 'another' }])
     expect(pixelCalls.length).to.eql(2)
     pixelCalls.forEach(call => {
@@ -188,18 +189,18 @@ describe('LiveConnect', () => {
   })
 
   it('should return the resolution Url', function () {
-    const lc = LiveConnect({}, storage)
+    const lc = LiveConnect({}, storage, ajax)
     expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--.*/)
   })
 
   it('should expose the config', function () {
     const config = { appId: 'a-00xx' }
-    const lc = LiveConnect(config, storage)
+    const lc = LiveConnect(config, storage, ajax)
     expect(lc.config).to.eql(config)
   })
 
-  it('emit an error if the pushed value is not an object', function () {
-    const lc = LiveConnect({}, storage)
+  it('should emit an error if the pushed value is not an object', function () {
+    const lc = LiveConnect({}, storage, ajax)
     lc.push([[[[[':)']]]]])
     expect(errorCalls.length).to.eql(1)
     const params = urlParams(errorCalls[0].src)
@@ -207,12 +208,19 @@ describe('LiveConnect', () => {
     expect(params.ae).to.not.eq(undefined)
   })
 
-  it('emit an error if the pushed value is a config', function () {
-    const lc = LiveConnect({}, storage)
+  it('should emit an error if the pushed value is a config', function () {
+    const lc = LiveConnect({}, storage, ajax)
     lc.push({ config: {} })
     expect(errorCalls.length).to.eql(1)
     const params = urlParams(errorCalls[0].src)
     // I don't want to check the full content here, i'm fine with just being present
     expect(params.ae).to.not.eq(undefined)
+  })
+
+  it('should emit an error if the storage and ajax are not provided', function () {
+    LiveConnect({})
+    expect(errorCalls.length).to.eql(2)
+    expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined
+    expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined
   })
 })

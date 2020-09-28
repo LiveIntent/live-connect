@@ -45,6 +45,7 @@ import * as legacyDuid from './enrichers/legacy-duid'
 import { isArray, isObject } from './utils/types'
 import * as idex from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
+import { AjaxHandler } from './handlers/ajax-handler'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState) {
@@ -122,10 +123,11 @@ function _getInitializedLiveConnect (liveConnectConfig) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {AjaxHandler} externalAjaxHandler
  * @returns {LiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalAjaxHandler) {
   try {
     eventBus.init()
     errorHandler.register(liveConnectConfig)
@@ -135,6 +137,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
 
   try {
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
+    const ajaxHandler = AjaxHandler(externalAjaxHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnricher.enrich, cookies.enrich, legacyDuid.enrich]
@@ -148,8 +151,8 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
     const syncContainerData = { ...liveConnectConfig, ...{ peopleVerifiedId: postManagedState.data.peopleVerifiedId } }
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
-    const pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload)
-    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler)
+    const pixelClient = new PixelSender(liveConnectConfig, ajaxHandler, onPixelLoad, onPixelPreload)
+    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, ajaxHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {
       push: _push,
@@ -169,15 +172,16 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {AjaxHandler} externalAjaxHandler
  * @returns {LiveConnect}
  * @constructor
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler) {
+export function LiveConnect (liveConnectConfig, externalStorageHandler, externalAjaxHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalAjaxHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])

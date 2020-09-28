@@ -67,98 +67,6 @@ function _objectSpread2(target) {
   return target;
 }
 
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PIXEL_SENT_PREFIX = 'lips';
-var PRELOAD_PIXEL = 'pre_lips';
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-
-function send(prefix, message) {
-  _emit(prefix, message);
-}
-function error(name, message) {
-  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-
-  _emit(ERRORS_PREFIX, wrapped);
-}
-
-/**
- * @param url
- * @param responseHandler
- * @param fallback
- * @param timeout
- */
-
-var get = function get(url, responseHandler) {
-  var fallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-  var timeout = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1000;
-
-  function errorCallback(name, message, error$1, request) {
-    error(name, message, error$1);
-    fallback();
-  }
-
-  function xhrCall() {
-    var xhr = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        var status = xhr.status;
-
-        if (status >= 200 && status < 300 || status === 304) {
-          responseHandler(xhr.responseText, xhr);
-        } else {
-          var error = new Error("Incorrect status received : ".concat(status));
-          errorCallback('XHRError', "Error during XHR call: ".concat(status, ", url: ").concat(url), error);
-        }
-      }
-    };
-
-    return xhr;
-  }
-
-  function xdrCall() {
-    var xdr = new window.XDomainRequest();
-
-    xdr.onprogress = function () {};
-
-    xdr.onerror = function () {
-      var error = new Error("XDR Error received: ".concat(xdr.responseText));
-      errorCallback('XDRError', "Error during XDR call: ".concat(xdr.responseText, ", url: ").concat(url), error);
-    };
-
-    xdr.onload = function () {
-      return responseHandler(xdr.responseText, xdr);
-    };
-
-    return xdr;
-  }
-
-  try {
-    var request = window && window.XDomainRequest ? xdrCall() : xhrCall();
-
-    request.ontimeout = function () {
-      var error = new Error("Timeout after ".concat(timeout, ", url : ").concat(url));
-      errorCallback('AjaxTimeout', "Timeout after ".concat(timeout), error, request);
-    };
-
-    request.open('GET', url, true);
-    request.timeout = timeout;
-    request.withCredentials = true;
-    request.send();
-  } catch (error) {
-    errorCallback('AjaxCompositionError', "Error while constructing ajax request, ".concat(error), error);
-  }
-};
-
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 /**
@@ -257,13 +165,39 @@ function sendPixel(uri, onload) {
   img.src = uri;
 }
 
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PIXEL_SENT_PREFIX = 'lips';
+var PRELOAD_PIXEL = 'pre_lips';
+
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+}
+
+function send(prefix, message) {
+  _emit(prefix, message);
+}
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+
+  _emit(ERRORS_PREFIX, wrapped);
+}
+
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {AjaxHandler} ajax
  * @param {function} onload
- * @returns {{send: *}}
+ * @param {function} presend
+ * @returns {{sendAjax: *, sendPixel: *}}
  * @constructor
  */
-function PixelSender(liveConnectConfig, onload, presend) {
+
+function PixelSender(liveConnectConfig, ajax, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
   /**
    * @param {StateWrapper} state
@@ -272,7 +206,7 @@ function PixelSender(liveConnectConfig, onload, presend) {
 
   function _sendAjax(state) {
     _sendState(state, 'j', function (uri) {
-      get(uri, function (bakersJson) {
+      ajax.get(uri, function (bakersJson) {
         if (isFunction(onload)) onload();
 
         _callBakers(bakersJson);
@@ -2096,12 +2030,13 @@ var _additionalParams = function _additionalParams(params) {
 /**
  * @param {State} config
  * @param {StorageHandler} storageHandler
+ * @param {AjaxHandler} ajax
  * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
 
 
-function IdentityResolver(config, storageHandler) {
+function IdentityResolver(config, storageHandler, ajax) {
   var encodedOrNull = function encodedOrNull(value) {
     return value && encodeURIComponent(value);
   };
@@ -2143,7 +2078,7 @@ function IdentityResolver(config, storageHandler) {
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
+        ajax.get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
           return fallback(successCallback);
         }, timeout);
       }
@@ -2234,6 +2169,32 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   return storageOperations;
 }
 
+/**
+ * @typedef {Object} AjaxHandler
+ * @property {function} [get]
+ */
+
+/**
+ * @param {AjaxHandler} externalAjaxHandler
+ * @returns {AjaxHandler}
+ * @constructor
+ */
+
+function AjaxHandler(externalAjaxHandler) {
+  if (externalAjaxHandler && externalAjaxHandler.get && isFunction(externalAjaxHandler.get)) {
+    return {
+      get: externalAjaxHandler.get
+    };
+  } else {
+    error('AjaxHandler', 'The ajax function \'get\' is not provided');
+    return {
+      get: function get() {
+        return undefined;
+      }
+    };
+  }
+}
+
 var hemStore = {};
 
 function _pushSingleEvent(event, pixelClient, enrichedState) {
@@ -2320,12 +2281,13 @@ function _getInitializedLiveConnect(liveConnectConfig) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {AjaxHandler} externalAjaxHandler
  * @returns {LiveConnect}
  * @private
  */
 
 
-function _standardInitialization(liveConnectConfig, externalStorageHandler) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalAjaxHandler) {
   try {
     init();
     register(liveConnectConfig);
@@ -2334,6 +2296,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler) {
 
   try {
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
+    var ajaxHandler = AjaxHandler(externalAjaxHandler);
 
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
@@ -2356,8 +2319,8 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler) {
       return send(PRELOAD_PIXEL, '0');
     };
 
-    var pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload);
-    var resolver = IdentityResolver(postManagedState.data, storageHandler);
+    var pixelClient = new PixelSender(liveConnectConfig, ajaxHandler, onPixelLoad, onPixelPreload);
+    var resolver = IdentityResolver(postManagedState.data, storageHandler, ajaxHandler);
 
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -2385,17 +2348,18 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {AjaxHandler} externalAjaxHandler
  * @returns {LiveConnect}
  * @constructor
  */
 
 
-function LiveConnect(liveConnectConfig, externalStorageHandler) {
+function LiveConnect(liveConnectConfig, externalStorageHandler, externalAjaxHandler) {
 
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue);
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalAjaxHandler) || queue);
 
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {

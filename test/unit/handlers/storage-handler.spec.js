@@ -38,7 +38,7 @@ describe('StorageHandler', () => {
     expect(storage.findSimilarCookies('x')).to.be.eql([])
   })
 
-  it('should send an error if external handler is not provided', function () {
+  it('should send an error if an external handler is not provided', function () {
     StorageHandler('cookie')
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('StorageHandler')
@@ -46,7 +46,7 @@ describe('StorageHandler', () => {
     expect(emitterErrors[0].exception).to.be.undefined
   })
 
-  it('should send an error if external handler is not provided and the storage strategy is none', function () {
+  it('should send an error if an external handler is not provided and the storage strategy is none', function () {
     const storageHandler = StorageHandler('none')
     storageHandler.setCookie('x', 'value-of-x')
     expect(emitterErrors.length).to.be.eq(1)
@@ -55,7 +55,7 @@ describe('StorageHandler', () => {
     expect(emitterErrors[0].exception).to.be.undefined
   })
 
-  it('should use external storage handler if provided', function () {
+  it('should use the external storage handler if provided', function () {
     const calls = {}
     const extStorageHandler = {
       setCookie: function () {
@@ -68,7 +68,7 @@ describe('StorageHandler', () => {
     expect(storage.getCookie('x')).to.be.null
   })
 
-  it('should use partial storage handler', function () {
+  it('should use a partial storage handler', function () {
     const calls = {}
     const extStorageHandler = {
       setCookie: function () {

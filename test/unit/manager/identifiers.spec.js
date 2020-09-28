@@ -4,6 +4,7 @@ import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import { StorageStrategy } from '../../../src/model/storage-strategy'
+import * as ajax from '../../shared/utils/ajax'
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()

@@ -1,15 +1,16 @@
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {function} onload
- * @returns {{send: *}}
- * @constructor
- */
-import { get } from '../utils/ajax'
 import { isArray, isFunction } from '../utils/types'
 import { sendPixel } from '../utils/pixel'
 import * as emitter from '../utils/emitter'
 
-export function PixelSender (liveConnectConfig, onload, presend) {
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {AjaxHandler} ajax
+ * @param {function} onload
+ * @param {function} presend
+ * @returns {{sendAjax: *, sendPixel: *}}
+ * @constructor
+ */
+export function PixelSender (liveConnectConfig, ajax, onload, presend) {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
 
   /**
@@ -18,7 +19,7 @@ export function PixelSender (liveConnectConfig, onload, presend) {
    */
   function _sendAjax (state) {
     _sendState(state, 'j', uri => {
-      get(uri, bakersJson => {
+      ajax.get(uri, bakersJson => {
         if (isFunction(onload)) onload()
         _callBakers(bakersJson)
       })
