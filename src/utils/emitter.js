@@ -8,7 +8,7 @@ export function send (prefix, message) {
   _emit(prefix, message)
 }
 
-export function error (name, message, e) {
+export function error (name, message, e = {}) {
   const wrapped = new Error(message || e.message)
   wrapped.stack = e.stack
   wrapped.name = name || 'unknown error'

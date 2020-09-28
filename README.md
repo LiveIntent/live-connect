@@ -62,7 +62,7 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 ### Overriding the StorageHandler.
 LiveConnect can be initialized in a way so that it does not manipulate storage on the device on it's own. For example, if one wants to use it's own handler for storage, it is enough to send the storage handler in the constructor.
 The only thing one needs to adhere to is the signature of each function that's needed on the StorageHandler:
-- `function hasLocalStorage ()`
+- `function localStorageIsEnabled ()`
 - `function getCookie (key)`
 - `function getDataFromLocalStorage (key)`
 - `function findSimilarCookies (keyLike)`

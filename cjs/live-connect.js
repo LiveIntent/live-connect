@@ -79,7 +79,8 @@ function _emit(prefix, message) {
 function send(prefix, message) {
   _emit(prefix, message);
 }
-function error(name, message, e) {
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
   var wrapped = new Error(message || e.message);
   wrapped.stack = e.stack;
   wrapped.name = name || 'unknown error';
@@ -257,19 +258,6 @@ function sendPixel(uri, onload) {
 }
 
 /**
- * Parses the string as json. If the string is not a valid json, then an empty json is returned.
- * @param json a json string
- * @returns {{}}
- */
-function safeParseJson(json) {
-  try {
-    return JSON.parse(json);
-  } catch (e) {
-    return {};
-  }
-}
-
-/**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {function} onload
  * @returns {{send: *}}
@@ -284,17 +272,26 @@ function PixelSender(liveConnectConfig, onload, presend) {
 
   function _sendAjax(state) {
     _sendState(state, 'j', function (uri) {
-      get(uri, function (responseBody) {
+      get(uri, function (bakersJson) {
         if (isFunction(onload)) onload();
-        var bakers = safeParseJson(responseBody).bakers;
 
-        if (isArray(bakers)) {
-          for (var i = 0; i < bakers.length; i++) {
-            sendPixel("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
-          }
-        }
+        _callBakers(bakersJson);
       });
     });
+  }
+
+  function _callBakers(bakersJson) {
+    try {
+      var bakers = JSON.parse(bakersJson).bakers;
+
+      if (isArray(bakers)) {
+        for (var i = 0; i < bakers.length; i++) {
+          sendPixel("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
+        }
+      }
+    } catch (e) {
+      error('CallBakers', 'Error while calling bakers', e);
+    }
   }
   /**
    * @param {StateWrapper} state
@@ -304,7 +301,7 @@ function PixelSender(liveConnectConfig, onload, presend) {
 
   function _sendPixel(state) {
     _sendState(state, 'p', function (uri) {
-      sendPixel(uri, onload);
+      return sendPixel(uri, onload);
     });
   }
 
@@ -1380,13 +1377,14 @@ function getPage() {
     return win.location.ancestorOrigins;
   }) || {};
   var windows = [];
-  var currentWindow;
+  var currentWindow = win;
 
-  do {
-    currentWindow = currentWindow ? currentWindow.parent : win;
+  while (currentWindow !== top) {
     windows.push(currentWindow);
-  } while (currentWindow !== top);
+    currentWindow = currentWindow.parent;
+  }
 
+  windows.push(currentWindow);
   var detectedPageUrl;
 
   var _loop = function _loop(i) {
@@ -1468,7 +1466,7 @@ function resolve(state, storageHandler) {
       var ret = null;
 
       try {
-        if (storageHandler.hasLocalStorage()) {
+        if (storageHandler.localStorageIsEnabled()) {
           var expirationKey = "".concat(key, "_exp");
           var oldLsExpirationEntry = storageHandler.getDataFromLocalStorage(expirationKey);
 
@@ -2039,7 +2037,7 @@ function enrich$2(state, storageHandler) {
   var duidLsKey = getLegacyIdentifierKey();
 
   try {
-    if (state.appId && storageHandler.hasLocalStorage()) {
+    if (state.appId && storageHandler.localStorageIsEnabled()) {
       var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
       var legacyId = getLegacyId(previousIdentifier);
       return {
@@ -2178,240 +2176,9 @@ function IdentityResolver(config, storageHandler) {
   }
 }
 
-var browserCookies = createCommonjsModule(function (module, exports) {
-  exports.defaults = {};
-
-  exports.set = function (name, value, options) {
-    // Retrieve options and defaults
-    var opts = options || {};
-    var defaults = exports.defaults; // Apply default value for unspecified options
-
-    var expires = opts.expires || defaults.expires;
-    var domain = opts.domain || defaults.domain;
-    var path = opts.path !== undefined ? opts.path : defaults.path !== undefined ? defaults.path : '/';
-    var secure = opts.secure !== undefined ? opts.secure : defaults.secure;
-    var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
-    var samesite = opts.samesite !== undefined ? opts.samesite : defaults.samesite; // Determine cookie expiration date
-    // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
-
-    var expDate = expires ? new Date( // in case expires is an integer, it should specify the number of days till the cookie expires
-    typeof expires === 'number' ? new Date().getTime() + expires * 864e5 : // else expires should be either a Date object or in a format recognized by Date.parse()
-    expires) : 0; // Set cookie
-
-    document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent) // Encode cookie name
-    .replace('(', '%28').replace(')', '%29') + '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) + ( // Encode cookie value (RFC6265)
-    expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + ( // Add expiration date
-    domain ? ';domain=' + domain : '') + ( // Add domain
-    path ? ';path=' + path : '') + ( // Add path
-    secure ? ';secure' : '') + ( // Add secure option
-    httponly ? ';httponly' : '') + ( // Add httponly option
-    samesite ? ';samesite=' + samesite : ''); // Add samesite option
-  };
-
-  exports.get = function (name) {
-    var cookies = document.cookie.split(';'); // Iterate all cookies
-
-    while (cookies.length) {
-      var cookie = cookies.pop(); // Determine separator index ("name=value")
-
-      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
-
-      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex;
-      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, '')); // Return cookie value if the name matches
-
-      if (cookie_name === name) {
-        return decodeURIComponent(cookie.slice(separatorIndex + 1));
-      }
-    } // Return `null` as the cookie was not found
-
-
-    return null;
-  };
-
-  exports.erase = function (name, options) {
-    exports.set(name, '', {
-      expires: -1,
-      domain: options && options.domain,
-      path: options && options.path,
-      secure: 0,
-      httponly: 0
-    });
-  };
-
-  exports.all = function () {
-    var all = {};
-    var cookies = document.cookie.split(';'); // Iterate all cookies
-
-    while (cookies.length) {
-      var cookie = cookies.pop(); // Determine separator index ("name=value")
-
-      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
-
-      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex; // add the cookie name and value to the `all` object
-
-      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, ''));
-      all[cookie_name] = decodeURIComponent(cookie.slice(separatorIndex + 1));
-    }
-
-    return all;
-  };
-});
-var browserCookies_1 = browserCookies.defaults;
-var browserCookies_2 = browserCookies.set;
-var browserCookies_3 = browserCookies.get;
-var browserCookies_4 = browserCookies.erase;
-var browserCookies_5 = browserCookies.all;
-
-/**
- * @typedef {Object} StorageOptions
- * @property {(number| Date |undefined)} [expires]
- * @property {(string|undefined)} [domain]
- * @property {(string|undefined)} [path]
- * @property {(boolean|undefined)} [secure]
- * @property {(boolean|undefined)} [httponly]
- * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
- */
-var _hasLocalStorage = null;
-/**
- * @returns {boolean}
- * @private
- */
-
-function hasLocalStorage() {
-  if (_hasLocalStorage == null) {
-    _hasLocalStorage = _checkLocalStorage();
-  }
-
-  return _hasLocalStorage;
-}
-/**
- * @returns {boolean}
- * @private
- */
-
-function _checkLocalStorage() {
-  var enabled = false;
-
-  try {
-    if (window && window.localStorage) {
-      var key = Math.random().toString();
-      window.localStorage.setItem(key, key);
-      enabled = window.localStorage.getItem(key) === key;
-      window.localStorage.removeItem(key);
-    }
-  } catch (e) {
-    error('LSCheckError', e.message, e);
-  }
-
-  return enabled;
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-
-function getCookie(key) {
-  return browserCookies_3(key);
-}
-/**
- * @param key
- * @return {string|null}
- * @private
- */
-
-function _unsafeGetFromLs(key) {
-  return window.localStorage.getItem(key);
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-
-function getDataFromLocalStorage(key) {
-  var ret = null;
-
-  if (hasLocalStorage()) {
-    ret = _unsafeGetFromLs(key);
-  }
-
-  return ret;
-}
-/**
- * @param keyLike
- * @return {[String]}
- */
-
-function findSimilarCookies(keyLike) {
-  var ret = [];
-
-  try {
-    var allCookies = browserCookies_5();
-
-    for (var cookieName in allCookies) {
-      if (allCookies[cookieName] && cookieName.indexOf(keyLike) >= 0) {
-        ret.push(browserCookies_3(cookieName));
-      }
-    }
-  } catch (e) {
-    error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e);
-  }
-
-  return ret;
-}
-/**
- * @param {string} key
- * @param {string} value
- * @param {number} expires
- * @param {string} sameSite
- * @param {string} domain
- * @returns void
- */
-
-function setCookie(key, value, expires, sameSite, domain) {
-  browserCookies_2(key, value, {
-    domain: domain,
-    expires: expires,
-    samesite: sameSite
-  });
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-function removeDataFromLocalStorage(key) {
-  if (hasLocalStorage()) {
-    window.localStorage.removeItem(key);
-  }
-}
-/**
- * @param {string} key
- * @param {string} value
- * @returns {string|null}
- */
-
-function setDataInLocalStorage(key, value) {
-  if (hasLocalStorage()) {
-    window.localStorage.setItem(key, value);
-  }
-}
-
-var lcStorage = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  hasLocalStorage: hasLocalStorage,
-  getCookie: getCookie,
-  getDataFromLocalStorage: getDataFromLocalStorage,
-  findSimilarCookies: findSimilarCookies,
-  setCookie: setCookie,
-  removeDataFromLocalStorage: removeDataFromLocalStorage,
-  setDataInLocalStorage: setDataInLocalStorage
-});
-
 /**
  * @typedef {Object} StorageHandler
- * @property {function} [hasLocalStorage]
+ * @property {function} [localStorageIsEnabled]
  * @property {function} [getCookie]
  * @property {function} [setCookie]
  * @property {function} [getDataFromLocalStorage]
@@ -2433,29 +2200,38 @@ var _noOp = function _noOp() {
 
 
 function StorageHandler(storageStrategy, externalStorageHandler) {
-  function _externalOrDefault(functionName) {
+  var errors = [];
+
+  function _externalOrError(functionName) {
     var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
 
     if (hasExternal) {
       return externalStorageHandler[functionName];
     } else {
-      return lcStorage[functionName] || _noOp;
+      errors.push(functionName);
+      return _noOp;
     }
   }
 
   var _orElseNoOp = function _orElseNoOp(fName) {
-    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrDefault(fName);
+    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
   };
 
-  return {
-    hasLocalStorage: _orElseNoOp('hasLocalStorage'),
-    getCookie: _externalOrDefault('getCookie'),
+  var storageOperations = {
+    localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
+    getCookie: _externalOrError('getCookie'),
     setCookie: _orElseNoOp('setCookie'),
-    getDataFromLocalStorage: _externalOrDefault('getDataFromLocalStorage'),
+    getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage'),
     removeDataFromLocalStorage: _orElseNoOp('removeDataFromLocalStorage'),
     setDataInLocalStorage: _orElseNoOp('setDataInLocalStorage'),
-    findSimilarCookies: _externalOrDefault('findSimilarCookies')
+    findSimilarCookies: _externalOrError('findSimilarCookies')
   };
+
+  if (errors.length > 0) {
+    error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
+  }
+
+  return storageOperations;
 }
 
 var hemStore = {};

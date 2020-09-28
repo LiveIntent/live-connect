@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers'
 import jsdom from 'mocha-jsdom'
-import * as storage from '../../../src/utils/storage'
+import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 
 const COOKIE_NAME = 'sample_cookie'
@@ -188,5 +188,4 @@ describe('IdentifiersEnricher', () => {
     expect(resolutionResult).to.eql({})
     getCookieStub.restore()
   })
-
 })

@@ -39,7 +39,7 @@ export function resolve (state, storageHandler) {
     const lsGetOrAdd = (key, value, storageOptions) => {
       let ret = null
       try {
-        if (storageHandler.hasLocalStorage()) {
+        if (storageHandler.localStorageIsEnabled()) {
           const expirationKey = `${key}_exp`
           const oldLsExpirationEntry = storageHandler.getDataFromLocalStorage(expirationKey)
           const expiry = addDays(storageOptions.expires)

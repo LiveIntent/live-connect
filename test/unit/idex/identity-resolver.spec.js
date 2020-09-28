@@ -2,7 +2,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver'
-import * as storage from '../../../src/utils/storage'
+import * as storage from '../../shared/utils/storage'
 import { init } from '../../../src/events/bus'
 
 describe('IdentityResolver', () => {
@@ -16,7 +16,7 @@ describe('IdentityResolver', () => {
 
   beforeEach(() => {
     init()
-    window.__li__evt_bus.on('li_errors', (error) => { errors.push(error)})
+    window.__li__evt_bus.on('li_errors', (error) => { errors.push(error) })
     global.XDomainRequest = null
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
     global.XMLHttpRequest.onCreate = function (request) {

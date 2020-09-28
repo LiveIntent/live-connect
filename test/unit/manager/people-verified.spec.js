@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import * as peopleVerified from '../../../src/manager/people-verified'
-import * as storage from '../../../src/utils/storage'
+import * as storage from '../../shared/utils/storage'
 
 describe('PeopleVerifiedManager', () => {
   const sandbox = sinon.createSandbox()
