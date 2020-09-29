@@ -87,7 +87,7 @@ describe('IdentityResolver', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, { key: 'value' })
+    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -128,15 +128,13 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should return the default empty response and emit error if response is not a json', function (done) {
+  it('should return the default empty response and emit error if response is 500', function (done) {
     const identityResolver = IdentityResolver({}, storage, calls)
-    const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
-      expect(responseAsJson).to.be.eql({})
-      expect(callCount).to.be.eql(1)
+    const errorCallback = (error) => {
+      expect(error.message).to.be.eq('Incorrect status received : 500')
       done()
     }
-    identityResolver.resolve(successCallback)
-    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, 'i pitty the foo')
+    identityResolver.resolve(() => {}, errorCallback)
+    requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
 })

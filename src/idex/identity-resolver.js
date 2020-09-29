@@ -1,6 +1,6 @@
 import { toParams } from '../utils/url'
 import { error } from '../utils/emitter'
-import { expiresInDays, isFunction, isObject } from '../utils/types'
+import { expiresInDays, isObject } from '../utils/types'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
@@ -52,16 +52,11 @@ const _additionalParams = (params) => {
  * @param {State} config
  * @param {StorageHandler} storageHandler
  * @param {CallHandler} calls
- * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
+ * @return {{resolve: function(successCallback: function, errorCallback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
 export function IdentityResolver (config, storageHandler, calls) {
   const encodedOrNull = (value) => value && encodeURIComponent(value)
-  const fallback = (successCallback) => {
-    if (isFunction(successCallback)) {
-      successCallback({}, undefined)
-    }
-  }
   try {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
@@ -85,22 +80,22 @@ export function IdentityResolver (config, storageHandler, calls) {
       const params = toParams(originalParams)
       return `${url}/${source}/${publisherId}${params}`
     }
-    const unsafeResolve = (successCallback, additionalParams) => {
+    const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
       const finalUrl = composeUrl(additionalParams)
       const storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY)
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie))
       } else {
-        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), () => fallback(successCallback), timeout)
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), errorCallback, timeout)
       }
     }
     return {
-      resolve: (callback, additionalParams) => {
+      resolve: (successCallback, errorCallback, additionalParams) => {
         try {
-          unsafeResolve(callback, additionalParams)
+          unsafeResolve(successCallback, errorCallback, additionalParams)
         } catch (e) {
           console.error('IdentityResolve', e)
-          fallback(callback)
+          errorCallback()
           error('IdentityResolve', 'Resolve threw an unhandled exception', e)
         }
       },
@@ -110,8 +105,8 @@ export function IdentityResolver (config, storageHandler, calls) {
     console.error('IdentityResolver', e)
     error('IdentityResolver', 'IdentityResolver not created', e)
     return {
-      resolve: (successCallback) => {
-        fallback(successCallback)
+      resolve: (successCallback, errorCallback) => {
+        errorCallback()
         error('IdentityResolver.resolve', 'Resolve called on an uninitialised IdentityResolver', e)
       },
       getUrl: () => {

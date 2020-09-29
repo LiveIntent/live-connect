@@ -2011,7 +2011,7 @@ var _additionalParams = function _additionalParams(params) {
  * @param {State} config
  * @param {StorageHandler} storageHandler
  * @param {CallHandler} calls
- * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
+ * @return {{resolve: function(successCallback: function, errorCallback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
 
@@ -2019,12 +2019,6 @@ var _additionalParams = function _additionalParams(params) {
 function IdentityResolver(config, storageHandler, calls) {
   var encodedOrNull = function encodedOrNull(value) {
     return value && encodeURIComponent(value);
-  };
-
-  var fallback = function fallback(successCallback) {
-    if (isFunction(successCallback)) {
-      successCallback({}, undefined);
-    }
   };
 
   try {
@@ -2051,25 +2045,23 @@ function IdentityResolver(config, storageHandler, calls) {
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
 
-    var unsafeResolve = function unsafeResolve(successCallback, additionalParams) {
+    var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
       var finalUrl = composeUrl(additionalParams);
       var storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY);
 
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
-          return fallback(successCallback);
-        }, timeout);
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), errorCallback, timeout);
       }
     };
 
     return {
-      resolve: function resolve(callback, additionalParams) {
+      resolve: function resolve(successCallback, errorCallback, additionalParams) {
         try {
-          unsafeResolve(callback, additionalParams);
+          unsafeResolve(successCallback, errorCallback, additionalParams);
         } catch (e) {
-          fallback(callback);
+          errorCallback();
           error('IdentityResolve', 'Resolve threw an unhandled exception', e);
         }
       },
@@ -2080,8 +2072,8 @@ function IdentityResolver(config, storageHandler, calls) {
   } catch (e) {
     error('IdentityResolver', 'IdentityResolver not created', e);
     return {
-      resolve: function resolve(successCallback) {
-        fallback(successCallback);
+      resolve: function resolve(successCallback, errorCallback) {
+        errorCallback();
         error('IdentityResolver.resolve', 'Resolve called on an uninitialised IdentityResolver', e);
       },
       getUrl: function getUrl() {

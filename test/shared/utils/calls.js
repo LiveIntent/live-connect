@@ -11,7 +11,7 @@ export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 10
   function errorCallback (name, message, error, request) {
     console.error('Error while executing ajax call', error, request)
     emitter.error(name, message, error)
-    fallback()
+    fallback(error)
   }
 
   function xhrCall () {
