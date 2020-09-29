@@ -2033,6 +2033,8 @@ function IdentityResolver(config, storageHandler, calls) {
     var tuples = [];
     tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)]);
     tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)]);
+    tuples.push(['gdpr', encodedOrNull(nonNullConfig.gdprApplies)]);
+    tuples.push(['gdpr_consent', encodedOrNull(nonNullConfig.gdprConsent)]);
     externalIds.forEach(function (retrievedIdentifier) {
       var key = encodedOrNull(retrievedIdentifier.name);
       var value = encodedOrNull(retrievedIdentifier.value);
