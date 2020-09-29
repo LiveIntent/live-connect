@@ -128,6 +128,23 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
+  it('should attach the consent values', function (done) {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver({
+      gdprApplies: 1,
+      gdprConsent: 'gdprConsent',
+      usPrivacyString: 'usPrivacyString'
+    }, storage, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&gdpr_consent=gdprConsent')
+      expect(errors).to.be.empty
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
   it('should return the default empty response and emit error if response is 500', function (done) {
     const identityResolver = IdentityResolver({}, storage, calls)
     const errorCallback = (error) => {

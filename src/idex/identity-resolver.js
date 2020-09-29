@@ -69,6 +69,8 @@ export function IdentityResolver (config, storageHandler, calls) {
     const tuples = []
     tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)])
     tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)])
+    tuples.push(['gdpr', encodedOrNull(nonNullConfig.gdprApplies)])
+    tuples.push(['gdpr_consent', encodedOrNull(nonNullConfig.gdprConsent)])
     externalIds.forEach(retrievedIdentifier => {
       const key = encodedOrNull(retrievedIdentifier.name)
       const value = encodedOrNull(retrievedIdentifier.value)
