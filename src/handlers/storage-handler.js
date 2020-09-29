@@ -35,7 +35,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
 
   const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
 
-  const storageOperations = {
+  const handler = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
     getCookie: _externalOrError('getCookie'),
     setCookie: _orElseNoOp('setCookie'),
@@ -47,5 +47,5 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
   if (errors.length > 0) {
     emitter.error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
-  return storageOperations
+  return handler
 }

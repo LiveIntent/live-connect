@@ -145,22 +145,6 @@ function expiresInDays(expires) {
   return new Date(new Date().getTime() + expires * 864e5).toUTCString();
 }
 
-/**
- * Send a Get request via a pixel call
- * @param uri the pixel uri
- * @param onload a function that is executed if the image is successfully loaded
- */
-
-function sendPixel(uri, onload) {
-  var img = new window.Image();
-
-  if (isFunction(onload)) {
-    img.onload = onload;
-  }
-
-  img.src = uri;
-}
-
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
 var ERRORS_PREFIX = 'li_errors';
 var PIXEL_SENT_PREFIX = 'lips';
@@ -186,14 +170,14 @@ function error(name, message) {
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {AjaxHandler} ajax
+ * @param {CallHandler} calls
  * @param {function} onload
  * @param {function} presend
  * @returns {{sendAjax: *, sendPixel: *}}
  * @constructor
  */
 
-function PixelSender(liveConnectConfig, ajax, onload, presend) {
+function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
   /**
    * @param {StateWrapper} state
@@ -202,7 +186,7 @@ function PixelSender(liveConnectConfig, ajax, onload, presend) {
 
   function _sendAjax(state) {
     _sendState(state, 'j', function (uri) {
-      ajax.get(uri, function (bakersJson) {
+      calls.ajaxGet(uri, function (bakersJson) {
         if (isFunction(onload)) onload();
 
         _callBakers(bakersJson);
@@ -216,7 +200,7 @@ function PixelSender(liveConnectConfig, ajax, onload, presend) {
 
       if (isArray(bakers)) {
         for (var i = 0; i < bakers.length; i++) {
-          sendPixel("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
+          calls.pixelGet("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
         }
       }
     } catch (e) {
@@ -231,7 +215,7 @@ function PixelSender(liveConnectConfig, ajax, onload, presend) {
 
   function _sendPixel(state) {
     _sendState(state, 'p', function (uri) {
-      return sendPixel(uri, onload);
+      return calls.pixelGet(uri, onload);
     });
   }
 
@@ -1754,14 +1738,14 @@ function _pixelError(error) {
   }
 }
 
-function register(state) {
+function register(state, callHandler) {
   try {
 
     if (window && window[EVENT_BUS_NAMESPACE] && isFunction(window[EVENT_BUS_NAMESPACE].on)) {
       window[EVENT_BUS_NAMESPACE].on(ERRORS_PREFIX, _pixelError);
     }
 
-    _pixelSender = new PixelSender(state, null);
+    _pixelSender = new PixelSender(state, callHandler);
     _state = state || {};
   } catch (e) {
   }
@@ -2026,13 +2010,13 @@ var _additionalParams = function _additionalParams(params) {
 /**
  * @param {State} config
  * @param {StorageHandler} storageHandler
- * @param {AjaxHandler} ajax
+ * @param {CallHandler} calls
  * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
 
 
-function IdentityResolver(config, storageHandler, ajax) {
+function IdentityResolver(config, storageHandler, calls) {
   var encodedOrNull = function encodedOrNull(value) {
     return value && encodeURIComponent(value);
   };
@@ -2074,7 +2058,7 @@ function IdentityResolver(config, storageHandler, ajax) {
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        ajax.get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
           return fallback(successCallback);
         }, timeout);
       }
@@ -2148,7 +2132,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
     return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
   };
 
-  var storageOperations = {
+  var handler = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
     getCookie: _externalOrError('getCookie'),
     setCookie: _orElseNoOp('setCookie'),
@@ -2162,33 +2146,49 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
     error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
   }
 
-  return storageOperations;
+  return handler;
 }
 
 /**
- * @typedef {Object} AjaxHandler
- * @property {function} [get]
+ * @typedef {Object} CallHandler
+ * @property {function} [ajaxGet]
+ * @property {function} [pixelGet]
  */
 
+var _noOp$1 = function _noOp() {
+  return undefined;
+};
 /**
- * @param {AjaxHandler} externalAjaxHandler
- * @returns {AjaxHandler}
+ * @param {CallHandler} externalCallHandler
+ * @returns {CallHandler}
  * @constructor
  */
 
-function AjaxHandler(externalAjaxHandler) {
-  if (externalAjaxHandler && externalAjaxHandler.get && isFunction(externalAjaxHandler.get)) {
-    return {
-      get: externalAjaxHandler.get
-    };
-  } else {
-    error('AjaxHandler', 'The ajax function \'get\' is not provided');
-    return {
-      get: function get() {
-        return undefined;
-      }
-    };
+
+function CallHandler(externalCallHandler) {
+  var errors = [];
+
+  function _externalOrError(functionName) {
+    var hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
+
+    if (hasExternal) {
+      return externalCallHandler[functionName];
+    } else {
+      errors.push(functionName);
+      return _noOp$1;
+    }
   }
+
+  var handler = {
+    ajaxGet: _externalOrError('ajaxGet'),
+    pixelGet: _externalOrError('pixelGet')
+  };
+
+  if (errors.length > 0) {
+    error('CallHandler', "The call functions '".concat(JSON.stringify(errors), "' are not provided"));
+  }
+
+  return handler;
 }
 
 var hemStore = {};
@@ -2277,22 +2277,18 @@ function _getInitializedLiveConnect(liveConnectConfig) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
- * @param {AjaxHandler} externalAjaxHandler
+ * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
  * @private
  */
 
 
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalAjaxHandler) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     init();
-    register(liveConnectConfig);
-  } catch (e) {
-  }
-
-  try {
+    var callHandler = CallHandler(externalCallHandler);
+    register(liveConnectConfig, callHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var ajaxHandler = AjaxHandler(externalAjaxHandler);
 
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
@@ -2315,8 +2311,8 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       return send(PRELOAD_PIXEL, '0');
     };
 
-    var pixelClient = new PixelSender(liveConnectConfig, ajaxHandler, onPixelLoad, onPixelPreload);
-    var resolver = IdentityResolver(postManagedState.data, storageHandler, ajaxHandler);
+    var pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload);
+    var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
 
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -2344,18 +2340,18 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
- * @param {AjaxHandler} externalAjaxHandler
+ * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
  * @constructor
  */
 
 
-function LiveConnect(liveConnectConfig, externalStorageHandler, externalAjaxHandler) {
+function LiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
 
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalAjaxHandler) || queue);
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue);
 
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {

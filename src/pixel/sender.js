@@ -1,16 +1,15 @@
 import { isArray, isFunction } from '../utils/types'
-import { sendPixel } from '../utils/pixel'
 import * as emitter from '../utils/emitter'
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {AjaxHandler} ajax
+ * @param {CallHandler} calls
  * @param {function} onload
  * @param {function} presend
  * @returns {{sendAjax: *, sendPixel: *}}
  * @constructor
  */
-export function PixelSender (liveConnectConfig, ajax, onload, presend) {
+export function PixelSender (liveConnectConfig, calls, onload, presend) {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
 
   /**
@@ -19,7 +18,7 @@ export function PixelSender (liveConnectConfig, ajax, onload, presend) {
    */
   function _sendAjax (state) {
     _sendState(state, 'j', uri => {
-      ajax.get(uri, bakersJson => {
+      calls.ajaxGet(uri, bakersJson => {
         if (isFunction(onload)) onload()
         _callBakers(bakersJson)
       })
@@ -30,7 +29,7 @@ export function PixelSender (liveConnectConfig, ajax, onload, presend) {
     try {
       const bakers = JSON.parse(bakersJson).bakers
       if (isArray(bakers)) {
-        for (let i = 0; i < bakers.length; i++) sendPixel(`${bakers[i]}?dtstmp=${utcMillis()}`)
+        for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
       emitter.error('CallBakers', 'Error while calling bakers', e)
@@ -42,7 +41,7 @@ export function PixelSender (liveConnectConfig, ajax, onload, presend) {
    * @private
    */
   function _sendPixel (state) {
-    _sendState(state, 'p', uri => sendPixel(uri, onload))
+    _sendState(state, 'p', uri => calls.pixelGet(uri, onload))
   }
 
   function _sendState (state, endpoint, makeCall) {

@@ -51,11 +51,11 @@ const _additionalParams = (params) => {
 /**
  * @param {State} config
  * @param {StorageHandler} storageHandler
- * @param {AjaxHandler} ajax
+ * @param {CallHandler} calls
  * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
-export function IdentityResolver (config, storageHandler, ajax) {
+export function IdentityResolver (config, storageHandler, calls) {
   const encodedOrNull = (value) => value && encodeURIComponent(value)
   const fallback = (successCallback) => {
     if (isFunction(successCallback)) {
@@ -91,7 +91,7 @@ export function IdentityResolver (config, storageHandler, ajax) {
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie))
       } else {
-        ajax.get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), () => fallback(successCallback), timeout)
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), () => fallback(successCallback), timeout)
       }
     }
     return {

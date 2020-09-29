@@ -1,12 +1,10 @@
 import jsdom from 'mocha-jsdom'
 import { expect } from 'chai'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
-import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import * as emitter from '../../../src/utils/emitter'
-import { AjaxHandler } from '../../../src/handlers/ajax-handler'
+import { CallHandler } from '../../../src/handlers/call-handler'
 
-describe('AjaxHandler', () => {
+describe('CallHandler', () => {
   let emitterErrors = []
   let emitterStub
   const sandbox = sinon.createSandbox()
@@ -31,27 +29,28 @@ describe('AjaxHandler', () => {
   })
 
   it('should return the get function', function () {
-    const getFunction = () => undefined
-    const handler = AjaxHandler({ get: getFunction })
+    const ajaxGet = () => undefined
+    const pixelGet = () => undefined
+    const handler = CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet })
 
-    expect(handler).to.be.eql({ get: getFunction })
+    expect(handler).to.be.eql({ ajaxGet: ajaxGet, pixelGet: pixelGet })
   })
 
   it('should send an error if an external handler is not provided', function () {
-    AjaxHandler()
+    CallHandler()
 
     expect(emitterErrors.length).to.be.eq(1)
-    expect(emitterErrors[0].name).to.be.eq('AjaxHandler')
-    expect(emitterErrors[0].message).to.be.eq('The ajax function \'get\' is not provided')
+    expect(emitterErrors[0].name).to.be.eq('CallHandler')
+    expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
     expect(emitterErrors[0].exception).to.be.undefined
   })
 
   it('should send an error if an external handler doesn not have a get function', function () {
-    AjaxHandler({})
+    CallHandler({})
 
     expect(emitterErrors.length).to.be.eq(1)
-    expect(emitterErrors[0].name).to.be.eq('AjaxHandler')
-    expect(emitterErrors[0].message).to.be.eq('The ajax function \'get\' is not provided')
+    expect(emitterErrors[0].name).to.be.eq('CallHandler')
+    expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
     expect(emitterErrors[0].exception).to.be.undefined
   })
 })

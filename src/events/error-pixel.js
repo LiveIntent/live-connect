@@ -67,13 +67,13 @@ function _pixelError (error) {
   }
 }
 
-export function register (state) {
+export function register (state, callHandler) {
   try {
     console.log('handlers.error.register', state, _pixelSender)
     if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
       window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
     }
-    _pixelSender = new PixelSender(state, null)
+    _pixelSender = new PixelSender(state, callHandler)
     _state = state || {}
   } catch (e) {
     console.error('handlers.error.register', e)
