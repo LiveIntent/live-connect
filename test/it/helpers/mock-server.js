@@ -18,9 +18,10 @@ export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const fullContent = preamble + bundle
   const app = express()
-  app.use(compression())
+  app.use(compression(), cors(corsOptions))
   let history = []
   let idex = []
+  let bakerHistory = []
   app.get('/page', (req, res) => {
     res.send(
       `<!DOCTYPE html>
@@ -56,7 +57,6 @@ export function MockServerFactory (config) {
     )
   })
 
-  app.options('/idex/unknown/any', cors(corsOptions))
   app.get('/idex/unknown/any', cors(corsOptions), (req, res) => {
     console.log(`IDEX :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
     idex.push(req)
@@ -114,8 +114,26 @@ export function MockServerFactory (config) {
   })
 
   app.get('/p', (req, res) => {
-    console.log(`PIXEL :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
+    console.log(`P PIXEL :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
     history.push(req)
+    res.sendStatus(200)
+  })
+
+  app.get('/j', (req, res) => {
+    console.log(`J PIXEL :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
+    history.push(req)
+    if (req.query.pu.includes('baked.liveintent.com')) {
+      res.status(200).json({
+        bakers: ['http://baked.liveintent.com:3001/baker', 'http://bln.test.liveintent.com:3001/baker']
+      })
+    } else {
+      res.status(200).json({})
+    }
+  })
+
+  app.get('/baker', (req, res) => {
+    console.log(`BAKER :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
+    bakerHistory.push(req)
     res.sendStatus(200)
   })
 
@@ -155,6 +173,9 @@ export function MockServerFactory (config) {
     getIdexHistory: () => {
       return idex
     },
+    getBakerHistory: () => {
+      return bakerHistory
+    },
     getTrackingRequests: () => {
       return history.filter(req => req.query.ae === undefined)
     },
@@ -164,6 +185,7 @@ export function MockServerFactory (config) {
     clearHistory: () => {
       idex = []
       history = []
+      bakerHistory = []
     },
     stop: () => {
       server.close()

@@ -56,7 +56,7 @@ function _pushSingleEvent (event, pixelClient, enrichedState) {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
     const withHemStore = { eventSource: event, ...hemStore }
-    pixelClient.send(enrichedState.combineWith(withHemStore))
+    pixelClient.sendAjax(enrichedState.combineWith(withHemStore))
   }
 }
 
