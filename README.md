@@ -93,9 +93,12 @@ const storageHandler = {
   },
   ...
 }
-const ajaxHandler = {
-  get: (url, responseHandler, fallback, timeout) => {
+const callsHandler = {
+  ajaxGet: (url, responseHandler, fallback, timeout) => {
    //  
+  },
+  pixelGet: (url, onload) => {
+   //
   }
 }
 const lc = LiveConnect(configOptions, storageHandler, ajaxHandler)
