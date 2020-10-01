@@ -84,7 +84,7 @@ function safeToString(value) {
  */
 
 function isNonEmpty(value) {
-  return typeof value !== 'undefined' && value !== null;
+  return typeof value !== 'undefined' && value !== null && trim(value).length > 0;
 }
 function isUUID(value) {
   return value && uuidRegex.test(trim(value));
@@ -857,7 +857,7 @@ function urlParams(url) {
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
 
 function _asParamOrEmpty(param, value, transform) {
-  if (isNonEmpty(value) && trim(value).length > 0) {
+  if (isNonEmpty(value)) {
     return [param, isFunction(transform) ? transform(value) : value];
   } else {
     return [];
@@ -2011,6 +2011,14 @@ var _additionalParams = function _additionalParams(params) {
     return [];
   }
 };
+
+function _asParamOrEmpty$1(param, value, transform) {
+  if (isNonEmpty(value)) {
+    return [param, transform(value)];
+  } else {
+    return [];
+  }
+}
 /**
  * @param {State} config
  * @param {StorageHandler} storageHandler
@@ -2021,10 +2029,6 @@ var _additionalParams = function _additionalParams(params) {
 
 
 function IdentityResolver(config, storageHandler, calls) {
-  var encodedOrNull = function encodedOrNull(value) {
-    return value && encodeURIComponent(value);
-  };
-
   try {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
@@ -2035,14 +2039,14 @@ function IdentityResolver(config, storageHandler, calls) {
     var url = idexConfig.url || DEFAULT_IDEX_URL;
     var timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT;
     var tuples = [];
-    tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)]);
-    tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)]);
-    tuples.push(['gdpr', encodedOrNull(nonNullConfig.gdprApplies)]);
-    tuples.push(['gdpr_consent', encodedOrNull(nonNullConfig.gdprConsent)]);
+    tuples.push(_asParamOrEmpty$1('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent));
+    tuples.push(_asParamOrEmpty$1('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent));
+    tuples.push(_asParamOrEmpty$1('gdpr', nonNullConfig.gdprApplies, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
+    tuples.push(_asParamOrEmpty$1('gdpr_consent', nonNullConfig.gdprConsent, encodeURIComponent));
     externalIds.forEach(function (retrievedIdentifier) {
-      var key = encodedOrNull(retrievedIdentifier.name);
-      var value = encodedOrNull(retrievedIdentifier.value);
-      tuples.push([key, value]);
+      tuples.push(_asParamOrEmpty$1(retrievedIdentifier.name, retrievedIdentifier.value, encodeURIComponent));
     });
 
     var composeUrl = function composeUrl(additionalParams) {

@@ -128,10 +128,27 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent values', function (done) {
+  it('should attach the consent values when gpdr does not apply', function (done) {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
-      gdprApplies: 1,
+      gdprApplies: false,
+      gdprConsent: 'gdprConsent',
+      usPrivacyString: 'usPrivacyString'
+    }, storage, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
+      expect(errors).to.be.empty
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
+  it('should attach the consent values when gpdr applies', function (done) {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver({
+      gdprApplies: true,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, storage, calls)

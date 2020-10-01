@@ -1,6 +1,6 @@
 import { toParams } from '../utils/url'
 import { error } from '../utils/emitter'
-import { expiresInDays, isObject } from '../utils/types'
+import { expiresInDays, isNonEmpty, isObject } from '../utils/types'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
@@ -48,6 +48,14 @@ const _additionalParams = (params) => {
   }
 }
 
+function _asParamOrEmpty (param, value, transform) {
+  if (isNonEmpty(value)) {
+    return [param, transform(value)]
+  } else {
+    return []
+  }
+}
+
 /**
  * @param {State} config
  * @param {StorageHandler} storageHandler
@@ -56,7 +64,6 @@ const _additionalParams = (params) => {
  * @constructor
  */
 export function IdentityResolver (config, storageHandler, calls) {
-  const encodedOrNull = (value) => value && encodeURIComponent(value)
   try {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
@@ -67,14 +74,12 @@ export function IdentityResolver (config, storageHandler, calls) {
     const url = idexConfig.url || DEFAULT_IDEX_URL
     const timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT
     const tuples = []
-    tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)])
-    tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)])
-    tuples.push(['gdpr', encodedOrNull(nonNullConfig.gdprApplies)])
-    tuples.push(['gdpr_consent', encodedOrNull(nonNullConfig.gdprConsent)])
+    tuples.push(_asParamOrEmpty('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent))
+    tuples.push(_asParamOrEmpty('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent))
+    tuples.push(_asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
+    tuples.push(_asParamOrEmpty('gdpr_consent', nonNullConfig.gdprConsent, encodeURIComponent))
     externalIds.forEach(retrievedIdentifier => {
-      const key = encodedOrNull(retrievedIdentifier.name)
-      const value = encodedOrNull(retrievedIdentifier.value)
-      tuples.push([key, value])
+      tuples.push(_asParamOrEmpty(retrievedIdentifier.name, retrievedIdentifier.value, encodeURIComponent))
     })
 
     const composeUrl = (additionalParams) => {

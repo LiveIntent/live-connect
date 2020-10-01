@@ -15,7 +15,7 @@ export function safeToString (value) {
  * @returns {boolean}
  */
 export function isNonEmpty (value) {
-  return typeof value !== 'undefined' && value !== null
+  return typeof value !== 'undefined' && value !== null && trim(value).length > 0
 }
 
 export function isUUID (value) {
