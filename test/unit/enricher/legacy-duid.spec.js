@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { enrich } from '../../../src/enrichers/legacy-duid'
 import jsdom from 'mocha-jsdom'
-import * as storage from '../../../src/utils/storage'
+import * as storage from '../../shared/utils/storage'
 
 describe('LegacyDuidEnricher', () => {
   jsdom({

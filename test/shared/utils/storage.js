@@ -8,19 +8,19 @@
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
 import * as cookies from 'browser-cookies'
-import * as emitter from './emitter'
+import * as emitter from '../../../src/utils/emitter'
 
-let _hasLocalStorage = null
+let _localStorageIsEnabled = null
 
 /**
  * @returns {boolean}
  * @private
  */
-export function hasLocalStorage () {
-  if (_hasLocalStorage == null) {
-    _hasLocalStorage = _checkLocalStorage()
+export function localStorageIsEnabled () {
+  if (_localStorageIsEnabled == null) {
+    _localStorageIsEnabled = _checkLocalStorage()
   }
-  return _hasLocalStorage
+  return _localStorageIsEnabled
 }
 
 /**
@@ -65,7 +65,7 @@ function _unsafeGetFromLs (key) {
  */
 export function getDataFromLocalStorage (key) {
   let ret = null
-  if (hasLocalStorage()) {
+  if (localStorageIsEnabled()) {
     ret = _unsafeGetFromLs(key)
   }
   return ret
@@ -107,7 +107,7 @@ export function setCookie (key, value, expires, sameSite, domain) {
  * @returns {string|null}
  */
 export function removeDataFromLocalStorage (key) {
-  if (hasLocalStorage()) {
+  if (localStorageIsEnabled()) {
     window.localStorage.removeItem(key)
   }
 }
@@ -118,7 +118,7 @@ export function removeDataFromLocalStorage (key) {
  * @returns {string|null}
  */
 export function setDataInLocalStorage (key, value) {
-  if (hasLocalStorage()) {
+  if (localStorageIsEnabled()) {
     window.localStorage.setItem(key, value)
   }
 }

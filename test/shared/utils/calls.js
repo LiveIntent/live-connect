@@ -1,4 +1,5 @@
-import * as emitter from '../utils/emitter'
+import * as emitter from '../../../src/utils/emitter'
+import { isFunction } from '../../../src/utils/types'
 
 /**
  * @param url
@@ -6,11 +7,11 @@ import * as emitter from '../utils/emitter'
  * @param fallback
  * @param timeout
  */
-export const get = (url, responseHandler, fallback = () => {}, timeout = 1000) => {
+export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 1000) {
   function errorCallback (name, message, error, request) {
     console.error('Error while executing ajax call', error, request)
     emitter.error(name, message, error)
-    fallback()
+    fallback(error)
   }
 
   function xhrCall () {
@@ -53,4 +54,17 @@ export const get = (url, responseHandler, fallback = () => {}, timeout = 1000) =
   } catch (error) {
     errorCallback('AjaxCompositionError', `Error while constructing ajax request, ${error}`, error, undefined)
   }
+}
+
+/**
+ * Send a Get request via a pixel call
+ * @param uri the pixel uri
+ * @param onload a function that is executed if the image is successfully loaded
+ */
+export function pixelGet (uri, onload) {
+  const img = new window.Image()
+  if (isFunction(onload)) {
+    img.onload = onload
+  }
+  img.src = uri
 }

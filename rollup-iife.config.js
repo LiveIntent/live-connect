@@ -11,7 +11,7 @@ import strip from '@rollup/plugin-strip'
 const OUTPUT_DIR = './dist/'
 
 export default {
-  input: 'src/preambled.js',
+  input: 'test/it/helpers/preambled.js',
   output: {
     file: `${OUTPUT_DIR}/bundle.iife.js`,
     format: 'iife'

@@ -62,7 +62,7 @@ import { toParams } from '../utils/url'
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
 function _asParamOrEmpty (param, value, transform) {
-  if (isNonEmpty(value) && trim(value).length > 0) {
+  if (isNonEmpty(value)) {
     return [param, isFunction(transform) ? transform(value) : value]
   } else {
     return []

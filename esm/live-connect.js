@@ -63,97 +63,6 @@ function _objectSpread2(target) {
   return target;
 }
 
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PIXEL_SENT_PREFIX = 'lips';
-var PRELOAD_PIXEL = 'pre_lips';
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-
-function send(prefix, message) {
-  _emit(prefix, message);
-}
-function error(name, message, e) {
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-
-  _emit(ERRORS_PREFIX, wrapped);
-}
-
-/**
- * @param url
- * @param responseHandler
- * @param fallback
- * @param timeout
- */
-
-var get = function get(url, responseHandler) {
-  var fallback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-  var timeout = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 1000;
-
-  function errorCallback(name, message, error$1, request) {
-    error(name, message, error$1);
-    fallback();
-  }
-
-  function xhrCall() {
-    var xhr = new XMLHttpRequest();
-
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === 4) {
-        var status = xhr.status;
-
-        if (status >= 200 && status < 300 || status === 304) {
-          responseHandler(xhr.responseText, xhr);
-        } else {
-          var error = new Error("Incorrect status received : ".concat(status));
-          errorCallback('XHRError', "Error during XHR call: ".concat(status, ", url: ").concat(url), error);
-        }
-      }
-    };
-
-    return xhr;
-  }
-
-  function xdrCall() {
-    var xdr = new window.XDomainRequest();
-
-    xdr.onprogress = function () {};
-
-    xdr.onerror = function () {
-      var error = new Error("XDR Error received: ".concat(xdr.responseText));
-      errorCallback('XDRError', "Error during XDR call: ".concat(xdr.responseText, ", url: ").concat(url), error);
-    };
-
-    xdr.onload = function () {
-      return responseHandler(xdr.responseText, xdr);
-    };
-
-    return xdr;
-  }
-
-  try {
-    var request = window && window.XDomainRequest ? xdrCall() : xhrCall();
-
-    request.ontimeout = function () {
-      var error = new Error("Timeout after ".concat(timeout, ", url : ").concat(url));
-      errorCallback('AjaxTimeout', "Timeout after ".concat(timeout), error, request);
-    };
-
-    request.open('GET', url, true);
-    request.timeout = timeout;
-    request.withCredentials = true;
-    request.send();
-  } catch (error) {
-    errorCallback('AjaxCompositionError', "Error while constructing ajax request, ".concat(error), error);
-  }
-};
-
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 /**
@@ -171,7 +80,7 @@ function safeToString(value) {
  */
 
 function isNonEmpty(value) {
-  return typeof value !== 'undefined' && value !== null;
+  return typeof value !== 'undefined' && value !== null && trim(value).length > 0;
 }
 function isUUID(value) {
   return value && uuidRegex.test(trim(value));
@@ -236,42 +145,39 @@ function expiresInDays(expires) {
   return new Date(new Date().getTime() + expires * 864e5).toUTCString();
 }
 
-/**
- * Send a Get request via a pixel call
- * @param uri the pixel uri
- * @param onload a function that is executed if the image is successfully loaded
- */
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PIXEL_SENT_PREFIX = 'lips';
+var PRELOAD_PIXEL = 'pre_lips';
 
-function sendPixel(uri, onload) {
-  var img = new window.Image();
-
-  if (isFunction(onload)) {
-    img.onload = onload;
-  }
-
-  img.src = uri;
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
 }
 
-/**
- * Parses the string as json. If the string is not a valid json, then an empty json is returned.
- * @param json a json string
- * @returns {{}}
- */
-function safeParseJson(json) {
-  try {
-    return JSON.parse(json);
-  } catch (e) {
-    return {};
-  }
+function send(prefix, message) {
+  _emit(prefix, message);
+}
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+
+  _emit(ERRORS_PREFIX, wrapped);
 }
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {CallHandler} calls
  * @param {function} onload
- * @returns {{send: *}}
+ * @param {function} presend
+ * @returns {{sendAjax: *, sendPixel: *}}
  * @constructor
  */
-function PixelSender(liveConnectConfig, onload, presend) {
+
+function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
   /**
    * @param {StateWrapper} state
@@ -280,17 +186,26 @@ function PixelSender(liveConnectConfig, onload, presend) {
 
   function _sendAjax(state) {
     _sendState(state, 'j', function (uri) {
-      get(uri, function (responseBody) {
+      calls.ajaxGet(uri, function (bakersJson) {
         if (isFunction(onload)) onload();
-        var bakers = safeParseJson(responseBody).bakers;
 
-        if (isArray(bakers)) {
-          for (var i = 0; i < bakers.length; i++) {
-            sendPixel("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
-          }
-        }
+        _callBakers(bakersJson);
       });
     });
+  }
+
+  function _callBakers(bakersJson) {
+    try {
+      var bakers = JSON.parse(bakersJson).bakers;
+
+      if (isArray(bakers)) {
+        for (var i = 0; i < bakers.length; i++) {
+          calls.pixelGet("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
+        }
+      }
+    } catch (e) {
+      error('CallBakers', 'Error while calling bakers', e);
+    }
   }
   /**
    * @param {StateWrapper} state
@@ -300,7 +215,7 @@ function PixelSender(liveConnectConfig, onload, presend) {
 
   function _sendPixel(state) {
     _sendState(state, 'p', function (uri) {
-      sendPixel(uri, onload);
+      return calls.pixelGet(uri, onload);
     });
   }
 
@@ -938,7 +853,7 @@ function urlParams(url) {
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
 
 function _asParamOrEmpty(param, value, transform) {
-  if (isNonEmpty(value) && trim(value).length > 0) {
+  if (isNonEmpty(value)) {
     return [param, isFunction(transform) ? transform(value) : value];
   } else {
     return [];
@@ -1376,13 +1291,14 @@ function getPage() {
     return win.location.ancestorOrigins;
   }) || {};
   var windows = [];
-  var currentWindow;
+  var currentWindow = win;
 
-  do {
-    currentWindow = currentWindow ? currentWindow.parent : win;
+  while (currentWindow !== top) {
     windows.push(currentWindow);
-  } while (currentWindow !== top);
+    currentWindow = currentWindow.parent;
+  }
 
+  windows.push(currentWindow);
   var detectedPageUrl;
 
   var _loop = function _loop(i) {
@@ -1464,7 +1380,7 @@ function resolve(state, storageHandler) {
       var ret = null;
 
       try {
-        if (storageHandler.hasLocalStorage()) {
+        if (storageHandler.localStorageIsEnabled()) {
           var expirationKey = "".concat(key, "_exp");
           var oldLsExpirationEntry = storageHandler.getDataFromLocalStorage(expirationKey);
 
@@ -1822,14 +1738,14 @@ function _pixelError(error) {
   }
 }
 
-function register(state) {
+function register(state, callHandler) {
   try {
 
     if (window && window[EVENT_BUS_NAMESPACE] && isFunction(window[EVENT_BUS_NAMESPACE].on)) {
       window[EVENT_BUS_NAMESPACE].on(ERRORS_PREFIX, _pixelError);
     }
 
-    _pixelSender = new PixelSender(state, null);
+    _pixelSender = new PixelSender(state, callHandler);
     _state = state || {};
   } catch (e) {
   }
@@ -2035,7 +1951,7 @@ function enrich$2(state, storageHandler) {
   var duidLsKey = getLegacyIdentifierKey();
 
   try {
-    if (state.appId && storageHandler.hasLocalStorage()) {
+    if (state.appId && storageHandler.localStorageIsEnabled()) {
       var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
       var legacyId = getLegacyId(previousIdentifier);
       return {
@@ -2091,25 +2007,24 @@ var _additionalParams = function _additionalParams(params) {
     return [];
   }
 };
+
+function _asParamOrEmpty$1(param, value, transform) {
+  if (isNonEmpty(value)) {
+    return [param, transform(value)];
+  } else {
+    return [];
+  }
+}
 /**
  * @param {State} config
  * @param {StorageHandler} storageHandler
- * @return {{resolve: function(callback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
+ * @param {CallHandler} calls
+ * @return {{resolve: function(successCallback: function, errorCallback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
 
 
-function IdentityResolver(config, storageHandler) {
-  var encodedOrNull = function encodedOrNull(value) {
-    return value && encodeURIComponent(value);
-  };
-
-  var fallback = function fallback(successCallback) {
-    if (isFunction(successCallback)) {
-      successCallback({}, undefined);
-    }
-  };
-
+function IdentityResolver(config, storageHandler, calls) {
   try {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
@@ -2120,12 +2035,14 @@ function IdentityResolver(config, storageHandler) {
     var url = idexConfig.url || DEFAULT_IDEX_URL;
     var timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT;
     var tuples = [];
-    tuples.push(['duid', encodedOrNull(nonNullConfig.peopleVerifiedId)]);
-    tuples.push(['us_privacy', encodedOrNull(nonNullConfig.usPrivacyString)]);
+    tuples.push(_asParamOrEmpty$1('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent));
+    tuples.push(_asParamOrEmpty$1('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent));
+    tuples.push(_asParamOrEmpty$1('gdpr', nonNullConfig.gdprApplies, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
+    tuples.push(_asParamOrEmpty$1('gdpr_consent', nonNullConfig.gdprConsent, encodeURIComponent));
     externalIds.forEach(function (retrievedIdentifier) {
-      var key = encodedOrNull(retrievedIdentifier.name);
-      var value = encodedOrNull(retrievedIdentifier.value);
-      tuples.push([key, value]);
+      tuples.push(_asParamOrEmpty$1(retrievedIdentifier.name, retrievedIdentifier.value, encodeURIComponent));
     });
 
     var composeUrl = function composeUrl(additionalParams) {
@@ -2134,25 +2051,23 @@ function IdentityResolver(config, storageHandler) {
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
 
-    var unsafeResolve = function unsafeResolve(successCallback, additionalParams) {
+    var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
       var finalUrl = composeUrl(additionalParams);
       var storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY);
 
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        get(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), function () {
-          return fallback(successCallback);
-        }, timeout);
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), errorCallback, timeout);
       }
     };
 
     return {
-      resolve: function resolve(callback, additionalParams) {
+      resolve: function resolve(successCallback, errorCallback, additionalParams) {
         try {
-          unsafeResolve(callback, additionalParams);
+          unsafeResolve(successCallback, errorCallback, additionalParams);
         } catch (e) {
-          fallback(callback);
+          errorCallback();
           error('IdentityResolve', 'Resolve threw an unhandled exception', e);
         }
       },
@@ -2163,8 +2078,8 @@ function IdentityResolver(config, storageHandler) {
   } catch (e) {
     error('IdentityResolver', 'IdentityResolver not created', e);
     return {
-      resolve: function resolve(successCallback) {
-        fallback(successCallback);
+      resolve: function resolve(successCallback, errorCallback) {
+        errorCallback();
         error('IdentityResolver.resolve', 'Resolve called on an uninitialised IdentityResolver', e);
       },
       getUrl: function getUrl() {
@@ -2174,240 +2089,9 @@ function IdentityResolver(config, storageHandler) {
   }
 }
 
-var browserCookies = createCommonjsModule(function (module, exports) {
-  exports.defaults = {};
-
-  exports.set = function (name, value, options) {
-    // Retrieve options and defaults
-    var opts = options || {};
-    var defaults = exports.defaults; // Apply default value for unspecified options
-
-    var expires = opts.expires || defaults.expires;
-    var domain = opts.domain || defaults.domain;
-    var path = opts.path !== undefined ? opts.path : defaults.path !== undefined ? defaults.path : '/';
-    var secure = opts.secure !== undefined ? opts.secure : defaults.secure;
-    var httponly = opts.httponly !== undefined ? opts.httponly : defaults.httponly;
-    var samesite = opts.samesite !== undefined ? opts.samesite : defaults.samesite; // Determine cookie expiration date
-    // If succesful the result will be a valid Date, otherwise it will be an invalid Date or false(ish)
-
-    var expDate = expires ? new Date( // in case expires is an integer, it should specify the number of days till the cookie expires
-    typeof expires === 'number' ? new Date().getTime() + expires * 864e5 : // else expires should be either a Date object or in a format recognized by Date.parse()
-    expires) : 0; // Set cookie
-
-    document.cookie = name.replace(/[^+#$&^`|]/g, encodeURIComponent) // Encode cookie name
-    .replace('(', '%28').replace(')', '%29') + '=' + value.replace(/[^+#$&/:<-\[\]-}]/g, encodeURIComponent) + ( // Encode cookie value (RFC6265)
-    expDate && expDate.getTime() >= 0 ? ';expires=' + expDate.toUTCString() : '') + ( // Add expiration date
-    domain ? ';domain=' + domain : '') + ( // Add domain
-    path ? ';path=' + path : '') + ( // Add path
-    secure ? ';secure' : '') + ( // Add secure option
-    httponly ? ';httponly' : '') + ( // Add httponly option
-    samesite ? ';samesite=' + samesite : ''); // Add samesite option
-  };
-
-  exports.get = function (name) {
-    var cookies = document.cookie.split(';'); // Iterate all cookies
-
-    while (cookies.length) {
-      var cookie = cookies.pop(); // Determine separator index ("name=value")
-
-      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
-
-      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex;
-      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, '')); // Return cookie value if the name matches
-
-      if (cookie_name === name) {
-        return decodeURIComponent(cookie.slice(separatorIndex + 1));
-      }
-    } // Return `null` as the cookie was not found
-
-
-    return null;
-  };
-
-  exports.erase = function (name, options) {
-    exports.set(name, '', {
-      expires: -1,
-      domain: options && options.domain,
-      path: options && options.path,
-      secure: 0,
-      httponly: 0
-    });
-  };
-
-  exports.all = function () {
-    var all = {};
-    var cookies = document.cookie.split(';'); // Iterate all cookies
-
-    while (cookies.length) {
-      var cookie = cookies.pop(); // Determine separator index ("name=value")
-
-      var separatorIndex = cookie.indexOf('='); // IE<11 emits the equal sign when the cookie value is empty
-
-      separatorIndex = separatorIndex < 0 ? cookie.length : separatorIndex; // add the cookie name and value to the `all` object
-
-      var cookie_name = decodeURIComponent(cookie.slice(0, separatorIndex).replace(/^\s+/, ''));
-      all[cookie_name] = decodeURIComponent(cookie.slice(separatorIndex + 1));
-    }
-
-    return all;
-  };
-});
-var browserCookies_1 = browserCookies.defaults;
-var browserCookies_2 = browserCookies.set;
-var browserCookies_3 = browserCookies.get;
-var browserCookies_4 = browserCookies.erase;
-var browserCookies_5 = browserCookies.all;
-
-/**
- * @typedef {Object} StorageOptions
- * @property {(number| Date |undefined)} [expires]
- * @property {(string|undefined)} [domain]
- * @property {(string|undefined)} [path]
- * @property {(boolean|undefined)} [secure]
- * @property {(boolean|undefined)} [httponly]
- * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
- */
-var _hasLocalStorage = null;
-/**
- * @returns {boolean}
- * @private
- */
-
-function hasLocalStorage() {
-  if (_hasLocalStorage == null) {
-    _hasLocalStorage = _checkLocalStorage();
-  }
-
-  return _hasLocalStorage;
-}
-/**
- * @returns {boolean}
- * @private
- */
-
-function _checkLocalStorage() {
-  var enabled = false;
-
-  try {
-    if (window && window.localStorage) {
-      var key = Math.random().toString();
-      window.localStorage.setItem(key, key);
-      enabled = window.localStorage.getItem(key) === key;
-      window.localStorage.removeItem(key);
-    }
-  } catch (e) {
-    error('LSCheckError', e.message, e);
-  }
-
-  return enabled;
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-
-function getCookie(key) {
-  return browserCookies_3(key);
-}
-/**
- * @param key
- * @return {string|null}
- * @private
- */
-
-function _unsafeGetFromLs(key) {
-  return window.localStorage.getItem(key);
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-
-function getDataFromLocalStorage(key) {
-  var ret = null;
-
-  if (hasLocalStorage()) {
-    ret = _unsafeGetFromLs(key);
-  }
-
-  return ret;
-}
-/**
- * @param keyLike
- * @return {[String]}
- */
-
-function findSimilarCookies(keyLike) {
-  var ret = [];
-
-  try {
-    var allCookies = browserCookies_5();
-
-    for (var cookieName in allCookies) {
-      if (allCookies[cookieName] && cookieName.indexOf(keyLike) >= 0) {
-        ret.push(browserCookies_3(cookieName));
-      }
-    }
-  } catch (e) {
-    error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e);
-  }
-
-  return ret;
-}
-/**
- * @param {string} key
- * @param {string} value
- * @param {number} expires
- * @param {string} sameSite
- * @param {string} domain
- * @returns void
- */
-
-function setCookie(key, value, expires, sameSite, domain) {
-  browserCookies_2(key, value, {
-    domain: domain,
-    expires: expires,
-    samesite: sameSite
-  });
-}
-/**
- * @param {string} key
- * @returns {string|null}
- */
-
-function removeDataFromLocalStorage(key) {
-  if (hasLocalStorage()) {
-    window.localStorage.removeItem(key);
-  }
-}
-/**
- * @param {string} key
- * @param {string} value
- * @returns {string|null}
- */
-
-function setDataInLocalStorage(key, value) {
-  if (hasLocalStorage()) {
-    window.localStorage.setItem(key, value);
-  }
-}
-
-var lcStorage = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  hasLocalStorage: hasLocalStorage,
-  getCookie: getCookie,
-  getDataFromLocalStorage: getDataFromLocalStorage,
-  findSimilarCookies: findSimilarCookies,
-  setCookie: setCookie,
-  removeDataFromLocalStorage: removeDataFromLocalStorage,
-  setDataInLocalStorage: setDataInLocalStorage
-});
-
 /**
  * @typedef {Object} StorageHandler
- * @property {function} [hasLocalStorage]
+ * @property {function} [localStorageIsEnabled]
  * @property {function} [getCookie]
  * @property {function} [setCookie]
  * @property {function} [getDataFromLocalStorage]
@@ -2429,29 +2113,80 @@ var _noOp = function _noOp() {
 
 
 function StorageHandler(storageStrategy, externalStorageHandler) {
-  function _externalOrDefault(functionName) {
+  var errors = [];
+
+  function _externalOrError(functionName) {
     var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
 
     if (hasExternal) {
       return externalStorageHandler[functionName];
     } else {
-      return lcStorage[functionName] || _noOp;
+      errors.push(functionName);
+      return _noOp;
     }
   }
 
   var _orElseNoOp = function _orElseNoOp(fName) {
-    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrDefault(fName);
+    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
   };
 
-  return {
-    hasLocalStorage: _orElseNoOp('hasLocalStorage'),
-    getCookie: _externalOrDefault('getCookie'),
+  var handler = {
+    localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
+    getCookie: _externalOrError('getCookie'),
     setCookie: _orElseNoOp('setCookie'),
-    getDataFromLocalStorage: _externalOrDefault('getDataFromLocalStorage'),
+    getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage'),
     removeDataFromLocalStorage: _orElseNoOp('removeDataFromLocalStorage'),
     setDataInLocalStorage: _orElseNoOp('setDataInLocalStorage'),
-    findSimilarCookies: _externalOrDefault('findSimilarCookies')
+    findSimilarCookies: _externalOrError('findSimilarCookies')
   };
+
+  if (errors.length > 0) {
+    error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
+  }
+
+  return handler;
+}
+
+/**
+ * @typedef {Object} CallHandler
+ * @property {function} [ajaxGet]
+ * @property {function} [pixelGet]
+ */
+
+var _noOp$1 = function _noOp() {
+  return undefined;
+};
+/**
+ * @param {CallHandler} externalCallHandler
+ * @returns {CallHandler}
+ * @constructor
+ */
+
+
+function CallHandler(externalCallHandler) {
+  var errors = [];
+
+  function _externalOrError(functionName) {
+    var hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
+
+    if (hasExternal) {
+      return externalCallHandler[functionName];
+    } else {
+      errors.push(functionName);
+      return _noOp$1;
+    }
+  }
+
+  var handler = {
+    ajaxGet: _externalOrError('ajaxGet'),
+    pixelGet: _externalOrError('pixelGet')
+  };
+
+  if (errors.length > 0) {
+    error('CallHandler', "The call functions '".concat(JSON.stringify(errors), "' are not provided"));
+  }
+
+  return handler;
 }
 
 var hemStore = {};
@@ -2540,19 +2275,17 @@ function _getInitializedLiveConnect(liveConnectConfig) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
  * @private
  */
 
 
-function _standardInitialization(liveConnectConfig, externalStorageHandler) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     init();
-    register(liveConnectConfig);
-  } catch (e) {
-  }
-
-  try {
+    var callHandler = CallHandler(externalCallHandler);
+    register(liveConnectConfig, callHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
 
     var reducer = function reducer(accumulator, func) {
@@ -2576,8 +2309,8 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler) {
       return send(PRELOAD_PIXEL, '0');
     };
 
-    var pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload);
-    var resolver = IdentityResolver(postManagedState.data, storageHandler);
+    var pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload);
+    var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
 
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -2605,17 +2338,18 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
  * @constructor
  */
 
 
-function LiveConnect(liveConnectConfig, externalStorageHandler) {
+function LiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
 
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue);
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue);
 
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {

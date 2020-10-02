@@ -57,7 +57,7 @@ describe('EventComposition', () => {
       appId: '9898',
       eventSource: { eventName: 'viewContent' },
       legacyId: {
-        duid: legacyDuid,
+        duid: legacyDuid
       }
     }
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
@@ -80,7 +80,6 @@ describe('EventComposition', () => {
   })
 
   it('should send the gdprApplies as 0 if false', function () {
-    const legacyDuid = 'a-0z68--e4f71227-70d0-4e54-b1c3-ACf80616bbb0'
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: false,

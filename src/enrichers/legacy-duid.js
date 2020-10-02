@@ -9,7 +9,7 @@ export function enrich (state, storageHandler) {
   console.log('legacy-duid.enrich', state)
   const duidLsKey = getLegacyIdentifierKey()
   try {
-    if (state.appId && storageHandler.hasLocalStorage()) {
+    if (state.appId && storageHandler.localStorageIsEnabled()) {
       const previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey)
       const legacyId = getLegacyId(previousIdentifier)
       return {

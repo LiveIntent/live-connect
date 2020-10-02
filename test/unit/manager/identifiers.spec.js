@@ -1,11 +1,9 @@
 import { expect } from 'chai'
 import * as identifiers from '../../../src/manager/identifiers'
-import * as storage from '../../../src/utils/storage'
+import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import { StorageStrategy } from '../../../src/model/storage-strategy'
-
-
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -23,13 +21,13 @@ describe('IdentifiersManager', () => {
 
   it('should create a first party cookie if it doesn\'t exist, and storage strategy is cookie', function () {
     expect(storage.getCookie('_lc2_fpi')).to.eql(null)
-    const resolutionResult = identifiers.resolve({storageStrategy: 'cookie'}, storage)
+    const resolutionResult = identifiers.resolve({ storageStrategy: 'cookie' }, storage)
     expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-    const resolutionResult = identifiers.resolve({storageStrategy: 'ls'}, storage)
+    const resolutionResult = identifiers.resolve({ storageStrategy: 'ls' }, storage)
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null
   })
@@ -105,5 +103,4 @@ describe('TLD on sub-domain', () => {
     const resolved = identifiers.resolve({}, storage)
     expect(resolved.domain).to.eq('.example.co.uk')
   })
-
 })

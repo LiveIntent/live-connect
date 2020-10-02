@@ -56,19 +56,27 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 - `fire` just fires a pixel, and can be considered as a simple page view.
 - `peopleVerifiedId` returns the most likely first party cookie that can be used for identity resolution.
 - `ready` flag, saying that the LC was loaded and ready, can be used when including LiveConnect as a global var on the window object.
-- `resolve` function accepts a callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The second parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key.
+- `resolve` function accepts a success callback, an error callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The third parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key.
 - `resolutionCallUrl` function returns the URL to be called in order to receive the resolution to a stable identifier.
 
-### Overriding the StorageHandler.
-LiveConnect can be initialized in a way so that it does not manipulate storage on the device on it's own. For example, if one wants to use it's own handler for storage, it is enough to send the storage handler in the constructor.
-The only thing one needs to adhere to is the signature of each function that's needed on the StorageHandler:
-- `function hasLocalStorage ()`
+### Overriding the StorageHandler and CallHandler
+LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on it's own. 
+
+The StorageHandler is an object with functions that adheres to the signature:
+- `function localStorageIsEnabled ()`
 - `function getCookie (key)`
 - `function getDataFromLocalStorage (key)`
 - `function findSimilarCookies (keyLike)`
 - `function setCookie (key, value, expires, sameSite, domain)`
 - `function removeDataFromLocalStorage (key)`
 - `function setDataInLocalStorage (key, value)`
+
+The CallHandler is another object with functions:
+- `function ajaxGet (uri, responseHandler, fallback, timeout)` 
+where the `responseHandler` is a `function(body, response)`,
+and the `fallback` is a `function()`
+- `function pixelGet (uri, onload)`
+where the `onload` is a `function()`
 
 If one of the functions is not available in the external handler, LiveConnect will fallback to it's own implementation to ensure that the functionality isn't being affected.
 
@@ -85,7 +93,15 @@ const storageHandler = {
   },
   ...
 }
-const lc = LiveConnect(configOptions, storageHandler)
+const callsHandler = {
+  ajaxGet: (url, responseHandler, fallback, timeout) => {
+   //  
+  },
+  pixelGet: (url, onload) => {
+   //
+  }
+}
+const lc = LiveConnect(configOptions, storageHandler, ajaxHandler)
 ``` 
 
 ### Configuration options

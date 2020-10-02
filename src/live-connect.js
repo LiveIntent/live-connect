@@ -45,6 +45,7 @@ import * as legacyDuid from './enrichers/legacy-duid'
 import { isArray, isObject } from './utils/types'
 import * as idex from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
+import { CallHandler } from './handlers/call-handler'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState) {
@@ -122,18 +123,16 @@ function _getInitializedLiveConnect (liveConnectConfig) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     eventBus.init()
-    errorHandler.register(liveConnectConfig)
-  } catch (e) {
-    console.error('Could not initialize error bus')
-  }
+    const callHandler = CallHandler(externalCallHandler)
+    errorHandler.register(liveConnectConfig, callHandler)
 
-  try {
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
@@ -148,8 +147,8 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
     const syncContainerData = { ...liveConnectConfig, ...{ peopleVerifiedId: postManagedState.data.peopleVerifiedId } }
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
-    const pixelClient = new PixelSender(liveConnectConfig, onPixelLoad, onPixelPreload)
-    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler)
+    const pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload)
+    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {
       push: _push,
@@ -169,15 +168,16 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler) {
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
  * @constructor
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler) {
+export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])
