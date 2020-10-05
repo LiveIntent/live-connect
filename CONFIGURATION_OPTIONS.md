@@ -125,31 +125,31 @@ Example:
 }
 ```
 
-##### `identityResolutionConfig.expirationDays` [Optional, HasDefault]
-By default, 1 day.
+##### `identityResolutionConfig.expirationHours` [Optional, HasDefault]
+By default, 1 hour.
 This configuration parameter determines the expiration of a result stored in previous `liveConnect.resolve (...)` calls. The result is stored in a cookie. 
 Example:
 ```javascript
 {
   identityResolutionConfig: {
-    expirationDays: 4
+    expirationHours: 4
   }
 }
 ```
-sets the cookie expiration time to 4 days, which means that in a given browser, the LiveIntent stable id will be reused for 4 days until it's refreshed.
+sets the cookie expiration time to 4 hours, which means that in a given browser, the LiveIntent stable id will be reused for 4 hours until it's refreshed.
 
 ##### `identityResolutionConfig.ajaxTimeout` [Optional, HasDefault]
-By default, 1000 milliseconds.
+By default, 5000 milliseconds.
 This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. 
 Example:
 ```javascript
 {
   identityResolutionConfig: {
-    ajaxTimeout: 400
+    ajaxTimeout: 3000
   }
 }
 ```
-sets the timeout to 400 millis.
+sets the timeout to 3000 millis.
 
 ##### `identityResolutionConfig.source` [Optional, HasDefault]
 By default, `unknown`.

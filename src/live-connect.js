@@ -11,7 +11,7 @@
 
 /**
  * @typedef {Object} IdexConfig
- * @property {(number|undefined)} expirationDays
+ * @property {(number|undefined)} expirationHours
  * @property {(number|undefined)} ajaxTimeout
  * @property {(string|undefined)} source
  * @property {(number|undefined)} publisherId

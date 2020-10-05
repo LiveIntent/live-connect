@@ -1,6 +1,8 @@
 import { isArray, isFunction } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
+const DEFAULT_AJAX_TIMEOUT = 5000
+
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
@@ -18,10 +20,16 @@ export function PixelSender (liveConnectConfig, calls, onload, presend) {
    */
   function _sendAjax (state) {
     _sendState(state, 'j', uri => {
-      calls.ajaxGet(uri, bakersJson => {
-        if (isFunction(onload)) onload()
-        _callBakers(bakersJson)
-      })
+      calls.ajaxGet(
+        uri,
+        bakersJson => {
+          if (isFunction(onload)) onload()
+          _callBakers(bakersJson)
+        },
+        () => {
+        },
+        DEFAULT_AJAX_TIMEOUT
+      )
     })
   }
 

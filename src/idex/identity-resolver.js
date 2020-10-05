@@ -1,13 +1,13 @@
 import { toParams } from '../utils/url'
 import { error } from '../utils/emitter'
-import { expiresInDays, isNonEmpty, isObject } from '../utils/types'
+import { expiresInHours, isNonEmpty, isObject } from '../utils/types'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
-const DEFAULT_EXPIRATION_DAYS = 1
-const DEFAULT_AJAX_TIMEOUT = 1000
+const DEFAULT_EXPIRATION_HOURS = 1
+const DEFAULT_AJAX_TIMEOUT = 5000
 
-function _responseReceived (storageHandler, domain, expirationDays, successCallback) {
+function _responseReceived (storageHandler, domain, expirationHours, successCallback) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -22,7 +22,7 @@ function _responseReceived (storageHandler, domain, expirationDays, successCallb
       storageHandler.setCookie(
         IDEX_STORAGE_KEY,
         JSON.stringify(responseObj),
-        expiresInDays(expirationDays),
+        expiresInHours(expirationHours),
         'Lax',
         domain)
     } catch (ex) {
@@ -68,7 +68,7 @@ export function IdentityResolver (config, storageHandler, calls) {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
-    const expirationDays = idexConfig.expirationDays || DEFAULT_EXPIRATION_DAYS
+    const expirationHours = idexConfig.expirationHours || DEFAULT_EXPIRATION_HOURS
     const source = idexConfig.source || 'unknown'
     const publisherId = idexConfig.publisherId || 'any'
     const url = idexConfig.url || DEFAULT_IDEX_URL
@@ -93,7 +93,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie))
       } else {
-        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), errorCallback, timeout)
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout)
       }
     }
     return {
