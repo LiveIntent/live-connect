@@ -5,7 +5,7 @@ import { expiresInDays, isNonEmpty, isObject } from '../utils/types'
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
 const DEFAULT_EXPIRATION_DAYS = 1
-const DEFAULT_AJAX_TIMEOUT = 1000
+const DEFAULT_AJAX_TIMEOUT = 5000
 
 function _responseReceived (storageHandler, domain, expirationDays, successCallback) {
   return response => {

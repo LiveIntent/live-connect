@@ -168,6 +168,7 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
+var DEFAULT_AJAX_TIMEOUT = 5000;
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
@@ -190,7 +191,7 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
         if (isFunction(onload)) onload();
 
         _callBakers(bakersJson);
-      });
+      }, function () {}, DEFAULT_AJAX_TIMEOUT);
     });
   }
 
@@ -1968,7 +1969,7 @@ function enrich$2(state, storageHandler) {
 var IDEX_STORAGE_KEY = '__li_idex_cache';
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 var DEFAULT_EXPIRATION_DAYS$1 = 1;
-var DEFAULT_AJAX_TIMEOUT = 1000;
+var DEFAULT_AJAX_TIMEOUT$1 = 5000;
 
 function _responseReceived(storageHandler, domain, expirationDays, successCallback) {
   return function (response) {
@@ -2033,7 +2034,7 @@ function IdentityResolver(config, storageHandler, calls) {
     var source = idexConfig.source || 'unknown';
     var publisherId = idexConfig.publisherId || 'any';
     var url = idexConfig.url || DEFAULT_IDEX_URL;
-    var timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT;
+    var timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT$1;
     var tuples = [];
     tuples.push(_asParamOrEmpty$1('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent));
     tuples.push(_asParamOrEmpty$1('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent));
