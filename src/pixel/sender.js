@@ -1,7 +1,7 @@
 import { isArray, isFunction } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
-const DEFAULT_AJAX_TIMEOUT = 5000
+const DEFAULT_AJAX_TIMEOUT = 0
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
