@@ -145,6 +145,28 @@ function expiresInDays(expires) {
   return new Date(new Date().getTime() + expires * 864e5).toUTCString();
 }
 
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PIXEL_SENT_PREFIX = 'lips';
+var PRELOAD_PIXEL = 'pre_lips';
+
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+}
+
+function send(prefix, message) {
+  _emit(prefix, message);
+}
+function error(name, message, e) {
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+
+  _emit(ERRORS_PREFIX, wrapped);
+}
+
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {function} onload
@@ -170,11 +192,20 @@ function PixelSender(liveConnectConfig, onload, presend) {
       var latest = "dtstmp=".concat(utcMillis);
       var queryString = state.asQueryString();
       var withDt = queryString ? "&".concat(latest) : "?".concat(latest);
-      img.src = "".concat(url, "/p").concat(queryString).concat(withDt);
+      var fullUrl = "".concat(url, "/p").concat(queryString).concat(withDt);
 
       if (isFunction(onload)) {
         img.onload = onload;
       }
+
+      if (!state.isError()) {
+        img.onerror = function () {
+          var e = new Error();
+          error('PixelSenderError', "Error sending pixel ".concat(fullUrl), e);
+        };
+      }
+
+      img.src = fullUrl;
     }
   }
 
@@ -441,28 +472,6 @@ function base64UrlEncode(s) {
   }
 
   return btoa(utf8Bytes).replace(_base64encodeRegex, _replaceBase64Chars);
-}
-
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PIXEL_SENT_PREFIX = 'lips';
-var PRELOAD_PIXEL = 'pre_lips';
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-
-function send(prefix, message) {
-  _emit(prefix, message);
-}
-function error(name, message, e) {
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-
-  _emit(ERRORS_PREFIX, wrapped);
 }
 
 var emailRegex = function emailRegex() {
@@ -941,6 +950,10 @@ function StateWrapper(state) {
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1;
   }
 
+  function _isError() {
+    return !!state.errorDetails;
+  }
+
   function _safeFiddle(newInfo) {
     try {
       return fiddle(JSON.parse(JSON.stringify(newInfo)));
@@ -999,7 +1012,8 @@ function StateWrapper(state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel
+    sendsPixel: _sendsPixel,
+    isError: _isError
   };
 }
 
@@ -1252,13 +1266,14 @@ function getPage() {
     return win.location.ancestorOrigins;
   }) || {};
   var windows = [];
-  var currentWindow;
+  var currentWindow = win;
 
-  do {
-    currentWindow = currentWindow ? currentWindow.parent : win;
+  while (currentWindow !== top) {
     windows.push(currentWindow);
-  } while (currentWindow !== top);
+    currentWindow = currentWindow.parent;
+  }
 
+  windows.push(currentWindow);
   var detectedPageUrl;
 
   var _loop = function _loop(i) {
@@ -1640,7 +1655,7 @@ function enrich(state) {
 
 var _state = null;
 var _pixelSender = null;
-var MAX_ERROR_FIELD_LENGTH = 120;
+var MAX_ERROR_FIELD_LENGTH = 1200;
 var _defaultReturn = {
   errorDetails: {
     message: 'Unknown message',

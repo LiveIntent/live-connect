@@ -14,6 +14,12 @@ const compression = require('compression')
 
 const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
 
+const pixelData = [
+  0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
+  0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x04, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00,
+  0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b
+]
+
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const fullContent = preamble + bundle
@@ -116,7 +122,12 @@ export function MockServerFactory (config) {
   app.get('/p', (req, res) => {
     console.log(`PIXEL :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
     history.push(req)
-    res.sendStatus(200)
+
+    res.writeHead(200, {
+      'Content-Type': 'image/gif',
+      'Content-Length': pixelData.length
+    })
+    res.end(Buffer.from(pixelData))
   })
 
   app.get('/favicon.ico', (req, res) => {

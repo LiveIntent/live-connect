@@ -5,6 +5,7 @@
  * @constructor
  */
 import { isFunction } from '../utils/types'
+import * as emitter from '../utils/emitter'
 
 export function PixelSender (liveConnectConfig, onload, presend) {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
@@ -24,10 +25,17 @@ export function PixelSender (liveConnectConfig, onload, presend) {
       const latest = `dtstmp=${utcMillis}`
       const queryString = state.asQueryString()
       const withDt = queryString ? `&${latest}` : `?${latest}`
-      img.src = `${url}/p${queryString}${withDt}`
+      const fullUrl = `${url}/p${queryString}${withDt}`
       if (isFunction(onload)) {
         img.onload = onload
       }
+      if (!state.isError()) {
+        img.onerror = function () {
+          const e = new Error()
+          emitter.error('PixelSenderError', `Error sending pixel ${fullUrl}`, e)
+        }
+      }
+      img.src = fullUrl
     }
   }
 

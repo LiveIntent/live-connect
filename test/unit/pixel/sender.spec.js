@@ -19,7 +19,7 @@ describe('PixelSender', () => {
     const obj = {}
     const imgStub = sandbox.stub(window, 'Image').returns(obj)
     const sender = new PixelSender({})
-    sender.send({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.send({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true, isError: () => false })
     expect(obj.src).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
     imgStub.restore()
   })
@@ -30,7 +30,7 @@ describe('PixelSender', () => {
     const imgStub = sandbox.stub(window, 'Image').returns(obj)
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, onload)
-    sender.send({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.send({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true, isError: () => false })
     expect(obj.src).to.match(/http:\/\/localhost\/p\?xxx=yyy&dtstmp=\d+/)
     expect(obj.onload).to.eql(onload)
     imgStub.restore()
@@ -41,7 +41,7 @@ describe('PixelSender', () => {
     const obj = {}
     const imgStub = sandbox.stub(window, 'Image').returns(obj)
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, null)
-    sender.send({ asQueryString: () => '?zzz=ccc', sendsPixel: () => true })
+    sender.send({ asQueryString: () => '?zzz=ccc', sendsPixel: () => true, isError: () => false })
     expect(obj.src).to.match(/http:\/\/localhost\/p\?zzz=ccc&dtstmp=\d+/)
     expect(obj.onload).to.eql(undefined)
     imgStub.restore()

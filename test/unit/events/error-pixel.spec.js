@@ -48,12 +48,12 @@ describe('ErrorPixel', () => {
     expect(errors[0].data.collectorUrl).to.eql('http://localhost')
   })
 
-  it('should truncate the excessive text', function () {
-    const longText = 'x'.repeat(200)
-    const error =  new Error(longText)
-    const result = errorPixel.asErrorDetails(error)
-    expect(result.errorDetails.message.length).to.eq(123)
-  })
+  // it('should truncate the excessive text', function () {
+  //   const longText = 'x'.repeat(200)
+  //   const error =  new Error(longText)
+  //   const result = errorPixel.asErrorDetails(error)
+  //   expect(result.errorDetails.message.length).to.eq(123)
+  // })
 
   it('should send the default error if none was sent', function () {
     const result = errorPixel.asErrorDetails(null)

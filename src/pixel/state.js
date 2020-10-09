@@ -41,6 +41,7 @@
  * @property {function} asQueryString
  * @property {function} combineWith
  * @property {function} sendsPixel
+ * @property {function} isError
  * @property {StorageManager} storageHandler
  */
 
@@ -151,6 +152,10 @@ export function StateWrapper (state) {
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
   }
 
+  function _isError () {
+    return !!state.errorDetails
+  }
+
   function _safeFiddle (newInfo) {
     try {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
@@ -205,6 +210,7 @@ export function StateWrapper (state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel
+    sendsPixel: _sendsPixel,
+    isError: _isError
   }
 }

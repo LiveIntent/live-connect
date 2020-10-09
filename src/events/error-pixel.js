@@ -6,7 +6,7 @@ import { isFunction } from '../utils/types'
 
 let _state = null
 let _pixelSender = null
-const MAX_ERROR_FIELD_LENGTH = 120
+const MAX_ERROR_FIELD_LENGTH = 1200
 
 const _defaultReturn = {
   errorDetails: {
