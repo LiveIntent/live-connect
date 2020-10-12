@@ -118,14 +118,9 @@ describe('PixelSender', () => {
 
   it('retries 3 times when sendAjax', function (done) {
     bus.init()
-    const intermediateAttemptErrors = []
     window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, (e) => {
-      if (e.name === 'AjaxAttempt') {
-        intermediateAttemptErrors.push(e)
-      }
       if (e.name === 'AjaxAttemptsExceeded') {
         expect(ajaxRequests).to.have.length(3)
-        expect(intermediateAttemptErrors).to.have.length(2)
         done()
       }
     })

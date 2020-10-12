@@ -30,7 +30,6 @@ export function PixelSender (liveConnectConfig, calls, onload, presend) {
         },
         e => {
           if (attempt < MAX_ATTEMPTS) {
-            emitter.error('AjaxAttempt', `Attempt ${attempt}. ${e.message} `, e)
             _sendAjax(state, attempt + 1)
           } else {
             emitter.error('AjaxAttemptsExceeded', e.message, e)

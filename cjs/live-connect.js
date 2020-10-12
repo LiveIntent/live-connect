@@ -210,8 +210,6 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
         _callBakers(bakersJson);
       }, function (e) {
         if (attempt < MAX_ATTEMPTS) {
-          error('AjaxAttempt', "Attempt ".concat(attempt, ". ").concat(e.message, " "), e);
-
           _sendAjax(state, attempt + 1);
         } else {
           error('AjaxAttemptsExceeded', e.message, e);
