@@ -41,6 +41,7 @@
  * @property {function} asQueryString
  * @property {function} combineWith
  * @property {function} sendsPixel
+ * @property {function} withAttempt
  * @property {StorageManager} storageHandler
  */
 
@@ -125,6 +126,9 @@ const _pMap = {
   },
   referrer: referrer => {
     return _asParamOrEmpty('refr', referrer, (s) => encodeURIComponent(s))
+  },
+  attempt: attempt => {
+    return _asParamOrEmpty('atmp', attempt, (s) => encodeURIComponent(s))
   }
 }
 
@@ -171,6 +175,15 @@ export function StateWrapper (state) {
   }
 
   /**
+   * @param attempt
+   * @returns {StateWrapper}
+   * @private
+   */
+  function _withAttempt (attempt) {
+    return new StateWrapper({ ..._state, attempt: attempt })
+  }
+
+  /**
    * @returns {string [][]}
    * @private
    */
@@ -205,6 +218,7 @@ export function StateWrapper (state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel
+    sendsPixel: _sendsPixel,
+    withAttempt: _withAttempt
   }
 }
