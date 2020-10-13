@@ -26,7 +26,9 @@ export function PixelSender (liveConnectConfig, calls, onload, presend) {
           if (isFunction(onload)) onload()
           _callBakers(bakersJson)
         },
-        () => {
+        (e) => {
+          _sendPixel(state)
+          emitter.error('AjaxFailed', e.message, e)
         },
         DEFAULT_AJAX_TIMEOUT
       )

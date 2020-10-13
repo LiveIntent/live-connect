@@ -96,6 +96,21 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
+  it('sends the event via pixel as fallback if ajax fails', function (done) {
+    bus.init()
+    const onload = () => 1
+    window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, (e) => {
+      expect(e.name).to.eq('AjaxFailed')
+      expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
+      expect(pixelRequests[0].onload).to.eql(onload)
+      done()
+    })
+
+    const sender = new PixelSender({}, calls, onload)
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
+  })
+
   it('defaults to production if none set when sendAjax', function (done) {
     const successCallback = () => {
       expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?xxx=yyy&dtstmp=\d+/)

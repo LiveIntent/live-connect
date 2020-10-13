@@ -144,6 +144,15 @@ function isFunction(fun) {
 function expiresInDays(expires) {
   return new Date(new Date().getTime() + expires * 864e5).toUTCString();
 }
+/**
+ * Returns the string representation when something should expire
+ * @param expires
+ * @return {string}
+ */
+
+function expiresInHours(expires) {
+  return new Date(new Date().getTime() + expires * 36e5).toUTCString();
+}
 
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
 var ERRORS_PREFIX = 'li_errors';
@@ -168,7 +177,7 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-var DEFAULT_AJAX_TIMEOUT = 5000;
+var DEFAULT_AJAX_TIMEOUT = 0;
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
@@ -191,7 +200,11 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
         if (isFunction(onload)) onload();
 
         _callBakers(bakersJson);
-      }, function () {}, DEFAULT_AJAX_TIMEOUT);
+      }, function (e) {
+        _sendPixel(state);
+
+        error('AjaxFailed', e.message, e);
+      }, DEFAULT_AJAX_TIMEOUT);
     });
   }
 
@@ -1968,10 +1981,10 @@ function enrich$2(state, storageHandler) {
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
-var DEFAULT_EXPIRATION_DAYS$1 = 1;
+var DEFAULT_EXPIRATION_HOURS = 1;
 var DEFAULT_AJAX_TIMEOUT$1 = 5000;
 
-function _responseReceived(storageHandler, domain, expirationDays, successCallback) {
+function _responseReceived(storageHandler, domain, expirationHours, successCallback) {
   return function (response) {
     var responseObj = {};
 
@@ -1984,7 +1997,7 @@ function _responseReceived(storageHandler, domain, expirationDays, successCallba
     }
 
     try {
-      storageHandler.setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), expiresInDays(expirationDays), 'Lax', domain);
+      storageHandler.setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), expiresInHours(expirationHours), 'Lax', domain);
     } catch (ex) {
       error('IdentityResolverStorage', 'Error putting the Idex response in a cookie jar', ex);
     }
@@ -2030,7 +2043,7 @@ function IdentityResolver(config, storageHandler, calls) {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
     var externalIds = nonNullConfig.retrievedIdentifiers || [];
-    var expirationDays = idexConfig.expirationDays || DEFAULT_EXPIRATION_DAYS$1;
+    var expirationHours = idexConfig.expirationHours || DEFAULT_EXPIRATION_HOURS;
     var source = idexConfig.source || 'unknown';
     var publisherId = idexConfig.publisherId || 'any';
     var url = idexConfig.url || DEFAULT_IDEX_URL;
@@ -2059,7 +2072,7 @@ function IdentityResolver(config, storageHandler, calls) {
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), errorCallback, timeout);
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout);
       }
     };
 
