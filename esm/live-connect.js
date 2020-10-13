@@ -177,8 +177,7 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-var DEFAULT_AJAX_TIMEOUT = 5000;
-var MAX_ATTEMPTS = 3;
+var DEFAULT_AJAX_TIMEOUT = 0;
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
@@ -192,24 +191,19 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
   /**
    * @param {StateWrapper} state
-   * @param attempt
    * @private
    */
 
   function _sendAjax(state) {
-    var attempt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-    _sendState(state.withAttempt(attempt), 'j', function (uri) {
+    _sendState(state, 'j', function (uri) {
       calls.ajaxGet(uri, function (bakersJson) {
         if (isFunction(onload)) onload();
 
         _callBakers(bakersJson);
       }, function (e) {
-        if (attempt < MAX_ATTEMPTS) {
-          _sendAjax(state, attempt + 1);
-        } else {
-          error('AjaxAttemptsExceeded', e.message, e);
-        }
+        _sendPixel(state);
+
+        error('AjaxFailed', e.message, e);
       }, DEFAULT_AJAX_TIMEOUT);
     });
   }
@@ -972,11 +966,6 @@ var _pMap = {
     return _asParamOrEmpty('refr', _referrer, function (s) {
       return encodeURIComponent(s);
     });
-  },
-  attempt: function attempt(_attempt) {
-    return _asParamOrEmpty('atmp', _attempt, function (s) {
-      return encodeURIComponent(s);
-    });
   }
 };
 /**
@@ -1024,18 +1013,6 @@ function StateWrapper(state) {
     return new StateWrapper(_objectSpread2(_objectSpread2({}, _state), newInfo));
   }
   /**
-   * @param attempt
-   * @returns {StateWrapper}
-   * @private
-   */
-
-
-  function _withAttempt(attempt) {
-    return new StateWrapper(_objectSpread2(_objectSpread2({}, _state), {}, {
-      attempt: attempt
-    }));
-  }
-  /**
    * @returns {string [][]}
    * @private
    */
@@ -1075,8 +1052,7 @@ function StateWrapper(state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel,
-    withAttempt: _withAttempt
+    sendsPixel: _sendsPixel
   };
 }
 

@@ -5,11 +5,6 @@ import { PixelSender } from '../../../src/pixel/sender'
 import * as C from '../../../src/utils/consts'
 import * as bus from '../../../src/events/bus'
 import * as calls from '../../shared/utils/calls'
-import { StateWrapper } from '../../../src/pixel/state'
-
-function stateStub () {
-  return new StateWrapper({ trackerName: 'spec' })
-}
 
 describe('PixelSender', () => {
   let ajaxRequests = []
@@ -52,21 +47,21 @@ describe('PixelSender', () => {
 
   it('defaults to production if none set when sendAjax', function (done) {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?tna=spec.*&dtstmp=\d+/)
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?xxx=yyy&dtstmp=\d+/)
       done()
     }
     const sender = new PixelSender({}, calls, successCallback)
-    sender.sendAjax(stateStub())
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
   it('sends a request to a custom collector url when sendAjax', function (done) {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?tna=spec.*&dtstmp=\d+/)
+      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?xxx=yyy&dtstmp=\d+/)
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, successCallback)
-    sender.sendAjax(stateStub())
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -85,7 +80,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({}, calls)
-    sender.sendAjax(stateStub())
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
   })
 
@@ -97,48 +92,32 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({}, calls)
-    sender.sendAjax(stateStub())
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
-  it('succeeds after retry when sendAjax', function (done) {
-    const successCallback = () => {
-      expect(ajaxRequests).to.have.length(3)
-      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?.*atmp=1.*/)
-      expect(ajaxRequests[1].url).to.match(/https:\/\/rp.liadm.com\/j\?.*atmp=2.*/)
-      expect(ajaxRequests[2].url).to.match(/https:\/\/rp.liadm.com\/j\?.*atmp=3.*/)
-      done()
-    }
-    const sender = new PixelSender({}, calls, successCallback)
-    sender.sendAjax(stateStub())
-    ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' })
-    ajaxRequests[1].respond(500, { 'Content-Type': 'application/json' })
-    ajaxRequests[2].respond(200, { 'Content-Type': 'application/json' }, '{}')
-  })
-
-  it('retries 3 times when sendAjax', function (done) {
+  it('sends the event via pixel as fallback if ajax fails', function (done) {
     bus.init()
+    const onload = () => 1
     window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, (e) => {
-      if (e.name === 'AjaxAttemptsExceeded') {
-        expect(ajaxRequests).to.have.length(3)
-        done()
-      }
+      expect(e.name).to.eq('AjaxFailed')
+      expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
+      expect(pixelRequests[0].onload).to.eql(onload)
+      done()
     })
 
-    const sender = new PixelSender({}, calls)
-    sender.sendAjax(stateStub())
-    for (let i = 1; i <= 3; i++) {
-      ajaxRequests[i - 1].respond(500, { 'Content-Type': 'application/json' })
-    }
+    const sender = new PixelSender({}, calls, onload)
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
   it('defaults to production if none set when sendAjax', function (done) {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?tna=spec.*&dtstmp=\d+/)
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?xxx=yyy&dtstmp=\d+/)
       done()
     }
     const sender = new PixelSender({}, calls, successCallback)
-    sender.sendAjax(stateStub())
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -148,21 +127,21 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({}, calls, null, presend)
-    sender.sendAjax(stateStub())
+    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
   })
 
   it('defaults to production if none set when sendPixel', function () {
     const sender = new PixelSender({}, calls)
-    sender.sendPixel(stateStub())
-    expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?tna=spec.*&dtstmp=\d+/)
+    sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
     expect(pixelRequests[0].onload).to.be.undefined
   })
 
   it('sends an image pixel and call onload if request succeeds when sendPixel', function () {
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, onload)
-    sender.sendPixel(stateStub())
-    expect(pixelRequests[0].uri).to.match(/http:\/\/localhost\/p\?tna=spec.*&dtstmp=\d+/)
+    sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    expect(pixelRequests[0].uri).to.match(/http:\/\/localhost\/p\?xxx=yyy&dtstmp=\d+/)
     expect(pixelRequests[0].onload).to.eql(onload)
   })
 

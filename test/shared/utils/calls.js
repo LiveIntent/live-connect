@@ -10,7 +10,6 @@ import { isFunction } from '../../../src/utils/types'
 export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 1000) {
   function errorCallback (name, message, error, request) {
     console.error('Error while executing ajax call', error, request)
-    emitter.error(name, message, error)
     fallback(error)
   }
 
