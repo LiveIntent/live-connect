@@ -209,6 +209,8 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
           _sendAjax(state, attempt + 1);
         } else {
           error('AjaxAttemptsExceeded', e.message, e);
+
+          _sendPixel(state);
         }
       }, DEFAULT_AJAX_TIMEOUT);
     });
