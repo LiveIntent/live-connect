@@ -148,15 +148,6 @@ function isFunction(fun) {
 function expiresInDays(expires) {
   return new Date(new Date().getTime() + expires * 864e5).toUTCString();
 }
-/**
- * Returns the string representation when something should expire
- * @param expires
- * @return {string}
- */
-
-function expiresInHours(expires) {
-  return new Date(new Date().getTime() + expires * 36e5).toUTCString();
-}
 
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
 var ERRORS_PREFIX = 'li_errors';
@@ -182,7 +173,6 @@ function error(name, message) {
 }
 
 var DEFAULT_AJAX_TIMEOUT = 5000;
-var MAX_ATTEMPTS = 3;
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
@@ -196,25 +186,16 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
   /**
    * @param {StateWrapper} state
-   * @param attempt
    * @private
    */
 
   function _sendAjax(state) {
-    var attempt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-
-    _sendState(state.withAttempt(attempt), 'j', function (uri) {
+    _sendState(state, 'j', function (uri) {
       calls.ajaxGet(uri, function (bakersJson) {
         if (isFunction(onload)) onload();
 
         _callBakers(bakersJson);
-      }, function (e) {
-        if (attempt < MAX_ATTEMPTS) {
-          _sendAjax(state, attempt + 1);
-        } else {
-          error('AjaxAttemptsExceeded', e.message, e);
-        }
-      }, DEFAULT_AJAX_TIMEOUT);
+      }, function () {}, DEFAULT_AJAX_TIMEOUT);
     });
   }
 
@@ -976,11 +957,6 @@ var _pMap = {
     return _asParamOrEmpty('refr', _referrer, function (s) {
       return encodeURIComponent(s);
     });
-  },
-  attempt: function attempt(_attempt) {
-    return _asParamOrEmpty('atmp', _attempt, function (s) {
-      return encodeURIComponent(s);
-    });
   }
 };
 /**
@@ -1028,18 +1004,6 @@ function StateWrapper(state) {
     return new StateWrapper(_objectSpread2(_objectSpread2({}, _state), newInfo));
   }
   /**
-   * @param attempt
-   * @returns {StateWrapper}
-   * @private
-   */
-
-
-  function _withAttempt(attempt) {
-    return new StateWrapper(_objectSpread2(_objectSpread2({}, _state), {}, {
-      attempt: attempt
-    }));
-  }
-  /**
    * @returns {string [][]}
    * @private
    */
@@ -1079,8 +1043,7 @@ function StateWrapper(state) {
     combineWith: _combineWith,
     asQueryString: _asQueryString,
     asTuples: _asTuples,
-    sendsPixel: _sendsPixel,
-    withAttempt: _withAttempt
+    sendsPixel: _sendsPixel
   };
 }
 
@@ -2009,10 +1972,10 @@ function enrich$2(state, storageHandler) {
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
-var DEFAULT_EXPIRATION_HOURS = 1;
+var DEFAULT_EXPIRATION_DAYS$1 = 1;
 var DEFAULT_AJAX_TIMEOUT$1 = 5000;
 
-function _responseReceived(storageHandler, domain, expirationHours, successCallback) {
+function _responseReceived(storageHandler, domain, expirationDays, successCallback) {
   return function (response) {
     var responseObj = {};
 
@@ -2025,7 +1988,7 @@ function _responseReceived(storageHandler, domain, expirationHours, successCallb
     }
 
     try {
-      storageHandler.setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), expiresInHours(expirationHours), 'Lax', domain);
+      storageHandler.setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), expiresInDays(expirationDays), 'Lax', domain);
     } catch (ex) {
       error('IdentityResolverStorage', 'Error putting the Idex response in a cookie jar', ex);
     }
@@ -2071,7 +2034,7 @@ function IdentityResolver(config, storageHandler, calls) {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
     var externalIds = nonNullConfig.retrievedIdentifiers || [];
-    var expirationHours = idexConfig.expirationHours || DEFAULT_EXPIRATION_HOURS;
+    var expirationDays = idexConfig.expirationDays || DEFAULT_EXPIRATION_DAYS$1;
     var source = idexConfig.source || 'unknown';
     var publisherId = idexConfig.publisherId || 'any';
     var url = idexConfig.url || DEFAULT_IDEX_URL;
@@ -2100,7 +2063,7 @@ function IdentityResolver(config, storageHandler, calls) {
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie));
       } else {
-        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout);
+        calls.ajaxGet(finalUrl, _responseReceived(storageHandler, nonNullConfig.domain, expirationDays, successCallback), errorCallback, timeout);
       }
     };
 

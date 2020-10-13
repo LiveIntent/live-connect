@@ -1,8 +1,7 @@
 import { isArray, isFunction } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
-const DEFAULT_AJAX_TIMEOUT = 5000
-const MAX_ATTEMPTS = 3
+const DEFAULT_AJAX_TIMEOUT = 0
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -17,23 +16,17 @@ export function PixelSender (liveConnectConfig, calls, onload, presend) {
 
   /**
    * @param {StateWrapper} state
-   * @param attempt
    * @private
    */
-  function _sendAjax (state, attempt = 1) {
-    _sendState(state.withAttempt(attempt), 'j', uri => {
+  function _sendAjax (state) {
+    _sendState(state, 'j', uri => {
       calls.ajaxGet(
         uri,
         bakersJson => {
           if (isFunction(onload)) onload()
           _callBakers(bakersJson)
         },
-        e => {
-          if (attempt < MAX_ATTEMPTS) {
-            _sendAjax(state, attempt + 1)
-          } else {
-            emitter.error('AjaxAttemptsExceeded', e.message, e)
-          }
+        () => {
         },
         DEFAULT_AJAX_TIMEOUT
       )
