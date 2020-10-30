@@ -968,12 +968,8 @@ function detectPrng() {
 
 
 function encodeTime(now, len) {
-  if (isNaN(now) || !Number.isInteger(now) || now > TIME_MAX || now < 0) {
-    throw createError("time ".concat(now, " is invalid, TIME_MAX = ").concat(TIME_MAX));
-  }
-
-  if (!Number.isInteger(len) || len < 0) {
-    throw createError('length is invalid');
+  if (now > TIME_MAX) {
+    throw createError('cannot encode time greater than ' + TIME_MAX);
   }
 
   var mod;
@@ -2019,7 +2015,7 @@ function _getInitializedLiveConnect(liveConnectConfig) {
 
       if (mismatchedConfig) {
         var error$1 = new Error('Additional configuration received');
-        error$1.message = 'Additional configuration received';
+        error$1.name = 'ConfigSent';
         error('LCDuplication', JSON.stringify(mismatchedConfig), error$1);
       }
 
