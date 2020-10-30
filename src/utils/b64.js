@@ -1,5 +1,11 @@
-import { btoa as btoaFromLib } from 'abab'
+import { btoa as extBtoa } from './btoa'
 import { isFunction } from './types'
+
+/**
+ * @type {RegExp}
+ * @private
+ */
+const _base64encodeRegex = /[+/]|=+$/g
 
 /**
  * @param {string} s
@@ -7,15 +13,9 @@ import { isFunction } from './types'
  * @private
  */
 function _safeBtoa (s) {
-  const res = btoaFromLib(s)
-  return res || ''
+  return extBtoa(s) || ''
 }
 
-/**
- * @type {RegExp}
- * @private
- */
-const _base64encodeRegex = /[+/]|=+$/g
 /**
  * @type {{'+': string, '/': string}}
  * @private

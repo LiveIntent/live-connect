@@ -1,0 +1,7 @@
+{
+  "exclude": [
+    "**/test/**",
+    "src/utils/ulid.js",
+    "src/utils/btoa.js"
+  ]
+}

@@ -146,7 +146,7 @@ function isFunction(fun) {
  */
 
 function expiresInDays(expires) {
-  return new Date(new Date().getTime() + expires * 864e5).toUTCString();
+  return _expires(expires, 864e5);
 }
 /**
  * Returns the string representation when something should expire
@@ -155,7 +155,11 @@ function expiresInDays(expires) {
  */
 
 function expiresInHours(expires) {
-  return new Date(new Date().getTime() + expires * 36e5).toUTCString();
+  return _expires(expires, 36e5);
+}
+
+function _expires(expires, times) {
+  return new Date(new Date().getTime() + expires * times).toUTCString();
 }
 
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
@@ -263,128 +267,9 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
 }
 
 /**
- * Implementation of atob() according to the HTML and Infra specs, except that
- * instead of throwing INVALID_CHARACTER_ERR we return null.
- */
-
-function atob(data) {
-  // Web IDL requires DOMStrings to just be converted using ECMAScript
-  // ToString, which in our case amounts to using a template literal.
-  data = "".concat(data); // "Remove all ASCII whitespace from data."
-
-  data = data.replace(/[ \t\n\f\r]/g, ""); // "If data's length divides by 4 leaving no remainder, then: if data ends
-  // with one or two U+003D (=) code points, then remove them from data."
-
-  if (data.length % 4 === 0) {
-    data = data.replace(/==?$/, "");
-  } // "If data's length divides by 4 leaving a remainder of 1, then return
-  // failure."
-  //
-  // "If data contains a code point that is not one of
-  //
-  // U+002B (+)
-  // U+002F (/)
-  // ASCII alphanumeric
-  //
-  // then return failure."
-
-
-  if (data.length % 4 === 1 || /[^+/0-9A-Za-z]/.test(data)) {
-    return null;
-  } // "Let output be an empty byte sequence."
-
-
-  var output = ""; // "Let buffer be an empty buffer that can have bits appended to it."
-  //
-  // We append bits via left-shift and or.  accumulatedBits is used to track
-  // when we've gotten to 24 bits.
-
-  var buffer = 0;
-  var accumulatedBits = 0; // "Let position be a position variable for data, initially pointing at the
-  // start of data."
-  //
-  // "While position does not point past the end of data:"
-
-  for (var i = 0; i < data.length; i++) {
-    // "Find the code point pointed to by position in the second column of
-    // Table 1: The Base 64 Alphabet of RFC 4648. Let n be the number given in
-    // the first cell of the same row.
-    //
-    // "Append to buffer the six bits corresponding to n, most significant bit
-    // first."
-    //
-    // atobLookup() implements the table from RFC 4648.
-    buffer <<= 6;
-    buffer |= atobLookup(data[i]);
-    accumulatedBits += 6; // "If buffer has accumulated 24 bits, interpret them as three 8-bit
-    // big-endian numbers. Append three bytes with values equal to those
-    // numbers to output, in the same order, and then empty buffer."
-
-    if (accumulatedBits === 24) {
-      output += String.fromCharCode((buffer & 0xff0000) >> 16);
-      output += String.fromCharCode((buffer & 0xff00) >> 8);
-      output += String.fromCharCode(buffer & 0xff);
-      buffer = accumulatedBits = 0;
-    } // "Advance position by 1."
-
-  } // "If buffer is not empty, it contains either 12 or 18 bits. If it contains
-  // 12 bits, then discard the last four and interpret the remaining eight as
-  // an 8-bit big-endian number. If it contains 18 bits, then discard the last
-  // two and interpret the remaining 16 as two 8-bit big-endian numbers. Append
-  // the one or two bytes with values equal to those one or two numbers to
-  // output, in the same order."
-
-
-  if (accumulatedBits === 12) {
-    buffer >>= 4;
-    output += String.fromCharCode(buffer);
-  } else if (accumulatedBits === 18) {
-    buffer >>= 2;
-    output += String.fromCharCode((buffer & 0xff00) >> 8);
-    output += String.fromCharCode(buffer & 0xff);
-  } // "Return output."
-
-
-  return output;
-}
-/**
- * A lookup table for atob(), which converts an ASCII character to the
- * corresponding six-bit number.
- */
-
-
-function atobLookup(chr) {
-  if (/[A-Z]/.test(chr)) {
-    return chr.charCodeAt(0) - "A".charCodeAt(0);
-  }
-
-  if (/[a-z]/.test(chr)) {
-    return chr.charCodeAt(0) - "a".charCodeAt(0) + 26;
-  }
-
-  if (/[0-9]/.test(chr)) {
-    return chr.charCodeAt(0) - "0".charCodeAt(0) + 52;
-  }
-
-  if (chr === "+") {
-    return 62;
-  }
-
-  if (chr === "/") {
-    return 63;
-  } // Throw exception; should not be hit in tests
-
-
-  return undefined;
-}
-
-var atob_1 = atob;
-
-/**
  * btoa() as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
  */
-
 function btoa(s) {
   var i; // String conversion as required by Web IDL.
 
@@ -397,7 +282,7 @@ function btoa(s) {
     }
   }
 
-  var out = "";
+  var out = '';
 
   for (i = 0; i < s.length; i += 3) {
     var groupsOfSix = [undefined, undefined, undefined, undefined];
@@ -415,8 +300,8 @@ function btoa(s) {
     }
 
     for (var j = 0; j < groupsOfSix.length; j++) {
-      if (typeof groupsOfSix[j] === "undefined") {
-        out += "=";
+      if (typeof groupsOfSix[j] === 'undefined') {
+        out += '=';
       } else {
         out += btoaLookup(groupsOfSix[j]);
       }
@@ -430,40 +315,37 @@ function btoa(s) {
  * corresponding ASCII character.
  */
 
-
 function btoaLookup(idx) {
   if (idx < 26) {
-    return String.fromCharCode(idx + "A".charCodeAt(0));
+    return String.fromCharCode(idx + 'A'.charCodeAt(0));
   }
 
   if (idx < 52) {
-    return String.fromCharCode(idx - 26 + "a".charCodeAt(0));
+    return String.fromCharCode(idx - 26 + 'a'.charCodeAt(0));
   }
 
   if (idx < 62) {
-    return String.fromCharCode(idx - 52 + "0".charCodeAt(0));
+    return String.fromCharCode(idx - 52 + '0'.charCodeAt(0));
   }
 
   if (idx === 62) {
-    return "+";
+    return '+';
   }
 
   if (idx === 63) {
-    return "/";
+    return '/';
   } // Throw INVALID_CHARACTER_ERR exception here -- won't be hit in the tests.
 
 
   return undefined;
 }
 
-var btoa_1 = btoa;
+/**
+ * @type {RegExp}
+ * @private
+ */
 
-var abab = {
-  atob: atob_1,
-  btoa: btoa_1
-};
-var abab_2 = abab.btoa;
-
+var _base64encodeRegex = /[+/]|=+$/g;
 /**
  * @param {string} s
  * @returns {string}
@@ -471,20 +353,13 @@ var abab_2 = abab.btoa;
  */
 
 function _safeBtoa(s) {
-  var res = abab_2(s);
-  return res || '';
+  return btoa(s) || '';
 }
-/**
- * @type {RegExp}
- * @private
- */
-
-
-var _base64encodeRegex = /[+/]|=+$/g;
 /**
  * @type {{'+': string, '/': string}}
  * @private
  */
+
 
 var _base64ToUrlEncodedChars = {
   '+': '-',
@@ -525,16 +400,17 @@ function base64UrlEncode(s) {
 var emailRegex = function emailRegex() {
   return /\S+(@|%40)\S+\.\S+/;
 };
+
+var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
+var multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g');
 /**
  * @param {string} s
  * @returns {boolean}
  */
 
-
 function isEmail(s) {
   return emailRegex().test(s);
 }
-var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
 /**
  * @param {string} s
  * @returns {boolean}
@@ -554,7 +430,6 @@ function extractEmail(s) {
 
 function listEmailsInString(s) {
   var result = [];
-  var multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g');
   var current = multipleEmailLikeRegex.exec(s);
 
   while (current) {
@@ -878,11 +753,15 @@ function _asParamOrEmpty(param, value, transform) {
   }
 }
 
+function _param(key, value) {
+  return _asParamOrEmpty(key, value, function (s) {
+    return encodeURIComponent(s);
+  });
+}
+
 var _pMap = {
   appId: function appId(aid) {
-    return _asParamOrEmpty('aid', aid, function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('aid', aid);
   },
   eventSource: function eventSource(source) {
     return _asParamOrEmpty('se', source, function (s) {
@@ -890,24 +769,16 @@ var _pMap = {
     });
   },
   liveConnectId: function liveConnectId(fpc) {
-    return _asParamOrEmpty('duid', fpc, function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('duid', fpc);
   },
   legacyId: function legacyId(legacyFpc) {
-    return _asParamOrEmpty('lduid', legacyFpc && legacyFpc.duid, function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('lduid', legacyFpc && legacyFpc.duid);
   },
   trackerName: function trackerName(tn) {
-    return _asParamOrEmpty('tna', tn || 'unknown', function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('tna', tn || 'unknown');
   },
   pageUrl: function pageUrl(purl) {
-    return _asParamOrEmpty('pu', purl, function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('pu', purl);
   },
   errorDetails: function errorDetails(ed) {
     return _asParamOrEmpty('ae', ed, function (s) {
@@ -937,24 +808,16 @@ var _pMap = {
     return hashParams;
   },
   decisionIds: function decisionIds(dids) {
-    return _asParamOrEmpty('li_did', dids.join(','), function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('li_did', dids.join(','));
   },
   hashedEmail: function hashedEmail(he) {
-    return _asParamOrEmpty('e', he.join(','), function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('e', he.join(','));
   },
   usPrivacyString: function usPrivacyString(usps) {
-    return _asParamOrEmpty('us_privacy', usps && encodeURIComponent(usps), function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('us_privacy', usps && encodeURIComponent(usps));
   },
   wrapperName: function wrapperName(wrapper) {
-    return _asParamOrEmpty('wpn', wrapper && encodeURIComponent(wrapper), function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('wpn', wrapper && encodeURIComponent(wrapper));
   },
   gdprApplies: function gdprApplies(_gdprApplies) {
     return _asParamOrEmpty('gdpr', _gdprApplies, function (s) {
@@ -962,14 +825,10 @@ var _pMap = {
     });
   },
   gdprConsent: function gdprConsent(gdprConsentString) {
-    return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString));
   },
   referrer: function referrer(_referrer) {
-    return _asParamOrEmpty('refr', _referrer, function (s) {
-      return encodeURIComponent(s);
-    });
+    return _param('refr', _referrer);
   }
 };
 /**
@@ -1060,228 +919,114 @@ function StateWrapper(state) {
   };
 }
 
-function unwrapExports (x) {
-	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+var ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+var ENCODING_LEN = ENCODING.length;
+var TIME_MAX = Math.pow(2, 48) - 1;
+var TIME_LEN = 10;
+var RANDOM_LEN = 16;
+var prng = detectPrng();
+/**
+ * creates and logs the error message
+ * @function
+ * @param {string} message
+ * @returns {Error}
+ */
+
+function createError(message) {
+  var err = new Error(message);
+  err.source = 'Ulid';
+  return err;
 }
+/**
+ * detects the pseudorandom number generator and generates the random number
+ * @function
+ * @returns {function} a random number generator
+ */
 
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
 
-var dist = createCommonjsModule(function (module, exports) {
+function detectPrng() {
+  var root = typeof window !== 'undefined' ? window : null;
+  var browserCrypto = root && (root.crypto || root.msCrypto);
 
-  Object.defineProperty(exports, '__esModule', {
-    value: true
-  }); // These values should NEVER change. If
-  // they do, we're no longer making ulids!
-
-  var ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; // Crockford's Base32
-
-  var ENCODING_LEN = ENCODING.length;
-  var TIME_MAX = Math.pow(2, 48) - 1;
-  var TIME_LEN = 10;
-  var RANDOM_LEN = 16;
-
-  function createError(message) {
-    var err = new Error(message);
-    err.source = "ulid";
-    return err;
-  }
-
-  function detectPrng(root) {
-    if (!root) {
-      root = typeof window !== "undefined" ? window : null;
-    }
-
-    var browserCrypto = root && (root.crypto || root.msCrypto);
-
-    if (browserCrypto) {
-      return function () {
-        var buffer = new Uint8Array(1);
-        browserCrypto.getRandomValues(buffer);
-        return buffer[0] / 0xff;
-      };
-    }
-
+  if (browserCrypto) {
     return function () {
-      return Math.random();
+      var buffer = new Uint8Array(1);
+      browserCrypto.getRandomValues(buffer);
+      return buffer[0] / 0xff;
     };
   }
 
-  function decodeTime(id) {
-    if (id.length !== TIME_LEN + RANDOM_LEN) {
-      throw createError("malformed ulid");
-    }
+  return function () {
+    return Math.random();
+  };
+}
+/**
+ * encodes the time based on the length
+ * @param now
+ * @param len
+ * @returns {string} encoded time.
+ */
 
-    var time = id.substr(0, TIME_LEN).split("").reverse().reduce(function (carry, char, index) {
-      var encodingIndex = ENCODING.indexOf(char);
 
-      if (encodingIndex === -1) {
-        throw createError("invalid character found: " + char);
-      }
-
-      return carry += encodingIndex * Math.pow(ENCODING_LEN, index);
-    }, 0);
-
-    if (time > TIME_MAX) {
-      throw createError("malformed ulid, timestamp too large");
-    }
-
-    return time;
+function encodeTime(now, len) {
+  if (isNaN(now) || !Number.isInteger(now) || now > TIME_MAX || now < 0) {
+    throw createError("time ".concat(now, " is invalid, TIME_MAX = ").concat(TIME_MAX));
   }
 
-  function encodeRandom(len, prng) {
-    var str = "";
-
-    for (; len > 0; len--) {
-      str = randomChar(prng) + str;
-    }
-
-    return str;
+  if (!Number.isInteger(len) || len < 0) {
+    throw createError('length is invalid');
   }
 
-  function encodeTime(now, len) {
-    if (isNaN(now)) {
-      throw new Error(now + " must be a number");
-    }
+  var mod;
+  var str = '';
 
-    if (now > TIME_MAX) {
-      throw createError("cannot encode time greater than " + TIME_MAX);
-    }
-
-    if (now < 0) {
-      throw createError("time must be positive");
-    }
-
-    if (isInteger(now) === false) {
-      throw createError("time must be an integer");
-    }
-
-    var mod = void 0;
-    var str = "";
-
-    for (; len > 0; len--) {
-      mod = now % ENCODING_LEN;
-      str = ENCODING.charAt(mod) + str;
-      now = (now - mod) / ENCODING_LEN;
-    }
-
-    return str;
+  for (; len > 0; len--) {
+    mod = now % ENCODING_LEN;
+    str = ENCODING.charAt(mod) + str;
+    now = (now - mod) / ENCODING_LEN;
   }
 
-  function factory(currPrng) {
-    if (!currPrng) {
-      currPrng = detectPrng();
-    }
+  return str;
+}
+/**
+ * encodes random character
+ * @param len
+ * @returns {string}
+ */
 
-    return function ulid(seedTime) {
-      if (isNaN(seedTime)) {
-        seedTime = Date.now();
-      }
 
-      return encodeTime(seedTime, TIME_LEN) + encodeRandom(RANDOM_LEN, currPrng);
-    };
+function encodeRandom(len) {
+  var str = '';
+
+  for (; len > 0; len--) {
+    str = randomChar() + str;
   }
 
-  function incrementBase32(str) {
-    var done = undefined;
-    var index = str.length;
-    var char = void 0;
-    var charIndex = void 0;
-    var maxCharIndex = ENCODING_LEN - 1;
+  return str;
+}
+/**
+ * gets a a random charcter from generated pseudorandom number
+ * @returns {string}
+ */
 
-    while (!done && index-- >= 0) {
-      char = str[index];
-      charIndex = ENCODING.indexOf(char);
 
-      if (charIndex === -1) {
-        throw createError("incorrectly encoded string");
-      }
+function randomChar() {
+  var rand = Math.floor(prng() * ENCODING_LEN);
 
-      if (charIndex === maxCharIndex) {
-        str = replaceCharAt(str, index, ENCODING[0]);
-        continue;
-      }
-
-      done = replaceCharAt(str, index, ENCODING[charIndex + 1]);
-    }
-
-    if (typeof done === "string") {
-      return done;
-    }
-
-    throw createError("cannot increment this string");
+  if (rand === ENCODING_LEN) {
+    rand = ENCODING_LEN - 1;
   }
 
-  function isInteger(value) {
-    return typeof value === "number" && isFinite(value) && Math.floor(value) === value;
-  }
-
-  function monotonicFactory(currPrng) {
-    if (!currPrng) {
-      currPrng = detectPrng();
-    }
-
-    var lastTime = 0;
-    var lastRandom = void 0;
-    return function ulid(seedTime) {
-      if (isNaN(seedTime)) {
-        seedTime = Date.now();
-      }
-
-      if (seedTime <= lastTime) {
-        var incrementedRandom = lastRandom = incrementBase32(lastRandom);
-        return encodeTime(lastTime, TIME_LEN) + incrementedRandom;
-      }
-
-      lastTime = seedTime;
-      var newRandom = lastRandom = encodeRandom(RANDOM_LEN, currPrng);
-      return encodeTime(seedTime, TIME_LEN) + newRandom;
-    };
-  }
-
-  function randomChar(prng) {
-    var rand = Math.floor(prng() * ENCODING_LEN);
-
-    if (rand === ENCODING_LEN) {
-      rand = ENCODING_LEN - 1;
-    }
-
-    return ENCODING.charAt(rand);
-  }
-
-  function replaceCharAt(str, index, char) {
-    if (index > str.length - 1) {
-      return str;
-    }
-
-    return str.substr(0, index) + char + str.substr(index + 1);
-  } // Init
+  return ENCODING.charAt(rand);
+}
+/**
+ * the factory to generate unique identifier based on time and current pseudorandom number
+ */
 
 
-  var ulid = factory();
-  exports.detectPrng = detectPrng;
-  exports.decodeTime = decodeTime;
-  exports.encodeRandom = encodeRandom;
-  exports.encodeTime = encodeTime;
-  exports.factory = factory;
-  exports.incrementBase32 = incrementBase32;
-  exports.monotonicFactory = monotonicFactory;
-  exports.randomChar = randomChar;
-  exports.replaceCharAt = replaceCharAt;
-  exports.ulid = ulid;
-});
-unwrapExports(dist);
-var dist_1 = dist.detectPrng;
-var dist_2 = dist.decodeTime;
-var dist_3 = dist.encodeRandom;
-var dist_4 = dist.encodeTime;
-var dist_5 = dist.factory;
-var dist_6 = dist.incrementBase32;
-var dist_7 = dist.monotonicFactory;
-var dist_8 = dist.randomChar;
-var dist_9 = dist.replaceCharAt;
-var dist_10 = dist.ulid;
+function ulid() {
+  return encodeTime(Date.now(), TIME_LEN) + encodeRandom(RANDOM_LEN);
+}
 
 /**
  * @return {string}
@@ -1461,8 +1206,7 @@ function resolve(state, storageHandler) {
 
 
     var generateCookie = function generateCookie(apexDomain) {
-      var ulid = dist_10();
-      var cookie = "".concat(domainHash(apexDomain), "--").concat(ulid);
+      var cookie = "".concat(domainHash(apexDomain), "--").concat(ulid());
       return cookie.toLocaleLowerCase();
     };
 
@@ -1654,10 +1398,9 @@ E.prototype = {
  * @return {ReplayEmitter}
  */
 
-function init(size, errorCallback) {
-  if (!size) {
-    size = 5;
-  }
+function init() {
+  var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
+  var errorCallback = arguments.length > 1 ? arguments[1] : undefined;
 
   try {
 
@@ -1699,6 +1442,11 @@ function enrich(state) {
 var _state = null;
 var _pixelSender = null;
 var MAX_ERROR_FIELD_LENGTH = 120;
+/**
+ * @type {State}
+ * @private
+ */
+
 var _defaultReturn = {
   errorDetails: {
     message: 'Unknown message',
@@ -1934,8 +1682,7 @@ function _fixupDomain(domain) {
 }
 
 function getLegacyIdentifierKey() {
-  var domain = loadedDomain();
-  var domainKey = domainHash(_fixupDomain(domain) + '/', 4);
+  var domainKey = domainHash(_fixupDomain(loadedDomain()) + '/', 4);
   return "".concat(LEGACY_IDENTIFIER_PREFIX).concat(domainKey);
 }
 /**
@@ -1966,16 +1713,11 @@ function getLegacyId(entry) {
  */
 
 function enrich$2(state, storageHandler) {
-  var duidLsKey = getLegacyIdentifierKey();
 
   try {
-    if (state.appId && storageHandler.localStorageIsEnabled()) {
-      var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
-      var legacyId = getLegacyId(previousIdentifier);
-      return {
-        legacyId: legacyId
-      };
-    }
+    return state.appId && storageHandler.localStorageIsEnabled() && {
+      legacyId: getLegacyId(storageHandler.getDataFromLocalStorage(getLegacyIdentifierKey()))
+    };
   } catch (e) {
     error('LegacyDuidEnrich', 'Error while getting legacy duid', e);
   }
@@ -2251,14 +1993,12 @@ function _configMatcher(previousConfig, newConfig) {
 function _processArgs(args, pixelClient, enrichedState) {
   try {
     args.forEach(function (arg) {
-      var event = arg;
-
-      if (isArray(event)) {
-        event.forEach(function (e) {
+      if (isArray(arg)) {
+        arg.forEach(function (e) {
           return _pushSingleEvent(e, pixelClient, enrichedState);
         });
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState);
+        _pushSingleEvent(arg, pixelClient, enrichedState);
       }
     });
   } catch (e) {
@@ -2279,8 +2019,7 @@ function _getInitializedLiveConnect(liveConnectConfig) {
       var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
 
       if (mismatchedConfig) {
-        var error$1 = new Error();
-        error$1.name = 'ConfigSent';
+        var error$1 = new Error('Additional configuration received');
         error$1.message = 'Additional configuration received';
         error('LCDuplication', JSON.stringify(mismatchedConfig), error$1);
       }

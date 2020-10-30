@@ -79,7 +79,7 @@ export function isFunction (fun) {
  * @return {string}
  */
 export function expiresInDays (expires) {
-  return new Date((new Date().getTime() + (expires * 864e5))).toUTCString()
+  return _expires(expires, 864e5)
 }
 
 /**
@@ -88,5 +88,9 @@ export function expiresInDays (expires) {
  * @return {string}
  */
 export function expiresInHours (expires) {
-  return new Date((new Date().getTime() + (expires * 36e5))).toUTCString()
+  return _expires(expires, 36e5)
+}
+
+function _expires (expires, times) {
+  return new Date((new Date().getTime() + (expires * times))).toUTCString()
 }

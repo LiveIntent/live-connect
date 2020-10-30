@@ -7,15 +7,8 @@ import { getLegacyId, getLegacyIdentifierKey } from '../utils/legacy'
  */
 export function enrich (state, storageHandler) {
   console.log('legacy-duid.enrich', state)
-  const duidLsKey = getLegacyIdentifierKey()
   try {
-    if (state.appId && storageHandler.localStorageIsEnabled()) {
-      const previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey)
-      const legacyId = getLegacyId(previousIdentifier)
-      return {
-        legacyId: legacyId
-      }
-    }
+    return state.appId && storageHandler.localStorageIsEnabled() && { legacyId: getLegacyId(storageHandler.getDataFromLocalStorage(getLegacyIdentifierKey())) }
   } catch (e) {
     emitter.error('LegacyDuidEnrich', 'Error while getting legacy duid', e)
   }

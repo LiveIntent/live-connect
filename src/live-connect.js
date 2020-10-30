@@ -84,11 +84,10 @@ function _configMatcher (previousConfig, newConfig) {
 function _processArgs (args, pixelClient, enrichedState) {
   try {
     args.forEach(arg => {
-      const event = arg
-      if (isArray(event)) {
-        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState))
+      if (isArray(arg)) {
+        arg.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState))
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState)
+        _pushSingleEvent(arg, pixelClient, enrichedState)
       }
     })
   } catch (e) {
@@ -108,8 +107,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
     if (window && window.liQ && window.liQ.ready) {
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
       if (mismatchedConfig) {
-        const error = new Error()
-        error.name = 'ConfigSent'
+        const error = new Error('Additional configuration received')
         error.message = 'Additional configuration received'
         emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }

@@ -7,7 +7,10 @@ import { isFunction } from '../utils/types'
 let _state = null
 let _pixelSender = null
 const MAX_ERROR_FIELD_LENGTH = 120
-
+/**
+ * @type {State}
+ * @private
+ */
 const _defaultReturn = {
   errorDetails: {
     message: 'Unknown message',

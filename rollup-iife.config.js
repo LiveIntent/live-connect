@@ -7,6 +7,8 @@ import replace from '@rollup/plugin-replace'
 import packageJson from './package.json'
 import cleaner from 'rollup-plugin-cleaner'
 import strip from '@rollup/plugin-strip'
+import analyze from 'rollup-plugin-analyzer'
+import cleanup from 'rollup-plugin-cleanup'
 
 const OUTPUT_DIR = './dist/'
 
@@ -25,8 +27,10 @@ export default {
     resolve(),
     commonjs(),
     babel(),
+    analyze(),
     strip(),
     uglify(),
+    cleanup(),
     replace({ LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}` })
   ]
 }

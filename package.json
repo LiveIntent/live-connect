@@ -19,6 +19,8 @@
     "test:it:browserstack": "npm run lint && npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run lint && npm run build && wdio test-config/wdio.docker.chrome.conf.js",
     "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
+    "build:modules": "rollup -c rollup-modules.config.js",
+    "build:iife": "rollup -c rollup-iife.config.js",
     "lint": "eslint \"src/**/*.js\"",
     "fix-js": "eslint \"src/**/*.js\" --fix || exit 0",
     "release:ci:patch": "release-it patch --ci",
@@ -26,8 +28,6 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
-    "@kiosked/ulid": "^3.0.0",
-    "abab": "^2.0.3",
     "browser-cookies": "^1.2.0",
     "tiny-hashes": "1.0.1"
   },
@@ -73,9 +73,10 @@
     "nyc": "^15.1.0",
     "release-it": "^14.0.2",
     "rollup": "^2.18.0",
+    "rollup-plugin-analyzer": "^3.3.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-cleaner": "^1.0.0",
-    "rollup-plugin-cleanup": "^3.1.1",
+    "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-uglify": "^6.0.4",

@@ -1,4 +1,4 @@
-import * as Ulid from '@kiosked/ulid'
+import { ulid } from '../utils/ulid'
 import * as emitter from '../utils/emitter'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
@@ -16,14 +16,12 @@ const DEFAULT_EXPIRATION_DAYS = 730
 export function resolve (state, storageHandler) {
   try {
     console.log('identifiers.resolve', state)
-
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
       if (cachedDomain) {
         return cachedDomain
       }
-      const domain = loadedDomain()
-      const arr = domain.split('.').reverse()
+      const arr = loadedDomain().split('.').reverse()
       for (let i = 1; i < arr.length; i++) {
         const newD = `.${arr.slice(0, i).reverse().join('.')}`
         storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, 'Lax', newD)
@@ -31,7 +29,7 @@ export function resolve (state, storageHandler) {
           return newD
         }
       }
-      return `.${domain}`
+      return `.${loadedDomain()}`
     }
 
     const addDays = (days) => new Date().getTime() + (days * 864e5)
@@ -91,8 +89,7 @@ export function resolve (state, storageHandler) {
      * @private
      */
     const generateCookie = (apexDomain) => {
-      const ulid = Ulid.ulid()
-      const cookie = `${domainHash(apexDomain)}--${ulid}`
+      const cookie = `${domainHash(apexDomain)}--${ulid()}`
       return cookie.toLocaleLowerCase()
     }
 

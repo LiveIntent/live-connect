@@ -1,6 +1,8 @@
 import { trim } from './types'
 
 const emailRegex = () => /\S+(@|%40)\S+\.\S+/
+const emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/
+const multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g')
 
 /**
  * @param {string} s
@@ -9,8 +11,6 @@ const emailRegex = () => /\S+(@|%40)\S+\.\S+/
 export function isEmail (s) {
   return emailRegex().test(s)
 }
-
-const emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/
 
 /**
  * @param {string} s
@@ -31,7 +31,6 @@ export function extractEmail (s) {
  */
 export function listEmailsInString (s) {
   const result = []
-  const multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g')
   let current = multipleEmailLikeRegex.exec(s)
   while (current) {
     result.push(trim(current[1]))

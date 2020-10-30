@@ -23,8 +23,7 @@ function _fixupDomain (domain) {
 }
 
 export function getLegacyIdentifierKey () {
-  const domain = loadedDomain()
-  const domainKey = domainHash(_fixupDomain(domain) + '/', 4)
+  const domainKey = domainHash(_fixupDomain(loadedDomain()) + '/', 4)
   return `${LEGACY_IDENTIFIER_PREFIX}${domainKey}`
 }
 

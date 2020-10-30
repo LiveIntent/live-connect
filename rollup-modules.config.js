@@ -3,13 +3,15 @@ import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import strip from '@rollup/plugin-strip'
 import babel from 'rollup-plugin-babel'
+import analyze from 'rollup-plugin-analyzer'
 
 const OUTPUT_DIR = './'
 const plugins = [
   resolve(),
   commonjs(),
   babel(),
-  strip()
+  strip(),
+  analyze()
 ]
 export default [
   {

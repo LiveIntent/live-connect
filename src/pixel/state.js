@@ -69,24 +69,28 @@ function _asParamOrEmpty (param, value, transform) {
   }
 }
 
+function _param (key, value) {
+  return _asParamOrEmpty(key, value, (s) => encodeURIComponent(s))
+}
+
 const _pMap = {
   appId: aid => {
-    return _asParamOrEmpty('aid', aid, (s) => encodeURIComponent(s))
+    return _param('aid', aid)
   },
   eventSource: source => {
     return _asParamOrEmpty('se', source, (s) => b64.base64UrlEncode(JSON.stringify(s, replacer)))
   },
   liveConnectId: fpc => {
-    return _asParamOrEmpty('duid', fpc, (s) => encodeURIComponent(s))
+    return _param('duid', fpc)
   },
   legacyId: legacyFpc => {
-    return _asParamOrEmpty('lduid', legacyFpc && legacyFpc.duid, (s) => encodeURIComponent(s))
+    return _param('lduid', legacyFpc && legacyFpc.duid)
   },
   trackerName: tn => {
-    return _asParamOrEmpty('tna', tn || 'unknown', (s) => encodeURIComponent(s))
+    return _param('tna', tn || 'unknown')
   },
   pageUrl: purl => {
-    return _asParamOrEmpty('pu', purl, (s) => encodeURIComponent(s))
+    return _param('pu', purl)
   },
   errorDetails: ed => {
     return _asParamOrEmpty('ae', ed, (s) => b64.base64UrlEncode(JSON.stringify(s)))
@@ -106,25 +110,25 @@ const _pMap = {
     return hashParams
   },
   decisionIds: dids => {
-    return _asParamOrEmpty('li_did', dids.join(','), (s) => encodeURIComponent(s))
+    return _param('li_did', dids.join(','))
   },
   hashedEmail: he => {
-    return _asParamOrEmpty('e', he.join(','), (s) => encodeURIComponent(s))
+    return _param('e', he.join(','))
   },
   usPrivacyString: usps => {
-    return _asParamOrEmpty('us_privacy', usps && encodeURIComponent(usps), (s) => encodeURIComponent(s))
+    return _param('us_privacy', usps && encodeURIComponent(usps))
   },
   wrapperName: wrapper => {
-    return _asParamOrEmpty('wpn', wrapper && encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
+    return _param('wpn', wrapper && encodeURIComponent(wrapper))
   },
   gdprApplies: gdprApplies => {
     return _asParamOrEmpty('gdpr', gdprApplies, (s) => encodeURIComponent(s ? 1 : 0))
   },
   gdprConsent: gdprConsentString => {
-    return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
+    return _param('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString))
   },
   referrer: referrer => {
-    return _asParamOrEmpty('refr', referrer, (s) => encodeURIComponent(s))
+    return _param('refr', referrer)
   }
 }
 
@@ -143,8 +147,7 @@ export function StateWrapper (state) {
   }
 
   function _sendsPixel () {
-    const source = isObject(_state.eventSource) ? _state.eventSource : {}
-    const eventKeys = Object.keys(source)
+    const eventKeys = Object.keys(isObject(_state.eventSource) ? _state.eventSource : {})
       .filter(objKey => objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event')
     const eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0]
     const eventName = eventKey && trim(_state.eventSource[eventKey])
