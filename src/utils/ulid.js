@@ -42,13 +42,9 @@ function detectPrng () {
  * @returns {string} encoded time.
  */
 function encodeTime (now, len) {
-  if (isNaN(now) || !Number.isInteger(now) || now > TIME_MAX || now < 0) {
-    throw createError(`time ${now} is invalid, TIME_MAX = ${TIME_MAX}`)
+  if (now > TIME_MAX) {
+    throw createError('cannot encode time greater than ' + TIME_MAX)
   }
-  if (!Number.isInteger(len) || len < 0) {
-    throw createError('length is invalid')
-  }
-
   let mod
   let str = ''
   for (; len > 0; len--) {
