@@ -21,7 +21,8 @@ export function resolve (state, storageHandler) {
       if (cachedDomain) {
         return cachedDomain
       }
-      const arr = loadedDomain().split('.').reverse()
+      const domain = loadedDomain()
+      const arr = domain.split('.').reverse()
       for (let i = 1; i < arr.length; i++) {
         const newD = `.${arr.slice(0, i).reverse().join('.')}`
         storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, 'Lax', newD)
@@ -29,7 +30,7 @@ export function resolve (state, storageHandler) {
           return newD
         }
       }
-      return `.${loadedDomain()}`
+      return `.${domain}`
     }
 
     const addDays = (days) => new Date().getTime() + (days * 864e5)

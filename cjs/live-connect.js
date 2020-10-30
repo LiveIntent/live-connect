@@ -848,8 +848,7 @@ function StateWrapper(state) {
   }
 
   function _sendsPixel() {
-    var source = isObject(_state.eventSource) ? _state.eventSource : {};
-    var eventKeys = Object.keys(source).filter(function (objKey) {
+    var eventKeys = Object.keys(isObject(_state.eventSource) ? _state.eventSource : {}).filter(function (objKey) {
       return objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event';
     });
     var eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0];
@@ -1441,7 +1440,7 @@ function enrich(state) {
 
 var _state = null;
 var _pixelSender = null;
-var MAX_ERROR_FIELD_LENGTH = 120;
+var MAX_ERROR_FIELD_LENGTH = 1200;
 /**
  * @type {State}
  * @private

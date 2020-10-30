@@ -49,10 +49,10 @@ describe('ErrorPixel', () => {
   })
 
   it('should truncate the excessive text', function () {
-    const longText = 'x'.repeat(200)
+    const longText = 'x'.repeat(2000)
     const error = new Error(longText)
     const result = errorPixel.asErrorDetails(error)
-    expect(result.errorDetails.message.length).to.eq(123)
+    expect(result.errorDetails.message.length).to.eq(errorPixel.MAX_ERROR_FIELD_LENGTH + 3)
   })
 
   it('should send the default error if none was sent', function () {
