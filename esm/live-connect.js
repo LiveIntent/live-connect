@@ -1432,7 +1432,7 @@ function enrich(state) {
 
 var _state = null;
 var _pixelSender = null;
-var MAX_ERROR_FIELD_LENGTH = 1200;
+var MAX_ERROR_FIELD_LENGTH = 120;
 /**
  * @type {State}
  * @private

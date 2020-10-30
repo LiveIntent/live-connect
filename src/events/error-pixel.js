@@ -6,7 +6,7 @@ import { isFunction } from '../utils/types'
 
 let _state = null
 let _pixelSender = null
-export const MAX_ERROR_FIELD_LENGTH = 1200
+export const MAX_ERROR_FIELD_LENGTH = 120
 /**
  * @type {State}
  * @private

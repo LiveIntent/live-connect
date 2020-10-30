@@ -28,9 +28,9 @@ export default {
     commonjs(),
     babel(),
     analyze(),
-    // strip(),
-    // uglify(),
-    // cleanup(),
+    strip(),
+    uglify(),
+    cleanup(),
     replace({ LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}` })
   ]
 }
