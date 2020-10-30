@@ -108,7 +108,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error('Additional configuration received')
-        error.message = 'Additional configuration received'
+        error.name = 'ConfigSent'
         emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window.liQ
