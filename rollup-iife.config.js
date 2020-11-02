@@ -29,7 +29,7 @@ export default {
     babel(),
     analyze(),
     strip(),
-    uglify(),
+    // uglify(),
     cleanup(),
     replace({ LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}` })
   ]

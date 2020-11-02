@@ -48,7 +48,7 @@ import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
 const hemStore = {}
-const _initializationBasedOnMode = process.env.LiveConnectMode === 'minimal' ? _minimalInitialization : _standardInitialization
+const _minimalMode = process.env.LiveConnectMode === 'minimal'
 
 function _pushSingleEvent (event, pixelClient, enrichedState) {
   if (!event || !isObject(event)) {
@@ -174,9 +174,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  */
 function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
-    eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
-    errorHandler.register(liveConnectConfig, callHandler)
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
@@ -184,16 +182,10 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const postManagedState = managers.reduce(reducer, new StateWrapper(liveConnectConfig))
     console.log('MinimalLiveConnect.postManagedState', postManagedState)
     const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, callHandler)
-    const _push = (val) => {
-      if (isArray(window.liQ)) {
-        return window.liQ.push
-      }
-    }
     return {
-      push: _push,
-      fire: () => _push({}),
+      push: (value) => window.liQ.push(value),
+      fire: () => window.liQ.push({}),
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
-      ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
@@ -203,6 +195,23 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     emitter.error('LCConstruction', 'Failed to build LC', x)
   }
 }
+
+function _nonMin (configuration, externalStorageHandler, externalCallHandler) {
+  const queue = window.liQ || []
+  window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+  if (isArray(queue)) {
+    for (let i = 0; i < queue.length; i++) {
+      window.liQ.push(queue[i])
+    }
+  }
+  return window.liQ
+}
+
+function _min (configuration, externalStorageHandler, externalCallHandler) {
+  window.liQ = window.liQ || []
+  return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler)
+}
+const _fun = _minimalMode ? _min : _nonMin
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -214,14 +223,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
 export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
-    const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _initializationBasedOnMode(configuration, externalStorageHandler, externalCallHandler) || queue)
-    if (isArray(queue)) {
-      for (let i = 0; i < queue.length; i++) {
-        window.liQ.push(queue[i])
-      }
-    }
+    return _fun(configuration, externalStorageHandler, externalCallHandler)
   } catch (x) {
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)

@@ -162,110 +162,6 @@ function _expires(expires, times) {
   return new Date(new Date().getTime() + expires * times).toUTCString();
 }
 
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PIXEL_SENT_PREFIX = 'lips';
-var PRELOAD_PIXEL = 'pre_lips';
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-
-function send(prefix, message) {
-  _emit(prefix, message);
-}
-function error(name, message) {
-  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-
-  _emit(ERRORS_PREFIX, wrapped);
-}
-
-var DEFAULT_AJAX_TIMEOUT = 0;
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {CallHandler} calls
- * @param {function} onload
- * @param {function} presend
- * @returns {{sendAjax: *, sendPixel: *}}
- * @constructor
- */
-
-function PixelSender(liveConnectConfig, calls, onload, presend) {
-  var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
-  /**
-   * @param {StateWrapper} state
-   * @private
-   */
-
-  function _sendAjax(state) {
-    _sendState(state, 'j', function (uri) {
-      calls.ajaxGet(uri, function (bakersJson) {
-        if (isFunction(onload)) onload();
-
-        _callBakers(bakersJson);
-      }, function (e) {
-        _sendPixel(state);
-
-        error('AjaxFailed', e.message, e);
-      }, DEFAULT_AJAX_TIMEOUT);
-    });
-  }
-
-  function _callBakers(bakersJson) {
-    try {
-      var bakers = JSON.parse(bakersJson).bakers;
-
-      if (isArray(bakers)) {
-        for (var i = 0; i < bakers.length; i++) {
-          calls.pixelGet("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
-        }
-      }
-    } catch (e) {
-      error('CallBakers', 'Error while calling bakers', e);
-    }
-  }
-  /**
-   * @param {StateWrapper} state
-   * @private
-   */
-
-
-  function _sendPixel(state) {
-    _sendState(state, 'p', function (uri) {
-      return calls.pixelGet(uri, onload);
-    });
-  }
-
-  function _sendState(state, endpoint, makeCall) {
-    if (state.sendsPixel()) {
-      if (isFunction(presend)) {
-        presend();
-      }
-
-      var latest = "dtstmp=".concat(utcMillis());
-      var queryString = state.asQueryString();
-      var withDt = queryString ? "&".concat(latest) : "?".concat(latest);
-      var uri = "".concat(url, "/").concat(endpoint).concat(queryString).concat(withDt);
-      makeCall(uri);
-    }
-  }
-
-  function utcMillis() {
-    var now = new Date();
-    return new Date(now.toUTCString()).getTime() + now.getMilliseconds();
-  }
-
-  return {
-    sendAjax: _sendAjax,
-    sendPixel: _sendPixel
-  };
-}
-
 /**
  * btoa() as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
@@ -447,6 +343,197 @@ function replacer(key, value) {
   } else {
     return value;
   }
+}
+
+function _asParamOrEmpty(param, value, transform) {
+  if (isNonEmpty(value)) {
+    return [param, isFunction(transform) ? transform(value) : value];
+  } else {
+    return [];
+  }
+}
+
+function _param(key, value) {
+  return _asParamOrEmpty(key, value, function (s) {
+    return encodeURIComponent(s);
+  });
+}
+
+var params = {
+  appId: function appId(aid) {
+    return _param('aid', aid);
+  },
+  eventSource: function eventSource(source) {
+    return _asParamOrEmpty('se', source, function (s) {
+      return base64UrlEncode(JSON.stringify(s, replacer));
+    });
+  },
+  liveConnectId: function liveConnectId(fpc) {
+    return _param('duid', fpc);
+  },
+  legacyId: function legacyId(legacyFpc) {
+    return _param('lduid', legacyFpc && legacyFpc.duid);
+  },
+  trackerName: function trackerName(tn) {
+    return _param('tna', tn || 'unknown');
+  },
+  pageUrl: function pageUrl(purl) {
+    return _param('pu', purl);
+  },
+  errorDetails: function errorDetails(ed) {
+    return _asParamOrEmpty('ae', ed, function (s) {
+      return base64UrlEncode(JSON.stringify(s));
+    });
+  },
+  retrievedIdentifiers: function retrievedIdentifiers(identifiers) {
+    var identifierParams = [];
+
+    for (var i = 0; i < identifiers.length; i++) {
+      identifierParams.push(_asParamOrEmpty("ext_".concat(identifiers[i].name), identifiers[i].value, function (s) {
+        return encodeURIComponent(s);
+      }));
+    }
+
+    return identifierParams;
+  },
+  hashesFromIdentifiers: function hashesFromIdentifiers(hashes) {
+    var hashParams = [];
+
+    for (var i = 0; i < hashes.length; i++) {
+      hashParams.push(_asParamOrEmpty('scre', hashes[i], function (h) {
+        return "".concat(h.md5, ",").concat(h.sha1, ",").concat(h.sha256);
+      }));
+    }
+
+    return hashParams;
+  },
+  decisionIds: function decisionIds(dids) {
+    return _param('li_did', dids.join(','));
+  },
+  hashedEmail: function hashedEmail(he) {
+    return _param('e', he.join(','));
+  },
+  usPrivacyString: function usPrivacyString(usps) {
+    return _param('us_privacy', usps && encodeURIComponent(usps));
+  },
+  wrapperName: function wrapperName(wrapper) {
+    return _param('wpn', wrapper && encodeURIComponent(wrapper));
+  },
+  gdprApplies: function gdprApplies(_gdprApplies) {
+    return _asParamOrEmpty('gdpr', _gdprApplies, function (s) {
+      return encodeURIComponent(s ? 1 : 0);
+    });
+  },
+  gdprConsent: function gdprConsent(gdprConsentString) {
+    return _param('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString));
+  },
+  referrer: function referrer(_referrer) {
+    return _param('refr', _referrer);
+  }
+};
+
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PIXEL_SENT_PREFIX = 'lips';
+var PRELOAD_PIXEL = 'pre_lips';
+
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+}
+
+function send(prefix, message) {
+  _emit(prefix, message);
+}
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+
+  _emit(ERRORS_PREFIX, wrapped);
+}
+
+var DEFAULT_AJAX_TIMEOUT = 0;
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {CallHandler} calls
+ * @param {function} onload
+ * @param {function} presend
+ * @returns {{sendAjax: *, sendPixel: *}}
+ * @constructor
+ */
+
+function PixelSender(liveConnectConfig, calls, onload, presend) {
+  var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
+  /**
+   * @param {StateWrapper} state
+   * @private
+   */
+
+  function _sendAjax(state) {
+    _sendState(state, 'j', function (uri) {
+      calls.ajaxGet(uri, function (bakersJson) {
+        if (isFunction(onload)) onload();
+
+        _callBakers(bakersJson);
+      }, function (e) {
+        _sendPixel(state);
+
+        error('AjaxFailed', e.message, e);
+      }, DEFAULT_AJAX_TIMEOUT);
+    });
+  }
+
+  function _callBakers(bakersJson) {
+    try {
+      var bakers = JSON.parse(bakersJson).bakers;
+
+      if (isArray(bakers)) {
+        for (var i = 0; i < bakers.length; i++) {
+          calls.pixelGet("".concat(bakers[i], "?dtstmp=").concat(utcMillis()));
+        }
+      }
+    } catch (e) {
+      error('CallBakers', 'Error while calling bakers', e);
+    }
+  }
+  /**
+   * @param {StateWrapper} state
+   * @private
+   */
+
+
+  function _sendPixel(state) {
+    _sendState(state, 'p', function (uri) {
+      return calls.pixelGet(uri, onload);
+    });
+  }
+
+  function _sendState(state, endpoint, makeCall) {
+    if (state.sendsPixel()) {
+      if (isFunction(presend)) {
+        presend();
+      }
+
+      var latest = "dtstmp=".concat(utcMillis());
+      var queryString = state.asQueryString(params);
+      var withDt = queryString ? "&".concat(latest) : "?".concat(latest);
+      var uri = "".concat(url, "/").concat(endpoint).concat(queryString).concat(withDt);
+      makeCall(uri);
+    }
+  }
+
+  function utcMillis() {
+    var now = new Date();
+    return new Date(now.toUTCString()).getTime() + now.getMilliseconds();
+  }
+
+  return {
+    sendAjax: _sendAjax,
+    sendPixel: _sendPixel
+  };
 }
 
 for (var r = [], o = 0; o < 64;) {
@@ -744,93 +831,6 @@ function urlParams(url) {
  */
 
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
-
-function _asParamOrEmpty(param, value, transform) {
-  if (isNonEmpty(value)) {
-    return [param, isFunction(transform) ? transform(value) : value];
-  } else {
-    return [];
-  }
-}
-
-function _param(key, value) {
-  return _asParamOrEmpty(key, value, function (s) {
-    return encodeURIComponent(s);
-  });
-}
-
-var _pMap = {
-  appId: function appId(aid) {
-    return _param('aid', aid);
-  },
-  eventSource: function eventSource(source) {
-    return _asParamOrEmpty('se', source, function (s) {
-      return base64UrlEncode(JSON.stringify(s, replacer));
-    });
-  },
-  liveConnectId: function liveConnectId(fpc) {
-    return _param('duid', fpc);
-  },
-  legacyId: function legacyId(legacyFpc) {
-    return _param('lduid', legacyFpc && legacyFpc.duid);
-  },
-  trackerName: function trackerName(tn) {
-    return _param('tna', tn || 'unknown');
-  },
-  pageUrl: function pageUrl(purl) {
-    return _param('pu', purl);
-  },
-  errorDetails: function errorDetails(ed) {
-    return _asParamOrEmpty('ae', ed, function (s) {
-      return base64UrlEncode(JSON.stringify(s));
-    });
-  },
-  retrievedIdentifiers: function retrievedIdentifiers(identifiers) {
-    var identifierParams = [];
-
-    for (var i = 0; i < identifiers.length; i++) {
-      identifierParams.push(_asParamOrEmpty("ext_".concat(identifiers[i].name), identifiers[i].value, function (s) {
-        return encodeURIComponent(s);
-      }));
-    }
-
-    return identifierParams;
-  },
-  hashesFromIdentifiers: function hashesFromIdentifiers(hashes) {
-    var hashParams = [];
-
-    for (var i = 0; i < hashes.length; i++) {
-      hashParams.push(_asParamOrEmpty('scre', hashes[i], function (h) {
-        return "".concat(h.md5, ",").concat(h.sha1, ",").concat(h.sha256);
-      }));
-    }
-
-    return hashParams;
-  },
-  decisionIds: function decisionIds(dids) {
-    return _param('li_did', dids.join(','));
-  },
-  hashedEmail: function hashedEmail(he) {
-    return _param('e', he.join(','));
-  },
-  usPrivacyString: function usPrivacyString(usps) {
-    return _param('us_privacy', usps && encodeURIComponent(usps));
-  },
-  wrapperName: function wrapperName(wrapper) {
-    return _param('wpn', wrapper && encodeURIComponent(wrapper));
-  },
-  gdprApplies: function gdprApplies(_gdprApplies) {
-    return _asParamOrEmpty('gdpr', _gdprApplies, function (s) {
-      return encodeURIComponent(s ? 1 : 0);
-    });
-  },
-  gdprConsent: function gdprConsent(gdprConsentString) {
-    return _param('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString));
-  },
-  referrer: function referrer(_referrer) {
-    return _param('refr', _referrer);
-  }
-};
 /**
  * @param {State} state
  * @returns {StateWrapper}
@@ -880,13 +880,13 @@ function StateWrapper(state) {
    */
 
 
-  function _asTuples() {
+  function _asTuples(allowedParams) {
     var array = [];
     Object.keys(_state).forEach(function (key) {
       var value = _state[key];
 
-      if (_pMap[key]) {
-        var params = _pMap[key](value);
+      if (allowedParams[key]) {
+        var params = allowedParams[key](value);
 
         if (params && params.length) {
           if (params[0] instanceof Array) {
@@ -906,7 +906,8 @@ function StateWrapper(state) {
 
 
   function _asQueryString() {
-    return toParams(_asTuples());
+    var allowedParams = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return toParams(_asTuples(allowedParams));
   }
 
   return {
@@ -1946,7 +1947,7 @@ function CallHandler(externalCallHandler) {
 
 var hemStore = {};
 
-var _initializationBasedOnMode = process.env.LiveConnectMode === 'minimal' ? _minimalInitialization : _standardInitialization;
+var _minimalMode = process.env.LiveConnectMode === 'minimal';
 
 function _pushSingleEvent(event, pixelClient, enrichedState) {
   if (!event || !isObject(event)) {
@@ -2100,9 +2101,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
 
 function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
-    init();
     var callHandler = CallHandler(externalCallHandler);
-    register(liveConnectConfig, callHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
 
     var reducer = function reducer(accumulator, func) {
@@ -2112,20 +2111,14 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var managers = [resolve, resolve$2];
     var postManagedState = managers.reduce(reducer, new StateWrapper(liveConnectConfig));
     var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
-
-    var _push = function _push(val) {
-      if (isArray(window.liQ)) {
-        return window.liQ.push;
-      }
-    };
-
     return {
-      push: _push,
+      push: function push(value) {
+        return window.liQ.push(value);
+      },
       fire: function fire() {
-        return _push({});
+        return window.liQ.push({});
       },
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
-      ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
@@ -2134,6 +2127,26 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     error('LCConstruction', 'Failed to build LC', x);
   }
 }
+
+function _nonMin(configuration, externalStorageHandler, externalCallHandler) {
+  var queue = window.liQ || [];
+  window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue);
+
+  if (isArray(queue)) {
+    for (var i = 0; i < queue.length; i++) {
+      window.liQ.push(queue[i]);
+    }
+  }
+
+  return window.liQ;
+}
+
+function _min(configuration, externalStorageHandler, externalCallHandler) {
+  window.liQ = window.liQ || [];
+  return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler);
+}
+
+var _fun = _minimalMode ? _min : _nonMin;
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
@@ -2146,15 +2159,8 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
 function LiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
 
   try {
-    var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _initializationBasedOnMode(configuration, externalStorageHandler, externalCallHandler) || queue);
-
-    if (isArray(queue)) {
-      for (var i = 0; i < queue.length; i++) {
-        window.liQ.push(queue[i]);
-      }
-    }
+    return _fun(configuration, externalStorageHandler, externalCallHandler);
   } catch (x) {
     error('LCConstruction', 'Failed to build LC', x);
   }

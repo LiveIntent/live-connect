@@ -1,4 +1,5 @@
 import { isArray, isFunction } from '../utils/types'
+import { params } from '../utils/params'
 import * as emitter from '../utils/emitter'
 
 const DEFAULT_AJAX_TIMEOUT = 0
@@ -61,7 +62,7 @@ export function PixelSender (liveConnectConfig, calls, onload, presend) {
       }
 
       const latest = `dtstmp=${utcMillis()}`
-      const queryString = state.asQueryString()
+      const queryString = state.asQueryString(params)
       const withDt = queryString ? `&${latest}` : `?${latest}`
       const uri = `${url}/${endpoint}${queryString}${withDt}`
 
