@@ -3,7 +3,7 @@ import * as serverUtil from './helpers/mock-server'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
-  resolveIdentity
+  resolveIdentityOnly
 } from './helpers/browser'
 
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
@@ -39,7 +39,7 @@ describe('Minimal LiveConnect', function () {
 
   it('should send and receive results of IdentityResolution', function () {
     server.openPage('bln.test.liveintent.com', 'page')
-    resolveIdentity(1, server)
+    resolveIdentityOnly(1, server)
     const idexRequests = server.getIdexHistory()
     expect(idexRequests).to.not.be.empty
     const idexValue = fetchResolvedIdentity()

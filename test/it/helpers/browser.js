@@ -42,6 +42,17 @@ export function resolveIdentity (expectedRequests, server) {
   }
 }
 
+export function resolveIdentityOnly (expectedRequests, server) {
+  try {
+    browser.execute('window.liR = window.liR || [];window.liR.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
+    browser.waitUntil(() => {
+      return server.getIdexHistory().length === expectedRequests
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
+  } catch (e) {
+    console.error(e, server.getHistory().length, expectedRequests)
+  }
+}
+
 export function fetchResolvedIdentity () {
   try {
     browser.waitUntil(() => {

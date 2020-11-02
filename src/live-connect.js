@@ -206,9 +206,10 @@ function _standardQueueReplacement (configuration, externalStorageHandler, exter
 }
 
 function _withoutQueueReplacement (configuration, externalStorageHandler, externalCallHandler) {
-  window.liQ = window.liQ || []
-  window.liQ = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || []
-  return window.liQ
+  window.liR = window.liR || []
+  window.liQ = window.liR || []
+  window.liR = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || []
+  return window.liR
 }
 
 const _initializationFunction = _minimalMode ? _withoutQueueReplacement : _standardQueueReplacement
