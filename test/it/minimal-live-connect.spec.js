@@ -8,7 +8,7 @@ import {
 
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
-describe('Minimal Standard LiveConnect', function () {
+describe('Minimal LiveConnect', function () {
   this.retries(4)
   let server
 
