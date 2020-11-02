@@ -12,4 +12,3 @@ if (Array.isArray(queue)) {
     lc.push(queue[i])
   }
 }
-window.liQ = lc

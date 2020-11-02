@@ -181,8 +181,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     console.log('MinimalLiveConnect.postManagedState', postManagedState)
     const resolver = idex.IdentityResolver(postManagedState, storageHandler, callHandler)
     return {
-      push: (value) => window.liQ.push(value),
-      fire: () => window.liQ.push({}),
+      push: window.liQ.push,
+      fire: window.liQ.push,
       peopleVerifiedId: postManagedState.peopleVerifiedId,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
@@ -207,7 +207,8 @@ function _standardQueueReplacement (configuration, externalStorageHandler, exter
 
 function _withoutQueueReplacement (configuration, externalStorageHandler, externalCallHandler) {
   window.liQ = window.liQ || []
-  return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler)
+  window.liQ = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || []
+  return window.liQ
 }
 
 const _initializationFunction = _minimalMode ? _withoutQueueReplacement : _standardQueueReplacement

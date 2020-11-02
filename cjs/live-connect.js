@@ -2104,15 +2104,12 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
   try {
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var postManagedState = resolve$2(liveConnectConfig, storageHandler);
+
+    var postManagedState = _objectSpread2(_objectSpread2({}, liveConnectConfig), resolve$2(liveConnectConfig, storageHandler));
     var resolver = IdentityResolver(postManagedState, storageHandler, callHandler);
     return {
-      push: function push(value) {
-        return window.liQ.push(value);
-      },
-      fire: function fire() {
-        return window.liQ.push({});
-      },
+      push: window.liQ.push,
+      fire: window.liQ.push,
       peopleVerifiedId: postManagedState.peopleVerifiedId,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
@@ -2138,7 +2135,8 @@ function _standardQueueReplacement(configuration, externalStorageHandler, extern
 
 function _withoutQueueReplacement(configuration, externalStorageHandler, externalCallHandler) {
   window.liQ = window.liQ || [];
-  return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler);
+  window.liQ = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || [];
+  return window.liQ;
 }
 
 var _initializationFunction = _minimalMode ? _withoutQueueReplacement : _standardQueueReplacement;
