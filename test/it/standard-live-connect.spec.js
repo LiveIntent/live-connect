@@ -19,7 +19,7 @@ import {
 const packageJson = require('../../package')
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
-describe('LiveConnect', function () {
+describe('Standard LiveConnect', function () {
   this.retries(4)
   let server
 
