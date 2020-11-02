@@ -11,8 +11,8 @@ const corsOptions = {
 const port = 3001
 
 const compression = require('compression')
-
-const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
+const MODE = process.env.LiveConnectMode || 'standard'
+const bundle = fs.readFileSync(`dist/${MODE}/bundle.iife.js`, 'utf8')
 
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`

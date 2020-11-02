@@ -18,7 +18,7 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run lint && npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run lint && npm run build && wdio test-config/wdio.docker.chrome.conf.js",
-    "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
+    "build": "npm run test:unit && rollup -c rollup-iife.config.js  && LiveConnectMode=minimal rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "build:modules": "rollup -c rollup-modules.config.js",
     "build:iife": "rollup -c rollup-iife.config.js",
     "lint": "eslint \"src/**/*.js\"",

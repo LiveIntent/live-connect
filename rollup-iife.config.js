@@ -10,7 +10,8 @@ import strip from '@rollup/plugin-strip'
 import analyze from 'rollup-plugin-analyzer'
 import cleanup from 'rollup-plugin-cleanup'
 
-const OUTPUT_DIR = './dist/'
+const MODE = process.env.LiveConnectMode || 'standard'
+const OUTPUT_DIR = `./dist/${MODE}`
 
 export default {
   input: 'test/it/helpers/preambled.js',
@@ -31,6 +32,7 @@ export default {
     strip(),
     uglify(),
     cleanup(),
-    replace({ LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}` })
+    replace(
+      { LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}`, 'process.env.LiveConnectMode': JSON.stringify(MODE) })
   ]
 }
