@@ -166,6 +166,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
 }
 
 /**
+ * Be careful here. There's no StateWrapper to prevent additional code from being loaded for arbitrary collector params.
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
@@ -178,7 +179,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const postManagedState = peopleVerified.resolve(liveConnectConfig, storageHandler)
     console.log('MinimalLiveConnect.postManagedState', postManagedState)
-    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, callHandler)
+    const resolver = idex.IdentityResolver(postManagedState, storageHandler, callHandler)
     return {
       push: (value) => window.liQ.push(value),
       fire: () => window.liQ.push({}),
@@ -219,7 +220,7 @@ const _initializationFunction = _minimalMode ? _withoutQueueReplacement : _stand
  * @constructor
  */
 export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
-  console.log('Initializing LiveConnect')
+  console.log('Initializing LiveConnect', liveConnectConfig)
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     return _initializationFunction(configuration, externalStorageHandler, externalCallHandler)

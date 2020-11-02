@@ -2087,6 +2087,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
   }
 }
 /**
+ * Be careful here. There's no StateWrapper to prevent additional code from being loaded for arbitrary collector params.
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
@@ -2100,7 +2101,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
     var postManagedState = resolve$2(liveConnectConfig, storageHandler);
-    var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
+    var resolver = IdentityResolver(postManagedState, storageHandler, callHandler);
     return {
       push: function push(value) {
         return window.liQ.push(value);

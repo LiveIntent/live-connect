@@ -1,22 +1,11 @@
-import { assert, expect } from 'chai'
+import { expect } from 'chai'
 import * as serverUtil from './helpers/mock-server'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
-  isEdgeBefore79,
-  isFirefox,
-  isIE,
-  isIE9Or10,
-  isMobileSafari,
-  isSafari71,
-  probeLS,
-  resolveIdentity,
-  sendEvent,
-  waitForBakerRequests,
-  waitForRequests
+  resolveIdentity
 } from './helpers/browser'
 
-const packageJson = require('../../package')
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
 describe('Minimal Standard LiveConnect', function () {

@@ -12,9 +12,10 @@ const port = 3001
 
 const compression = require('compression')
 
-export function MockServerFactory (config, mode = 'standard') {
+export function MockServerFactory (config, mode) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const fullContent = preamble + fs.readFileSync(`dist/${mode}/bundle.iife.js`, 'utf8')
+  console.log(fullContent)
   const app = express()
   app.use(compression(), cors(corsOptions))
   let history = []
