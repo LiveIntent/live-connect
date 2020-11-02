@@ -177,7 +177,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
   try {
     const callHandler = CallHandler(externalCallHandler)
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
-    const postManagedState = peopleVerified.resolve(liveConnectConfig, storageHandler)
+    const postManagedState = { ...liveConnectConfig, ...peopleVerified.resolve(liveConnectConfig, storageHandler) }
     console.log('MinimalLiveConnect.postManagedState', postManagedState)
     const resolver = idex.IdentityResolver(postManagedState, storageHandler, callHandler)
     return {
