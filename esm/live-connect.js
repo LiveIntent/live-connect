@@ -2133,6 +2133,10 @@ function _standardQueueReplacement(configuration, externalStorageHandler, extern
 
 function _withoutQueueReplacement(configuration, externalStorageHandler, externalCallHandler) {
   window.liQ = window.liQ || [];
+
+  var liveConnect = _minimalInitialization(configuration, externalCallHandler, externalStorageHandler);
+
+  window.liQ.resolve = liveConnect.resolve;
   return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler);
 }
 
