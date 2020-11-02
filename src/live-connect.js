@@ -161,7 +161,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     }
   } catch (x) {
     console.error(x)
-    emitter.error('LCConstruction', 'Failed to build LC', x)
+    emitter.error('StandardLCConstruction', 'Failed to build LC', x)
   }
 }
 
@@ -176,10 +176,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
   try {
     const callHandler = CallHandler(externalCallHandler)
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
-    const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
-
-    const managers = [identifiers.resolve, peopleVerified.resolve]
-    const postManagedState = managers.reduce(reducer, new StateWrapper(liveConnectConfig))
+    const postManagedState = peopleVerified.resolve(liveConnectConfig, storageHandler)
     console.log('MinimalLiveConnect.postManagedState', postManagedState)
     const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, callHandler)
     return {
@@ -192,11 +189,11 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     }
   } catch (x) {
     console.error(x)
-    emitter.error('LCConstruction', 'Failed to build LC', x)
+    emitter.error('MinimalLCConstruction', 'Failed to build LC', x)
   }
 }
 
-function _nonMin (configuration, externalStorageHandler, externalCallHandler) {
+function _standardQueueReplacement (configuration, externalStorageHandler, externalCallHandler) {
   const queue = window.liQ || []
   window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
   if (isArray(queue)) {
@@ -207,11 +204,12 @@ function _nonMin (configuration, externalStorageHandler, externalCallHandler) {
   return window.liQ
 }
 
-function _min (configuration, externalStorageHandler, externalCallHandler) {
+function _withoutQueueReplacement (configuration, externalStorageHandler, externalCallHandler) {
   window.liQ = window.liQ || []
   return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler)
 }
-const _fun = _minimalMode ? _min : _nonMin
+
+const _initializationFunction = _minimalMode ? _withoutQueueReplacement : _standardQueueReplacement
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -224,10 +222,10 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler, external
   console.log('Initializing LiveConnect')
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    return _fun(configuration, externalStorageHandler, externalCallHandler)
+    return _initializationFunction(configuration, externalStorageHandler, externalCallHandler)
   } catch (x) {
     console.error(x)
-    emitter.error('LCConstruction', 'Failed to build LC', x)
+    emitter.error('OuterLCConstruction', 'Failed to build LC', x)
   }
   return window.liQ
 }
