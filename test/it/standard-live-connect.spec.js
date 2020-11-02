@@ -31,7 +31,7 @@ describe('Standard LiveConnect', function () {
         url: 'http://me.idex.com:3001/idex',
         ajaxTimeout: 1000
       }
-    })
+    }, 'standard')
   })
 
   beforeEach(function () {
