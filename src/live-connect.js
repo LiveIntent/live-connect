@@ -48,6 +48,8 @@ import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
 const hemStore = {}
+const _initializationBasedOnMode = process.env.LiveConnectMode === 'minimal' ? _minimalInitialization : _standardInitialization
+
 function _pushSingleEvent (event, pixelClient, enrichedState) {
   if (!event || !isObject(event)) {
     emitter.error('EventNotAnObject', 'Received event was not an object', new Error(event))
@@ -168,6 +170,45 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
  * @returns {LiveConnect}
+ * @private
+ */
+function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+  try {
+    eventBus.init()
+    const callHandler = CallHandler(externalCallHandler)
+    errorHandler.register(liveConnectConfig, callHandler)
+    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
+    const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
+
+    const managers = [identifiers.resolve, peopleVerified.resolve]
+    const postManagedState = managers.reduce(reducer, new StateWrapper(liveConnectConfig))
+    console.log('MinimalLiveConnect.postManagedState', postManagedState)
+    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, callHandler)
+    const _push = (val) => {
+      if (isArray(window.liQ)) {
+        return window.liQ.push
+      }
+    }
+    return {
+      push: _push,
+      fire: () => _push({}),
+      peopleVerifiedId: postManagedState.data.peopleVerifiedId,
+      ready: true,
+      resolve: resolver.resolve,
+      resolutionCallUrl: resolver.getUrl,
+      config: liveConnectConfig
+    }
+  } catch (x) {
+    console.error(x)
+    emitter.error('LCConstruction', 'Failed to build LC', x)
+  }
+}
+
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
+ * @returns {LiveConnect}
  * @constructor
  */
 export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
@@ -175,7 +216,7 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler, external
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _initializationBasedOnMode(configuration, externalStorageHandler, externalCallHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])
