@@ -2108,7 +2108,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
       fire: function fire() {
         return window.liQ.push({});
       },
-      peopleVerifiedId: postManagedState.data.peopleVerifiedId,
+      peopleVerifiedId: postManagedState.peopleVerifiedId,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
@@ -2133,10 +2133,6 @@ function _standardQueueReplacement(configuration, externalStorageHandler, extern
 
 function _withoutQueueReplacement(configuration, externalStorageHandler, externalCallHandler) {
   window.liQ = window.liQ || [];
-
-  var liveConnect = _minimalInitialization(configuration, externalCallHandler, externalStorageHandler);
-
-  window.liQ.resolve = liveConnect.resolve;
   return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler);
 }
 

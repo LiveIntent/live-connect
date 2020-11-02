@@ -182,7 +182,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     return {
       push: (value) => window.liQ.push(value),
       fire: () => window.liQ.push({}),
-      peopleVerifiedId: postManagedState.data.peopleVerifiedId,
+      peopleVerifiedId: postManagedState.peopleVerifiedId,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
@@ -206,8 +206,6 @@ function _standardQueueReplacement (configuration, externalStorageHandler, exter
 
 function _withoutQueueReplacement (configuration, externalStorageHandler, externalCallHandler) {
   window.liQ = window.liQ || []
-  const liveConnect = _minimalInitialization(configuration, externalCallHandler, externalStorageHandler)
-  window.liQ.resolve = liveConnect.resolve
   return _minimalInitialization(configuration, externalCallHandler, externalStorageHandler)
 }
 
