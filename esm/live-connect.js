@@ -2131,7 +2131,7 @@ function _standardQueueReplacement(configuration, externalStorageHandler, extern
 
 function _withoutQueueReplacement(configuration, externalStorageHandler, externalCallHandler) {
   window.liR = window.liR || [];
-  window.liQ = window.liR || [];
+  window.liQ = window.liQ || [];
   window.liR = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || [];
   return window.liR;
 }
