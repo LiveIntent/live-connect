@@ -6,7 +6,7 @@ import * as C from '../utils/consts'
  * @param {function} errorCallback
  * @return {ReplayEmitter}
  */
-export function init (size = 5, errorCallback) {
+export function init (errorCallback, size = 5) {
   try {
     console.log('events.bus.init')
     if (!window) {

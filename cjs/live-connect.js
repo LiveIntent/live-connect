@@ -1394,9 +1394,8 @@ E.prototype = {
  * @return {ReplayEmitter}
  */
 
-function init() {
-  var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 5;
-  var errorCallback = arguments.length > 1 ? arguments[1] : undefined;
+function init(errorCallback) {
+  var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 5;
 
   try {
 

@@ -29,7 +29,7 @@ describe('EventsBus in a window', () => {
   })
 
   it('should set the size correctly', function () {
-    const eventBus = bus.init(3)
+    const eventBus = bus.init(() => {}, 3)
     expect(eventBus.replaySize).to.eq(3)
   })
 })
@@ -40,7 +40,7 @@ describe('EventsBus with no window', () => {
     const callback = (e) => {
       error = e
     }
-    const eventBus = bus.init(1, callback)
+    const eventBus = bus.init(callback, 1)
     expect(eventBus).to.eql(undefined)
     expect(error).to.not.eql(null)
   })
