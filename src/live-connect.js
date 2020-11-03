@@ -205,14 +205,14 @@ function _standardQueueReplacement (configuration, externalStorageHandler, exter
   return window.liQ
 }
 
-function _withoutQueueReplacement (configuration, externalStorageHandler, externalCallHandler) {
+export function MinimalLiveConnect (configuration, externalStorageHandler, externalCallHandler) {
   window.liR = window.liR || []
   window.liQ = window.liQ || []
   window.liR = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || []
   return window.liR
 }
 
-const _initializationFunction = _minimalMode ? _withoutQueueReplacement : _standardQueueReplacement
+const _initializationFunction = _minimalMode ? MinimalLiveConnect : _standardQueueReplacement
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig

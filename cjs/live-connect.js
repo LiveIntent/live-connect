@@ -2132,14 +2132,14 @@ function _standardQueueReplacement(configuration, externalStorageHandler, extern
   return window.liQ;
 }
 
-function _withoutQueueReplacement(configuration, externalStorageHandler, externalCallHandler) {
+function MinimalLiveConnect(configuration, externalStorageHandler, externalCallHandler) {
   window.liR = window.liR || [];
   window.liQ = window.liQ || [];
   window.liR = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler) || [];
   return window.liR;
 }
 
-var _initializationFunction = _minimalMode ? _withoutQueueReplacement : _standardQueueReplacement;
+var _initializationFunction = _minimalMode ? MinimalLiveConnect : _standardQueueReplacement;
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
@@ -2162,3 +2162,4 @@ function LiveConnect(liveConnectConfig, externalStorageHandler, externalCallHand
 }
 
 exports.LiveConnect = LiveConnect;
+exports.MinimalLiveConnect = MinimalLiveConnect;
