@@ -1,5 +1,5 @@
 /**
- * @typedef {Object} LiveConnect
+ * @typedef {Object} MinimalLiveConnect
  * @property {(function)} push
  * @property {(function)} fire
  * @property {(function)} peopleVerifiedId
@@ -41,7 +41,7 @@ import { CallHandler } from './handlers/call-handler'
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
- * @returns {LiveConnect}
+ * @returns {MinimalLiveConnect}
  * @private
  */
 function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
@@ -69,10 +69,10 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
- * @returns {LiveConnect}
+ * @returns {MinimalLiveConnect}
  * @constructor
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     window.liQ = window.liQ || []
