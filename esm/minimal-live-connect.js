@@ -1,83 +1,17 @@
-function _typeof(obj) {
-  "@babel/helpers - typeof";
+const EVENT_BUS_NAMESPACE = '__li__evt_bus';
+const ERRORS_PREFIX = 'li_errors';
+const PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
+const DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
+const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    if (enumerableOnly) symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
-    keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-  }
-
-  return target;
-}
-
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
-var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
-var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
-
-function _emit(prefix, message) {
+function _emit (prefix, message) {
   window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
 }
-function fromError(name, exception) {
+function fromError (name, exception) {
   error(name, exception.message, exception);
 }
-function error(name, message) {
-  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var wrapped = new Error(message || e.message);
+function error (name, message, e = {}) {
+  const wrapped = new Error(message || e.message);
   wrapped.stack = e.stack;
   wrapped.name = name || 'unknown error';
   wrapped.lineNumber = e.lineNumber;
@@ -85,57 +19,55 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-function enrich(state, storageHandler) {
+function enrich (state, storageHandler) {
   try {
-    return {
-      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
-    };
+    return { peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY) }
   } catch (e) {
     error('E.PV', e.message, e);
-    return {};
+    return {}
   }
 }
 
-function safeToString(value) {
-  return _typeof(value) === 'object' ? JSON.stringify(value) : '' + value;
+function safeToString (value) {
+  return typeof value === 'object' ? JSON.stringify(value) : ('' + value)
 }
-function isNonEmpty(value) {
-  return typeof value !== 'undefined' && value !== null && trim(value).length > 0;
+function isNonEmpty (value) {
+  return typeof value !== 'undefined' && value !== null && trim(value).length > 0
 }
-function isArray(arr) {
-  return Object.prototype.toString.call(arr) === '[object Array]';
+function isArray (arr) {
+  return Object.prototype.toString.call(arr) === '[object Array]'
 }
-var hasTrim = !!String.prototype.trim;
-function trim(value) {
-  return hasTrim ? ('' + value).trim() : ('' + value).replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+const hasTrim = !!String.prototype.trim;
+function trim (value) {
+  return hasTrim ? ('' + value).trim() : ('' + value).replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
 }
-function isString(str) {
-  return typeof str === 'string';
+function isString (str) {
+  return typeof str === 'string'
 }
-function strEqualsIgnoreCase(fistStr, secondStr) {
-  return isString(fistStr) && isString(secondStr) && trim(fistStr.toLowerCase()) === trim(secondStr.toLowerCase());
+function strEqualsIgnoreCase (fistStr, secondStr) {
+  return isString(fistStr) && isString(secondStr) && trim(fistStr.toLowerCase()) === trim(secondStr.toLowerCase())
 }
-function isObject(obj) {
-  return !!obj && _typeof(obj) === 'object' && !isArray(obj);
+function isObject (obj) {
+  return !!obj && typeof obj === 'object' && !isArray(obj)
 }
-function isFunction(fun) {
-  return fun && typeof fun === 'function';
+function isFunction (fun) {
+  return fun && typeof fun === 'function'
 }
 
-var toParams = function toParams(tuples) {
-  var acc = '';
-  tuples.forEach(function (tuple) {
-    var operator = acc.length === 0 ? '?' : '&';
+const toParams = (tuples) => {
+  let acc = '';
+  tuples.forEach((tuple) => {
+    const operator = acc.length === 0 ? '?' : '&';
     if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+      acc = `${acc}${operator}${tuple[0]}=${tuple[1]}`;
     }
   });
-  return acc;
+  return acc
 };
 
-function _responseReceived(storageHandler, successCallback) {
-  return function (response) {
-    var responseObj = {};
+function _responseReceived (storageHandler, successCallback) {
+  return response => {
+    let responseObj = {};
     if (response) {
       try {
         responseObj = JSON.parse(response);
@@ -144,58 +76,56 @@ function _responseReceived(storageHandler, successCallback) {
       }
     }
     successCallback(responseObj);
-  };
+  }
 }
-var _additionalParams = function _additionalParams(params) {
+const _additionalParams = (params) => {
   if (params && isObject(params)) {
-    var array = [];
-    Object.keys(params).forEach(function (key) {
-      var value = params[key];
+    const array = [];
+    Object.keys(params).forEach((key) => {
+      const value = params[key];
       if (value && !isObject(value) && value.length) {
         array.push([encodeURIComponent(key), encodeURIComponent(value)]);
       }
     });
-    return array;
+    return array
   } else {
-    return [];
+    return []
   }
 };
-function _asParamOrEmpty(param, value, transform) {
+function _asParamOrEmpty (param, value, transform) {
   if (isNonEmpty(value)) {
-    return [param, transform(value)];
+    return [param, transform(value)]
   } else {
-    return [];
+    return []
   }
 }
-function IdentityResolver(config, storageHandler, calls) {
+function IdentityResolver (config, storageHandler, calls) {
   try {
-    var nonNullConfig = config || {};
-    var idexConfig = nonNullConfig.identityResolutionConfig || {};
-    var externalIds = nonNullConfig.retrievedIdentifiers || [];
-    var source = idexConfig.source || 'unknown';
-    var publisherId = idexConfig.publisherId || 'any';
-    var url = idexConfig.url || DEFAULT_IDEX_URL;
-    var timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
-    var tuples = [];
+    const nonNullConfig = config || {};
+    const idexConfig = nonNullConfig.identityResolutionConfig || {};
+    const externalIds = nonNullConfig.retrievedIdentifiers || [];
+    const source = idexConfig.source || 'unknown';
+    const publisherId = idexConfig.publisherId || 'any';
+    const url = idexConfig.url || DEFAULT_IDEX_URL;
+    const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
+    const tuples = [];
     tuples.push(_asParamOrEmpty('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent));
     tuples.push(_asParamOrEmpty('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent));
-    tuples.push(_asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
-      return encodeURIComponent(v ? 1 : 0);
-    }));
+    tuples.push(_asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)));
     tuples.push(_asParamOrEmpty('gdpr_consent', nonNullConfig.gdprConsent, encodeURIComponent));
-    externalIds.forEach(function (retrievedIdentifier) {
+    externalIds.forEach(retrievedIdentifier => {
       tuples.push(_asParamOrEmpty(retrievedIdentifier.name, retrievedIdentifier.value, encodeURIComponent));
     });
-    var composeUrl = function composeUrl(additionalParams) {
-      var originalParams = tuples.slice().concat(_additionalParams(additionalParams));
-      var params = toParams(originalParams);
-      return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
+    const composeUrl = (additionalParams) => {
+      const originalParams = tuples.slice().concat(_additionalParams(additionalParams));
+      const params = toParams(originalParams);
+      return `${url}/${source}/${publisherId}${params}`
     };
-    var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
+    const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
       calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, successCallback), errorCallback, timeout);
     };
     return {
-      resolve: function resolve(successCallback, errorCallback, additionalParams) {
+      resolve: (successCallback, errorCallback, additionalParams) => {
         try {
           unsafeResolve(successCallback, errorCallback, additionalParams);
         } catch (e) {
@@ -203,44 +133,42 @@ function IdentityResolver(config, storageHandler, calls) {
           fromError('IdentityResolve', e);
         }
       },
-      getUrl: function getUrl(additionalParams) {
-        return composeUrl(additionalParams);
-      }
-    };
+      getUrl: (additionalParams) => composeUrl(additionalParams)
+    }
   } catch (e) {
     fromError('IdentityResolver', e);
     return {
-      resolve: function resolve(successCallback, errorCallback) {
+      resolve: (successCallback, errorCallback) => {
         errorCallback();
         fromError('IdentityResolver.resolve', e);
       },
-      getUrl: function getUrl() {
+      getUrl: () => {
         fromError('IdentityResolver.getUrl', e);
       }
-    };
+    }
   }
 }
 
-var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
-function containsEmailField(s) {
-  return emailLikeRegex.test(s);
+const emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
+function containsEmailField (s) {
+  return emailLikeRegex.test(s)
 }
 
-function enrich$1(state, storageHandler) {
+function enrich$1 (state, storageHandler) {
   try {
-    return _parseIdentifiersToResolve(state, storageHandler);
+    return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
     fromError('IdentifiersEnrich', e);
-    return {};
+    return {}
   }
 }
-function _parseIdentifiersToResolve(state, storageHandler) {
+function _parseIdentifiersToResolve (state, storageHandler) {
   state.identifiersToResolve = state.identifiersToResolve || [];
-  var cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',');
-  var identifiers = [];
-  for (var i = 0; i < cookieNames.length; i++) {
-    var identifierName = trim(cookieNames[i]);
-    var identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
+  const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',');
+  const identifiers = [];
+  for (let i = 0; i < cookieNames.length; i++) {
+    const identifierName = trim(cookieNames[i]);
+    const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
     if (identifierValue && !containsEmailField(safeToString(identifierValue))) {
       identifiers.push({
         name: identifierName,
@@ -250,96 +178,88 @@ function _parseIdentifiersToResolve(state, storageHandler) {
   }
   return {
     retrievedIdentifiers: identifiers
-  };
+  }
 }
 
-var StorageStrategy = {
+const StorageStrategy = {
   cookie: 'cookie',
   localStorage: 'ls',
   none: 'none'
 };
 
-var _noOp = function _noOp() {
-  return undefined;
-};
-function StorageHandler(storageStrategy, externalStorageHandler) {
-  var errors = [];
-  function _externalOrError(functionName) {
-    var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
+const _noOp = () => undefined;
+function StorageHandler (storageStrategy, externalStorageHandler) {
+  const errors = [];
+  function _externalOrError (functionName) {
+    const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
     if (hasExternal) {
-      return externalStorageHandler[functionName];
+      return externalStorageHandler[functionName]
     } else {
       errors.push(functionName);
-      return _noOp;
+      return _noOp
     }
   }
-  var _orElseNoOp = function _orElseNoOp(fName) {
-    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
-  };
-  var handler = {
+  const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
+  const handler = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
     getCookie: _externalOrError('getCookie'),
     getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage')
   };
   if (errors.length > 0) {
-    error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
+    error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`);
   }
-  return handler;
+  return handler
 }
 
-var _noOp$1 = function _noOp() {
-  return undefined;
-};
-function CallHandler(externalCallHandler) {
-  var errors = [];
-  function _externalOrError(functionName) {
-    var hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
+const _noOp$1 = () => undefined;
+function CallHandler (externalCallHandler) {
+  const errors = [];
+  function _externalOrError (functionName) {
+    const hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
     if (hasExternal) {
-      return externalCallHandler[functionName];
+      return externalCallHandler[functionName]
     } else {
       errors.push(functionName);
-      return _noOp$1;
+      return _noOp$1
     }
   }
-  var handler = {
+  const handler = {
     ajaxGet: _externalOrError('ajaxGet'),
     pixelGet: _externalOrError('pixelGet')
   };
   if (errors.length > 0) {
-    error('CallHandler', "The call functions '".concat(JSON.stringify(errors), "' are not provided"));
+    error('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`);
   }
-  return handler;
+  return handler
 }
 
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
-    var callHandler = CallHandler(externalCallHandler);
-    var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = enrich(liveConnectConfig, storageHandler);
-    var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$1(liveConnectConfig, storageHandler));
-    var resolver = IdentityResolver(finalData, storageHandler, callHandler);
+    const callHandler = CallHandler(externalCallHandler);
+    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
+    const peopleVerifiedData = enrich(liveConnectConfig, storageHandler);
+    const finalData = { ...peopleVerifiedData, ...enrich$1(liveConnectConfig, storageHandler) };
+    const resolver = IdentityResolver(finalData, storageHandler, callHandler);
     return {
       push: window.liQ.push,
-      fire: function fire() {
-        return window.liQ.push({});
-      },
+      fire: () => window.liQ.push({}),
       peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
-    };
+    }
   } catch (x) {
   }
 }
-function MinimalLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     window.liQ = window.liQ || [];
-    var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    return _standardInitialization(configuration, externalStorageHandler, externalCallHandler);
+    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {};
+    return _standardInitialization(configuration, externalStorageHandler, externalCallHandler)
   } catch (x) {
   }
-  return {};
+  return {}
 }
 
 export { MinimalLiveConnect };

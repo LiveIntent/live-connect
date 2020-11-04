@@ -13,6 +13,13 @@ const plugins = [
   cleanup(),
   strip()
 ]
+
+const minPlugins = [
+  resolve(),
+  commonjs(),
+  cleanup(),
+  strip()
+]
 export default [
   {
     input: 'src/live-connect.js',
@@ -20,7 +27,7 @@ export default [
       file: `${OUTPUT_DIR}esm/live-connect.js`,
       format: 'esm'
     },
-    plugins: plugins
+    plugins: minPlugins
   }, {
     input: 'src/live-connect.js',
     output: {
@@ -34,7 +41,7 @@ export default [
       file: `${OUTPUT_DIR}esm/minimal-live-connect.js`,
       format: 'esm'
     },
-    plugins: plugins
+    plugins: minPlugins
   }, {
     input: 'src/minimal-live-connect.js',
     output: {
