@@ -332,7 +332,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
   } catch (x) {
   }
 }
-function LiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function MinimalLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     window.liQ = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
@@ -342,4 +342,4 @@ function LiveConnect(liveConnectConfig, externalStorageHandler, externalCallHand
   return {};
 }
 
-export { LiveConnect };
+export { MinimalLiveConnect };
