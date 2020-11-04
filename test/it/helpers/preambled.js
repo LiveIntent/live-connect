@@ -1,4 +1,5 @@
-const liveConnect = require('../../../src/live-connect')
+// const liveConnect = require('../../../src/live-connect')
+const liveConnect = require('../../../src/minimal-live-connect')
 const storage = require('../../shared/utils/storage')
 const calls = require('../../shared/utils/calls')
 

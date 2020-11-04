@@ -1,13 +1,9 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
-import { expiresInHours, isNonEmpty, isObject } from '../utils/types'
+import { isNonEmpty, isObject } from '../utils/types'
+import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 
-const IDEX_STORAGE_KEY = '__li_idex_cache'
-const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
-const DEFAULT_EXPIRATION_HOURS = 1
-const DEFAULT_AJAX_TIMEOUT = 5000
-
-function _responseReceived (storageHandler, domain, expirationHours, successCallback) {
+function _responseReceived (storageHandler, successCallback) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -17,17 +13,6 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
         console.error('Error parsing response', ex)
         fromError('IdentityResolverParser', ex)
       }
-    }
-    try {
-      storageHandler.setCookie(
-        IDEX_STORAGE_KEY,
-        JSON.stringify(responseObj),
-        expiresInHours(expirationHours),
-        'Lax',
-        domain)
-    } catch (ex) {
-      console.error('Error storing response to cookies', ex)
-      fromError('IdentityResolverStorage', ex)
     }
     successCallback(responseObj)
   }
@@ -68,11 +53,10 @@ export function IdentityResolver (config, storageHandler, calls) {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
-    const expirationHours = idexConfig.expirationHours || DEFAULT_EXPIRATION_HOURS
     const source = idexConfig.source || 'unknown'
     const publisherId = idexConfig.publisherId || 'any'
     const url = idexConfig.url || DEFAULT_IDEX_URL
-    const timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT
+    const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     const tuples = []
     tuples.push(_asParamOrEmpty('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent))
     tuples.push(_asParamOrEmpty('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent))
@@ -88,12 +72,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      const storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY)
-      if (storedCookie) {
-        successCallback(JSON.parse(storedCookie))
-      } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout)
-      }
+      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, successCallback), errorCallback, timeout)
     }
     return {
       resolve: (successCallback, errorCallback, additionalParams) => {

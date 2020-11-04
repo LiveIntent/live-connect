@@ -1,4 +1,4 @@
-import * as Ulid from '@kiosked/ulid'
+import { ulid } from '../utils/ulid'
 import * as emitter from '../utils/emitter'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
@@ -91,8 +91,7 @@ export function resolve (state, storageHandler) {
      * @private
      */
     const generateCookie = (apexDomain) => {
-      const ulid = Ulid.ulid()
-      const cookie = `${domainHash(apexDomain)}--${ulid}`
+      const cookie = `${domainHash(apexDomain)}--${ulid()}`
       return cookie.toLocaleLowerCase()
     }
 

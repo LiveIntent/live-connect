@@ -8,6 +8,10 @@ export function send (prefix, message) {
   _emit(prefix, message)
 }
 
+export function fromError (name, exception) {
+  error(name, exception.message, exception)
+}
+
 export function error (name, message, e = {}) {
   const wrapped = new Error(message || e.message)
   wrapped.stack = e.stack
