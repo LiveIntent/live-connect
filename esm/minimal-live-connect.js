@@ -14,55 +14,6 @@ function _typeof(obj) {
   return _typeof(obj);
 }
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    if (enumerableOnly) symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
-    keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
-  }
-
-  return target;
-}
-
 function safeToString(value) {
   return _typeof(value) === 'object' ? JSON.stringify(value) : '' + value;
 }
@@ -87,6 +38,21 @@ function isObject(obj) {
 }
 function isFunction(fun) {
   return fun && typeof fun === 'function';
+}
+function merge(obj1, obj2) {
+  var res = {};
+  var clean = function clean(obj) {
+    return isObject(obj) ? obj : {};
+  };
+  var first = clean(obj1);
+  var second = clean(obj2);
+  Object.keys(first).forEach(function (key) {
+    res[key] = first[key];
+  });
+  Object.keys(second).forEach(function (key) {
+    res[key] = second[key];
+  });
+  return res;
 }
 
 var toParams = function toParams(tuples) {
@@ -244,7 +210,7 @@ function _parseIdentifiersToResolve(state, storageHandler) {
     if (identifierValue && !containsEmailField(safeToString(identifierValue))) {
       identifiers.push({
         name: identifierName,
-        value: identifierValue
+        value: safeToString(identifierValue)
       });
     }
   }
@@ -315,8 +281,8 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
   try {
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = _objectSpread2(_objectSpread2({}, liveConnectConfig), enrich(liveConnectConfig, storageHandler));
-    var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$1(peopleVerifiedData, storageHandler));
+    var peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
+    var finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
     var resolver = IdentityResolver(finalData, storageHandler, callHandler);
     return {
       push: window.liQ.push,

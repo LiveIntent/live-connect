@@ -1,6 +1,6 @@
 import { extractEmail } from '../utils/email'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
-import { isArray, isObject, safeToString, trim } from '../utils/types'
+import { isArray, isObject, safeToString, trim, merge } from '../utils/types'
 
 const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
@@ -17,17 +17,9 @@ function _provided (state) {
       const extractedHash = extractHashValue(value)
       if (extractedEmail) {
         const hashes = hashEmail(decodeURIComponent(extractedEmail))
-        const hashesArray = [hashes.md5, hashes.sha1, hashes.sha256]
-        return {
-          ...{ hashedEmail: hashesArray },
-          ...state
-        }
+        return merge({ hashedEmail: [hashes.md5, hashes.sha1, hashes.sha256] }, state)
       } else if (extractedHash && isHash(extractedHash)) {
-        const hashesArray = [extractedHash.toLowerCase()]
-        return {
-          ...{ hashedEmail: hashesArray },
-          ...state
-        }
+        return merge({ hashedEmail: [extractedHash.toLowerCase()] }, state)
       }
     }
   }
@@ -49,7 +41,7 @@ const fiddlers = [_provided, _itemsLimiter]
 
 export function fiddle (state) {
   const reducer = (accumulator, func) => {
-    return { ...accumulator, ...func(accumulator) }
+    return merge(accumulator, func(accumulator))
   }
   if (isObject(state.eventSource)) {
     return fiddlers.reduce(reducer, state)

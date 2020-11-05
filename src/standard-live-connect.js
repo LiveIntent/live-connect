@@ -42,7 +42,7 @@ import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import * as cookies from './enrichers/identifiers'
 import * as legacyDuid from './enrichers/legacy-duid'
-import { isArray, isObject } from './utils/types'
+import { isArray, isObject, merge } from './utils/types'
 import * as idex from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
@@ -144,7 +144,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
 
     console.log('LiveConnect.enrichedState', enrichedState)
     console.log('LiveConnect.postManagedState', postManagedState)
-    const syncContainerData = { ...liveConnectConfig, ...{ peopleVerifiedId: postManagedState.data.peopleVerifiedId } }
+    const syncContainerData = merge(liveConnectConfig, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload)

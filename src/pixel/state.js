@@ -48,7 +48,7 @@ import * as b64 from '../utils/b64'
 import * as emitter from '../utils/emitter'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isFunction, isNonEmpty, isObject, trim } from '../utils/types'
+import { isFunction, isNonEmpty, isObject, trim, merge } from '../utils/types'
 import { toParams } from '../utils/url'
 
 /**
@@ -167,7 +167,7 @@ export function StateWrapper (state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper({ ..._state, ...newInfo })
+    return new StateWrapper(merge(state, newInfo))
   }
 
   /**

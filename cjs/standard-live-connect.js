@@ -103,6 +103,21 @@ function expiresInDays(expires) {
 function expiresInHours(expires) {
   return new Date(new Date().getTime() + expires * 36e5).toUTCString();
 }
+function merge(obj1, obj2) {
+  var res = {};
+  var clean = function clean(obj) {
+    return isObject(obj) ? obj : {};
+  };
+  var first = clean(obj1);
+  var second = clean(obj2);
+  Object.keys(first).forEach(function (key) {
+    res[key] = first[key];
+  });
+  Object.keys(second).forEach(function (key) {
+    res[key] = second[key];
+  });
+  return res;
+}
 
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
 var ERRORS_PREFIX = 'li_errors';
@@ -450,15 +465,13 @@ function _provided(state) {
       var extractedHash = extractHashValue(value);
       if (extractedEmail) {
         var hashes = hashEmail(decodeURIComponent(extractedEmail));
-        var hashesArray = [hashes.md5, hashes.sha1, hashes.sha256];
-        return _objectSpread2(_objectSpread2({}, {
-          hashedEmail: hashesArray
-        }), state);
+        return merge({
+          hashedEmail: [hashes.md5, hashes.sha1, hashes.sha256]
+        }, state);
       } else if (extractedHash && isHash(extractedHash)) {
-        var _hashesArray = [extractedHash.toLowerCase()];
-        return _objectSpread2(_objectSpread2({}, {
-          hashedEmail: _hashesArray
-        }), state);
+        return merge({
+          hashedEmail: [extractedHash.toLowerCase()]
+        }, state);
       }
     }
   }
@@ -477,7 +490,7 @@ function _itemsLimiter(state) {
 var fiddlers = [_provided, _itemsLimiter];
 function fiddle(state) {
   var reducer = function reducer(accumulator, func) {
-    return _objectSpread2(_objectSpread2({}, accumulator), func(accumulator));
+    return merge(accumulator, func(accumulator));
   };
   if (isObject(state.eventSource)) {
     return fiddlers.reduce(reducer, state);
@@ -652,7 +665,7 @@ function StateWrapper(state) {
     }
   }
   function _combineWith(newInfo) {
-    return new StateWrapper(_objectSpread2(_objectSpread2({}, _state), newInfo));
+    return new StateWrapper(merge(state, newInfo));
   }
   function _asTuples() {
     var array = [];
@@ -1453,7 +1466,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     var managers = [resolve, resolve$2, resolve$1];
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig));
     var postManagedState = managers.reduce(reducer, enrichedState);
-    var syncContainerData = _objectSpread2(_objectSpread2({}, liveConnectConfig), {
+    var syncContainerData = merge(liveConnectConfig, {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
     });
     var onPixelLoad = function onPixelLoad() {

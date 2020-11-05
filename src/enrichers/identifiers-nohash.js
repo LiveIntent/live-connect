@@ -37,7 +37,7 @@ function _parseIdentifiersToResolve (state, storageHandler) {
     if (identifierValue && !containsEmailField(safeToString(identifierValue))) {
       identifiers.push({
         name: identifierName,
-        value: identifierValue
+        value: safeToString(identifierValue)
       })
     }
   }
