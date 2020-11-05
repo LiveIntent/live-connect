@@ -1,5 +1,5 @@
 /**
- * @typedef {Object} LiveConnect
+ * @typedef {Object} StandardLiveConnect
  * @property {(function)} push
  * @property {(function)} fire
  * @property {(function)} peopleVerifiedId
@@ -100,7 +100,7 @@ function _processArgs (args, pixelClient, enrichedState) {
 /**
  *
  * @param {LiveConnectConfiguration} liveConnectConfig
- * @return {LiveConnect|null}
+ * @return {StandardLiveConnect|null}
  * @private
  */
 function _getInitializedLiveConnect (liveConnectConfig) {
@@ -124,7 +124,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
- * @returns {LiveConnect}
+ * @returns {StandardLiveConnect}
  * @private
  */
 function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
@@ -169,10 +169,10 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
- * @returns {LiveConnect}
+ * @returns {StandardLiveConnect}
  * @constructor
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []

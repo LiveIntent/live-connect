@@ -13,25 +13,32 @@ const plugins = [
   cleanup(),
   strip()
 ]
-
-const minPlugins = [
-  resolve(),
-  commonjs(),
-  cleanup(),
-  strip()
-]
 export default [
   {
-    input: 'src/live-connect.js',
+    input: 'src/initializer.js',
     output: {
-      file: `${OUTPUT_DIR}esm/live-connect.js`,
+      file: `${OUTPUT_DIR}esm/initializer.js`,
       format: 'esm'
     },
-    plugins: minPlugins
+    plugins: plugins
   }, {
-    input: 'src/live-connect.js',
+    input: 'src/initializer.js',
     output: {
-      file: `${OUTPUT_DIR}cjs/live-connect.js`,
+      file: `${OUTPUT_DIR}cjs/initializer.js`,
+      format: 'cjs'
+    },
+    plugins: plugins
+  }, {
+    input: 'src/standard-live-connect.js',
+    output: {
+      file: `${OUTPUT_DIR}esm/standard-live-connect.js`,
+      format: 'esm'
+    },
+    plugins: plugins
+  }, {
+    input: 'src/standard-live-connect.js',
+    output: {
+      file: `${OUTPUT_DIR}cjs/standard-live-connect.js`,
       format: 'cjs'
     },
     plugins: plugins
@@ -41,7 +48,7 @@ export default [
       file: `${OUTPUT_DIR}esm/minimal-live-connect.js`,
       format: 'esm'
     },
-    plugins: minPlugins
+    plugins: plugins
   }, {
     input: 'src/minimal-live-connect.js',
     output: {

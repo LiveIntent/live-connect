@@ -44,7 +44,7 @@ import { CallHandler } from './handlers/call-handler'
  * @returns {MinimalLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     const callHandler = CallHandler(externalCallHandler)
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
@@ -77,7 +77,7 @@ export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, e
   try {
     window.liQ = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    return _standardInitialization(configuration, externalStorageHandler, externalCallHandler)
+    return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler)
   } catch (x) {
     console.error(x)
   }

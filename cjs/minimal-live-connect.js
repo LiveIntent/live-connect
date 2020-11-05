@@ -315,7 +315,7 @@ function CallHandler(externalCallHandler) {
   return handler;
 }
 
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
@@ -340,7 +340,7 @@ function MinimalLiveConnect(liveConnectConfig, externalStorageHandler, externalC
   try {
     window.liQ = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    return _standardInitialization(configuration, externalStorageHandler, externalCallHandler);
+    return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler);
   } catch (x) {
   }
   return {};
