@@ -30,10 +30,10 @@
  * @property {{IdexConfig|undefined}} identityResolutionConfig
  */
 
-import * as peopleVerified from './enrichers/people-verified'
 import { isObject } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver-nocache'
-import { enrich } from './enrichers/identifiers-nohash'
+import { enrich as peopleVerified } from './enrichers/people-verified'
+import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
@@ -48,8 +48,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
   try {
     const callHandler = CallHandler(externalCallHandler)
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
-    const peopleVerifiedData = peopleVerified.enrich(liveConnectConfig, storageHandler)
-    const finalData = { ...peopleVerifiedData, ...enrich(liveConnectConfig, storageHandler) }
+    const peopleVerifiedData = peopleVerified(liveConnectConfig, storageHandler)
+    const finalData = { ...peopleVerifiedData, ...additionalIdentifiers(peopleVerifiedData, storageHandler) }
     const resolver = IdentityResolver(finalData, storageHandler, callHandler)
     return {
       push: window.liQ.push,

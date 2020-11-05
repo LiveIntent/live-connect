@@ -105,6 +105,7 @@ var ERRORS_PREFIX = 'li_errors';
 var PIXEL_SENT_PREFIX = 'lips';
 var PRELOAD_PIXEL = 'pre_lips';
 var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
+var DEFAULT_IDEX_EXPIRATION_HOURS = 1;
 var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 
@@ -1222,9 +1223,6 @@ function enrich$2(state, storageHandler) {
 }
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
-var DEFAULT_IDEX_URL$1 = 'https://idx.liadm.com/idex';
-var DEFAULT_EXPIRATION_HOURS = 1;
-var DEFAULT_AJAX_TIMEOUT$1 = 5000;
 function _responseReceived(storageHandler, domain, expirationHours, successCallback) {
   return function (response) {
     var responseObj = {};
@@ -1269,11 +1267,11 @@ function IdentityResolver(config, storageHandler, calls) {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
     var externalIds = nonNullConfig.retrievedIdentifiers || [];
-    var expirationHours = idexConfig.expirationHours || DEFAULT_EXPIRATION_HOURS;
+    var expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS;
     var source = idexConfig.source || 'unknown';
     var publisherId = idexConfig.publisherId || 'any';
-    var url = idexConfig.url || DEFAULT_IDEX_URL$1;
-    var timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT$1;
+    var url = idexConfig.url || DEFAULT_IDEX_URL;
+    var timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
     var tuples = [];
     tuples.push(_asParamOrEmpty$1('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent));
     tuples.push(_asParamOrEmpty$1('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent));
@@ -1499,17 +1497,6 @@ function StandardLiveConnect(liveConnectConfig, externalStorageHandler, external
   return window.liQ;
 }
 
-function enrich$3(state, storageHandler) {
-  try {
-    return {
-      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
-    };
-  } catch (e) {
-    error('E.PV', e.message, e);
-    return {};
-  }
-}
-
 function _responseReceived$1(storageHandler, successCallback) {
   return function (response) {
     var responseObj = {};
@@ -1598,6 +1585,17 @@ function IdentityResolver$1(config, storageHandler, calls) {
   }
 }
 
+function enrich$3(state, storageHandler) {
+  try {
+    return {
+      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
+    };
+  } catch (e) {
+    error('E.PV', e.message, e);
+    return {};
+  }
+}
+
 function enrich$4(state, storageHandler) {
   try {
     return _parseIdentifiersToResolve$1(state, storageHandler);
@@ -1658,7 +1656,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler$1(liveConnectConfig.storageStrategy, externalStorageHandler);
     var peopleVerifiedData = enrich$3(liveConnectConfig, storageHandler);
-    var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$4(liveConnectConfig, storageHandler));
+    var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$4(peopleVerifiedData, storageHandler));
     var resolver = IdentityResolver$1(finalData, storageHandler, callHandler);
     return {
       push: window.liQ.push,

@@ -1,11 +1,9 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
 import { expiresInHours, isNonEmpty, isObject } from '../utils/types'
+import { DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
-const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
-const DEFAULT_EXPIRATION_HOURS = 1
-const DEFAULT_AJAX_TIMEOUT = 5000
 
 function _responseReceived (storageHandler, domain, expirationHours, successCallback) {
   return response => {
@@ -68,11 +66,11 @@ export function IdentityResolver (config, storageHandler, calls) {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
-    const expirationHours = idexConfig.expirationHours || DEFAULT_EXPIRATION_HOURS
+    const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
     const source = idexConfig.source || 'unknown'
     const publisherId = idexConfig.publisherId || 'any'
     const url = idexConfig.url || DEFAULT_IDEX_URL
-    const timeout = idexConfig.ajaxTimeout || DEFAULT_AJAX_TIMEOUT
+    const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     const tuples = []
     tuples.push(_asParamOrEmpty('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent))
     tuples.push(_asParamOrEmpty('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent))

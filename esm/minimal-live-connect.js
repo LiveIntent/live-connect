@@ -63,39 +63,6 @@ function _objectSpread2(target) {
   return target;
 }
 
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
-var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
-var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-function fromError(name, exception) {
-  error(name, exception.message, exception);
-}
-function error(name, message) {
-  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-  _emit(ERRORS_PREFIX, wrapped);
-}
-
-function enrich(state, storageHandler) {
-  try {
-    return {
-      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
-    };
-  } catch (e) {
-    error('E.PV', e.message, e);
-    return {};
-  }
-}
-
 function safeToString(value) {
   return _typeof(value) === 'object' ? JSON.stringify(value) : '' + value;
 }
@@ -132,6 +99,28 @@ var toParams = function toParams(tuples) {
   });
   return acc;
 };
+
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
+var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
+var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
+
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+}
+function fromError(name, exception) {
+  error(name, exception.message, exception);
+}
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+  _emit(ERRORS_PREFIX, wrapped);
+}
 
 function _responseReceived(storageHandler, successCallback) {
   return function (response) {
@@ -218,6 +207,17 @@ function IdentityResolver(config, storageHandler, calls) {
         fromError('IdentityResolver.getUrl', e);
       }
     };
+  }
+}
+
+function enrich(state, storageHandler) {
+  try {
+    return {
+      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
+    };
+  } catch (e) {
+    error('E.PV', e.message, e);
+    return {};
   }
 }
 
@@ -316,7 +316,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
     var peopleVerifiedData = enrich(liveConnectConfig, storageHandler);
-    var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$1(liveConnectConfig, storageHandler));
+    var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$1(peopleVerifiedData, storageHandler));
     var resolver = IdentityResolver(finalData, storageHandler, callHandler);
     return {
       push: window.liQ.push,
