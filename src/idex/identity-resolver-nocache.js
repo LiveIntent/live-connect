@@ -1,6 +1,6 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
-import { isNonEmpty, isObject } from '../utils/types'
+import { asParamOrEmpty, asStringParam, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 
 function _responseReceived (storageHandler, successCallback) {
@@ -15,29 +15,6 @@ function _responseReceived (storageHandler, successCallback) {
       }
     }
     successCallback(responseObj)
-  }
-}
-
-const _additionalParams = (params) => {
-  if (params && isObject(params)) {
-    const array = []
-    Object.keys(params).forEach((key) => {
-      const value = params[key]
-      if (value && !isObject(value) && value.length) {
-        array.push([encodeURIComponent(key), encodeURIComponent(value)])
-      }
-    })
-    return array
-  } else {
-    return []
-  }
-}
-
-function _asParamOrEmpty (param, value, transform) {
-  if (isNonEmpty(value)) {
-    return [param, transform(value)]
-  } else {
-    return []
   }
 }
 
@@ -58,16 +35,16 @@ export function IdentityResolver (config, storageHandler, calls) {
     const url = idexConfig.url || DEFAULT_IDEX_URL
     const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     const tuples = []
-    tuples.push(_asParamOrEmpty('duid', nonNullConfig.peopleVerifiedId, encodeURIComponent))
-    tuples.push(_asParamOrEmpty('us_privacy', nonNullConfig.usPrivacyString, encodeURIComponent))
-    tuples.push(_asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    tuples.push(_asParamOrEmpty('gdpr_consent', nonNullConfig.gdprConsent, encodeURIComponent))
+    tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId))
+    tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString))
+    tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
+    tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent))
     externalIds.forEach(retrievedIdentifier => {
-      tuples.push(_asParamOrEmpty(retrievedIdentifier.name, retrievedIdentifier.value, encodeURIComponent))
+      tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
 
     const composeUrl = (additionalParams) => {
-      const originalParams = tuples.slice().concat(_additionalParams(additionalParams))
+      const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
       const params = toParams(originalParams)
       return `${url}/${source}/${publisherId}${params}`
     }

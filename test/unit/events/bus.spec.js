@@ -11,7 +11,7 @@ describe('EventsBus in a window', () => {
 
   it('should set up a bus on a global namespace according to constants', function () {
     const eventBus = bus.init()
-    expect(eventBus.replaySize).to.eql(5)
+    expect(eventBus.size).to.eql(5)
     expect(window[C.EVENT_BUS_NAMESPACE]).to.not.eql(null)
     expect(window[C.EVENT_BUS_NAMESPACE].on).to.not.eql(null)
     expect(typeof window[C.EVENT_BUS_NAMESPACE].on).to.eql('function')
@@ -30,7 +30,7 @@ describe('EventsBus in a window', () => {
 
   it('should set the size correctly', function () {
     const eventBus = bus.init(3)
-    expect(eventBus.replaySize).to.eq(3)
+    expect(eventBus.size).to.eq(3)
   })
 })
 

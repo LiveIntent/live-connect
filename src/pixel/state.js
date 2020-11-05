@@ -44,11 +44,11 @@
  * @property {StorageManager} storageHandler
  */
 
-import * as b64 from '../utils/b64'
 import * as emitter from '../utils/emitter'
+import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isFunction, isNonEmpty, isObject, trim, merge } from '../utils/types'
+import { isObject, trim, merge, asStringParam, asParamOrEmpty } from '../utils/types'
 import { toParams } from '../utils/url'
 
 /**
@@ -61,70 +61,58 @@ import { toParams } from '../utils/url'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-function _asParamOrEmpty (param, value, transform) {
-  if (isNonEmpty(value)) {
-    return [param, isFunction(transform) ? transform(value) : value]
-  } else {
-    return []
-  }
-}
-
 const _pMap = {
   appId: aid => {
-    return _asParamOrEmpty('aid', aid, (s) => encodeURIComponent(s))
+    return asStringParam('aid', aid)
   },
   eventSource: source => {
-    return _asParamOrEmpty('se', source, (s) => b64.base64UrlEncode(JSON.stringify(s, replacer)))
+    return asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))
   },
   liveConnectId: fpc => {
-    return _asParamOrEmpty('duid', fpc, (s) => encodeURIComponent(s))
+    return asStringParam('duid', fpc)
   },
   legacyId: legacyFpc => {
-    return _asParamOrEmpty('lduid', legacyFpc && legacyFpc.duid, (s) => encodeURIComponent(s))
+    return asStringParam('lduid', legacyFpc && legacyFpc.duid)
   },
   trackerName: tn => {
-    return _asParamOrEmpty('tna', tn || 'unknown', (s) => encodeURIComponent(s))
+    return asStringParam('tna', tn || 'unknown')
   },
   pageUrl: purl => {
-    return _asParamOrEmpty('pu', purl, (s) => encodeURIComponent(s))
+    return asStringParam('pu', purl)
   },
   errorDetails: ed => {
-    return _asParamOrEmpty('ae', ed, (s) => b64.base64UrlEncode(JSON.stringify(s)))
+    return asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))
   },
   retrievedIdentifiers: identifiers => {
     const identifierParams = []
-    for (let i = 0; i < identifiers.length; i++) {
-      identifierParams.push(_asParamOrEmpty(`ext_${identifiers[i].name}`, identifiers[i].value, (s) => encodeURIComponent(s)))
-    }
+    identifiers.forEach((i) => identifierParams.push(asStringParam(`ext_${i.name}`, i.value)))
     return identifierParams
   },
   hashesFromIdentifiers: hashes => {
     const hashParams = []
-    for (let i = 0; i < hashes.length; i++) {
-      hashParams.push(_asParamOrEmpty('scre', hashes[i], h => `${h.md5},${h.sha1},${h.sha256}`))
-    }
+    hashes.forEach((h) => hashParams.push(asParamOrEmpty('scre', `${h.md5},${h.sha1},${h.sha256}`)))
     return hashParams
   },
   decisionIds: dids => {
-    return _asParamOrEmpty('li_did', dids.join(','), (s) => encodeURIComponent(s))
+    return asStringParam('li_did', dids.join(','))
   },
   hashedEmail: he => {
-    return _asParamOrEmpty('e', he.join(','), (s) => encodeURIComponent(s))
+    return asStringParam('e', he.join(','))
   },
   usPrivacyString: usps => {
-    return _asParamOrEmpty('us_privacy', usps && encodeURIComponent(usps), (s) => encodeURIComponent(s))
+    return asStringParam('us_privacy', usps && encodeURIComponent(usps))
   },
   wrapperName: wrapper => {
-    return _asParamOrEmpty('wpn', wrapper && encodeURIComponent(wrapper), (s) => encodeURIComponent(s))
+    return asStringParam('wpn', wrapper && encodeURIComponent(wrapper))
   },
   gdprApplies: gdprApplies => {
-    return _asParamOrEmpty('gdpr', gdprApplies, (s) => encodeURIComponent(s ? 1 : 0))
+    return asParamOrEmpty('gdpr', gdprApplies, (s) => encodeURIComponent(s ? 1 : 0))
   },
   gdprConsent: gdprConsentString => {
-    return _asParamOrEmpty('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString), (s) => encodeURIComponent(s))
+    return asStringParam('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString))
   },
   referrer: referrer => {
-    return _asParamOrEmpty('refr', referrer, (s) => encodeURIComponent(s))
+    return asStringParam('refr', referrer)
   }
 }
 

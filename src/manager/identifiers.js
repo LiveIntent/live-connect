@@ -2,7 +2,7 @@ import { ulid } from '../utils/ulid'
 import * as emitter from '../utils/emitter'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
-import { expiresInDays, strEqualsIgnoreCase } from '../utils/types'
+import { expiresIn, expiresInDays, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
@@ -23,9 +23,9 @@ export function resolve (state, storageHandler) {
         return cachedDomain
       }
       const domain = loadedDomain()
-      const arr = domain.split('.').reverse()
-      for (let i = 1; i < arr.length; i++) {
-        const newD = `.${arr.slice(0, i).reverse().join('.')}`
+      const arr = domain.split('.')
+      for (let i = arr.length; i > 0; i--) {
+        const newD = `.${arr.slice(i - 1, arr.length).join('.')}`
         storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, 'Lax', newD)
         if (storageHandler.getCookie(TLD_CACHE_KEY)) {
           return newD
@@ -34,15 +34,13 @@ export function resolve (state, storageHandler) {
       return `.${domain}`
     }
 
-    const addDays = (days) => new Date().getTime() + (days * 864e5)
-
     const lsGetOrAdd = (key, value, storageOptions) => {
       let ret = null
       try {
         if (storageHandler.localStorageIsEnabled()) {
           const expirationKey = `${key}_exp`
           const oldLsExpirationEntry = storageHandler.getDataFromLocalStorage(expirationKey)
-          const expiry = addDays(storageOptions.expires)
+          const expiry = expiresIn(storageOptions.expires, 864e5)
           if (oldLsExpirationEntry && parseInt(oldLsExpirationEntry) <= new Date().getTime()) {
             storageHandler.removeDataFromLocalStorage(key)
           }
