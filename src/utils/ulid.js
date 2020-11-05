@@ -1,3 +1,4 @@
+// Borrowed from https://github.com/Kiosked/ulid
 const ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
 const ENCODING_LEN = ENCODING.length
 const TIME_MAX = Math.pow(2, 48) - 1
