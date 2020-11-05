@@ -2,14 +2,14 @@
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import strip from '@rollup/plugin-strip'
-// import babel from 'rollup-plugin-babel'
+import babel from 'rollup-plugin-babel'
 import cleanup from 'rollup-plugin-cleanup'
 
 const OUTPUT_DIR = './'
 const plugins = [
   resolve(),
   commonjs(),
-  // babel(),
+  babel(),
   cleanup(),
   strip()
 ]

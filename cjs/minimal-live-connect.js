@@ -2,88 +2,109 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function safeToString (value) {
-  return typeof value === 'object' ? JSON.stringify(value) : ('' + value)
+function _typeof(obj) {
+  "@babel/helpers - typeof";
+
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
 }
-function isNonEmpty (value) {
-  return typeof value !== 'undefined' && value !== null && trim(value).length > 0
+
+function safeToString(value) {
+  return _typeof(value) === 'object' ? JSON.stringify(value) : '' + value;
 }
-function isArray (arr) {
-  return Object.prototype.toString.call(arr) === '[object Array]'
+function isNonEmpty(value) {
+  return typeof value !== 'undefined' && value !== null && trim(value).length > 0;
 }
-const hasTrim = !!String.prototype.trim;
-function trim (value) {
-  return hasTrim ? ('' + value).trim() : ('' + value).replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
+function isArray(arr) {
+  return Object.prototype.toString.call(arr) === '[object Array]';
 }
-function isString (str) {
-  return typeof str === 'string'
+var hasTrim = !!String.prototype.trim;
+function trim(value) {
+  return hasTrim ? ('' + value).trim() : ('' + value).replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
 }
-function strEqualsIgnoreCase (fistStr, secondStr) {
-  return isString(fistStr) && isString(secondStr) && trim(fistStr.toLowerCase()) === trim(secondStr.toLowerCase())
+function isString(str) {
+  return typeof str === 'string';
 }
-function isObject (obj) {
-  return !!obj && typeof obj === 'object' && !isArray(obj)
+function strEqualsIgnoreCase(fistStr, secondStr) {
+  return isString(fistStr) && isString(secondStr) && trim(fistStr.toLowerCase()) === trim(secondStr.toLowerCase());
 }
-function isFunction (fun) {
-  return fun && typeof fun === 'function'
+function isObject(obj) {
+  return !!obj && _typeof(obj) === 'object' && !isArray(obj);
 }
-function asParamOrEmpty (param, value, transform) {
-  return isNonEmpty(value) ? ([param, isFunction(transform) ? transform(value) : value]) : []
+function isFunction(fun) {
+  return fun && typeof fun === 'function';
 }
-function asStringParam (param, value) {
-  return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
+function asParamOrEmpty(param, value, transform) {
+  return isNonEmpty(value) ? [param, isFunction(transform) ? transform(value) : value] : [];
 }
-function mapAsParams (paramsMap) {
+function asStringParam(param, value) {
+  return asParamOrEmpty(param, value, function (s) {
+    return encodeURIComponent(s);
+  });
+}
+function mapAsParams(paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
-    const array = [];
-    Object.keys(paramsMap).forEach((key) => {
-      const value = paramsMap[key];
+    var array = [];
+    Object.keys(paramsMap).forEach(function (key) {
+      var value = paramsMap[key];
       value && !isObject(value) && value.length && array.push([encodeURIComponent(key), encodeURIComponent(value)]);
     });
-    return array
+    return array;
   } else {
-    return []
+    return [];
   }
 }
-function merge (obj1, obj2) {
-  const res = {};
-  const clean = (obj) => isObject(obj) ? obj : {};
-  const first = clean(obj1);
-  const second = clean(obj2);
+function merge(obj1, obj2) {
+  var res = {};
+  var clean = function clean(obj) {
+    return isObject(obj) ? obj : {};
+  };
+  var first = clean(obj1);
+  var second = clean(obj2);
   Object.keys(first).forEach(function (key) {
     res[key] = first[key];
   });
   Object.keys(second).forEach(function (key) {
     res[key] = second[key];
   });
-  return res
+  return res;
 }
 
-const toParams = (tuples) => {
-  let acc = '';
-  tuples.forEach((tuple) => {
-    const operator = acc.length === 0 ? '?' : '&';
+var toParams = function toParams(tuples) {
+  var acc = '';
+  tuples.forEach(function (tuple) {
+    var operator = acc.length === 0 ? '?' : '&';
     if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = `${acc}${operator}${tuple[0]}=${tuple[1]}`;
+      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
     }
   });
-  return acc
+  return acc;
 };
 
-const EVENT_BUS_NAMESPACE = '__li__evt_bus';
-const ERRORS_PREFIX = 'li_errors';
-const PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
-const DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
-const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
+var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
+var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 
-function _emit (prefix, message) {
+function _emit(prefix, message) {
   window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
 }
-function fromError (name, exception) {
+function fromError(name, exception) {
   error(name, exception.message, exception);
 }
-function error (name, message, e = {}) {
-  const wrapped = new Error(message || e.message);
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var wrapped = new Error(message || e.message);
   wrapped.stack = e.stack;
   wrapped.name = name || 'unknown error';
   wrapped.lineNumber = e.lineNumber;
@@ -91,9 +112,9 @@ function error (name, message, e = {}) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-function _responseReceived (storageHandler, successCallback) {
-  return response => {
-    let responseObj = {};
+function _responseReceived(storageHandler, successCallback) {
+  return function (response) {
+    var responseObj = {};
     if (response) {
       try {
         responseObj = JSON.parse(response);
@@ -102,35 +123,37 @@ function _responseReceived (storageHandler, successCallback) {
       }
     }
     successCallback(responseObj);
-  }
+  };
 }
-function IdentityResolver (config, storageHandler, calls) {
+function IdentityResolver(config, storageHandler, calls) {
   try {
-    const nonNullConfig = config || {};
-    const idexConfig = nonNullConfig.identityResolutionConfig || {};
-    const externalIds = nonNullConfig.retrievedIdentifiers || [];
-    const source = idexConfig.source || 'unknown';
-    const publisherId = idexConfig.publisherId || 'any';
-    const url = idexConfig.url || DEFAULT_IDEX_URL;
-    const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
-    const tuples = [];
+    var nonNullConfig = config || {};
+    var idexConfig = nonNullConfig.identityResolutionConfig || {};
+    var externalIds = nonNullConfig.retrievedIdentifiers || [];
+    var source = idexConfig.source || 'unknown';
+    var publisherId = idexConfig.publisherId || 'any';
+    var url = idexConfig.url || DEFAULT_IDEX_URL;
+    var timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
+    var tuples = [];
     tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId));
     tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString));
-    tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)));
+    tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
-    externalIds.forEach(retrievedIdentifier => {
+    externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    const composeUrl = (additionalParams) => {
-      const originalParams = tuples.slice().concat(mapAsParams(additionalParams));
-      const params = toParams(originalParams);
-      return `${url}/${source}/${publisherId}${params}`
+    var composeUrl = function composeUrl(additionalParams) {
+      var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
+      var params = toParams(originalParams);
+      return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
-    const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
+    var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
       calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, successCallback), errorCallback, timeout);
     };
     return {
-      resolve: (successCallback, errorCallback, additionalParams) => {
+      resolve: function resolve(successCallback, errorCallback, additionalParams) {
         try {
           unsafeResolve(successCallback, errorCallback, additionalParams);
         } catch (e) {
@@ -138,51 +161,55 @@ function IdentityResolver (config, storageHandler, calls) {
           fromError('IdentityResolve', e);
         }
       },
-      getUrl: (additionalParams) => composeUrl(additionalParams)
-    }
+      getUrl: function getUrl(additionalParams) {
+        return composeUrl(additionalParams);
+      }
+    };
   } catch (e) {
     fromError('IdentityResolver', e);
     return {
-      resolve: (successCallback, errorCallback) => {
+      resolve: function resolve(successCallback, errorCallback) {
         errorCallback();
         fromError('IdentityResolver.resolve', e);
       },
-      getUrl: () => {
+      getUrl: function getUrl() {
         fromError('IdentityResolver.getUrl', e);
       }
-    }
+    };
   }
 }
 
-function enrich (state, storageHandler) {
+function enrich(state, storageHandler) {
   try {
-    return { peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY) }
+    return {
+      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
+    };
   } catch (e) {
     error('E.PV', e.message, e);
-    return {}
+    return {};
   }
 }
 
-const emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
-function containsEmailField (s) {
-  return emailLikeRegex.test(s)
+var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
+function containsEmailField(s) {
+  return emailLikeRegex.test(s);
 }
 
-function enrich$1 (state, storageHandler) {
+function enrich$1(state, storageHandler) {
   try {
-    return _parseIdentifiersToResolve(state, storageHandler)
+    return _parseIdentifiersToResolve(state, storageHandler);
   } catch (e) {
     fromError('IdentifiersEnrich', e);
-    return {}
+    return {};
   }
 }
-function _parseIdentifiersToResolve (state, storageHandler) {
+function _parseIdentifiersToResolve(state, storageHandler) {
   state.identifiersToResolve = state.identifiersToResolve || [];
-  const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',');
-  const identifiers = [];
-  for (let i = 0; i < cookieNames.length; i++) {
-    const identifierName = trim(cookieNames[i]);
-    const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
+  var cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',');
+  var identifiers = [];
+  for (var i = 0; i < cookieNames.length; i++) {
+    var identifierName = trim(cookieNames[i]);
+    var identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
     if (identifierValue && !containsEmailField(safeToString(identifierValue))) {
       identifiers.push({
         name: identifierName,
@@ -192,88 +219,96 @@ function _parseIdentifiersToResolve (state, storageHandler) {
   }
   return {
     retrievedIdentifiers: identifiers
-  }
+  };
 }
 
-const StorageStrategy = {
+var StorageStrategy = {
   cookie: 'cookie',
   localStorage: 'ls',
   none: 'none'
 };
 
-const _noOp = () => undefined;
-function StorageHandler (storageStrategy, externalStorageHandler) {
-  const errors = [];
-  function _externalOrError (functionName) {
-    const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
+var _noOp = function _noOp() {
+  return undefined;
+};
+function StorageHandler(storageStrategy, externalStorageHandler) {
+  var errors = [];
+  function _externalOrError(functionName) {
+    var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
     if (hasExternal) {
-      return externalStorageHandler[functionName]
+      return externalStorageHandler[functionName];
     } else {
       errors.push(functionName);
-      return _noOp
+      return _noOp;
     }
   }
-  const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
-  const handler = {
+  var _orElseNoOp = function _orElseNoOp(fName) {
+    return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
+  };
+  var handler = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
     getCookie: _externalOrError('getCookie'),
     getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage')
   };
   if (errors.length > 0) {
-    error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`);
+    error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
   }
-  return handler
+  return handler;
 }
 
-const _noOp$1 = () => undefined;
-function CallHandler (externalCallHandler) {
-  const errors = [];
-  function _externalOrError (functionName) {
-    const hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
+var _noOp$1 = function _noOp() {
+  return undefined;
+};
+function CallHandler(externalCallHandler) {
+  var errors = [];
+  function _externalOrError(functionName) {
+    var hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
     if (hasExternal) {
-      return externalCallHandler[functionName]
+      return externalCallHandler[functionName];
     } else {
       errors.push(functionName);
-      return _noOp$1
+      return _noOp$1;
     }
   }
-  const handler = {
+  var handler = {
     ajaxGet: _externalOrError('ajaxGet'),
     pixelGet: _externalOrError('pixelGet')
   };
   if (errors.length > 0) {
-    error('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`);
+    error('CallHandler', "The call functions '".concat(JSON.stringify(errors), "' are not provided"));
   }
-  return handler
+  return handler;
 }
 
-function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
-    const callHandler = CallHandler(externalCallHandler);
-    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
-    const peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
-    const finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
-    const resolver = IdentityResolver(finalData, storageHandler, callHandler);
+    var callHandler = CallHandler(externalCallHandler);
+    var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
+    var peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
+    var finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
+    var resolver = IdentityResolver(finalData, storageHandler, callHandler);
     return {
       push: window.liQ.push,
-      fire: () => window.liQ.push({}),
+      fire: function fire() {
+        return window.liQ.push({});
+      },
       peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
-    }
+    };
   } catch (x) {
   }
 }
-function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function MinimalLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     window.liQ = window.liQ || [];
-    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {};
-    return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler)
+    var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
+    return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler);
   } catch (x) {
   }
-  return {}
+  return {};
 }
 
 exports.MinimalLiveConnect = MinimalLiveConnect;
