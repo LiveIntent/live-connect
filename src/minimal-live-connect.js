@@ -48,7 +48,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
   try {
     const callHandler = CallHandler(externalCallHandler)
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
-    const peopleVerifiedData = peopleVerified(liveConnectConfig, storageHandler)
+    const peopleVerifiedData = { ...liveConnectConfig, ...peopleVerified(liveConnectConfig, storageHandler) }
     const finalData = { ...peopleVerifiedData, ...additionalIdentifiers(peopleVerifiedData, storageHandler) }
     const resolver = IdentityResolver(finalData, storageHandler, callHandler)
     return {

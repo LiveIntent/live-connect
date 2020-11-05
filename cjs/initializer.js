@@ -1659,7 +1659,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
   try {
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler$1(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = enrich$3(liveConnectConfig, storageHandler);
+    var peopleVerifiedData = _objectSpread2(_objectSpread2({}, liveConnectConfig), enrich$3(liveConnectConfig, storageHandler));
     var finalData = _objectSpread2(_objectSpread2({}, peopleVerifiedData), enrich$4(peopleVerifiedData, storageHandler));
     var resolver = IdentityResolver$1(finalData, storageHandler, callHandler);
     return {
