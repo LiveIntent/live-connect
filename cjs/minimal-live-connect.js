@@ -185,7 +185,7 @@ function enrich(state, storageHandler) {
       peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
     };
   } catch (e) {
-    error('E.PV', e.message, e);
+    error('PeopleVerifiedEnrich', e.message, e);
     return {};
   }
 }

@@ -6,7 +6,7 @@ export function enrich (state, storageHandler) {
   try {
     return { peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY) }
   } catch (e) {
-    error.error('E.PV', e.message, e)
+    error.error('PeopleVerifiedEnrich', e.message, e)
     return {}
   }
 }

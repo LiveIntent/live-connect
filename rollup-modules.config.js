@@ -13,47 +13,25 @@ const plugins = [
   cleanup(),
   strip()
 ]
-export default [
-  {
-    input: 'src/initializer.js',
+
+const filenames = ['initializer.js', 'standard-live-connect.js', 'minimal-live-connect.js']
+const outputs = filenames.reduce((accumulator, sourceFile) => {
+  const action = [{
+    input: `src/${sourceFile}`,
     output: {
-      file: `${OUTPUT_DIR}esm/initializer.js`,
+      file: `${OUTPUT_DIR}esm/${sourceFile}`,
       format: 'esm'
     },
     plugins: plugins
   }, {
-    input: 'src/initializer.js',
+    input: `src/${sourceFile}`,
     output: {
-      file: `${OUTPUT_DIR}cjs/initializer.js`,
-      format: 'cjs'
-    },
-    plugins: plugins
-  }, {
-    input: 'src/standard-live-connect.js',
-    output: {
-      file: `${OUTPUT_DIR}esm/standard-live-connect.js`,
-      format: 'esm'
-    },
-    plugins: plugins
-  }, {
-    input: 'src/standard-live-connect.js',
-    output: {
-      file: `${OUTPUT_DIR}cjs/standard-live-connect.js`,
-      format: 'cjs'
-    },
-    plugins: plugins
-  }, {
-    input: 'src/minimal-live-connect.js',
-    output: {
-      file: `${OUTPUT_DIR}esm/minimal-live-connect.js`,
-      format: 'esm'
-    },
-    plugins: plugins
-  }, {
-    input: 'src/minimal-live-connect.js',
-    output: {
-      file: `${OUTPUT_DIR}cjs/minimal-live-connect.js`,
+      file: `${OUTPUT_DIR}cjs/${sourceFile}`,
       format: 'cjs'
     },
     plugins: plugins
   }]
+  return (accumulator || []).concat(action)
+}, [])
+
+export default outputs
