@@ -190,6 +190,12 @@ function enrich(state, storageHandler) {
   }
 }
 
+var emailRegex = function emailRegex() {
+  return /\S+(@|%40)\S+\.\S+/;
+};
+function isEmail(s) {
+  return emailRegex().test(s);
+}
 var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
 function containsEmailField(s) {
   return emailLikeRegex.test(s);
@@ -210,7 +216,7 @@ function _parseIdentifiersToResolve(state, storageHandler) {
   for (var i = 0; i < cookieNames.length; i++) {
     var identifierName = trim(cookieNames[i]);
     var identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
-    if (identifierValue && !containsEmailField(safeToString(identifierValue))) {
+    if (identifierValue && !containsEmailField(safeToString(identifierValue)) && !isEmail(safeToString(identifierValue))) {
       identifiers.push({
         name: identifierName,
         value: safeToString(identifierValue)
@@ -288,7 +294,9 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
     var resolver = IdentityResolver(finalData, storageHandler, callHandler);
     return {
-      push: window.liQ.push,
+      push: function push(arg) {
+        return window.liQ.push(arg);
+      },
       fire: function fire() {
         return window.liQ.push({});
       },
@@ -303,7 +311,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
 }
 function MinimalLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
-    window.liQ = window.liQ || [];
+    window && (window.liQ = window.liQ || []);
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
     return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler);
   } catch (x) {

@@ -9,7 +9,7 @@ import * as storage from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import { hashEmail } from '../../src/utils/hash'
 
-describe('LiveConnect', () => {
+describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()
   let imgStub = null
   let pixelCalls = []

@@ -30,11 +30,11 @@
  * @property {{IdexConfig|undefined}} identityResolutionConfig
  */
 
+import { PixelSender } from './pixel/sender'
 import * as eventBus from './events/bus'
 import * as emitter from './utils/emitter'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
-import { PixelSender } from './pixel/sender'
 import { StateWrapper } from './pixel/state'
 import { resolve as idResolve } from './manager/identifiers'
 import { resolve as decisionsResolve } from './manager/decisions'

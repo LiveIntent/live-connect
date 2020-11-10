@@ -90,7 +90,7 @@ const _pMap = {
   },
   hashesFromIdentifiers: hashes => {
     const hashParams = []
-    hashes.forEach((h) => hashParams.push(asParamOrEmpty('scre', `${h.md5},${h.sha1},${h.sha256}`)))
+    hashes.forEach((h) => hashParams.push(asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
     return hashParams
   },
   decisionIds: dids => {
@@ -100,16 +100,16 @@ const _pMap = {
     return asStringParam('e', he.join(','))
   },
   usPrivacyString: usps => {
-    return asStringParam('us_privacy', usps && encodeURIComponent(usps))
+    return asStringParam('us_privacy', usps)
   },
   wrapperName: wrapper => {
-    return asStringParam('wpn', wrapper && encodeURIComponent(wrapper))
+    return asStringParam('wpn', wrapper)
   },
   gdprApplies: gdprApplies => {
     return asParamOrEmpty('gdpr', gdprApplies, (s) => encodeURIComponent(s ? 1 : 0))
   },
   gdprConsent: gdprConsentString => {
-    return asStringParam('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString))
+    return asStringParam('gdpr_consent', gdprConsentString)
   },
   referrer: referrer => {
     return asStringParam('refr', referrer)

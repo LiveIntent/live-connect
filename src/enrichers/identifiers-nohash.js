@@ -3,7 +3,7 @@
  * @property {string} name
  * @property {string} value
  */
-import { containsEmailField } from '../utils/email'
+import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
@@ -34,7 +34,7 @@ function _parseIdentifiersToResolve (state, storageHandler) {
   for (let i = 0; i < cookieNames.length; i++) {
     const identifierName = trim(cookieNames[i])
     const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
-    if (identifierValue && !containsEmailField(safeToString(identifierValue))) {
+    if (identifierValue && !containsEmailField(safeToString(identifierValue)) && !isEmail(safeToString(identifierValue))) {
       identifiers.push({
         name: identifierName,
         value: safeToString(identifierValue)

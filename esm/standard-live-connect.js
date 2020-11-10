@@ -1,110 +1,3 @@
-function E(replaySize) {
-  this.size = parseInt(replaySize) || 5;
-  this.h = {};
-  this.q = {};
-}
-E.prototype = {
-  on: function on(name, callback, ctx) {
-    (this.h[name] || (this.h[name] = [])).push({
-      fn: callback,
-      ctx: ctx
-    });
-    var eventQueueLen = (this.q[name] || []).length;
-    for (var i = 0; i < eventQueueLen; i++) {
-      callback.apply(ctx, this.q[name][i]);
-    }
-    return this;
-  },
-  once: function once(name, callback, ctx) {
-    var self = this;
-    var eventQueue = this.q[name] || [];
-    if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue[0]);
-      return this;
-    } else {
-      var listener = function listener() {
-        self.off(name, listener);
-        callback.apply(ctx, arguments);
-      };
-      listener._ = callback;
-      return this.on(name, listener, ctx);
-    }
-  },
-  emit: function emit(name) {
-    var data = [].slice.call(arguments, 1);
-    var evtArr = (this.h[name] || []).slice();
-    var i = 0;
-    var len = evtArr.length;
-    for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data);
-    }
-    var eventQueue = this.q[name] || (this.q[name] = []);
-    if (eventQueue.length >= this.size) {
-      eventQueue.shift();
-    }
-    eventQueue.push(data);
-    return this;
-  },
-  off: function off(name, callback) {
-    var handlers = this.h[name];
-    var liveEvents = [];
-    if (handlers && callback) {
-      for (var i = 0, len = handlers.length; i < len; i++) {
-        if (handlers[i].fn !== callback && handlers[i].fn._ !== callback) {
-          liveEvents.push(handlers[i]);
-        }
-      }
-    }
-    liveEvents.length ? this.h[name] = liveEvents : delete this.h[name];
-    return this;
-  }
-};
-
-var EVENT_BUS_NAMESPACE = '__li__evt_bus';
-var ERRORS_PREFIX = 'li_errors';
-var PIXEL_SENT_PREFIX = 'lips';
-var PRELOAD_PIXEL = 'pre_lips';
-var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
-var DEFAULT_IDEX_EXPIRATION_HOURS = 1;
-var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
-var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
-
-function init(size, errorCallback) {
-  if (!size) {
-    size = 5;
-  }
-  try {
-    if (!window) {
-      errorCallback(new Error('Bus can only be attached to the window, which is not present'));
-    }
-    if (window && !window[EVENT_BUS_NAMESPACE]) {
-      window[EVENT_BUS_NAMESPACE] = new E(size);
-    }
-    return window[EVENT_BUS_NAMESPACE];
-  } catch (e) {
-    errorCallback(e);
-  }
-}
-
-function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
-}
-function send(prefix, message) {
-  _emit(prefix, message);
-}
-function fromError(name, exception) {
-  error(name, exception.message, exception);
-}
-function error(name, message) {
-  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-  var wrapped = new Error(message || e.message);
-  wrapped.stack = e.stack;
-  wrapped.name = name || 'unknown error';
-  wrapped.lineNumber = e.lineNumber;
-  wrapped.columnNumber = e.columnNumber;
-  _emit(ERRORS_PREFIX, wrapped);
-}
-
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -196,6 +89,34 @@ function merge(obj1, obj2) {
   return res;
 }
 
+var EVENT_BUS_NAMESPACE = '__li__evt_bus';
+var ERRORS_PREFIX = 'li_errors';
+var PIXEL_SENT_PREFIX = 'lips';
+var PRELOAD_PIXEL = 'pre_lips';
+var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
+var DEFAULT_IDEX_EXPIRATION_HOURS = 1;
+var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
+var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
+
+function _emit(prefix, message) {
+  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+}
+function send(prefix, message) {
+  _emit(prefix, message);
+}
+function fromError(name, exception) {
+  error(name, exception.message, exception);
+}
+function error(name, message) {
+  var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+  var wrapped = new Error(message || e.message);
+  wrapped.stack = e.stack;
+  wrapped.name = name || 'unknown error';
+  wrapped.lineNumber = e.lineNumber;
+  wrapped.columnNumber = e.columnNumber;
+  _emit(ERRORS_PREFIX, wrapped);
+}
+
 var DEFAULT_AJAX_TIMEOUT = 0;
 function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
@@ -247,6 +168,85 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
     sendAjax: _sendAjax,
     sendPixel: _sendPixel
   };
+}
+
+function E(replaySize) {
+  this.size = parseInt(replaySize) || 5;
+  this.h = {};
+  this.q = {};
+}
+E.prototype = {
+  on: function on(name, callback, ctx) {
+    (this.h[name] || (this.h[name] = [])).push({
+      fn: callback,
+      ctx: ctx
+    });
+    var eventQueueLen = (this.q[name] || []).length;
+    for (var i = 0; i < eventQueueLen; i++) {
+      callback.apply(ctx, this.q[name][i]);
+    }
+    return this;
+  },
+  once: function once(name, callback, ctx) {
+    var self = this;
+    var eventQueue = this.q[name] || [];
+    if (eventQueue.length > 0) {
+      callback.apply(ctx, eventQueue[0]);
+      return this;
+    } else {
+      var listener = function listener() {
+        self.off(name, listener);
+        callback.apply(ctx, arguments);
+      };
+      listener._ = callback;
+      return this.on(name, listener, ctx);
+    }
+  },
+  emit: function emit(name) {
+    var data = [].slice.call(arguments, 1);
+    var evtArr = (this.h[name] || []).slice();
+    var i = 0;
+    var len = evtArr.length;
+    for (i; i < len; i++) {
+      evtArr[i].fn.apply(evtArr[i].ctx, data);
+    }
+    var eventQueue = this.q[name] || (this.q[name] = []);
+    if (eventQueue.length >= this.size) {
+      eventQueue.shift();
+    }
+    eventQueue.push(data);
+    return this;
+  },
+  off: function off(name, callback) {
+    var handlers = this.h[name];
+    var liveEvents = [];
+    if (handlers && callback) {
+      for (var i = 0, len = handlers.length; i < len; i++) {
+        if (handlers[i].fn !== callback && handlers[i].fn._ !== callback) {
+          liveEvents.push(handlers[i]);
+        }
+      }
+    }
+    liveEvents.length ? this.h[name] = liveEvents : delete this.h[name];
+    return this;
+  }
+};
+
+function init(size, errorCallback) {
+  if (!size) {
+    size = 5;
+  }
+  try {
+    if (!window) {
+      errorCallback(new Error('Bus can only be attached to the window, which is not present'));
+    }
+    if (window && !window[EVENT_BUS_NAMESPACE]) {
+      window[EVENT_BUS_NAMESPACE] = new E(size);
+    }
+    return window[EVENT_BUS_NAMESPACE];
+  } catch (e) {
+    errorCallback(e);
+  }
 }
 
 function btoa(s) {
@@ -592,7 +592,7 @@ var _pMap = {
   hashesFromIdentifiers: function hashesFromIdentifiers(hashes) {
     var hashParams = [];
     hashes.forEach(function (h) {
-      return hashParams.push(asParamOrEmpty('scre', "".concat(h.md5, ",").concat(h.sha1, ",").concat(h.sha256)));
+      return hashParams.push(asStringParam('scre', "".concat(h.md5, ",").concat(h.sha1, ",").concat(h.sha256)));
     });
     return hashParams;
   },
@@ -603,10 +603,10 @@ var _pMap = {
     return asStringParam('e', he.join(','));
   },
   usPrivacyString: function usPrivacyString(usps) {
-    return asStringParam('us_privacy', usps && encodeURIComponent(usps));
+    return asStringParam('us_privacy', usps);
   },
   wrapperName: function wrapperName(wrapper) {
-    return asStringParam('wpn', wrapper && encodeURIComponent(wrapper));
+    return asStringParam('wpn', wrapper);
   },
   gdprApplies: function gdprApplies(_gdprApplies) {
     return asParamOrEmpty('gdpr', _gdprApplies, function (s) {
@@ -614,7 +614,7 @@ var _pMap = {
     });
   },
   gdprConsent: function gdprConsent(gdprConsentString) {
-    return asStringParam('gdpr_consent', gdprConsentString && encodeURIComponent(gdprConsentString));
+    return asStringParam('gdpr_consent', gdprConsentString);
   },
   referrer: function referrer(_referrer) {
     return asStringParam('refr', _referrer);

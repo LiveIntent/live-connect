@@ -2,6 +2,7 @@ import { assert, expect } from 'chai'
 import { StateWrapper } from '../../../src/pixel/state'
 import { hashEmail } from '../../../src/utils/hash'
 
+const COMMA = encodeURIComponent(',')
 describe('EventComposition', () => {
   it('should construct an event out of anything', function () {
     const pixelData = { appId: '9898' }
@@ -229,10 +230,10 @@ describe('EventComposition', () => {
 
     const event = new StateWrapper(pixelData)
 
-    expect(event.asQueryString()).to.eql(`?scre=${hashes1.md5},${hashes1.sha1},${hashes1.sha256}&scre=${hashes2.md5},${hashes2.sha1},${hashes2.sha256}`)
+    expect(event.asQueryString()).to.eql(`?scre=${hashes1.md5}${COMMA}${hashes1.sha1}${COMMA}${hashes1.sha256}&scre=${hashes2.md5}${COMMA}${hashes2.sha1}${COMMA}${hashes2.sha256}`)
     assert.includeDeepMembers(event.asTuples(), [
-      ['scre', `${hashes1.md5},${hashes1.sha1},${hashes1.sha256}`],
-      ['scre', `${hashes2.md5},${hashes2.sha1},${hashes2.sha256}`]
+      ['scre', `${hashes1.md5}${COMMA}${hashes1.sha1}${COMMA}${hashes1.sha256}`],
+      ['scre', `${hashes2.md5}${COMMA}${hashes2.sha1}${COMMA}${hashes2.sha256}`]
     ])
   })
 
@@ -241,8 +242,8 @@ describe('EventComposition', () => {
       decisionIds: ['1', '2']
     }
     const event = new StateWrapper(pixelData)
-    expect(event.asQueryString()).to.eql('?li_did=1%2C2')
-    assert.includeDeepMembers(event.asTuples(), [['li_did', '1%2C2']])
+    expect(event.asQueryString()).to.eql(`?li_did=1${COMMA}2`)
+    assert.includeDeepMembers(event.asTuples(), [['li_did', `1${COMMA}2`]])
   })
 
   it('should not send decisionIds if array is empty', function () {

@@ -10,7 +10,6 @@ function _responseReceived (storageHandler, successCallback) {
       try {
         responseObj = JSON.parse(response)
       } catch (ex) {
-        console.error('Error parsing response', ex)
         fromError('IdentityResolverParser', ex)
       }
     }
@@ -56,7 +55,6 @@ export function IdentityResolver (config, storageHandler, calls) {
         try {
           unsafeResolve(successCallback, errorCallback, additionalParams)
         } catch (e) {
-          console.error('IdentityResolve', e)
           errorCallback()
           fromError('IdentityResolve', e)
         }

@@ -9,27 +9,6 @@
  * @property {(LiveConnectConfiguration)} config
  */
 
-/**
- * @typedef {Object} IdexConfig
- * @property {(number|undefined)} expirationHours
- * @property {(number|undefined)} ajaxTimeout
- * @property {(string|undefined)} source
- * @property {(number|undefined)} publisherId
- * @property {(string|undefined)} url
- */
-
-/**
- * @typedef {Object} LiveConnectConfiguration
- * @property {(string|undefined)} appId
- * @property {(StorageStrategy|null)} storageStrategy
- * @property {(string|undefined)} collectorUrl
- * @property {(string|undefined)} usPrivacyString
- * @property {(number|undefined)} expirationDays
- * @property {{string[]|undefined}} identifiersToResolve
- * @property {string|undefined} wrapperName
- * @property {{IdexConfig|undefined}} identityResolutionConfig
- */
-
 import { isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver-nocache'
 import { enrich as peopleVerified } from './enrichers/people-verified'
@@ -52,7 +31,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const finalData = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
     const resolver = IdentityResolver(finalData, storageHandler, callHandler)
     return {
-      push: window.liQ.push,
+      push: (arg) => window.liQ.push(arg),
       fire: () => window.liQ.push({}),
       peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
       ready: true,
@@ -75,7 +54,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
 export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
-    window.liQ = window.liQ || []
+    window && (window.liQ = window.liQ || [])
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler)
   } catch (x) {
