@@ -3,27 +3,35 @@ import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import strip from '@rollup/plugin-strip'
 import babel from 'rollup-plugin-babel'
+import cleanup from 'rollup-plugin-cleanup'
 
 const OUTPUT_DIR = './'
 const plugins = [
   resolve(),
   commonjs(),
   babel(),
+  cleanup(),
   strip()
 ]
-export default [
-  {
-    input: 'src/live-connect.js',
+
+const filenames = ['initializer.js', 'standard-live-connect.js', 'minimal-live-connect.js']
+const outputs = filenames.reduce((accumulator, sourceFile) => {
+  const action = [{
+    input: `src/${sourceFile}`,
     output: {
-      file: `${OUTPUT_DIR}esm/live-connect.js`,
+      file: `${OUTPUT_DIR}esm/${sourceFile}`,
       format: 'esm'
     },
     plugins: plugins
   }, {
-    input: 'src/live-connect.js',
+    input: `src/${sourceFile}`,
     output: {
-      file: `${OUTPUT_DIR}cjs/live-connect.js`,
+      file: `${OUTPUT_DIR}cjs/${sourceFile}`,
       format: 'cjs'
     },
     plugins: plugins
   }]
+  return (accumulator || []).concat(action)
+}, [])
+
+export default outputs

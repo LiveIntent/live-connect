@@ -1,7 +1,7 @@
 import * as error from '../utils/emitter'
+import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 
 const REPLACEMENT_THRESHOLD_MILLIS = 181 * 864e5
-const PEOPLE_VERIFIED_LS_ENTRY = '_li_duid'
 
 function _setPeopleVerifiedStore (id, storageHandler) {
   if (id) {

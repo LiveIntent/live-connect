@@ -1,31 +1,17 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
-import { expiresInHours, asParamOrEmpty, asStringParam, mapAsParams } from '../utils/types'
-import { DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
+import { asParamOrEmpty, asStringParam, mapAsParams } from '../utils/types'
+import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 
-const IDEX_STORAGE_KEY = '__li_idex_cache'
-
-function _responseReceived (storageHandler, domain, expirationHours, successCallback) {
+function _responseReceived (storageHandler, successCallback) {
   return response => {
     let responseObj = {}
     if (response) {
       try {
         responseObj = JSON.parse(response)
       } catch (ex) {
-        console.error('Error parsing response', ex)
         fromError('IdentityResolverParser', ex)
       }
-    }
-    try {
-      storageHandler.setCookie(
-        IDEX_STORAGE_KEY,
-        JSON.stringify(responseObj),
-        expiresInHours(expirationHours),
-        'Lax',
-        domain)
-    } catch (ex) {
-      console.error('Error storing response to cookies', ex)
-      fromError('IdentityResolverStorage', ex)
     }
     successCallback(responseObj)
   }
@@ -43,7 +29,6 @@ export function IdentityResolver (config, storageHandler, calls) {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
-    const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
     const source = idexConfig.source || 'unknown'
     const publisherId = idexConfig.publisherId || 'any'
     const url = idexConfig.url || DEFAULT_IDEX_URL
@@ -63,19 +48,13 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      const storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY)
-      if (storedCookie) {
-        successCallback(JSON.parse(storedCookie))
-      } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout)
-      }
+      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, successCallback), errorCallback, timeout)
     }
     return {
       resolve: (successCallback, errorCallback, additionalParams) => {
         try {
           unsafeResolve(successCallback, errorCallback, additionalParams)
         } catch (e) {
-          console.error('IdentityResolve', e)
           errorCallback()
           fromError('IdentityResolve', e)
         }

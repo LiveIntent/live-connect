@@ -79,7 +79,11 @@ export function isFunction (fun) {
  * @return {string}
  */
 export function expiresInDays (expires) {
-  return new Date((new Date().getTime() + (expires * 864e5))).toUTCString()
+  return expiresIn(expires, 864e5).toUTCString()
+}
+
+export function expiresIn (expires, number) {
+  return new Date((new Date().getTime() + (expires * number)))
 }
 
 /**
@@ -88,5 +92,39 @@ export function expiresInDays (expires) {
  * @return {string}
  */
 export function expiresInHours (expires) {
-  return new Date((new Date().getTime() + (expires * 36e5))).toUTCString()
+  return expiresIn(expires, 36e5).toUTCString()
+}
+
+export function asParamOrEmpty (param, value, transform) {
+  return isNonEmpty(value) ? ([param, isFunction(transform) ? transform(value) : value]) : []
+}
+
+export function asStringParam (param, value) {
+  return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
+}
+
+export function mapAsParams (paramsMap) {
+  if (paramsMap && isObject(paramsMap)) {
+    const array = []
+    Object.keys(paramsMap).forEach((key) => {
+      const value = paramsMap[key]
+      value && !isObject(value) && value.length && array.push([encodeURIComponent(key), encodeURIComponent(value)])
+    })
+    return array
+  } else {
+    return []
+  }
+}
+export function merge (obj1, obj2) {
+  const res = {}
+  const clean = (obj) => isObject(obj) ? obj : {}
+  const first = clean(obj1)
+  const second = clean(obj2)
+  Object.keys(first).forEach(function (key) {
+    res[key] = first[key]
+  })
+  Object.keys(second).forEach(function (key) {
+    res[key] = second[key]
+  })
+  return res
 }

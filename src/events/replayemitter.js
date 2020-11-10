@@ -7,21 +7,21 @@
  */
 
 export default function E (replaySize) {
-  this.replaySize = parseInt(replaySize) || 5
-  this.handlers = {}
-  this.queue = {}
+  this.size = parseInt(replaySize) || 5
+  this.h = {}
+  this.q = {}
 }
 
 E.prototype = {
   on: function (name, callback, ctx) {
-    (this.handlers[name] || (this.handlers[name] = [])).push({
+    (this.h[name] || (this.h[name] = [])).push({
       fn: callback,
       ctx: ctx
     })
 
-    const eventQueueLen = (this.queue[name] || []).length
+    const eventQueueLen = (this.q[name] || []).length
     for (let i = 0; i < eventQueueLen; i++) {
-      callback.apply(ctx, this.queue[name][i])
+      callback.apply(ctx, this.q[name][i])
     }
 
     return this
@@ -30,7 +30,7 @@ E.prototype = {
   once: function (name, callback, ctx) {
     const self = this
 
-    const eventQueue = this.queue[name] || []
+    const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
       callback.apply(ctx, eventQueue[0])
 
@@ -48,7 +48,7 @@ E.prototype = {
 
   emit: function (name) {
     const data = [].slice.call(arguments, 1)
-    const evtArr = (this.handlers[name] || []).slice()
+    const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
 
@@ -56,8 +56,8 @@ E.prototype = {
       evtArr[i].fn.apply(evtArr[i].ctx, data)
     }
 
-    const eventQueue = this.queue[name] || (this.queue[name] = [])
-    if (eventQueue.length >= this.replaySize) {
+    const eventQueue = this.q[name] || (this.q[name] = [])
+    if (eventQueue.length >= this.size) {
       eventQueue.shift()
     }
     eventQueue.push(data)
@@ -66,7 +66,7 @@ E.prototype = {
   },
 
   off: function (name, callback) {
-    const handlers = this.handlers[name]
+    const handlers = this.h[name]
     const liveEvents = []
 
     if (handlers && callback) {
@@ -78,8 +78,8 @@ E.prototype = {
     }
 
     (liveEvents.length)
-      ? this.handlers[name] = liveEvents
-      : delete this.handlers[name]
+      ? this.h[name] = liveEvents
+      : delete this.h[name]
 
     return this
   }

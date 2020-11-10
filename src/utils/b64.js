@@ -1,4 +1,4 @@
-import { btoa as btoaFromLib } from 'abab'
+import { btoa as btoaFromLib } from './btoa'
 import { isFunction } from './types'
 
 /**

@@ -3,12 +3,7 @@ import { isArray } from './types'
 export const toParams = (tuples) => {
   let acc = ''
   tuples.forEach((tuple) => {
-    let operator = ''
-    if (acc.length === 0) {
-      operator = '?'
-    } else {
-      operator = '&'
-    }
+    const operator = acc.length === 0 ? '?' : '&'
     if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
       acc = `${acc}${operator}${tuple[0]}=${tuple[1]}`
     }
@@ -50,11 +45,7 @@ export function urlParams (url) {
       query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true']).map(_decode)
       if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || []
       if (!obj[query[0]]) return (obj[query[0]] = _convert(query[1]))
-      if (isArray(obj[query[0]])) {
-        obj[query[0]].push(_convert(query[1]))
-      } else {
-        obj[query[0]] = [obj[query[0]], _convert(query[1])]
-      }
+      isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : (obj[query[0]] = [obj[query[0]], _convert(query[1])])
     }
   })
   return obj

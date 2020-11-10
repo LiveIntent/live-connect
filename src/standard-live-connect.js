@@ -1,5 +1,5 @@
 /**
- * @typedef {Object} LiveConnect
+ * @typedef {Object} StandardLiveConnect
  * @property {(function)} push
  * @property {(function)} fire
  * @property {(function)} peopleVerifiedId
@@ -31,19 +31,19 @@
  */
 
 import { PixelSender } from './pixel/sender'
-import { StateWrapper } from './pixel/state'
-import * as identifiers from './manager/identifiers'
-import * as decisions from './manager/decisions'
-import * as peopleVerified from './manager/people-verified'
 import * as eventBus from './events/bus'
-import * as pageEnricher from './enrichers/page'
 import * as emitter from './utils/emitter'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
-import * as cookies from './enrichers/identifiers'
-import * as legacyDuid from './enrichers/legacy-duid'
-import { isArray, isObject } from './utils/types'
-import * as idex from './idex/identity-resolver'
+import { StateWrapper } from './pixel/state'
+import { resolve as idResolve } from './manager/identifiers'
+import { resolve as decisionsResolve } from './manager/decisions'
+import { resolve as peopleVerifiedResolve } from './manager/people-verified'
+import { enrich as pageEnrich } from './enrichers/page'
+import { enrich as identifiersEnrich } from './enrichers/identifiers'
+import { enrich as lDuidEnrich } from './enrichers/legacy-duid'
+import { isArray, isObject, merge } from './utils/types'
+import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
@@ -56,7 +56,7 @@ function _pushSingleEvent (event, pixelClient, enrichedState) {
   } else {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
-    const withHemStore = { eventSource: event, ...hemStore }
+    const withHemStore = merge({ eventSource: event }, hemStore)
     pixelClient.sendAjax(enrichedState.combineWith(withHemStore))
   }
 }
@@ -100,7 +100,7 @@ function _processArgs (args, pixelClient, enrichedState) {
 /**
  *
  * @param {LiveConnectConfiguration} liveConnectConfig
- * @return {LiveConnect|null}
+ * @return {StandardLiveConnect|null}
  * @private
  */
 function _getInitializedLiveConnect (liveConnectConfig) {
@@ -124,7 +124,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
- * @returns {LiveConnect}
+ * @returns {StandardLiveConnect}
  * @private
  */
 function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
@@ -136,19 +136,19 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
-    const enrichers = [pageEnricher.enrich, cookies.enrich, legacyDuid.enrich]
-    const managers = [identifiers.resolve, peopleVerified.resolve, decisions.resolve]
+    const enrichers = [pageEnrich, identifiersEnrich, lDuidEnrich]
+    const managers = [idResolve, peopleVerifiedResolve, decisionsResolve]
 
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
     console.log('LiveConnect.enrichedState', enrichedState)
     console.log('LiveConnect.postManagedState', postManagedState)
-    const syncContainerData = { ...liveConnectConfig, ...{ peopleVerifiedId: postManagedState.data.peopleVerifiedId } }
+    const syncContainerData = merge(liveConnectConfig, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload)
-    const resolver = idex.IdentityResolver(postManagedState.data, storageHandler, callHandler)
+    const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {
       push: _push,
@@ -169,10 +169,10 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
- * @returns {LiveConnect}
+ * @returns {StandardLiveConnect}
  * @constructor
  */
-export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
