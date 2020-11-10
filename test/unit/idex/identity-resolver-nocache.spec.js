@@ -6,7 +6,7 @@ import * as storage from '../../shared/utils/storage'
 import * as calls from '../../shared/utils/calls'
 import { init } from '../../../src/events/bus'
 
-describe('IdentityResolver', () => {
+describe('IdentityResolver without cache', () => {
   let requestToComplete = null
   let errors = []
   let callCount = 0
