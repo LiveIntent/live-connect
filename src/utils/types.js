@@ -116,15 +116,5 @@ export function mapAsParams (paramsMap) {
   }
 }
 export function merge (obj1, obj2) {
-  const res = {}
-  const clean = (obj) => isObject(obj) ? obj : {}
-  const first = clean(obj1)
-  const second = clean(obj2)
-  Object.keys(first).forEach(function (key) {
-    res[key] = first[key]
-  })
-  Object.keys(second).forEach(function (key) {
-    res[key] = second[key]
-  })
-  return res
+  return { ...obj1, ...obj2 }
 }

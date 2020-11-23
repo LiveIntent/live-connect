@@ -14,6 +14,55 @@ function _typeof(obj) {
   return _typeof(obj);
 }
 
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+    if (enumerableOnly) symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    });
+    keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+
+    if (i % 2) {
+      ownKeys(Object(source), true).forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    } else if (Object.getOwnPropertyDescriptors) {
+      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+    } else {
+      ownKeys(Object(source)).forEach(function (key) {
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+      });
+    }
+  }
+
+  return target;
+}
+
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 var uuidRegex = new RegExp("^".concat(UUID, "$"), 'i');
 function safeToString(value) {
@@ -74,19 +123,7 @@ function mapAsParams(paramsMap) {
   }
 }
 function merge(obj1, obj2) {
-  var res = {};
-  var clean = function clean(obj) {
-    return isObject(obj) ? obj : {};
-  };
-  var first = clean(obj1);
-  var second = clean(obj2);
-  Object.keys(first).forEach(function (key) {
-    res[key] = first[key];
-  });
-  Object.keys(second).forEach(function (key) {
-    res[key] = second[key];
-  });
-  return res;
+  return _objectSpread2(_objectSpread2({}, obj1), obj2);
 }
 
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
