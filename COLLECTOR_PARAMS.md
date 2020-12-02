@@ -18,7 +18,7 @@
 - contains a b64 encoded string of the JSON received on handled exceptions
 ### `scre`
 - if one of the identifiersToResolve contains plain emails, we don't want to send that over the wire, so those are hashed and passed under the `scre` param
-### `li_duid`
+### `li_did`
 - contains a comma separated list of decision ids extracted from the url and decision storage
 ### `e`
 - similarly to `scre`, some information that is pushed to LiveConnect might contain clear text emails. Those are then hashed and sent under this field
