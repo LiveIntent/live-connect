@@ -6,8 +6,6 @@
 - contains the b64 url encoded string of the JSON that was sent via `liveConnect.push` function
 ### `duid`
 - contains the LiveConnect managed first party identifier, in the `${apexDomainHash}--${ULID}`, or `${iframeDomainHash}-${websiteUrlDomainHash}--${ULID}` format
-### `lduid`
-- contains the legacy LiveConnect first party identifier
 ### `tna`
 - contains the `config.trackerName`
 ### `pu`

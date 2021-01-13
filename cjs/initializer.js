@@ -572,9 +572,6 @@ var _pMap = {
   liveConnectId: function liveConnectId(fpc) {
     return asStringParam('duid', fpc);
   },
-  legacyId: function legacyId(legacyFpc) {
-    return asStringParam('lduid', legacyFpc && legacyFpc.duid);
-  },
   trackerName: function trackerName(tn) {
     return asStringParam('tna', tn || 'unknown');
   },
@@ -931,9 +928,13 @@ function resolve(state, storageHandler) {
       domain: cookieDomain
     };
     var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, generateCookie(cookieDomain), storageOptions, state.storageStrategy);
+    if (liveConnectIdentifier) {
+      storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier);
+    }
     return {
       domain: cookieDomain,
-      liveConnectId: liveConnectIdentifier
+      liveConnectId: liveConnectIdentifier,
+      peopleVerifiedId: liveConnectIdentifier
     };
   } catch (e) {
     error('IdentifiersResolve', 'Error while managing identifiers', e);
@@ -975,32 +976,6 @@ function resolve$1(state, storageHandler) {
     error('DecisionsResolve', 'Error while managing decision ids', e);
   }
   return ret;
-}
-
-var REPLACEMENT_THRESHOLD_MILLIS = 181 * 864e5;
-function _setPeopleVerifiedStore(id, storageHandler) {
-  if (id) {
-    storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, id);
-  }
-}
-function resolve$2(state, storageHandler) {
-  try {
-    var timeBefore = (new Date().getTime() - REPLACEMENT_THRESHOLD_MILLIS) / 1000;
-    var legacyIdentifier = state.legacyId || {};
-    var lastVisit = legacyIdentifier.currVisitTs ? parseInt(legacyIdentifier.currVisitTs) : 0;
-    if (legacyIdentifier.currVisitTs && timeBefore > lastVisit && state.liveConnectId) {
-      _setPeopleVerifiedStore(state.liveConnectId, storageHandler);
-    }
-    if (!storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)) {
-      _setPeopleVerifiedStore(legacyIdentifier.duid || state.liveConnectId, storageHandler);
-    }
-    return {
-      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
-    };
-  } catch (e) {
-    error('PeopleVerifiedResolve', 'Error while managing people verified', e);
-    return {};
-  }
 }
 
 function enrich$1(state, storageHandler) {
@@ -1085,58 +1060,6 @@ function _deduplicateHashes(hashes) {
     }
   }
   return result;
-}
-
-var APP_ID = '[a-z]-[a-z0-9]{4}';
-var NUMBERS = '\\+?\\d+';
-var LEGACY_COOKIE_FORMAT = "(".concat(APP_ID, "--").concat(UUID, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(NUMBERS, ")\\.(").concat(UUID, ")");
-var LEGACY_COOKIE_REGEX = new RegExp(LEGACY_COOKIE_FORMAT, 'i');
-var LEGACY_IDENTIFIER_PREFIX = '_litra_id.';
-function _fixupDomain(domain) {
-  var dl = domain.length;
-  if (domain.charAt(--dl) === '.') {
-    domain = domain.slice(0, dl);
-  }
-  if (domain.slice(0, 2) === '*.') {
-    domain = domain.slice(1);
-  }
-  return domain;
-}
-function getLegacyIdentifierKey() {
-  var domain = loadedDomain();
-  var domainKey = domainHash(_fixupDomain(domain) + '/', 4);
-  return "".concat(LEGACY_IDENTIFIER_PREFIX).concat(domainKey);
-}
-function getLegacyId(entry) {
-  if (entry) {
-    var matches = entry.match(LEGACY_COOKIE_REGEX);
-    if (matches && matches.length === 7) {
-      return {
-        duid: matches[1],
-        creationTs: matches[2],
-        sessionCount: matches[3],
-        currVisitTs: matches[4],
-        lastSessionVisitTs: matches[5],
-        sessionId: matches[6]
-      };
-    }
-  }
-}
-
-function enrich$2(state, storageHandler) {
-  var duidLsKey = getLegacyIdentifierKey();
-  try {
-    if (state.appId && storageHandler.localStorageIsEnabled()) {
-      var previousIdentifier = storageHandler.getDataFromLocalStorage(duidLsKey);
-      var legacyId = getLegacyId(previousIdentifier);
-      return {
-        legacyId: legacyId
-      };
-    }
-  } catch (e) {
-    error('LegacyDuidEnrich', 'Error while getting legacy duid', e);
-  }
-  return {};
 }
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
@@ -1341,8 +1264,8 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
-    var enrichers = [enrich, enrich$1, enrich$2];
-    var managers = [resolve, resolve$2, resolve$1];
+    var enrichers = [enrich, enrich$1];
+    var managers = [resolve, resolve$1];
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig));
     var postManagedState = managers.reduce(reducer, enrichedState);
     var syncContainerData = merge(liveConnectConfig, {
@@ -1460,10 +1383,10 @@ function IdentityResolver$1(config, storageHandler, calls) {
   }
 }
 
-function enrich$3(state, storageHandler) {
+function enrich$2(state, storageHandler) {
   try {
     return {
-      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
+      peopleVerifiedId: state.peopleVerifiedId || storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
     };
   } catch (e) {
     error('PeopleVerifiedEnrich', e.message, e);
@@ -1471,7 +1394,7 @@ function enrich$3(state, storageHandler) {
   }
 }
 
-function enrich$4(state, storageHandler) {
+function enrich$3(state, storageHandler) {
   try {
     return _parseIdentifiersToResolve$1(state, storageHandler);
   } catch (e) {
@@ -1530,8 +1453,8 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
   try {
     var callHandler = CallHandler(externalCallHandler);
     var storageHandler = StorageHandler$1(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = merge(liveConnectConfig, enrich$3(liveConnectConfig, storageHandler));
-    var finalData = merge(peopleVerifiedData, enrich$4(peopleVerifiedData, storageHandler));
+    var peopleVerifiedData = merge(liveConnectConfig, enrich$2(liveConnectConfig, storageHandler));
+    var finalData = merge(peopleVerifiedData, enrich$3(peopleVerifiedData, storageHandler));
     var resolver = IdentityResolver$1(finalData, storageHandler, callHandler);
     return {
       push: function push(arg) {

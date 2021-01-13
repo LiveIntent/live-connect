@@ -1,14 +1,4 @@
 /**
- * @typedef {Object} LegacyId
- * @property {string} duid
- * @property {string} creationTs
- * @property {string} sessionCount
- * @property {string} currVisitTs
- * @property {string} lastSessionVisitTs
- * @property {string} sessionId
- */
-
-/**
  * @typedef {Object} State
  * @property {(string|null)} [appId]
  * @property {(object|undefined)} [eventSource]
@@ -24,7 +14,6 @@
  * @property {string[]} [decisionIds]
  * @property {string|undefined} [peopleVerifiedId]
  * @property {(string|undefined)} [storageStrategy]
- * @property {LegacyId} [legacyId]
  * @property {ErrorDetails} [errorDetails]
  * @property {RetrievedIdentifier[]} [retrievedIdentifiers]
  * @property {HashedEmail[]} [hashedEmail]
@@ -70,9 +59,6 @@ const _pMap = {
   },
   liveConnectId: fpc => {
     return asStringParam('duid', fpc)
-  },
-  legacyId: legacyFpc => {
-    return asStringParam('lduid', legacyFpc && legacyFpc.duid)
   },
   trackerName: tn => {
     return asStringParam('tna', tn || 'unknown')

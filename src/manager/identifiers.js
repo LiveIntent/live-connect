@@ -4,6 +4,7 @@ import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
 import { expiresIn, expiresInDays, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
+import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
@@ -104,9 +105,14 @@ export function resolve (state, storageHandler) {
       generateCookie(cookieDomain),
       storageOptions,
       state.storageStrategy)
+
+    if (liveConnectIdentifier) {
+      storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)
+    }
     return {
       domain: cookieDomain,
-      liveConnectId: liveConnectIdentifier
+      liveConnectId: liveConnectIdentifier,
+      peopleVerifiedId: liveConnectIdentifier
     }
   } catch (e) {
     emitter.error('IdentifiersResolve', 'Error while managing identifiers', e)

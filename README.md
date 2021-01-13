@@ -133,9 +133,6 @@ The `enrichers` folder contains code responsible for extracting specific informa
 ### Identifiers enrichment
 `enrichers/identifiers.js` is responsible for reading the `identifiersToResolve` configuration parameter to read any additional identifiers that customers want to share with us.
 
-### Legacy duid enricher
-`enrichers/legacy-duid.js` or, legacy domainUserId enricher, is responsible for reading the potential value of a local storage entry which was historically set by the old LiveConnect
-
 ## Messaging between components via EventBus (`__li__evt_bus`) 
 LiveConnect exposes an object on the window level (`window.__li_evt_bus`) which is responsible for communicating various information based on different fields of interests.
 For example, there are three topics which anyone can hook to, and receive information about:
