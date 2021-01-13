@@ -178,7 +178,7 @@ function IdentityResolver(config, storageHandler, calls) {
 function enrich(state, storageHandler) {
   try {
     return {
-      peopleVerifiedId: storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
+      peopleVerifiedId: state.peopleVerifiedId || storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
     };
   } catch (e) {
     error('PeopleVerifiedEnrich', e.message, e);

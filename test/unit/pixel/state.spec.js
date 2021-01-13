@@ -52,23 +52,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
-  it('should send the legacyId', function () {
-    const legacyDuid = 'a-0z68--e4f71227-70d0-4e54-b1c3-ACf80616bbb0'
-    const pixelData = {
-      appId: '9898',
-      eventSource: { eventName: 'viewContent' },
-      legacyId: {
-        duid: legacyDuid
-      }
-    }
-    const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    const event = new StateWrapper(pixelData)
-    expect(event.asQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&lduid=${legacyDuid}`)
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource], ['lduid', legacyDuid]])
-  })
-
   it('should send the gdprApplies & gdprConsent', function () {
-    const legacyDuid = 'a-0z68--e4f71227-70d0-4e54-b1c3-ACf80616bbb0'
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,

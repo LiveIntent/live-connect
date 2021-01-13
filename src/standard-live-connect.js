@@ -38,10 +38,8 @@ import * as C from './utils/consts'
 import { StateWrapper } from './pixel/state'
 import { resolve as idResolve } from './manager/identifiers'
 import { resolve as decisionsResolve } from './manager/decisions'
-import { resolve as peopleVerifiedResolve } from './manager/people-verified'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
-import { enrich as lDuidEnrich } from './enrichers/legacy-duid'
 import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
@@ -136,8 +134,8 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
-    const enrichers = [pageEnrich, identifiersEnrich, lDuidEnrich]
-    const managers = [idResolve, peopleVerifiedResolve, decisionsResolve]
+    const enrichers = [pageEnrich, identifiersEnrich]
+    const managers = [idResolve, decisionsResolve]
 
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig))
     const postManagedState = managers.reduce(reducer, enrichedState)

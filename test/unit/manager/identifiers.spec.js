@@ -17,12 +17,14 @@ describe('IdentifiersManager', () => {
     expect(storage.getCookie('_lc2_fpi')).to.eql(null)
     const resolutionResult = identifiers.resolve({}, storage)
     expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should create a first party cookie if it doesn\'t exist, and storage strategy is cookie', function () {
     expect(storage.getCookie('_lc2_fpi')).to.eql(null)
     const resolutionResult = identifiers.resolve({ storageStrategy: 'cookie' }, storage)
     expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
@@ -30,6 +32,7 @@ describe('IdentifiersManager', () => {
     const resolutionResult = identifiers.resolve({ storageStrategy: 'ls' }, storage)
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null
+    expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
@@ -48,14 +51,6 @@ describe('IdentifiersManager', () => {
     const resolutionResult = identifiers.resolve({}, storage)
     expect(storage.getCookie('_lc2_fpi')).to.eql(id)
     expect(resolutionResult.liveConnectId).to.eql(id)
-  })
-
-  it('should ignore a malformed legacy id', function () {
-    expect(storage.getCookie('_lc2_fpi')).to.eql(null)
-    storage.setDataInLocalStorage('_litra_id.2a0b', 'some-mumbo-jumbo')
-    const resolutionResult = identifiers.resolve({}, storage)
-    expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(resolutionResult.legacyId).to.eql(undefined)
   })
 
   it('should emit an error if identifiers.resolve fails for some reason, return an empty object', function () {
