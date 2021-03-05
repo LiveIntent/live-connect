@@ -9,7 +9,7 @@
 [![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)
 
 # Main concepts
-LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sendind that information to a defined endpoint which is responsible for gathering and processing that data. 
+LiveConnect module is used to create, and or gather first party identifiers of your choosing, and send that information to a defined endpoint which is responsible for gathering and processing that data. 
 What LiveConnect provides is a simple interface to collect the identifiers from a page, and collect user interactions along with those identifiers. 
 To see what kind of data is being sent, check [what is being sent](#what-is-being-sent).
 
