@@ -1,9 +1,4 @@
-## [Jira ticket link](link here)
-
 Short description if any.
-
-Related PRs:
-- If any
 
 Author Todo List:
 
