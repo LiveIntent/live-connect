@@ -30,7 +30,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <script src="http://bln.test.liveintent.com:3001/tracker.js"></script>
+            <script src="http://bln.test.liveintent.com:3001/tracker.js" referrerpolicy="no-referrer-when-downgrade"></script>
             <div id="after">After</div>
             <div id="idex">None</div>
             </body>
