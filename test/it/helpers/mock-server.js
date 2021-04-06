@@ -46,7 +46,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <script src="http://bln.test.liveintent.com:3001/tracker.js"></script>
+            <script src="http://bln.test.liveintent.com:3001/tracker.js" referrerpolicy="no-referrer-when-downgrade"></script>
             <script>
                liQ.push({just: 'dance'})
             </script>
@@ -71,7 +71,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggering-page"></iframe>
+            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggering-page" referrerpolicy="no-referrer-when-downgrade"></iframe>
             <div id="after">After</div>
             </body>
             </html>`
@@ -86,7 +86,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <iframe id="iframe-id" name="iframe-name" src="http://framed.test.liveintent.com:3001/framed"></iframe>
+            <iframe id="iframe-id" name="iframe-name" src="http://framed.test.liveintent.com:3001/framed" referrerpolicy="no-referrer-when-downgrade"></iframe>
             <div id="after">After</div>
             </body>
             </html>`
@@ -101,7 +101,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="referrer-before">Before</div>
-            <a href="${req.query.uri}" id="page" target="_self">Page</a>
+            <a href="${req.query.uri}" id="page" target="_self" referrerpolicy="no-referrer-when-downgrade">Page</a>
             <div id="referrer-after">After</div>
             </body>
             </html>`
