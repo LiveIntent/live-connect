@@ -30,7 +30,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <script src="http://bln.test.liveintent.com:3001/tracker.js" referrerpolicy="no-referrer-when-downgrade"></script>
+            <script src="http://bln.test.liveintent.com:3001/tracker.js"></script>
             <div id="after">After</div>
             <div id="idex">None</div>
             </body>
@@ -46,7 +46,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <script src="http://bln.test.liveintent.com:3001/tracker.js" referrerpolicy="no-referrer-when-downgrade"></script>
+            <script src="http://bln.test.liveintent.com:3001/tracker.js"></script>
             <script>
                liQ.push({just: 'dance'})
             </script>
@@ -71,7 +71,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggering-page" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe id="iframe-id" name="iframe-name" src="http://bln.test.liveintent.com:3001/self-triggering-page"></iframe>
             <div id="after">After</div>
             </body>
             </html>`
@@ -86,7 +86,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="before">Before</div>
-            <iframe id="iframe-id" name="iframe-name" src="http://framed.test.liveintent.com:3001/framed" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe id="iframe-id" name="iframe-name" src="http://framed.test.liveintent.com:3001/framed"></iframe>
             <div id="after">After</div>
             </body>
             </html>`
