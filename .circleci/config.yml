@@ -191,3 +191,18 @@ workflows:
           increment: "major"
           requires:
             - release_major?
+  daily:
+    triggers:
+      - schedule:
+          cron: "0 11 * * *"
+          filters:
+            branches:
+              only:
+                - CM-18-esoteric-debugging
+    jobs:
+      - simple_test
+
+      - browserstack:
+          requires:
+            - simple_test
+          context: org-global

@@ -140,6 +140,7 @@ export function isIE9Or10 () {
     (browser.capabilities.version === '10' || browser.capabilities.version === '9')
 }
 
-export function isFirefox () {
-  return browser.capabilities.browserName === 'firefox'
+export function isFirefoxAfter86 () {
+  return browser.capabilities.browserName === 'firefox' &&
+    parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86
 }
