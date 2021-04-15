@@ -194,11 +194,11 @@ workflows:
   daily:
     triggers:
       - schedule:
-          cron: "0 11 * * *"
+          cron: "0 7 * * *"
           filters:
             branches:
               only:
-                - CM-18-esoteric-debugging
+                - master
     jobs:
       - simple_test
 

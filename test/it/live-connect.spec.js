@@ -4,6 +4,7 @@ import {
   deleteAllCookies,
   fetchResolvedIdentity,
   isEdgeBefore79,
+  isFirefox,
   isFirefoxAfter86,
   isIE,
   isIE9Or10,
@@ -223,8 +224,8 @@ describe('LiveConnect', function () {
 
     expect(firstTrackingRequest.query.refr).to.be.undefined
     if (isFirefoxAfter86()) {
-      expect('http://double-framed.test.liveintent.com:3001/').to.eq(firstTrackingRequest.query.pu)
-    } else if (isIE() || isEdgeBefore79()) {
+      expect('http://framed.test.liveintent.com:3001/').to.eq(firstTrackingRequest.query.pu)
+    } else if (isIE() || isEdgeBefore79() || isFirefox()) {
       expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
     } else {
       expect('http://double-framed.test.liveintent.com:3001').to.eq(firstTrackingRequest.query.pu)
