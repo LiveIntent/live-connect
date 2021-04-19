@@ -101,7 +101,7 @@ export function MockServerFactory (config) {
             </head>
             <body>
             <div id="referrer-before">Before</div>
-            <a href="${req.query.uri}" id="page" target="_self">Page</a>
+            <a href="${req.query.uri}" id="page" target="_self" referrerpolicy="no-referrer-when-downgrade">Page</a>
             <div id="referrer-after">After</div>
             </body>
             </html>`

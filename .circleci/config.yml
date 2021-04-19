@@ -191,3 +191,18 @@ workflows:
           increment: "major"
           requires:
             - release_major?
+  daily:
+    triggers:
+      - schedule:
+          cron: "0 7 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - simple_test
+
+      - browserstack:
+          requires:
+            - simple_test
+          context: org-global
