@@ -132,7 +132,7 @@ exports.config = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: ['browserstack', 'selenium-standalone'],
+  services: ['browserstack'],
 
   user: process.env.BS_USER,
   key: process.env.BS_KEY,

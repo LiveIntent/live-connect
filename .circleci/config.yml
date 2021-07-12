@@ -30,13 +30,13 @@ references:
 
   install_node: &install_node
     run:
-      name: Install node v12.18.1
+      name: Install node v10.16.3
       command: |
         set +e
         export NVM_DIR="/opt/circleci/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         nvm install v10.16.3
-        nvm alias default v12.18.1
+        nvm alias default v10.16.3
 
         # Each step uses the same `$BASH_ENV`, so need to modify it
         echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
