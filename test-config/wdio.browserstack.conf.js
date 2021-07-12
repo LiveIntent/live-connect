@@ -34,6 +34,7 @@ const allCapabilities = [
 ]
 
 exports.config = {
+  sync: true,
   //
   // ====================
   // Runner Configuration
@@ -131,7 +132,8 @@ exports.config = {
   // Services take over a specific job you don't want to take care of. They enhance
   // your test setup with almost no effort. Unlike plugins, they don't add new
   // commands. Instead, they hook themselves up into the test process.
-  services: ['browserstack'],
+  services: ['browserstack', 'selenium-standalone'],
+
   user: process.env.BS_USER,
   key: process.env.BS_KEY,
   browserstackLocal: true,
@@ -147,7 +149,7 @@ exports.config = {
   framework: 'mocha',
   //
   // The number of times to retry the entire specfile when it fails as a whole
-  // specFileRetries: 1,
+  specFileRetries: 2,
   //
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
