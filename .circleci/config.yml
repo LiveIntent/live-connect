@@ -76,6 +76,12 @@ jobs:
           name: Run unit tests
           command: npm run test:unit
       - run:
+          name: Login ECR
+          command: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 425934172946.dkr.ecr.us-east-1.amazonaws.com
+      - run:
+          name: Pull custom docker image
+          command: docker pull 425934172946.dkr.ecr.us-east-1.amazonaws.com/live-connect-selenium:latest
+      - run:
           name: Run chrome tests in docker
           command: npm run test:it:docker:chrome
       - store_test_results:

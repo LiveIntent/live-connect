@@ -100,7 +100,8 @@ exports.config = {
   // commands. Instead, they hook themselves up into the test process.
   services: ['docker'],
   dockerOptions: {
-    image: 'selenium/standalone-chrome:3.141.59',
+    image: '425934172946.dkr.ecr.us-east-1.amazonaws.com/live-connect-selenium:latest',
+    healthCheck: 'http://bln.test.liveintent.com:4444',
     options: {
       p: ['4444:4444'],
       shmSize: '1g',
