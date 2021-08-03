@@ -49,7 +49,10 @@ exports.config = {
   // https://docs.saucelabs.com/reference/platforms-configurator
   //
   capabilities: [{
-    browserName: 'chrome'
+    browserName: 'chrome',
+    chromeOptions: {
+      args: ['--disable-gpu']
+    }
   }],
   //
   // ===================
@@ -100,7 +103,7 @@ exports.config = {
   // commands. Instead, they hook themselves up into the test process.
   services: ['docker'],
   dockerOptions: {
-    image: 'selenium/standalone-chrome:3.141.59-20210713',
+    image: 'selenium/standalone-chrome:3.141.59',
     healthCheck: 'http://bln.test.liveintent.com:4444',
     options: {
       p: ['4444:4444'],
