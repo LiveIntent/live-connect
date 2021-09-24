@@ -3,13 +3,11 @@ import * as serverUtil from './helpers/mock-server'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
-  isEdgeBefore79,
   isFirefox,
   isFirefoxAfter86,
   isIE,
-  isIE9Or10,
   isMobileSafari,
-  isSafari71,
+  isMobileSafariAfter14,
   probeLS,
   resolveIdentity,
   sendEvent,
@@ -160,7 +158,7 @@ describe('LiveConnect', function () {
     sendEvent({}, probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (!isSafari71() && !isMobileSafari()) {
+    if (!isMobileSafari()) {
       expect(firstTrackingRequest.query.refr).to.be.undefined
     }
     expect('http://bln.test.liveintent.com:3001/page').to.eq(firstTrackingRequest.query.pu)
@@ -174,7 +172,9 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (!isSafari71() && !isIE9Or10()) {
+    if (isMobileSafariAfter14()) {
+      expect(firstTrackingRequest.query.refr).to.match(/http:\/\/schmoogle.com:3001.*/)
+    } else {
       expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggering-page').to.eq(firstTrackingRequest.query.refr)
     }
     expect('http://bln.test.liveintent.com:3001/self-triggering-page').to.eq(firstTrackingRequest.query.pu)
@@ -189,7 +189,9 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (!isSafari71() && !isIE9Or10()) {
+    if (isMobileSafariAfter14()) {
+      expect(firstTrackingRequest.query.refr).to.match(/http:\/\/schmoogle.com:3001.*/)
+    } else {
       expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.refr)
     }
     expect('http://bln.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
@@ -205,7 +207,9 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (!isSafari71() && !isIE9Or10()) {
+    if (isMobileSafariAfter14()) {
+      expect(firstTrackingRequest.query.refr).to.match(/http:\/\/schmoogle.com:3001.*/)
+    } else {
       expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/double-framed').to.eq(firstTrackingRequest.query.refr)
     }
     expect('http://bln.test.liveintent.com:3001/double-framed').to.eq(firstTrackingRequest.query.pu)
@@ -225,7 +229,7 @@ describe('LiveConnect', function () {
     expect(firstTrackingRequest.query.refr).to.be.undefined
     if (isFirefoxAfter86()) {
       expect('http://framed.test.liveintent.com:3001/').to.eq(firstTrackingRequest.query.pu)
-    } else if (isIE() || isEdgeBefore79() || isFirefox()) {
+    } else if (isIE() || isFirefox()) {
       expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
     } else {
       expect('http://double-framed.test.liveintent.com:3001').to.eq(firstTrackingRequest.query.pu)
