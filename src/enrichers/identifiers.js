@@ -3,8 +3,7 @@
  * @property {string} name
  * @property {string} value
  */
-import { containsEmailField, isEmail, listEmailsInString } from '../utils/email'
-import { hashEmail } from '../utils/hash'
+import { findAndReplaceRawEmails } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
@@ -56,60 +55,17 @@ function _getIdentifiers (cookieNames, storageHandler) {
     const identifierName = cookieNames[i]
     const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
     if (identifierValue) {
-      const cookieAndHashes = _findAndReplaceRawEmails(safeToString(identifierValue))
+      const cookieAndHashes = findAndReplaceRawEmails(safeToString(identifierValue))
       identifiers.push({
         name: identifierName,
-        value: cookieAndHashes.identifierWithoutRawEmails
+        value: cookieAndHashes.stringWithoutRawEmails
       })
-      hashes = hashes.concat(cookieAndHashes.hashesFromIdentifier)
+      hashes = hashes.concat(cookieAndHashes.hashesFromOriginalString)
     }
   }
   return {
     retrievedIdentifiers: identifiers,
     hashesFromIdentifiers: _deduplicateHashes(hashes)
-  }
-}
-
-/**
- * @param {string} cookieValue
- * @returns {{hashesFromIdentifier: HashedEmail[], identifierWithoutRawEmails: string}}
- * @private
- */
-function _findAndReplaceRawEmails (cookieValue) {
-  if (containsEmailField(cookieValue)) {
-    return _replaceEmailsWithHashes(cookieValue)
-  } else if (isEmail(cookieValue)) {
-    const hashes = hashEmail(cookieValue)
-    return {
-      identifierWithoutRawEmails: hashes.md5,
-      hashesFromIdentifier: [hashes]
-    }
-  } else {
-    return {
-      identifierWithoutRawEmails: cookieValue,
-      hashesFromIdentifier: []
-    }
-  }
-}
-
-/**
- *
- * @param cookieValue
- * @returns {{hashesFromIdentifier: HashedEmail[], identifierWithoutRawEmails: string}}
- * @private
- */
-function _replaceEmailsWithHashes (cookieValue) {
-  const emailsInCookie = listEmailsInString(cookieValue)
-  const hashes = []
-  for (let i = 0; i < emailsInCookie.length; i++) {
-    const email = emailsInCookie[i]
-    const emailHashes = hashEmail(email)
-    cookieValue = cookieValue.replace(email, emailHashes.md5)
-    hashes.push(emailHashes)
-  }
-  return {
-    identifierWithoutRawEmails: cookieValue,
-    hashesFromIdentifier: hashes
   }
 }
 

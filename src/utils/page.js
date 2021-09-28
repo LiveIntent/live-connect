@@ -1,3 +1,6 @@
+import { base64UrlEncode } from '../utils/b64'
+import { findAndReplaceRawEmails } from '../utils/email'
+
 /**
  * @return {string}
  */
@@ -36,6 +39,22 @@ export function getPage (win = window) {
   }
 
   return detectedPageUrl
+}
+
+/**
+ * @return {string|undefined}
+ */
+export function getContextElements (contextSelectors, contextElementsLength, win = window) {
+  console.log('contextSelectors: ' + contextSelectors + 'contextElementsLength' + contextElementsLength)
+  var collectedElements = _collectElementsText(contextSelectors, win)
+  var elementsReplaceRawEmails = findAndReplaceRawEmails(collectedElements).stringWithoutRawEmails
+  var collectedElementsTrucated = elementsReplaceRawEmails.slice(0, contextElementsLength)
+  return base64UrlEncode(collectedElementsTrucated)
+}
+
+function _collectElementsText (contextSelectors, win = window) {
+  var collectedElements = win.document.querySelectorAll(contextSelectors)
+  return Array.prototype.map.call(collectedElements, function (e) { return e.textContent }).join()
 }
 
 function _safeGet (getter) {

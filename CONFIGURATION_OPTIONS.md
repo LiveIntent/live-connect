@@ -174,3 +174,21 @@ Example:
   }
 }
 ```
+##### `contextSelectors` [Optional]
+The context selectors to scrap on the current page.
+Example:
+```javascript
+{
+  contextSelectors: "h1"
+}
+```
+
+##### `contextElementsLength` [Optional, HasDefault]
+By default, 5000.
+The maximum scrapped string length for the found elements textContext.
+Example:
+```javascript
+{
+  contextElementsLength: 6000
+}
+```
