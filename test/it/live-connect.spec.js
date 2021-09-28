@@ -7,7 +7,7 @@ import {
   isFirefoxAfter86,
   isIE,
   isMobileSafari,
-  isMobileSafariAfter14,
+  isMobileSafari14OrNewer,
   probeLS,
   resolveIdentity,
   sendEvent,
@@ -172,7 +172,7 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (isMobileSafariAfter14()) {
+    if (isMobileSafari14OrNewer()) {
       expect(firstTrackingRequest.query.refr).to.match(/http:\/\/schmoogle.com:3001.*/)
     } else {
       expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggering-page').to.eq(firstTrackingRequest.query.refr)
@@ -189,7 +189,7 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (isMobileSafariAfter14()) {
+    if (isMobileSafari14OrNewer()) {
       expect(firstTrackingRequest.query.refr).to.match(/http:\/\/schmoogle.com:3001.*/)
     } else {
       expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.refr)
@@ -207,7 +207,7 @@ describe('LiveConnect', function () {
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    if (isMobileSafariAfter14()) {
+    if (isMobileSafari14OrNewer()) {
       expect(firstTrackingRequest.query.refr).to.match(/http:\/\/schmoogle.com:3001.*/)
     } else {
       expect('http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/double-framed').to.eq(firstTrackingRequest.query.refr)
