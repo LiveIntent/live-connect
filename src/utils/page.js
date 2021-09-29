@@ -1,5 +1,5 @@
 import { base64UrlEncode } from '../utils/b64'
-import { findAndReplaceRawEmails } from '../utils/email'
+import { replaceEmailsWithHashes, emailLikeNoDoubleQuotesRegex } from '../utils/email'
 
 /**
  * @return {string}
@@ -45,16 +45,21 @@ export function getPage (win = window) {
  * @return {string|undefined}
  */
 export function getContextElements (contextSelectors, contextElementsLength, win = window) {
-  console.log('contextSelectors: ' + contextSelectors + 'contextElementsLength' + contextElementsLength)
-  var collectedElements = _collectElementsText(contextSelectors, win)
-  var elementsReplaceRawEmails = findAndReplaceRawEmails(collectedElements).stringWithoutRawEmails
-  var collectedElementsTrucated = elementsReplaceRawEmails.slice(0, contextElementsLength)
-  return base64UrlEncode(collectedElementsTrucated)
+  if (!contextSelectors || contextSelectors === '') {
+    return ''
+  } else {
+    var collectedElements = _collectElementsText(contextSelectors, win)
+    return base64UrlEncode(collectedElements).slice(0, contextElementsLength)
+  }
 }
 
 function _collectElementsText (contextSelectors, win = window) {
   var collectedElements = win.document.querySelectorAll(contextSelectors)
-  return Array.prototype.map.call(collectedElements, function (e) { return e.textContent }).join()
+  return Array.prototype.map.call(collectedElements, _replaceEmailsWithHashes).join()
+}
+
+function _replaceEmailsWithHashes (e) {
+  return replaceEmailsWithHashes(e.outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails
 }
 
 function _safeGet (getter) {

@@ -13,17 +13,21 @@ describe('PageEnricher', () => {
     useEach: true
   })
 
-  it('should return the url, referrer and the contextElements of the page"', function () {
+  it('should return the url, referrer and the contextElements of the page', function () {
     var newHeadline = document.createElement("h1")
-    var newContent = document.createTextNode("test")
-    newHeadline.appendChild(newContent)
+    var content = document.createTextNode("Some header")
+    newHeadline.appendChild(content)
+    var newP = document.createElement("p")
+    var newContentEmail = document.createTextNode("mailTo: john@test.com, also found: another@test.com !")
+    newP.appendChild(newContentEmail)
     document.body.appendChild(newHeadline)
+    document.body.appendChild(newP)
 
     const state = {
-      contextSelectors: 'h1',
+      contextSelectors: 'h1,p',
       contextElementsLength: 1000
     }
-    const encodedContextElements = 'dGVzdA'
+    const encodedContextElements = 'PGgxPlNvbWUgaGVhZGVyPC9oMT4sPHA-bWFpbFRvOiA1NjM0ZmYxM2Y5NTNlYmNiMzc0YWM4YzM0OWJjZmNmZSwgYWxzbyBmb3VuZDogZjEzN2UzZDA5ODk4NzdlYjNmNTc1ZGM5Y2Q2ZGZkMGQgITwvcD4'
     const result = pageEnricher.enrich(state)
     expect(result).to.eql({
       pageUrl: url,

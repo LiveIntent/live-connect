@@ -1,6 +1,6 @@
 import jsdom from 'mocha-jsdom'
 import { expect } from 'chai'
-import { getPage, getReferrer, loadedDomain } from '../../../src/utils/page'
+import { getPage, getReferrer, getContextElements, loadedDomain } from '../../../src/utils/page'
 
 describe('Page Utils', () => {
   jsdom({
@@ -112,7 +112,33 @@ describe('Page Utils', () => {
 
     expect(getReferrer(iframe2.contentWindow)).to.be.eql('https://first.example.com?key=value')
   })
+
+  it('getContextElements should return empty when contextSelectors is empty', function () {
+    createElement('p', 'mailTo: john@test.com, also found: another@test.com !', document)
+    expect(getContextElements('', 1000)).to.be.eql('')
+  })
+
+  it('getContextElements should truncate the maximum lentgh of the encoded context elements', function () {
+    createElement('h1', 'mailTo: john@test.com, also found: another@test.com !', document)
+    const result = getContextElements('h1', 10).length
+    expect(result).to.be.eql(10)
+  })
+
+  it('getContextElements should properly encode the context elements found', function () {
+    createElement('p', 'Some dummy text', document)
+    const size = getContextElements('', 1000).length
+    // Let's simply check if the format is ok
+    expect(size % 4).to.be.eql(0)
+  })
+
 })
+
+function createElement(tag, text, document) {
+  const newElement = document.createElement(tag)
+  const newContent = document.createTextNode(text)
+  newElement.appendChild(newContent)
+  document.documentElement.appendChild(newElement)
+}
 
 function definedProperty (object, name, getter) {
   Object.defineProperty(object, name, {

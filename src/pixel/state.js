@@ -102,8 +102,8 @@ const _pMap = {
   referrer: referrer => {
     return asStringParam('refr', referrer)
   },
-  contextElements: contectElements => {
-    return asStringParam('c', contectElements)
+  contextElements: contextElements => {
+    return asStringParam('c', contextElements)
   }
 }
 
