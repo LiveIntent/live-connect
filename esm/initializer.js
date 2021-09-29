@@ -97,6 +97,7 @@ var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
 var DEFAULT_IDEX_EXPIRATION_HOURS = 1;
 var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
+var DEFAULT_CONTEXT_ELEMENT_LENGTH = 5000;
 
 function _emit(prefix, message) {
   window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
@@ -310,36 +311,6 @@ function base64UrlEncode(s) {
   return btoa(utf8Bytes).replace(_base64encodeRegex, _replaceBase64Chars);
 }
 
-var emailRegex = function emailRegex() {
-  return /\S+(@|%40)\S+\.\S+/;
-};
-function isEmail(s) {
-  return emailRegex().test(s);
-}
-var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
-function containsEmailField(s) {
-  return emailLikeRegex.test(s);
-}
-function extractEmail(s) {
-  var result = s.match(emailRegex());
-  return result && result.map(trim)[0];
-}
-function listEmailsInString(s) {
-  var result = [];
-  var multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g');
-  var current = multipleEmailLikeRegex.exec(s);
-  while (current) {
-    result.push(trim(current[1]));
-    current = multipleEmailLikeRegex.exec(s);
-  }
-  return result;
-}
-
-var MASK = '*********';
-function replacer(key, value) {
-  return typeof value === 'string' && isEmail(trim(value)) ? MASK : value;
-}
-
 for (var r = [], o = 0; o < 64;) {
   r[o] = 0 | 4294967296 * Math.sin(++o % Math.PI);
 }
@@ -459,6 +430,67 @@ function hashEmail(email) {
 function domainHash(domain) {
   var limit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 12;
   return sha1(domain.replace(/^\./, '')).substring(0, limit);
+}
+
+var emailRegex = function emailRegex() {
+  return /\S+(@|%40)\S+\.\S+/;
+};
+function isEmail(s) {
+  return emailRegex().test(s);
+}
+var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
+var emailLikeNoDoubleQuotesRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
+function containsEmailField(s) {
+  return emailLikeRegex.test(s);
+}
+function extractEmail(s) {
+  var result = s.match(emailRegex());
+  return result && result.map(trim)[0];
+}
+function listEmailsInString(s, regex) {
+  var result = [];
+  var multipleEmailLikeRegex = new RegExp(regex.source, 'g');
+  var current = multipleEmailLikeRegex.exec(s);
+  while (current) {
+    result.push(trim(current[1]));
+    current = multipleEmailLikeRegex.exec(s);
+  }
+  return result;
+}
+function findAndReplaceRawEmails(originalString) {
+  if (containsEmailField(originalString)) {
+    return replaceEmailsWithHashes(originalString, emailLikeRegex);
+  } else if (isEmail(originalString)) {
+    var hashes = hashEmail(originalString);
+    return {
+      stringWithoutRawEmails: hashes.md5,
+      hashesFromOriginalString: [hashes]
+    };
+  } else {
+    return {
+      stringWithoutRawEmails: originalString,
+      hashesFromOriginalString: []
+    };
+  }
+}
+function replaceEmailsWithHashes(originalString, regex) {
+  var emailsInString = listEmailsInString(originalString, regex);
+  var hashes = [];
+  for (var i = 0; i < emailsInString.length; i++) {
+    var email = emailsInString[i];
+    var emailHashes = hashEmail(email);
+    originalString = originalString.replace(email, emailHashes.md5);
+    hashes.push(emailHashes);
+  }
+  return {
+    stringWithoutRawEmails: originalString,
+    hashesFromOriginalString: hashes
+  };
+}
+
+var MASK = '*********';
+function replacer(key, value) {
+  return typeof value === 'string' && isEmail(trim(value)) ? MASK : value;
 }
 
 var MAX_ITEMS = 10;
@@ -615,6 +647,9 @@ var _pMap = {
   },
   referrer: function referrer(_referrer) {
     return asStringParam('refr', _referrer);
+  },
+  contextElements: function contextElements(_contextElements) {
+    return asStringParam('c', _contextElements);
   }
 };
 function StateWrapper(state) {
@@ -709,6 +744,23 @@ function getPage() {
   }
   return detectedPageUrl;
 }
+function getContextElements(contextSelectors, contextElementsLength) {
+  var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
+  if (!contextSelectors || contextSelectors === '') {
+    return '';
+  } else {
+    var collectedElements = _collectElementsText(contextSelectors, win);
+    return base64UrlEncode(collectedElements).slice(0, contextElementsLength);
+  }
+}
+function _collectElementsText(contextSelectors) {
+  var win = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+  var collectedElements = win.document.querySelectorAll(contextSelectors);
+  return Array.prototype.map.call(collectedElements, _replaceEmailsWithHashes).join();
+}
+function _replaceEmailsWithHashes(e) {
+  return replaceEmailsWithHashes(e.outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails;
+}
 function _safeGet(getter) {
   try {
     return getter();
@@ -719,13 +771,23 @@ function _safeGet(getter) {
 
 var _currentPage = null;
 function enrich(state) {
+  var _parseContext2 = _parseContext(state),
+      contextSelectors = _parseContext2.contextSelectors,
+      contextElementsLength = _parseContext2.contextElementsLength;
   if (!_currentPage) {
     _currentPage = {
       pageUrl: getPage(),
-      referrer: getReferrer()
+      referrer: getReferrer(),
+      contextElements: getContextElements(contextSelectors, contextElementsLength)
     };
   }
   return _currentPage;
+}
+function _parseContext(state) {
+  return {
+    contextSelectors: state.contextSelectors,
+    contextElementsLength: state.contextElementsLength || DEFAULT_CONTEXT_ELEMENT_LENGTH
+  };
 }
 
 var _state = null;
@@ -770,7 +832,7 @@ function asErrorDetails(e) {
 }
 function _pixelError(error) {
   if (_pixelSender) {
-    _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error)).combineWith(_state || {}).combineWith(enrich()));
+    _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error)).combineWith(_state || {}).combineWith(enrich({})));
   }
 }
 function register(state, callHandler) {
@@ -1003,47 +1065,17 @@ function _getIdentifiers(cookieNames, storageHandler) {
     var identifierName = cookieNames[i];
     var identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
     if (identifierValue) {
-      var cookieAndHashes = _findAndReplaceRawEmails(safeToString(identifierValue));
+      var cookieAndHashes = findAndReplaceRawEmails(safeToString(identifierValue));
       identifiers.push({
         name: identifierName,
-        value: cookieAndHashes.identifierWithoutRawEmails
+        value: cookieAndHashes.stringWithoutRawEmails
       });
-      hashes = hashes.concat(cookieAndHashes.hashesFromIdentifier);
+      hashes = hashes.concat(cookieAndHashes.hashesFromOriginalString);
     }
   }
   return {
     retrievedIdentifiers: identifiers,
     hashesFromIdentifiers: _deduplicateHashes(hashes)
-  };
-}
-function _findAndReplaceRawEmails(cookieValue) {
-  if (containsEmailField(cookieValue)) {
-    return _replaceEmailsWithHashes(cookieValue);
-  } else if (isEmail(cookieValue)) {
-    var hashes = hashEmail(cookieValue);
-    return {
-      identifierWithoutRawEmails: hashes.md5,
-      hashesFromIdentifier: [hashes]
-    };
-  } else {
-    return {
-      identifierWithoutRawEmails: cookieValue,
-      hashesFromIdentifier: []
-    };
-  }
-}
-function _replaceEmailsWithHashes(cookieValue) {
-  var emailsInCookie = listEmailsInString(cookieValue);
-  var hashes = [];
-  for (var i = 0; i < emailsInCookie.length; i++) {
-    var email = emailsInCookie[i];
-    var emailHashes = hashEmail(email);
-    cookieValue = cookieValue.replace(email, emailHashes.md5);
-    hashes.push(emailHashes);
-  }
-  return {
-    identifierWithoutRawEmails: cookieValue,
-    hashesFromIdentifier: hashes
   };
 }
 function _deduplicateHashes(hashes) {
