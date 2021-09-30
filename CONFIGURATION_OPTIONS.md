@@ -175,7 +175,7 @@ Example:
 }
 ```
 ##### `contextSelectors` [Optional]
-The context selectors to scrap from the current page.
+The context selectors to collect from the current page.
 Example:
 ```javascript
 {
@@ -185,7 +185,7 @@ Example:
 
 ##### `contextElementsLength` [Optional, HasDefault]
 By default, 5000.
-The maximum string length for the scrapped elements.
+The maximum string length for the collected elements.
 Example:
 ```javascript
 {
