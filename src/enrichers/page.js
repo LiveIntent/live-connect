@@ -1,5 +1,4 @@
 import { getPage, getReferrer, getContextElements } from '../utils/page'
-import { DEFAULT_CONTEXT_ELEMENT_LENGTH } from '../utils/consts'
 
 /**
  * @private
@@ -30,6 +29,6 @@ export function enrich (state) {
 function _parseContext (state) {
   return {
     contextSelectors: state.contextSelectors,
-    contextElementsLength: state.contextElementsLength || DEFAULT_CONTEXT_ELEMENT_LENGTH
+    contextElementsLength: state.contextElementsLength
   }
 }

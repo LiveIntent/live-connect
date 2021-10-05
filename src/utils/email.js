@@ -12,7 +12,7 @@ export function isEmail (s) {
 }
 
 const emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/
-export const emailLikeNoDoubleQuotesRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/
+export const emailLikeNoDoubleQuotesRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/
 
 /**
  * @param {string} s

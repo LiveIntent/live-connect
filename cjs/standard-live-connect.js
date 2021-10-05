@@ -101,7 +101,6 @@ var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
 var DEFAULT_IDEX_EXPIRATION_HOURS = 1;
 var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
-var DEFAULT_CONTEXT_ELEMENT_LENGTH = 5000;
 
 function _emit(prefix, message) {
   window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
@@ -443,7 +442,7 @@ function isEmail(s) {
   return emailRegex().test(s);
 }
 var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
-var emailLikeNoDoubleQuotesRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
+var emailLikeNoDoubleQuotesRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/;
 function containsEmailField(s) {
   return emailLikeRegex.test(s);
 }
@@ -750,20 +749,25 @@ function getPage() {
 }
 function getContextElements(contextSelectors, contextElementsLength) {
   var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
-  if (!contextSelectors || contextSelectors === '') {
+  if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return '';
   } else {
-    var collectedElements = _collectElementsText(contextSelectors, win);
-    return base64UrlEncode(collectedElements).slice(0, contextElementsLength);
+    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength, win);
+    return base64UrlEncode(collectedElements);
   }
 }
-function _collectElementsText(contextSelectors) {
-  var win = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+function _collectElementsText(contextSelectors, contextElementsLength) {
+  var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
   var collectedElements = win.document.querySelectorAll(contextSelectors);
-  return Array.prototype.map.call(collectedElements, _replaceEmailsWithHashes).join();
-}
-function _replaceEmailsWithHashes(e) {
-  return replaceEmailsWithHashes(e.outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails;
+  var i = 0;
+  var collectedString = '';
+  while (i < collectedElements.length) {
+    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails;
+    var n = nextElement.length + collectedString.length;
+    if (4 * Math.ceil(n / 3.0) < contextElementsLength) collectedString = collectedString + nextElement;else return collectedString;
+    i++;
+  }
+  return collectedString;
 }
 function _safeGet(getter) {
   try {
@@ -790,7 +794,7 @@ function enrich(state) {
 function _parseContext(state) {
   return {
     contextSelectors: state.contextSelectors,
-    contextElementsLength: state.contextElementsLength || DEFAULT_CONTEXT_ELEMENT_LENGTH
+    contextElementsLength: state.contextElementsLength
   };
 }
 

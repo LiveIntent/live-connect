@@ -113,22 +113,28 @@ describe('Page Utils', () => {
     expect(getReferrer(iframe2.contentWindow)).to.be.eql('https://first.example.com?key=value')
   })
 
-  it('getContextElements should return empty when contextSelectors is empty', function () {
-    createElement('p', 'mailTo: john@test.com, also found: another@test.com !', document)
+  it('getContextElements should properly encode when emails are hashed', function () {
+    createElement('h1', 'mailto:john@test.com, also found: another@test.com !', document)
+    const result = getContextElements('h1', 1000).length
+    expect(result).to.be.eql(128)
+  })
+
+  it('getContextElements should return empty when contextSelectors or contextElementsLength is invalid', function () {
+    createElement('p', 'mailto:john@test.com, also found: another@test.com !', document)
     expect(getContextElements('', 1000)).to.be.eql('')
   })
 
-  it('getContextElements should truncate the maximum lentgh of the encoded context elements', function () {
-    createElement('h1', 'mailTo: john@test.com, also found: another@test.com !', document)
-    const result = getContextElements('h1', 10).length
-    expect(result).to.be.eql(10)
+  it('getContextElements should stop encoding when the next element overflows the contextElementsLength', function () {
+    createElement('h1', 'First element', document)
+    createElement('h1', 'Second element', document)
+    const result = getContextElements('h1', 40).length
+    expect(result).to.be.eql(30)
   })
 
   it('getContextElements should properly encode the context elements found', function () {
     createElement('p', 'Some dummy text', document)
-    const size = getContextElements('', 1000).length
-    // Let's simply check if the format is ok
-    expect(size % 4).to.be.eql(0)
+    const result = getContextElements('p', 1000)
+    expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
   })
 
 })

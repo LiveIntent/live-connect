@@ -30,7 +30,7 @@ describe('LiveConnect', function () {
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
       identityResolutionConfig: {
         url: 'http://me.idex.com:3001/idex',
-        ajaxTimeout: 1000
+        ajaxTimeout: 3000
       }
     })
   })

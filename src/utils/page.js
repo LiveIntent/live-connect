@@ -45,21 +45,26 @@ export function getPage (win = window) {
  * @return {string|undefined}
  */
 export function getContextElements (contextSelectors, contextElementsLength, win = window) {
-  if (!contextSelectors || contextSelectors === '') {
+  if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
-    var collectedElements = _collectElementsText(contextSelectors, win)
-    return base64UrlEncode(collectedElements).slice(0, contextElementsLength)
+    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength, win)
+    return base64UrlEncode(collectedElements)
   }
 }
 
-function _collectElementsText (contextSelectors, win = window) {
-  var collectedElements = win.document.querySelectorAll(contextSelectors)
-  return Array.prototype.map.call(collectedElements, _replaceEmailsWithHashes).join()
-}
-
-function _replaceEmailsWithHashes (e) {
-  return replaceEmailsWithHashes(e.outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails
+function _collectElementsText (contextSelectors, contextElementsLength, win = window) {
+  const collectedElements = win.document.querySelectorAll(contextSelectors)
+  var i = 0
+  var collectedString = ''
+  while (i < collectedElements.length) {
+    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails
+    var n = nextElement.length + collectedString.length
+    if (4 * Math.ceil(n / 3.0) < contextElementsLength) collectedString = collectedString + nextElement
+    else return collectedString
+    i++
+  }
+  return collectedString
 }
 
 function _safeGet (getter) {

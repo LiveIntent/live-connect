@@ -18,7 +18,7 @@ describe('PageEnricher', () => {
     var content = document.createTextNode("Some header")
     newHeadline.appendChild(content)
     var newP = document.createElement("p")
-    var newContentEmail = document.createTextNode("mailTo: john@test.com, also found: another@test.com !")
+    var newContentEmail = document.createTextNode("mailto:john@test.com, also found: another@test.com !")
     newP.appendChild(newContentEmail)
     document.body.appendChild(newHeadline)
     document.body.appendChild(newP)
@@ -27,7 +27,7 @@ describe('PageEnricher', () => {
       contextSelectors: 'h1,p',
       contextElementsLength: 1000
     }
-    const encodedContextElements = 'PGgxPlNvbWUgaGVhZGVyPC9oMT4sPHA-bWFpbFRvOiA1NjM0ZmYxM2Y5NTNlYmNiMzc0YWM4YzM0OWJjZmNmZSwgYWxzbyBmb3VuZDogZjEzN2UzZDA5ODk4NzdlYjNmNTc1ZGM5Y2Q2ZGZkMGQgITwvcD4'
+    const encodedContextElements = 'PGgxPlNvbWUgaGVhZGVyPC9oMT48cD5tYWlsdG86NTYzNGZmMTNmOTUzZWJjYjM3NGFjOGMzNDliY2ZjZmUsIGFsc28gZm91bmQ6IGYxMzdlM2QwOTg5ODc3ZWIzZjU3NWRjOWNkNmRmZDBkICE8L3A-'
     const result = pageEnricher.enrich(state)
     expect(result).to.eql({
       pageUrl: url,
