@@ -55,16 +55,20 @@ export function getContextElements (contextSelectors, contextElementsLength, win
 
 function _collectElementsText (contextSelectors, contextElementsLength, win = window) {
   const collectedElements = win.document.querySelectorAll(contextSelectors)
-  var i = 0
   var collectedString = ''
-  while (i < collectedElements.length) {
+  for (let i = 0; i < collectedElements.length; i++) {
     var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails
-    var n = nextElement.length + collectedString.length
-    if (4 * Math.ceil(n / 3.0) < contextElementsLength) collectedString = collectedString + nextElement
+    var maybeCollectedString = collectedString + nextElement
+    if (encodedByteCount(maybeCollectedString) <= contextElementsLength) collectedString = maybeCollectedString
     else return collectedString
-    i++
   }
   return collectedString
+}
+
+function encodedByteCount (s) {
+  const utf8Bytelength = encodeURI(s).split(/%..|./).length - 1
+  const base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0)
+  return base64EncodedLength
 }
 
 function _safeGet (getter) {

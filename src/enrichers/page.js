@@ -10,25 +10,12 @@ let _currentPage = null
  * @return {{pageUrl: string|undefined, referrer: string|undefined, contextElements: string|undefined}}
  */
 export function enrich (state) {
-  const { contextSelectors, contextElementsLength } = _parseContext(state)
   if (!_currentPage) {
     _currentPage = {
       pageUrl: getPage(),
       referrer: getReferrer(),
-      contextElements: getContextElements(contextSelectors, contextElementsLength)
+      contextElements: getContextElements(state.contextSelectors, state.contextElementsLength)
     }
   }
   return _currentPage
-}
-
-/**
- * @param {State} state
- * @returns {{pageUrl: string|undefined, referrer: string|undefined}}
- * @private
- */
-function _parseContext (state) {
-  return {
-    contextSelectors: state.contextSelectors,
-    contextElementsLength: state.contextElementsLength
-  }
 }
