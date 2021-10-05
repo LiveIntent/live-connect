@@ -55,24 +55,6 @@ export function fetchResolvedIdentity () {
   }
 }
 
-export function sendEventInIframe (event, expectedRequests, server) {
-  try {
-    switchToIFrame($('#iframe-id')) || switchToIFrame('iframe-name')
-    sendEvent(event, expectedRequests, server)
-  } catch (e) {
-    console.error(e, server.getHistory().length, expectedRequests)
-  }
-}
-
-function switchToIFrame (iFrame) {
-  try {
-    browser.switchToFrame(iFrame)
-    return true
-  } catch (e) {
-    return false
-  }
-}
-
 export function probeLS () {
   try {
     return browser.execute(() => {
@@ -122,22 +104,14 @@ export function isMobileSafari () {
   return browser.capabilities.browserName === 'safari' && browser.capabilities.real_mobile
 }
 
-export function isSafari71 () {
-  return browser.capabilities.browserName === 'safari' && browser.capabilities.version.startsWith('7.1')
-}
-
-export function isEdgeBefore79 () {
-  return browser.capabilities.browserName === 'MicrosoftEdge' &&
-    parseInt(browser.capabilities.browserVersion.substring(0, 2)) < 79
+export function isMobileSafari14OrNewer () {
+  return browser.capabilities.browserName === 'safari' &&
+    parseInt(browser.capabilities.version.substring(0, 2)) >= 14 &&
+    browser.capabilities.real_mobile
 }
 
 export function isIE () {
   return browser.capabilities.browserName === 'internet explorer'
-}
-
-export function isIE9Or10 () {
-  return browser.capabilities.browserName === 'internet explorer' &&
-    (browser.capabilities.version === '10' || browser.capabilities.version === '9')
 }
 
 export function isFirefox () {
