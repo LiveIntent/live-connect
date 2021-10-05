@@ -11,8 +11,7 @@ export function isEmail (s) {
   return emailRegex().test(s)
 }
 
-const emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/
-export const emailLikeNoDoubleQuotesRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/
+const emailLikeRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/
 
 /**
  * @param {string} s
@@ -31,9 +30,9 @@ export function extractEmail (s) {
  * @param {string} s
  * @returns {string[]}
  */
-export function listEmailsInString (s, regex) {
+export function listEmailsInString (s) {
   const result = []
-  const multipleEmailLikeRegex = new RegExp(regex.source, 'g')
+  const multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g')
   let current = multipleEmailLikeRegex.exec(s)
   while (current) {
     result.push(trim(current[1]))
@@ -48,7 +47,7 @@ export function listEmailsInString (s, regex) {
  */
 export function findAndReplaceRawEmails (originalString) {
   if (containsEmailField(originalString)) {
-    return replaceEmailsWithHashes(originalString, emailLikeRegex)
+    return replaceEmailsWithHashes(originalString)
   } else if (isEmail(originalString)) {
     const hashes = hashEmail(originalString)
     return {
@@ -68,8 +67,8 @@ export function findAndReplaceRawEmails (originalString) {
  * @param originalString
  * @returns {{hashesFromOriginalString: HashedEmail[], stringWithoutRawEmails: string}}
  */
-export function replaceEmailsWithHashes (originalString, regex) {
-  const emailsInString = listEmailsInString(originalString, regex)
+export function replaceEmailsWithHashes (originalString) {
+  const emailsInString = listEmailsInString(originalString)
   const hashes = []
   for (let i = 0; i < emailsInString.length; i++) {
     const email = emailsInString[i]

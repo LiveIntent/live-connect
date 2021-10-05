@@ -1,5 +1,5 @@
 import { base64UrlEncode } from '../utils/b64'
-import { replaceEmailsWithHashes, emailLikeNoDoubleQuotesRegex } from '../utils/email'
+import { replaceEmailsWithHashes } from '../utils/email'
 
 /**
  * @return {string}
@@ -57,7 +57,7 @@ function _collectElementsText (contextSelectors, contextElementsLength, win = wi
   const collectedElements = win.document.querySelectorAll(contextSelectors)
   var collectedString = ''
   for (let i = 0; i < collectedElements.length; i++) {
-    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails
+    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails
     var maybeCollectedString = collectedString + nextElement
     if (encodedByteCount(maybeCollectedString) <= contextElementsLength) collectedString = maybeCollectedString
     else return collectedString
@@ -66,6 +66,7 @@ function _collectElementsText (contextSelectors, contextElementsLength, win = wi
 }
 
 function encodedByteCount (s) {
+  // From: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string
   const utf8Bytelength = encodeURI(s).split(/%..|./).length - 1
   const base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0)
   return base64EncodedLength
