@@ -212,7 +212,7 @@ var emailRegex = function emailRegex() {
 function isEmail(s) {
   return emailRegex().test(s);
 }
-var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
+var emailLikeRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/;
 function containsEmailField(s) {
   return emailLikeRegex.test(s);
 }

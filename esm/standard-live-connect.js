@@ -437,8 +437,7 @@ var emailRegex = function emailRegex() {
 function isEmail(s) {
   return emailRegex().test(s);
 }
-var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
-var emailLikeNoDoubleQuotesRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/;
+var emailLikeRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/;
 function containsEmailField(s) {
   return emailLikeRegex.test(s);
 }
@@ -446,9 +445,9 @@ function extractEmail(s) {
   var result = s.match(emailRegex());
   return result && result.map(trim)[0];
 }
-function listEmailsInString(s, regex) {
+function listEmailsInString(s) {
   var result = [];
-  var multipleEmailLikeRegex = new RegExp(regex.source, 'g');
+  var multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g');
   var current = multipleEmailLikeRegex.exec(s);
   while (current) {
     result.push(trim(current[1]));
@@ -458,7 +457,7 @@ function listEmailsInString(s, regex) {
 }
 function findAndReplaceRawEmails(originalString) {
   if (containsEmailField(originalString)) {
-    return replaceEmailsWithHashes(originalString, emailLikeRegex);
+    return replaceEmailsWithHashes(originalString);
   } else if (isEmail(originalString)) {
     var hashes = hashEmail(originalString);
     return {
@@ -472,8 +471,8 @@ function findAndReplaceRawEmails(originalString) {
     };
   }
 }
-function replaceEmailsWithHashes(originalString, regex) {
-  var emailsInString = listEmailsInString(originalString, regex);
+function replaceEmailsWithHashes(originalString) {
+  var emailsInString = listEmailsInString(originalString);
   var hashes = [];
   for (var i = 0; i < emailsInString.length; i++) {
     var email = emailsInString[i];
@@ -755,15 +754,18 @@ function getContextElements(contextSelectors, contextElementsLength) {
 function _collectElementsText(contextSelectors, contextElementsLength) {
   var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
   var collectedElements = win.document.querySelectorAll(contextSelectors);
-  var i = 0;
   var collectedString = '';
-  while (i < collectedElements.length) {
-    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML, emailLikeNoDoubleQuotesRegex).stringWithoutRawEmails;
-    var n = nextElement.length + collectedString.length;
-    if (4 * Math.ceil(n / 3.0) < contextElementsLength) collectedString = collectedString + nextElement;else return collectedString;
-    i++;
+  for (var i = 0; i < collectedElements.length; i++) {
+    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails;
+    var maybeCollectedString = collectedString + nextElement;
+    if (encodedByteCount(maybeCollectedString) <= contextElementsLength) collectedString = maybeCollectedString;else return collectedString;
   }
   return collectedString;
+}
+function encodedByteCount(s) {
+  var utf8Bytelength = encodeURI(s).split(/%..|./).length - 1;
+  var base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0);
+  return base64EncodedLength;
 }
 function _safeGet(getter) {
   try {
@@ -775,23 +777,14 @@ function _safeGet(getter) {
 
 var _currentPage = null;
 function enrich(state) {
-  var _parseContext2 = _parseContext(state),
-      contextSelectors = _parseContext2.contextSelectors,
-      contextElementsLength = _parseContext2.contextElementsLength;
   if (!_currentPage) {
     _currentPage = {
       pageUrl: getPage(),
       referrer: getReferrer(),
-      contextElements: getContextElements(contextSelectors, contextElementsLength)
+      contextElements: getContextElements(state.contextSelectors, state.contextElementsLength)
     };
   }
   return _currentPage;
-}
-function _parseContext(state) {
-  return {
-    contextSelectors: state.contextSelectors,
-    contextElementsLength: state.contextElementsLength
-  };
 }
 
 var _state = null;
