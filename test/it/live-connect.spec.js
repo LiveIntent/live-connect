@@ -248,7 +248,7 @@ describe('LiveConnect', function () {
   it('should send the collected context elements from page', function () {
     server.openPage('bln.test.liveintent.com', 'elements')
     sendEvent({}, probeLS() ? 1 : 2, server)
-    // Base64('To collect') -> 'PHA-VG8gY29sbGVjdDwvcD4'
+    // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
     const firstTrackingRequest = server.getTrackingRequests()[0]
     expect('PHA-VG8gY29sbGVjdDwvcD4').to.eq(firstTrackingRequest.query.c)
   })
