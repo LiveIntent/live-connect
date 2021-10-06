@@ -63,8 +63,7 @@ references:
 jobs:
   simple_test:
     parallelism: 1
-    machine:
-      docker_layer_caching: true
+    machine: true
     steps:
       - checkout
       - *restore_cache
@@ -89,8 +88,7 @@ jobs:
 
   browserstack:
     parallelism: 1
-    machine:
-      docker_layer_caching: true
+    machine: true
     steps:
       - checkout
       - *restore_cache
@@ -108,8 +106,7 @@ jobs:
 
   release:
     parallelism: 1
-    machine:
-      docker_layer_caching: true
+    machine: true
     parameters:
       increment:
         description: "Increment of release. Allowed values `patch`, `minor`, `major`"
