@@ -184,7 +184,6 @@ Example:
 ```
 
 ##### `contextElementsLength` [Optional]
-By default, 5000.
 The maximum string length for the collected elements, truncated at this length when it exceeds.
 Example:
 ```javascript
