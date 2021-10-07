@@ -441,7 +441,7 @@ var emailRegex = function emailRegex() {
 function isEmail(s) {
   return emailRegex().test(s);
 }
-var emailLikeRegex = /([\w.+-]+(@|%40)[\w-]+\.[\w.-]+)/;
+var emailLikeRegex = /([\p{L}\p{N}.+-]+(@|%40)[\p{L}\p{N}-]+\.[\p{L}\p{N}.-]+)/;
 function containsEmailField(s) {
   return emailLikeRegex.test(s);
 }
@@ -451,7 +451,7 @@ function extractEmail(s) {
 }
 function listEmailsInString(s) {
   var result = [];
-  var multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'g');
+  var multipleEmailLikeRegex = new RegExp(emailLikeRegex.source, 'gui');
   var current = multipleEmailLikeRegex.exec(s);
   while (current) {
     result.push(trim(current[1]));
@@ -459,33 +459,18 @@ function listEmailsInString(s) {
   }
   return result;
 }
-function findAndReplaceRawEmails(originalString) {
-  if (containsEmailField(originalString)) {
-    return replaceEmailsWithHashes(originalString);
-  } else if (isEmail(originalString)) {
-    var hashes = hashEmail(originalString);
-    return {
-      stringWithoutRawEmails: hashes.md5,
-      hashesFromOriginalString: [hashes]
-    };
-  } else {
-    return {
-      stringWithoutRawEmails: originalString,
-      hashesFromOriginalString: []
-    };
-  }
-}
 function replaceEmailsWithHashes(originalString) {
   var emailsInString = listEmailsInString(originalString);
   var hashes = [];
+  var convertedString = originalString;
   for (var i = 0; i < emailsInString.length; i++) {
     var email = emailsInString[i];
     var emailHashes = hashEmail(email);
-    originalString = originalString.replace(email, emailHashes.md5);
+    convertedString = convertedString.replace(email, emailHashes.md5);
     hashes.push(emailHashes);
   }
   return {
-    stringWithoutRawEmails: originalString,
+    stringWithoutRawEmails: convertedString,
     hashesFromOriginalString: hashes
   };
 }
@@ -747,17 +732,15 @@ function getPage() {
   return detectedPageUrl;
 }
 function getContextElements(contextSelectors, contextElementsLength) {
-  var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
   if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return '';
   } else {
-    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength, win);
+    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength);
     return base64UrlEncode(collectedElements);
   }
 }
 function _collectElementsText(contextSelectors, contextElementsLength) {
-  var win = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window;
-  var collectedElements = win.document.querySelectorAll(contextSelectors);
+  var collectedElements = window.document.querySelectorAll(contextSelectors);
   var collectedString = '';
   for (var i = 0; i < collectedElements.length; i++) {
     var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails;
@@ -1066,7 +1049,7 @@ function _getIdentifiers(cookieNames, storageHandler) {
     var identifierName = cookieNames[i];
     var identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName);
     if (identifierValue) {
-      var cookieAndHashes = findAndReplaceRawEmails(safeToString(identifierValue));
+      var cookieAndHashes = replaceEmailsWithHashes(safeToString(identifierValue));
       identifiers.push({
         name: identifierName,
         value: cookieAndHashes.stringWithoutRawEmails

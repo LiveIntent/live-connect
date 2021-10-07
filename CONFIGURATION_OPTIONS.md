@@ -179,11 +179,11 @@ The context selectors to collect from the current page.
 Example:
 ```javascript
 {
-  contextSelectors: "h1"
+  contextSelectors: "h1,h2,p"
 }
 ```
 
-##### `contextElementsLength` [Optional, HasDefault]
+##### `contextElementsLength` [Optional]
 By default, 5000.
 The maximum string length for the collected elements, truncated at this length when it exceeds.
 Example:

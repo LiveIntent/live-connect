@@ -3,7 +3,7 @@
  * @property {string} name
  * @property {string} value
  */
-import { findAndReplaceRawEmails } from '../utils/email'
+import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
@@ -55,7 +55,7 @@ function _getIdentifiers (cookieNames, storageHandler) {
     const identifierName = cookieNames[i]
     const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
     if (identifierValue) {
-      const cookieAndHashes = findAndReplaceRawEmails(safeToString(identifierValue))
+      const cookieAndHashes = replaceEmailsWithHashes(safeToString(identifierValue))
       identifiers.push({
         name: identifierName,
         value: cookieAndHashes.stringWithoutRawEmails

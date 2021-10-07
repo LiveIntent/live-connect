@@ -44,17 +44,17 @@ export function getPage (win = window) {
 /**
  * @return {string|undefined}
  */
-export function getContextElements (contextSelectors, contextElementsLength, win = window) {
+export function getContextElements (contextSelectors, contextElementsLength) {
   if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
-    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength, win)
+    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength)
     return base64UrlEncode(collectedElements)
   }
 }
 
-function _collectElementsText (contextSelectors, contextElementsLength, win = window) {
-  const collectedElements = win.document.querySelectorAll(contextSelectors)
+function _collectElementsText (contextSelectors, contextElementsLength) {
+  const collectedElements = window.document.querySelectorAll(contextSelectors)
   var collectedString = ''
   for (let i = 0; i < collectedElements.length; i++) {
     var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails

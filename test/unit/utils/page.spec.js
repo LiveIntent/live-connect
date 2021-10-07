@@ -139,6 +139,13 @@ describe('Page Utils', () => {
     expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
   })
 
+  it('getContextElements should properly encode when emails using unicode chars', function () {
+    createElement('p', 'mailto:mосква@北京市.com', document)
+    const result = getContextElements('p', 1000)
+    // Base64('<p>mailto:6023ccf7ec156897f7dbd7a6b24373cc</p>') -> 'PHA-bWFpbHRvOjYwMjNjY2Y3ZWMxNTY4OTdmN2RiZDdhNmIyNDM3M2NjPC9wPg'
+    expect(result).to.be.eql('PHA-bWFpbHRvOjYwMjNjY2Y3ZWMxNTY4OTdmN2RiZDdhNmIyNDM3M2NjPC9wPg')
+  })
+
 })
 
 function createElement(tag, text, document) {
