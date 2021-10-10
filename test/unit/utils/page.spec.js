@@ -140,10 +140,10 @@ describe('Page Utils', () => {
   })
 
   it('getContextElements should properly encode when emails using unicode chars', function () {
-    createElement('p', 'mailto:mосква@北京市.com', document)
+    createElement('p', 'mailto:भतкв2ś@北ﺐ市ไข่.ćom', document)
     const result = getContextElements('p', 1000)
-    // Base64('<p>mailto:6023ccf7ec156897f7dbd7a6b24373cc</p>') -> 'PHA-bWFpbHRvOjYwMjNjY2Y3ZWMxNTY4OTdmN2RiZDdhNmIyNDM3M2NjPC9wPg'
-    expect(result).to.be.eql('PHA-bWFpbHRvOjYwMjNjY2Y3ZWMxNTY4OTdmN2RiZDdhNmIyNDM3M2NjPC9wPg')
+    // Base64('<p>mailto:929ebbe916e8338c0027a263eff4012a</p>') -> 'PHA-bWFpbHRvOjkyOWViYmU5MTZlODMzOGMwMDI3YTI2M2VmZjQwMTJhPC9wPg'
+    expect(result).to.be.eql('PHA-bWFpbHRvOjkyOWViYmU5MTZlODMzOGMwMDI3YTI2M2VmZjQwMTJhPC9wPg')
   })
 
 })

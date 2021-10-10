@@ -244,7 +244,6 @@ describe('LiveConnect', function () {
     expect(server.getBakerHistory().length).to.eq(2)
   })
 
-  // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the collected context elements from page', function () {
     server.openPage('bln.test.liveintent.com', 'elements')
     sendEvent({}, probeLS() ? 1 : 2, server)

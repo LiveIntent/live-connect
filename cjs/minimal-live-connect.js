@@ -212,9 +212,8 @@ var emailRegex = function emailRegex() {
 function isEmail(s) {
   return emailRegex().test(s);
 }
-var emailLikeRegex = /([\p{L}\p{N}.+-]+(@|%40)[\p{L}\p{N}-]+\.[\p{L}\p{N}.-]+)/;
 function containsEmailField(s) {
-  return emailLikeRegex.test(s);
+  return emailRegex().test(s);
 }
 
 function enrich$1(state, storageHandler) {
