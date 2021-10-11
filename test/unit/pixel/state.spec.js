@@ -22,6 +22,12 @@ describe('EventComposition', () => {
     expect(event.asQueryString()).to.eql('?aid=9898')
   })
 
+  it('should ignore empty fields', function () {
+    const pixelData = { appId: '9898', contextElements: '' }
+    const event = new StateWrapper(pixelData)
+    expect(event.asQueryString()).to.eql('?aid=9898')
+  })
+
   it('should ignore unknown fields', function () {
     const pixelData = {
       appId: '9898',

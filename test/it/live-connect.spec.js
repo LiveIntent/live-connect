@@ -28,7 +28,7 @@ describe('LiveConnect', function () {
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
       identityResolutionConfig: {
         url: 'http://me.idex.com:3001/idex',
-        ajaxTimeout: 1000
+        ajaxTimeout: 3000
       }
     })
   })
@@ -243,4 +243,13 @@ describe('LiveConnect', function () {
 
     expect(server.getBakerHistory().length).to.eq(2)
   })
+
+  it('should send the collected context elements from page', function () {
+    server.openPage('bln.test.liveintent.com', 'elements')
+    sendEvent({}, probeLS() ? 1 : 2, server)
+    // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
+    const firstTrackingRequest = server.getTrackingRequests()[0]
+    expect('PHA-VG8gY29sbGVjdDwvcD4').to.eq(firstTrackingRequest.query.c)
+  })
+  
 })

@@ -1,6 +1,6 @@
 import jsdom from 'mocha-jsdom'
 import { expect } from 'chai'
-import { getPage, getReferrer, loadedDomain } from '../../../src/utils/page'
+import { getPage, getReferrer, getContextElements, loadedDomain } from '../../../src/utils/page'
 
 describe('Page Utils', () => {
   jsdom({
@@ -112,7 +112,48 @@ describe('Page Utils', () => {
 
     expect(getReferrer(iframe2.contentWindow)).to.be.eql('https://first.example.com?key=value')
   })
+
+  it('getContextElements should properly encode when emails are hashed', function () {
+    createElement('h1', 'mailto:john@test.com, also found: another@test.com !', document)
+    const result = getContextElements('h1', 1000).length
+    expect(result).to.be.eql(128)
+  })
+
+  it('getContextElements should return empty when contextSelectors or contextElementsLength is invalid', function () {
+    createElement('p', 'mailto:john@test.com, also found: another@test.com !', document)
+    expect(getContextElements('', 1000)).to.be.eql('')
+  })
+
+  it('getContextElements should stop encoding when the next element overflows the contextElementsLength', function () {
+    createElement('h1', 'First element', document)
+    createElement('h1', 'Second element', document)
+    const result1 = getContextElements('h1', 31).length
+    const result2 = getContextElements('h1', 32).length
+    expect(result1).to.be.eql(0)
+    expect(result2).to.be.eql(30)
+  })
+
+  it('getContextElements should properly encode the context elements found', function () {
+    createElement('p', 'Some dummy text', document)
+    const result = getContextElements('p', 1000)
+    expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
+  })
+
+  it('getContextElements should properly encode when emails using unicode chars', function () {
+    createElement('p', 'mailto:भतкв2ś@北ﺐ市ไข่.ćom', document)
+    const result = getContextElements('p', 1000)
+    // Base64('<p>mailto:929ebbe916e8338c0027a263eff4012a</p>') -> 'PHA-bWFpbHRvOjkyOWViYmU5MTZlODMzOGMwMDI3YTI2M2VmZjQwMTJhPC9wPg'
+    expect(result).to.be.eql('PHA-bWFpbHRvOjkyOWViYmU5MTZlODMzOGMwMDI3YTI2M2VmZjQwMTJhPC9wPg')
+  })
+
 })
+
+function createElement(tag, text, document) {
+  const newElement = document.createElement(tag)
+  const newContent = document.createTextNode(text)
+  newElement.appendChild(newContent)
+  document.documentElement.appendChild(newElement)
+}
 
 function definedProperty (object, name, getter) {
   Object.defineProperty(object, name, {

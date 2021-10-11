@@ -21,6 +21,8 @@
  * @property {(IdexConfig|undefined)} [identityResolutionConfig]
  * @property {(boolean|undefined)} [gdprApplies]
  * @property {(string|undefined)} [gdprConsent]
+ * @property {(string|undefined)} [contextSelectors]
+ * @property {(string|undefined)} [contextElementsLength]
  */
 
 /**
@@ -99,6 +101,9 @@ const _pMap = {
   },
   referrer: referrer => {
     return asStringParam('refr', referrer)
+  },
+  contextElements: contextElements => {
+    return asStringParam('c', contextElements)
   }
 }
 

@@ -1,5 +1,5 @@
-const WAIT_UNTIL_TIMEOUT_MILLIS = 1000
-const WAIT_UNTIL_INTERVAL = 30
+const WAIT_UNTIL_TIMEOUT_MILLIS = 10000
+const WAIT_UNTIL_INTERVAL = 300
 
 export function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)

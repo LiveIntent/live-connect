@@ -108,6 +108,23 @@ export function MockServerFactory (config) {
     )
   })
 
+  app.get('/elements', (req, res) => {
+    res.send(
+      `<!DOCTYPE html>
+            <html lang="en">
+            <head><title></title>
+            </head>
+            <body>
+            <p>To collect</p>
+            <div id="before">Before</div>
+            <script src="http://bln.test.liveintent.com:3001/tracker.js"></script>
+            <div id="after">After</div>
+            <div id="idex">None</div>
+            </body>
+            </html>`
+    )
+  })
+
   app.get('/tracker.js', (req, res) => {
     res.send(fullContent)
     console.log('Returned data')

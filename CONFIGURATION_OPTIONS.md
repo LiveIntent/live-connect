@@ -174,3 +174,20 @@ Example:
   }
 }
 ```
+##### `contextSelectors` [Optional]
+The context selectors to collect from the current page.
+Example:
+```javascript
+{
+  contextSelectors: "h1,h2,p"
+}
+```
+
+##### `contextElementsLength` [Optional]
+The maximum string length for the collected elements, truncated at this length when it exceeds.
+Example:
+```javascript
+{
+  contextElementsLength: 6000
+}
+```

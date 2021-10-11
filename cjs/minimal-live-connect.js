@@ -190,15 +190,30 @@ function enrich(state, storageHandler) {
   }
 }
 
+for (var r = [], o = 0; o < 64;) {
+  r[o] = 0 | 4294967296 * Math.sin(++o % Math.PI);
+}
+
+for (var r$1, o$1 = 18, n = [], t = []; o$1 > 1; o$1--) {
+  for (r$1 = o$1; r$1 < 320;) {
+    n[r$1 += o$1] = 1;
+  }
+}
+function e(r, o) {
+  return 4294967296 * Math.pow(r, 1 / o) | 0;
+}
+for (r$1 = 0; r$1 < 64;) {
+  n[++o$1] || (t[r$1] = e(o$1, 2), n[r$1++] = e(o$1, 3));
+}
+
 var emailRegex = function emailRegex() {
   return /\S+(@|%40)\S+\.\S+/;
 };
 function isEmail(s) {
   return emailRegex().test(s);
 }
-var emailLikeRegex = /"([^"]+(@|%40)[^"]+[.][a-z]*(\s+)?)(\\"|")/;
 function containsEmailField(s) {
-  return emailLikeRegex.test(s);
+  return emailRegex().test(s);
 }
 
 function enrich$1(state, storageHandler) {
