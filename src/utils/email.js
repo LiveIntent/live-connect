@@ -32,7 +32,7 @@ export function extractEmail (s) {
 export function listEmailsInString (s) {
   const result = []
   // eslint-disable-next-line
-  const emailLikeRegex = `([\\w\\d${UNICODE_LETTER}.+-]+(@|%40)[\\w\\d${UNICODE_LETTER}-]+\.[\\w\\d${UNICODE_LETTER}.-]+)`
+  const emailLikeRegex = `([\\w\\d${UNICODE_LETTER}.+-]+(@|%40)[\\w\\d${UNICODE_LETTER}-]+.[\\w\\d${UNICODE_LETTER}.-]+)`
   const multipleEmailLikeRegex = new RegExp(emailLikeRegex, 'g')
   let current = multipleEmailLikeRegex.exec(s)
   while (current) {
