@@ -1,6 +1,5 @@
 import { trim } from './types'
 import { hashEmail } from '../utils/hash'
-import { UNICODE_LETTER } from '../utils/consts'
 
 const emailRegex = () => /\S+(@|%40)\S+\.\S+/
 
@@ -32,7 +31,7 @@ export function extractEmail (s) {
 export function listEmailsInString (s) {
   const result = []
   // eslint-disable-next-line
-  const emailLikeRegex = `([\\w\\d${UNICODE_LETTER}.+-]+(@|%40)[\\w\\d${UNICODE_LETTER}-]+.[\\w\\d${UNICODE_LETTER}.-]+)`
+  const emailLikeRegex = `([\\w\\d.+-]+(@|%40)[\\w\\d-]+.[\\w\\d.-]+)`
   const multipleEmailLikeRegex = new RegExp(emailLikeRegex, 'g')
   let current = multipleEmailLikeRegex.exec(s)
   while (current) {
