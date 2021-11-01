@@ -27,11 +27,10 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
       }
     }
     try {
-      storageHandler.setCookie(
+      storageHandler.set(
         cacheKey(additionalParams),
         JSON.stringify(responseObj),
         expiresInHours(expirationHours),
-        'Lax',
         domain)
     } catch (ex) {
       console.error('Error storing response to cookies', ex)
@@ -73,7 +72,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      const storedCookie = storageHandler.getCookie(cacheKey(additionalParams))
+      const storedCookie = storageHandler.get(cacheKey(additionalParams))
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie))
       } else {
