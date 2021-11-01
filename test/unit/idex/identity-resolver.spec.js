@@ -171,4 +171,30 @@ describe('IdentityResolver', () => {
     identityResolver.resolve(() => {}, errorCallback)
     requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
+
+  it('should return different responses for different additional params', function () {
+    const responseMd5 = { id: 123 }
+    const responseSha1 = { id: 125 }
+
+    const identityResolver = IdentityResolver({}, storage, calls)
+    let jsonResponse = null
+    const successCallback = (responseAsJson) => {
+      jsonResponse = responseAsJson
+    }
+    identityResolver.resolve(successCallback, () => {}, { type: 'md5' })
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(responseMd5))
+    expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?type=md5')
+    expect(jsonResponse).to.be.eql(responseMd5)
+
+    identityResolver.resolve(successCallback, () => {}, { type: 'sha1' })
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(responseSha1))
+    expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?type=sha1')
+    expect(jsonResponse).to.be.eql(responseSha1)
+
+    jsonResponse = null
+    identityResolver.resolve(successCallback, () => {}, { type: 'sha1' })
+    expect(jsonResponse).to.be.eql(responseSha1)
+
+    expect(callCount).to.be.eql(2)
+  })
 })
