@@ -195,6 +195,11 @@ describe('IdentityResolver', () => {
     identityResolver.resolve(successCallback, () => {}, { type: 'sha1' })
     expect(jsonResponse).to.be.eql(responseSha1)
 
+
+    jsonResponse = null
+    identityResolver.resolve(successCallback, () => {}, { type: 'md5' })
+    expect(jsonResponse).to.be.eql(responseMd5)
+
     expect(callCount).to.be.eql(2)
   })
 })
