@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai'
+import { assert, expect, use } from 'chai'
 import * as serverUtil from './helpers/mock-server'
 import {
   deleteAllCookies,
@@ -14,6 +14,9 @@ import {
   waitForBakerRequests,
   waitForRequests
 } from './helpers/browser'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 const packageJson = require('../../package')
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
@@ -68,7 +71,7 @@ describe('LiveConnect', function () {
     server.openPage('bln.test.liveintent.com', 'page')
     resolveIdentity(1, server)
     const idexRequests = server.getIdexHistory()
-    expect(idexRequests).to.not.be.empty
+    expect(idexRequests).to.not.be.empty()
     const idexValue = fetchResolvedIdentity()
     expect(idexValue).to.eq(JSON.stringify({ unifiedId: 'some-id' }))
   })
@@ -102,7 +105,7 @@ describe('LiveConnect', function () {
     if (!supportsLS) {
       const applicationErrors = server.getApplicationErrors()
       assert.strictEqual(applicationErrors.length, 1)
-      expect(applicationErrors[0].query.ae).to.not.be.empty
+      expect(applicationErrors[0].query.ae).to.not.be.empty()
     }
   })
 
@@ -131,8 +134,8 @@ describe('LiveConnect', function () {
     } else {
       const applicationErrors = server.getApplicationErrors()
       assert.strictEqual(applicationErrors.length, 2)
-      expect(applicationErrors[0].query.ae).to.not.be.empty
-      expect(applicationErrors[1].query.ae).to.not.be.empty
+      expect(applicationErrors[0].query.ae).to.not.be.empty()
+      expect(applicationErrors[1].query.ae).to.not.be.empty()
     }
   })
 
@@ -148,7 +151,7 @@ describe('LiveConnect', function () {
     } else {
       const applicationErrors = server.getApplicationErrors()
       assert.strictEqual(applicationErrors.length, 1)
-      expect(applicationErrors[0].query.ae).to.not.be.empty
+      expect(applicationErrors[0].query.ae).to.not.be.empty()
     }
   })
 
@@ -159,7 +162,7 @@ describe('LiveConnect', function () {
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (!isMobileSafari()) {
-      expect(firstTrackingRequest.query.refr).to.be.undefined
+      expect(firstTrackingRequest.query.refr).to.be.undefined()
     }
     expect('http://bln.test.liveintent.com:3001/page').to.eq(firstTrackingRequest.query.pu)
   })
@@ -226,7 +229,7 @@ describe('LiveConnect', function () {
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
 
-    expect(firstTrackingRequest.query.refr).to.be.undefined
+    expect(firstTrackingRequest.query.refr).to.be.undefined()
     if (isFirefoxAfter86()) {
       expect('http://framed.test.liveintent.com:3001/').to.eq(firstTrackingRequest.query.pu)
     } else if (isIE() || isFirefox()) {

@@ -1,8 +1,11 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import jsdom from 'mocha-jsdom'
 import * as emitter from '../../../src/utils/emitter'
 import * as bus from '../../../src/events/bus'
 import * as C from '../../../src/utils/consts'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Emitter.error', () => {
   let windowBus = null

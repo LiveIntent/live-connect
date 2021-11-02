@@ -1,10 +1,13 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
 import * as C from '../../../src/utils/consts'
 import * as bus from '../../../src/events/bus'
 import * as calls from '../../shared/utils/calls'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('PixelSender', () => {
   let ajaxRequests = []
@@ -123,7 +126,7 @@ describe('PixelSender', () => {
 
   it('calls a presend function when sendAjax', function (done) {
     const presend = () => {
-      expect(ajaxRequests).to.be.empty
+      expect(ajaxRequests).to.be.empty()
       done()
     }
     const sender = new PixelSender({}, calls, null, presend)
@@ -134,7 +137,7 @@ describe('PixelSender', () => {
     const sender = new PixelSender({}, calls)
     sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
     expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?xxx=yyy&dtstmp=\d+/)
-    expect(pixelRequests[0].onload).to.be.undefined
+    expect(pixelRequests[0].onload).to.be.undefined()
   })
 
   it('sends an image pixel and call onload if request succeeds when sendPixel', function () {
@@ -148,6 +151,6 @@ describe('PixelSender', () => {
   it('does not send an image pixel if sendsPixel resolves to false when sendPixel', function () {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, null)
     sender.sendPixel({ asQueryString: () => '?zzz=ccc', sendsPixel: () => false })
-    expect(pixelRequests).to.be.empty
+    expect(pixelRequests).to.be.empty()
   })
 })

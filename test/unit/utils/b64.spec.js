@@ -1,6 +1,9 @@
 import jsdom from 'mocha-jsdom'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { base64UrlEncode } from '../../../src/utils/b64'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('B64 Utils', () => {
   jsdom({

@@ -1,6 +1,9 @@
 import jsdom from 'mocha-jsdom'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { getPage, getReferrer, getContextElements, loadedDomain } from '../../../src/utils/page'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Page Utils', () => {
   jsdom({

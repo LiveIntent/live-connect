@@ -1,5 +1,8 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import * as typeUtils from '../../../src/utils/types'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('StringUtils', () => {
   it('should return a string if the argument is a number', function () {

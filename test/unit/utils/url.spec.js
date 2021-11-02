@@ -1,5 +1,8 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { urlParams } from '../../../src/utils/url'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 const elements = [
   'array=a',

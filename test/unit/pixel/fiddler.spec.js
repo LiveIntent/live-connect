@@ -1,6 +1,9 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { fiddle } from '../../../src/pixel/fiddler'
 import { hashEmail } from '../../../src/utils/hash'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Fiddler', () => {
   it('should use the providedHash if present', function () {

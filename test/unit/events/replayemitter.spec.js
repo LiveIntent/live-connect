@@ -30,7 +30,7 @@ describe('ReplayEmitter', () => {
     expect(callback).to.have.been.first.called.with.exactly('first event')
 
     emitter.emit('test', 'second event')
-    expect(callback).to.have.been.called.once
+    expect(callback).to.have.been.called.once()
   })
 
   it('should work fine when attached with no previous events', () => {
@@ -39,8 +39,8 @@ describe('ReplayEmitter', () => {
     const callbackOnce = spy()
     emitter.on('test', callbackOn)
     emitter.once('test', callbackOnce)
-    expect(callbackOn).to.not.have.been.called
-    expect(callbackOnce).to.not.have.been.called
+    expect(callbackOn).to.not.have.been.called()
+    expect(callbackOnce).to.not.have.been.called()
 
     emitter.emit('test', 'first event')
     expect(callbackOn).to.have.been.first.called.with.exactly('first event')
@@ -48,7 +48,7 @@ describe('ReplayEmitter', () => {
 
     emitter.emit('test', 'second event')
     expect(callbackOn).to.have.been.second.called.with.exactly('second event')
-    expect(callbackOnce).to.have.been.called.once
+    expect(callbackOnce).to.have.been.called.once()
   })
 
   it('should drop oldest messages on overflow', () => {
@@ -89,7 +89,7 @@ describe('ReplayEmitter', () => {
     expect(emitter.h.test.length).to.be.eq(1)
 
     emitter.off('test', callback2)
-    expect(emitter.h.test).to.be.undefined
+    expect(emitter.h.test).to.be.undefined()
   })
 
   it('should turn off all handlers when no callback passed', () => {
@@ -104,6 +104,6 @@ describe('ReplayEmitter', () => {
     expect(emitter.h.test.length).to.be.eq(2)
 
     emitter.off('test')
-    expect(emitter.h.test).to.be.undefined
+    expect(emitter.h.test).to.be.undefined()
   })
 })

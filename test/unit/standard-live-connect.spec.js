@@ -1,13 +1,16 @@
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { urlParams } from '../../src/utils/url'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { StandardLiveConnect } from '../../src/standard-live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
 import * as storage from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import { hashEmail } from '../../src/utils/hash'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()

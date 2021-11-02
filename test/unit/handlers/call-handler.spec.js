@@ -1,8 +1,11 @@
 import jsdom from 'mocha-jsdom'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import sinon from 'sinon'
 import * as emitter from '../../../src/utils/emitter'
 import { CallHandler } from '../../../src/handlers/call-handler'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('CallHandler', () => {
   let emitterErrors = []
@@ -42,7 +45,7 @@ describe('CallHandler', () => {
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
     expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
-    expect(emitterErrors[0].exception).to.be.undefined
+    expect(emitterErrors[0].exception).to.be.undefined()
   })
 
   it('should send an error if an external handler doesn not have a get function', function () {
@@ -51,6 +54,6 @@ describe('CallHandler', () => {
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
     expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
-    expect(emitterErrors[0].exception).to.be.undefined
+    expect(emitterErrors[0].exception).to.be.undefined()
   })
 })

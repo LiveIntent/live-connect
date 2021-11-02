@@ -1,6 +1,9 @@
 import jsdom from 'mocha-jsdom'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import * as pageEnricher from '../../../src/enrichers/page'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('PageEnricher', () => {
   const url = 'http://www.example.com/?sad=0&dsad=iou'

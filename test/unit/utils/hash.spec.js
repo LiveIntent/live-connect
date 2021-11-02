@@ -1,5 +1,8 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import * as hashUtils from '../../../src/utils/hash'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Hashes', () => {
   it('hash an email with a lowerCased value', function () {

@@ -1,10 +1,13 @@
 import jsdom from 'mocha-jsdom'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
 import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import * as emitter from '../../../src/utils/emitter'
 import { expiresInDays } from '../../../src/utils/types'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('StorageHandler', () => {
   let emitterErrors = []
@@ -34,8 +37,8 @@ describe('StorageHandler', () => {
   //    const storageHandler = StorageHandler('none')
   //    storageHandler.setCookie('x', 'value-of-x')
   //    storageHandler.setDataInLocalStorage('y', 'value-of-y')
-  //    expect(storage.getCookie('x')).to.be.null
-  //    expect(storage.getDataFromLocalStorage('y')).to.be.null
+  //    expect(storage.getCookie('x')).to.be.null()
+  //    expect(storage.getDataFromLocalStorage('y')).to.be.null()
   //    expect(storage.findSimilarCookies('x')).to.be.eql([])
   //  })
   //
@@ -44,7 +47,7 @@ describe('StorageHandler', () => {
   //    expect(emitterErrors.length).to.be.eq(1)
   //    expect(emitterErrors[0].name).to.be.eq('StorageHandler')
   //    expect(emitterErrors[0].message).to.be.eq('The storage functions \'["localStorageIsEnabled","getCookie","setCookie","getDataFromLocalStorage","removeDataFromLocalStorage","setDataInLocalStorage","findSimilarCookies"]\' are not provided')
-  //    expect(emitterErrors[0].exception).to.be.undefined
+  //    expect(emitterErrors[0].exception).to.be.undefined()
   //  })
   //
   //  it('should send an error if an external handler is not provided and the storage strategy is none', function () {
@@ -53,7 +56,7 @@ describe('StorageHandler', () => {
   //    expect(emitterErrors.length).to.be.eq(1)
   //    expect(emitterErrors[0].name).to.be.eq('StorageHandler')
   //    expect(emitterErrors[0].message).to.be.eq('The storage functions \'["getCookie","getDataFromLocalStorage","findSimilarCookies"]\' are not provided')
-  //    expect(emitterErrors[0].exception).to.be.undefined
+  //    expect(emitterErrors[0].exception).to.be.undefined()
   //  })
   //
   //  it('should use the external storage handler if provided', function () {
@@ -66,7 +69,7 @@ describe('StorageHandler', () => {
   //    const storageHandler = StorageHandler('cookie', extStorageHandler)
   //    storageHandler.setCookie('x', 'value-of-x')
   //    expect(calls.setCookie).to.be.eql(['x', 'value-of-x'])
-  //    expect(storage.getCookie('x')).to.be.null
+  //    expect(storage.getCookie('x')).to.be.null()
   //  })
   //
   //  it('should use a partial storage handler', function () {
@@ -79,7 +82,7 @@ describe('StorageHandler', () => {
   //    }
   //    const storageHandler = StorageHandler('cookie', extStorageHandler)
   //    storageHandler.setDataInLocalStorage('x', 'value-of-x')
-  //    expect(calls.setCookie).to.be.undefined
+  //    expect(calls.setCookie).to.be.undefined()
   //    expect(storage.getDataFromLocalStorage('x')).to.be.eq('value-of-x')
   //  })
 
@@ -88,7 +91,7 @@ describe('StorageHandler', () => {
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
     expect(storage.getDataFromLocalStorage('key')).to.be.eq('value')
-    expect(storageHandler.get('unknownKey')).to.be.null
+    expect(storageHandler.get('unknownKey')).to.be.null()
   })
 
   it('should get from cookies', function () {
@@ -96,7 +99,7 @@ describe('StorageHandler', () => {
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
-    expect(storageHandler.get('unknownKey')).to.be.null
+    expect(storageHandler.get('unknownKey')).to.be.null()
   })
 
   it('should get from cookies when the strategy is not defined', function () {
@@ -104,14 +107,14 @@ describe('StorageHandler', () => {
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
-    expect(storageHandler.get('unknownKey')).to.be.null
+    expect(storageHandler.get('unknownKey')).to.be.null()
   })
 
   it('should return nothing when the strategy is none', function () {
     const storageHandler = StorageHandler('none', storage)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
-    expect(storageHandler.get('key')).to.be.null
-    expect(storage.getCookie('key')).to.be.null
-    expect(storage.getDataFromLocalStorage('key')).to.be.null
+    expect(storageHandler.get('key')).to.be.null()
+    expect(storage.getCookie('key')).to.be.null()
+    expect(storage.getDataFromLocalStorage('key')).to.be.null()
   })
 })

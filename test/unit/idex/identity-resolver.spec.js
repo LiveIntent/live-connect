@@ -1,10 +1,13 @@
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver'
 import * as storage from '../../shared/utils/storage'
 import * as calls from '../../shared/utils/calls'
 import { init } from '../../../src/events/bus'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('IdentityResolver', () => {
   let requestToComplete = null
@@ -33,7 +36,7 @@ describe('IdentityResolver', () => {
     const identityResolver = IdentityResolver({}, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(callCount).to.be.eql(1)
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(responseAsJson).to.be.eql(response)
@@ -61,7 +64,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({ id: 123 }))
     expect(jsonResponse).to.be.eql({ id: 123 })
     setCookieStub.restore()
-    expect(errors).to.not.be.empty
+    expect(errors).to.not.be.empty()
     expect(callCount).to.be.eql(2)
   })
 
@@ -70,7 +73,7 @@ describe('IdentityResolver', () => {
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -83,7 +86,7 @@ describe('IdentityResolver', () => {
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -95,7 +98,7 @@ describe('IdentityResolver', () => {
     const identityResolver = IdentityResolver({ peopleVerifiedId: null }, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql({})
       done()
     }
@@ -120,7 +123,7 @@ describe('IdentityResolver', () => {
     }, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pubcid=exexex&some-id=AnotherId')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -137,7 +140,7 @@ describe('IdentityResolver', () => {
     }, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -154,7 +157,7 @@ describe('IdentityResolver', () => {
     }, storage, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&gdpr_consent=gdprConsent')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }

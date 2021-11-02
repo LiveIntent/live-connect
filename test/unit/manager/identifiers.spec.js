@@ -1,9 +1,12 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import * as identifiers from '../../../src/manager/identifiers'
 import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import { StorageStrategy } from '../../../src/model/storage-strategy'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -31,7 +34,7 @@ describe('IdentifiersManager', () => {
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
     const resolutionResult = identifiers.resolve({ storageStrategy: 'ls' }, storage)
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null
+    expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
     expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
