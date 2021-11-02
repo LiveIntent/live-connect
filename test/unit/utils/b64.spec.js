@@ -3,7 +3,6 @@ import { expect } from 'chai'
 import { base64UrlEncode } from '../../../src/utils/b64'
 
 describe('B64 Utils', () => {
-
   jsdom({
     url: 'https://liveinte.com',
     referrer: 'https://first.example.com?key=value'

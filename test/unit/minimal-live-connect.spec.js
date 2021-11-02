@@ -68,5 +68,4 @@ describe('MinimalLiveConnect', () => {
     const lc = MinimalLiveConnect(config, storage, calls)
     expect(lc.config).to.eql(config)
   })
-
 })

@@ -82,7 +82,7 @@ describe('Page Utils', () => {
     definedProperty(iframe.contentWindow, 'document', () => { return undefined })
     definedProperty(iframe.contentWindow, 'location', () => { return undefined })
 
-    expect(getPage(iframe.contentWindow)).to.be.undefined
+    expect(getPage(iframe.contentWindow)).to.be.undefined()
   })
 
   it('getReferrer should return the referrer for the top-level window', function () {
@@ -92,7 +92,7 @@ describe('Page Utils', () => {
   it('getReferrer should not return the referrer when the top is not defined', function () {
     definedProperty(window, 'top', () => { return undefined })
 
-    expect(getReferrer()).to.be.undefined
+    expect(getReferrer()).to.be.undefined()
   })
 
   it('getReferrer should return the referrer for the iframe', function () {
@@ -138,10 +138,9 @@ describe('Page Utils', () => {
     const result = getContextElements('p', 1000)
     expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
   })
-
 })
 
-function createElement(tag, text, document) {
+function createElement (tag, text, document) {
   const newElement = document.createElement(tag)
   const newContent = document.createTextNode(text)
   newElement.appendChild(newContent)

@@ -48,7 +48,6 @@ describe('Fiddler', () => {
     }
     const result = fiddle(pixelData)
     expect(result.hashedEmail).to.eql([hashes.md5])
-
   })
 
   it('should hash the plain text email if the providedHash if it is not a valid hash', function () {

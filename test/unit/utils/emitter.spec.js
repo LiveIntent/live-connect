@@ -33,7 +33,7 @@ describe('Emitter.error', () => {
     emitter.error('some name', null, new Error('the original message'))
     expect(ex[0].name).to.eql('some name')
     expect(ex[0].message).to.eql('the original message')
-    expect(ex[0].stack).to.not.be.empty
+    expect(ex[0].stack).to.not.be.empty()
   })
 
   it('should send a message in a correct namespace', function () {

@@ -1,5 +1,5 @@
 import { replacer, MASK } from '../../../src/pixel/stringify'
-import { assert, expect } from 'chai'
+import { expect } from 'chai'
 
 describe('Stringify', () => {
   it('should replace email like string with a mask using plain  @ symbol', function () {

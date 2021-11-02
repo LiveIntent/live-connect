@@ -251,5 +251,4 @@ describe('LiveConnect', function () {
     const firstTrackingRequest = server.getTrackingRequests()[0]
     expect('PHA-VG8gY29sbGVjdDwvcD4').to.eq(firstTrackingRequest.query.c)
   })
-  
 })

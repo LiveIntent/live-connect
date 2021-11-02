@@ -36,6 +36,6 @@ describe('Pixel Utils', () => {
     sendPixel('http://localhost', null)
 
     expect(obj.src).to.eq('http://localhost')
-    expect(obj.onload).to.be.undefined
+    expect(obj.onload).to.be.undefined()
   })
 })
