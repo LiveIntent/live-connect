@@ -44,7 +44,6 @@ describe('IdentifiersManager', () => {
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
     const storageNone = StorageHandler('none', externalStorage)
     const resolutionResult = identifiers.resolve({}, storageNone)
-    // in this case the domain won't be updated to.example.com
     expect(resolutionResult).to.include({ domain: '.www.example.com', liveConnectId: null })
   })
 
