@@ -1,11 +1,14 @@
 import { expect, use } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers'
 import jsdom from 'mocha-jsdom'
-import * as storage from '../../shared/utils/storage'
+import * as externalStorage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
+import { StorageHandler } from '../../../src/handlers/storage-handler'
 
 use(dirtyChai)
+
+const storage = StorageHandler('cookie', externalStorage)
 
 const COOKIE_NAME = 'sample_cookie'
 const SIMPLE_COOKIE1 = 'sample_value1'

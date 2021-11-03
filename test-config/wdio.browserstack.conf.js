@@ -11,24 +11,24 @@ const commonCapabilities = {
 
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
-  { ...commonCapabilities, browserName: 'Chrome', browser_version: 'latest', os: 'Windows', os_version: '10' },
-  { ...commonCapabilities, browserName: 'Chrome', browser_version: '40.0', os: 'Windows', os_version: '7' },
-  { ...commonCapabilities, browserName: 'firefox', browser_version: 'latest', os: 'Windows', os_version: '10' },
-  { ...commonCapabilities, browserName: 'firefox', browser_version: '52.0', os: 'Windows', os_version: '7' },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '14.1', os: 'OS X', os_version: 'Big Sur' },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '13.1', os: 'OS X', os_version: 'Catalina' },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '12.1', os: 'OS X', os_version: 'Mojave' },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '11.1', os: 'OS X', os_version: 'High Sierra' },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '10.1', os: 'OS X', os_version: 'Sierra' },
-  { ...commonCapabilities, browserName: 'IE', browser_version: '11.0', os: 'Windows', os_version: '10' },
-  { ...commonCapabilities, browserName: 'Edge', browser_version: 'latest', os: 'Windows', os_version: '10', 'browserstack.use_w3c': true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '15.0', os_version: '15 Beta', device: 'iPhone 11 Pro', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '14.0', os_version: '14', device: 'iPhone 12', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '13.0', os_version: '13', device: 'iPhone 11', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '12.0', os_version: '12', device: 'iPhone 8', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '11.0', os_version: '11', device: 'iPad Pro 9.7 2016', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Chrome', browser_version: 'latest', os_version: '11.0', device: 'Samsung Galaxy S21', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Chrome', browser_version: '67', os_version: '6.0', device: 'Google Nexus 6', real_mobile: true }
+  // { ...commonCapabilities, browserName: 'Chrome', browser_version: 'latest', os: 'Windows', os_version: '10' }
+  // { ...commonCapabilities, browserName: 'Chrome', browser_version: '40.0', os: 'Windows', os_version: '7' },
+  // { ...commonCapabilities, browserName: 'firefox', browser_version: 'latest', os: 'Windows', os_version: '10' },
+  // { ...commonCapabilities, browserName: 'firefox', browser_version: '52.0', os: 'Windows', os_version: '7' },
+  { ...commonCapabilities, browserName: 'Safari', browser_version: '14.1', os: 'OS X', os_version: 'Big Sur' }
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '13.1', os: 'OS X', os_version: 'Catalina' },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '12.1', os: 'OS X', os_version: 'Mojave' },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '11.1', os: 'OS X', os_version: 'High Sierra' },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '10.1', os: 'OS X', os_version: 'Sierra' },
+  // { ...commonCapabilities, browserName: 'IE', browser_version: '11.0', os: 'Windows', os_version: '10' },
+  // { ...commonCapabilities, browserName: 'Edge', browser_version: 'latest', os: 'Windows', os_version: '10', 'browserstack.use_w3c': true },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '15.0', os_version: '15 Beta', device: 'iPhone 11 Pro', real_mobile: true },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '14.0', os_version: '14', device: 'iPhone 12', real_mobile: true },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '13.0', os_version: '13', device: 'iPhone 11', real_mobile: true },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '12.0', os_version: '12', device: 'iPhone 8', real_mobile: true },
+  // { ...commonCapabilities, browserName: 'Safari', browser_version: '11.0', os_version: '11', device: 'iPad Pro 9.7 2016', real_mobile: true },
+  // { ...commonCapabilities, browserName: 'Chrome', browser_version: 'latest', os_version: '11.0', device: 'Samsung Galaxy S21', real_mobile: true },
+  // { ...commonCapabilities, browserName: 'Chrome', browser_version: '67', os_version: '6.0', device: 'Google Nexus 6', real_mobile: true }
 ]
 
 exports.config = {

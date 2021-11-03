@@ -43,7 +43,7 @@ describe('IdentityResolver', () => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(responseAsJson).to.be.eql(response)
       expect(callCount).to.be.eql(1)
-      expect(externalStorage.getCookie('__li_idex_cache')).to.be.eq(JSON.stringify(response))
+      expect(storage.getCookie('__li_idex_cache')).to.be.eq(JSON.stringify(response))
       done()
     }
     identityResolver.resolve(successCallback)

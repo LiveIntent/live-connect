@@ -21,24 +21,24 @@ describe('IdentifiersManager', () => {
   it('should create a first party cookie if it doesn\'t exist', function () {
     expect(storage.getCookie('_lc2_fpi')).to.eql(null)
     const resolutionResult = identifiers.resolve({}, storage)
-    expect(externalStorage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(externalStorage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should create a first party cookie if it doesn\'t exist, and storage strategy is cookie', function () {
     expect(storage.getCookie('_lc2_fpi')).to.eql(null)
     const resolutionResult = identifiers.resolve({}, storage)
-    expect(externalStorage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(externalStorage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
-    expect(externalStorage.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
+    expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
     const localStorage = StorageHandler('ls', externalStorage)
     const resolutionResult = identifiers.resolve({}, localStorage)
-    expect(externalStorage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(externalStorage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
-    expect(externalStorage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
+    expect(storage.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
@@ -54,7 +54,7 @@ describe('IdentifiersManager', () => {
 
   it('should re-use a first party cookie if it exist', function () {
     const id = 'xxxxx'
-    externalStorage.setCookie('_lc2_fpi', id, 400, undefined, '.example.com')
+    storage.setCookie('_lc2_fpi', id, 400, undefined, '.example.com')
     const resolutionResult = identifiers.resolve({}, storage)
     expect(storage.getCookie('_lc2_fpi')).to.eql(id)
     expect(resolutionResult.liveConnectId).to.eql(id)
@@ -71,7 +71,7 @@ describe('IdentifiersManager', () => {
   it('should create a first party cookie that starts with apex domain hash', function () {
     identifiers.resolve({}, storage)
     // apexOfExampleCom = '0caaf24ab1a0'
-    expect(externalStorage.getCookie('_lc2_fpi')).to.match(/0caaf24ab1a0--.*/)
+    expect(storage.getCookie('_lc2_fpi')).to.match(/0caaf24ab1a0--.*/)
   })
 
   it('should create a first party cookie that is lowercased', function () {

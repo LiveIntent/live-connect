@@ -108,7 +108,7 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-function _responseReceived(storageHandler, successCallback) {
+function _responseReceived(successCallback) {
   return function (response) {
     var responseObj = {};
     if (response) {
@@ -121,7 +121,7 @@ function _responseReceived(storageHandler, successCallback) {
     successCallback(responseObj);
   };
 }
-function IdentityResolver(config, storageHandler, calls) {
+function IdentityResolver(config, calls) {
   try {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
@@ -146,7 +146,7 @@ function IdentityResolver(config, storageHandler, calls) {
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
     var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, successCallback), errorCallback, timeout);
+      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(successCallback), errorCallback, timeout);
     };
     return {
       resolve: function resolve(successCallback, errorCallback, additionalParams) {
@@ -303,7 +303,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
     var peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
     var finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
-    var resolver = IdentityResolver(finalData, storageHandler, callHandler);
+    var resolver = IdentityResolver(finalData, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);
