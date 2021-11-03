@@ -10,12 +10,12 @@ const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
 /**
- * @param {State} config: identityResolutionConfig
+ * @param {State} state
  * @param {StorageHandler} storageHandler
  */
-export function resolve (config, storageHandler) {
+export function resolve (state, storageHandler) {
   try {
-    console.log('identifiers.resolve', config)
+    console.log('identifiers.resolve', state)
 
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
@@ -60,7 +60,7 @@ export function resolve (config, storageHandler) {
       return cookie.toLocaleLowerCase()
     }
 
-    const expiry = config.expirationDays || DEFAULT_EXPIRATION_DAYS
+    const expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS
     const cookieDomain = determineTld()
     const storageOptions = {
       expires: expiry,
