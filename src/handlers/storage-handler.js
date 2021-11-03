@@ -85,6 +85,10 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
       } else {
         functions.setCookie(key, value, expirationDate.toUTCString(), 'Lax', domain)
       }
-    }
+    },
+    getCookie: functions.getCookie,
+    setCookie: functions.setCookie,
+    setDataInLocalStorage: functions.setDataInLocalStorage,
+    findSimilarCookies: functions.findSimilarCookies
   }
 }

@@ -6,7 +6,7 @@ import { base64UrlEncode } from '../utils/b64'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-function cacheKey (additionalParams) {
+function _cacheKey (additionalParams) {
   if (additionalParams) {
     const suffix = base64UrlEncode(JSON.stringify(additionalParams))
     return `${IDEX_STORAGE_KEY}_${suffix}`
@@ -28,7 +28,7 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
     }
     try {
       storageHandler.set(
-        cacheKey(additionalParams),
+        _cacheKey(additionalParams),
         JSON.stringify(responseObj),
         expiresInHours(expirationHours),
         domain)
@@ -72,7 +72,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      const storedCookie = storageHandler.get(cacheKey(additionalParams))
+      const storedCookie = storageHandler.get(_cacheKey(additionalParams))
       if (storedCookie) {
         successCallback(JSON.parse(storedCookie))
       } else {

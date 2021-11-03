@@ -10,12 +10,12 @@ const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
 /**
- * @param {State} state
+ * @param {State} config: identityResolutionConfig
  * @param {StorageHandler} storageHandler
  */
-export function resolve (state, storageHandler) {
+export function resolve (config, storageHandler) {
   try {
-    console.log('identifiers.resolve', state)
+    console.log('identifiers.resolve', config)
 
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
@@ -34,7 +34,7 @@ export function resolve (state, storageHandler) {
       return `.${domain}`
     }
 
-    const getOrAddWithExpiration = (key, value, storageOptions) => {
+    const getOrAddWithExpiration = (key, value) => {
       try {
         const oldValue = storageHandler.get(key)
         const expiry = expiresInDays(storageOptions.expires)
@@ -60,7 +60,7 @@ export function resolve (state, storageHandler) {
       return cookie.toLocaleLowerCase()
     }
 
-    const expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS
+    const expiry = config.expirationDays || DEFAULT_EXPIRATION_DAYS
     const cookieDomain = determineTld()
     const storageOptions = {
       expires: expiry,
@@ -68,9 +68,8 @@ export function resolve (state, storageHandler) {
     }
     const liveConnectIdentifier = getOrAddWithExpiration(
       NEXT_GEN_FP_NAME,
-      generateCookie(cookieDomain),
-      storageOptions,
-      state.storageStrategy)
+      generateCookie(cookieDomain)
+    )
 
     if (liveConnectIdentifier) {
       storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)

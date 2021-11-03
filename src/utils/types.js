@@ -79,10 +79,10 @@ export function isFunction (fun) {
  * @return {Date}
  */
 export function expiresInDays (expires) {
-  return expiresIn(expires, 864e5)
+  return _expiresIn(expires, 864e5)
 }
 
-function expiresIn (expires, number) {
+function _expiresIn (expires, number) {
   return new Date((new Date().getTime() + (expires * number)))
 }
 
@@ -92,7 +92,7 @@ function expiresIn (expires, number) {
  * @return {Date}
  */
 export function expiresInHours (expires) {
-  return expiresIn(expires, 36e5)
+  return _expiresIn(expires, 36e5)
 }
 
 export function asParamOrEmpty (param, value, transform) {
