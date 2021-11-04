@@ -33,7 +33,6 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
         expiresInHours(expirationHours),
         domain)
     } catch (ex) {
-      console.error('Error storing response to cookies', ex)
       fromError('IdentityResolverStorage', ex)
     }
     successCallback(responseObj)
@@ -72,9 +71,9 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      const storedCookie = storageHandler.get(_cacheKey(additionalParams))
-      if (storedCookie) {
-        successCallback(JSON.parse(storedCookie))
+      const cachedValue = storageHandler.get(_cacheKey(additionalParams))
+      if (cachedValue) {
+        successCallback(JSON.parse(cachedValue))
       } else {
         calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
       }
