@@ -1087,9 +1087,9 @@ function IdentityResolver(config, storageHandler, calls) {
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
     var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      var storedCookie = storageHandler.get(_cacheKey(additionalParams));
-      if (storedCookie) {
-        successCallback(JSON.parse(storedCookie));
+      var cachedValue = storageHandler.get(_cacheKey(additionalParams));
+      if (cachedValue) {
+        successCallback(JSON.parse(cachedValue));
       } else {
         calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout);
       }
