@@ -101,7 +101,10 @@ const _pMap = {
   },
   referrer: referrer => {
     return asStringParam('refr', referrer)
-  },
+  }
+}
+
+const _pMapLowPriority = {
   contextElements: contextElements => {
     return asStringParam('c', contextElements)
   }
@@ -154,11 +157,20 @@ export function StateWrapper (state) {
    * @private
    */
   function _asTuples () {
+    return _tuples(_pMap).concat(_tuples(_pMapLowPriority))
+  }
+
+  /**
+   * @param {Map} parameterMap
+   * @returns {string [][]}
+   * @private
+   */
+  function _tuples (parameterMap) {
     let array = []
     Object.keys(_state).forEach((key) => {
       const value = _state[key]
-      if (_pMap[key]) {
-        const params = _pMap[key](value)
+      if (parameterMap[key]) {
+        const params = parameterMap[key](value)
         if (params && params.length) {
           if (params[0] instanceof Array) {
             array = array.concat(params)
