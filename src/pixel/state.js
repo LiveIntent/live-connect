@@ -39,7 +39,7 @@ import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, merge, asStringParam, asParamOrEmpty } from '../utils/types'
+import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamTransform, isArray } from '../utils/types'
 import { toParams } from '../utils/url'
 
 /**
@@ -52,63 +52,111 @@ import { toParams } from '../utils/url'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-const _pMap = {
-  appId: aid => {
-    return asStringParam('aid', aid)
-  },
-  eventSource: source => {
-    return asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))
-  },
-  liveConnectId: fpc => {
-    return asStringParam('duid', fpc)
-  },
-  trackerName: tn => {
-    return asStringParam('tna', tn || 'unknown')
-  },
-  pageUrl: purl => {
-    return asStringParam('pu', purl)
-  },
-  errorDetails: ed => {
-    return asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))
-  },
-  retrievedIdentifiers: identifiers => {
-    const identifierParams = []
-    identifiers.forEach((i) => identifierParams.push(asStringParam(`ext_${i.name}`, i.value)))
-    return identifierParams
-  },
-  hashesFromIdentifiers: hashes => {
-    const hashParams = []
-    hashes.forEach((h) => hashParams.push(asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
-    return hashParams
-  },
-  decisionIds: dids => {
-    return asStringParam('li_did', dids.join(','))
-  },
-  hashedEmail: he => {
-    return asStringParam('e', he.join(','))
-  },
-  usPrivacyString: usps => {
-    return asStringParam('us_privacy', usps)
-  },
-  wrapperName: wrapper => {
-    return asStringParam('wpn', wrapper)
-  },
-  gdprApplies: gdprApplies => {
-    return asParamOrEmpty('gdpr', gdprApplies, (s) => encodeURIComponent(s ? 1 : 0))
-  },
-  gdprConsent: gdprConsentString => {
-    return asStringParam('gdpr_consent', gdprConsentString)
-  },
-  referrer: referrer => {
-    return asStringParam('refr', referrer)
-  }
-}
-
-const _pMapLowPriority = {
-  contextElements: contextElements => {
-    return asStringParam('c', contextElements)
-  }
-}
+const _pArray = [
+  [
+    'appId',
+    aid => {
+      return asStringParam('aid', aid)
+    }
+  ],
+  [
+    'eventSource',
+    source => {
+      return asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))
+    }
+  ],
+  [
+    'liveConnectId',
+    fpc => {
+      return asStringParam('duid', fpc)
+    }
+  ],
+  [
+    'trackerName',
+    tn => {
+      return asStringParam('tna', tn)
+    }
+  ],
+  [
+    'pageUrl',
+    purl => {
+      return asStringParam('pu', purl)
+    }
+  ],
+  [
+    'errorDetails',
+    ed => {
+      return asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))
+    }
+  ],
+  [
+    'retrievedIdentifiers',
+    identifiers => {
+      const identifierParams = []
+      if (isArray(identifiers)) {
+        identifiers.forEach((i) => identifierParams.push(asStringParam(`ext_${i.name}`, i.value)))
+      }
+      return identifierParams
+    }
+  ],
+  [
+    'hashesFromIdentifiers',
+    hashes => {
+      const hashParams = []
+      if (isArray(hashes)) {
+        hashes.forEach((h) => hashParams.push(asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
+      }
+      return hashParams
+    }
+  ],
+  ['decisionIds',
+    dids => {
+      return asStringParamTransform('li_did', dids, (s) => s.join(','))
+    }
+  ],
+  [
+    'hashedEmail',
+    he => {
+      return asStringParamTransform('e', he, (s) => s.join(','))
+    }
+  ],
+  [
+    'usPrivacyString',
+    usps => {
+      return asStringParam('us_privacy', usps)
+    }
+  ],
+  [
+    'wrapperName',
+    wrapper => {
+      return asStringParam('wpn', wrapper)
+    }
+  ],
+  [
+    'gdprApplies',
+    gdprApplies => {
+      return asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)
+    }
+  ],
+  [
+    'gdprConsent',
+    gdprConsentString => {
+      return asStringParam('gdpr_consent', gdprConsentString)
+    }
+  ],
+  [
+    'referrer',
+    referrer => {
+      return asStringParam('refr', referrer)
+    }
+  ],
+  [
+    'contextElements',
+    contextElements => {
+      return asStringParam('c', contextElements)
+    }
+  ]
+]
 
 /**
  * @param {State} state
@@ -157,26 +205,16 @@ export function StateWrapper (state) {
    * @private
    */
   function _asTuples () {
-    return _tuples(_pMap).concat(_tuples(_pMapLowPriority))
-  }
-
-  /**
-   * @param {Map} parameterMap
-   * @returns {string [][]}
-   * @private
-   */
-  function _tuples (parameterMap) {
     let array = []
-    Object.keys(_state).forEach((key) => {
+    _pArray.forEach((keyWithParamsExtractor) => {
+      const key = keyWithParamsExtractor[0]
       const value = _state[key]
-      if (parameterMap[key]) {
-        const params = parameterMap[key](value)
-        if (params && params.length) {
-          if (params[0] instanceof Array) {
-            array = array.concat(params)
-          } else {
-            array.push(params)
-          }
+      const params = keyWithParamsExtractor[1](value)
+      if (params && params.length) {
+        if (params[0] instanceof Array) {
+          array = array.concat(params)
+        } else {
+          array.push(params)
         }
       }
     })

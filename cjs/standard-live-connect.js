@@ -65,6 +65,11 @@ function asStringParam(param, value) {
     return encodeURIComponent(s);
   });
 }
+function asStringParamTransform(param, value, transform) {
+  return asParamOrEmpty(param, value, function (s) {
+    return encodeURIComponent(transform(s));
+  });
+}
 function mapAsParams(paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
     var array = [];
@@ -584,72 +589,61 @@ function fiddle(state) {
 }
 
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
-var _pMap = {
-  appId: function appId(aid) {
-    return asStringParam('aid', aid);
-  },
-  eventSource: function eventSource(source) {
-    return asParamOrEmpty('se', source, function (s) {
-      return base64UrlEncode(JSON.stringify(s, replacer));
-    });
-  },
-  liveConnectId: function liveConnectId(fpc) {
-    return asStringParam('duid', fpc);
-  },
-  trackerName: function trackerName(tn) {
-    return asStringParam('tna', tn || 'unknown');
-  },
-  pageUrl: function pageUrl(purl) {
-    return asStringParam('pu', purl);
-  },
-  errorDetails: function errorDetails(ed) {
-    return asParamOrEmpty('ae', ed, function (s) {
-      return base64UrlEncode(JSON.stringify(s));
-    });
-  },
-  retrievedIdentifiers: function retrievedIdentifiers(identifiers) {
-    var identifierParams = [];
+var _pArray = [['appId', function (aid) {
+  return asStringParam('aid', aid);
+}], ['eventSource', function (source) {
+  return asParamOrEmpty('se', source, function (s) {
+    return base64UrlEncode(JSON.stringify(s, replacer));
+  });
+}], ['liveConnectId', function (fpc) {
+  return asStringParam('duid', fpc);
+}], ['trackerName', function (tn) {
+  return asStringParam('tna', tn);
+}], ['pageUrl', function (purl) {
+  return asStringParam('pu', purl);
+}], ['errorDetails', function (ed) {
+  return asParamOrEmpty('ae', ed, function (s) {
+    return base64UrlEncode(JSON.stringify(s));
+  });
+}], ['retrievedIdentifiers', function (identifiers) {
+  var identifierParams = [];
+  if (isArray(identifiers)) {
     identifiers.forEach(function (i) {
       return identifierParams.push(asStringParam("ext_".concat(i.name), i.value));
     });
-    return identifierParams;
-  },
-  hashesFromIdentifiers: function hashesFromIdentifiers(hashes) {
-    var hashParams = [];
+  }
+  return identifierParams;
+}], ['hashesFromIdentifiers', function (hashes) {
+  var hashParams = [];
+  if (isArray(hashes)) {
     hashes.forEach(function (h) {
       return hashParams.push(asStringParam('scre', "".concat(h.md5, ",").concat(h.sha1, ",").concat(h.sha256)));
     });
-    return hashParams;
-  },
-  decisionIds: function decisionIds(dids) {
-    return asStringParam('li_did', dids.join(','));
-  },
-  hashedEmail: function hashedEmail(he) {
-    return asStringParam('e', he.join(','));
-  },
-  usPrivacyString: function usPrivacyString(usps) {
-    return asStringParam('us_privacy', usps);
-  },
-  wrapperName: function wrapperName(wrapper) {
-    return asStringParam('wpn', wrapper);
-  },
-  gdprApplies: function gdprApplies(_gdprApplies) {
-    return asParamOrEmpty('gdpr', _gdprApplies, function (s) {
-      return encodeURIComponent(s ? 1 : 0);
-    });
-  },
-  gdprConsent: function gdprConsent(gdprConsentString) {
-    return asStringParam('gdpr_consent', gdprConsentString);
-  },
-  referrer: function referrer(_referrer) {
-    return asStringParam('refr', _referrer);
   }
-};
-var _pMapLowPriority = {
-  contextElements: function contextElements(_contextElements) {
-    return asStringParam('c', _contextElements);
-  }
-};
+  return hashParams;
+}], ['decisionIds', function (dids) {
+  return asStringParamTransform('li_did', dids, function (s) {
+    return s.join(',');
+  });
+}], ['hashedEmail', function (he) {
+  return asStringParamTransform('e', he, function (s) {
+    return s.join(',');
+  });
+}], ['usPrivacyString', function (usps) {
+  return asStringParam('us_privacy', usps);
+}], ['wrapperName', function (wrapper) {
+  return asStringParam('wpn', wrapper);
+}], ['gdprApplies', function (gdprApplies) {
+  return asStringParamTransform('gdpr', gdprApplies, function (s) {
+    return s ? 1 : 0;
+  });
+}], ['gdprConsent', function (gdprConsentString) {
+  return asStringParam('gdpr_consent', gdprConsentString);
+}], ['referrer', function (referrer) {
+  return asStringParam('refr', referrer);
+}], ['contextElements', function (contextElements) {
+  return asStringParam('c', contextElements);
+}]];
 function StateWrapper(state) {
   var _state = {};
   if (state) {
@@ -676,20 +670,16 @@ function StateWrapper(state) {
     return new StateWrapper(merge(state, newInfo));
   }
   function _asTuples() {
-    return _tuples(_pMap).concat(_tuples(_pMapLowPriority));
-  }
-  function _tuples(parameterMap) {
     var array = [];
-    Object.keys(_state).forEach(function (key) {
+    _pArray.forEach(function (keyWithParamsExtractor) {
+      var key = keyWithParamsExtractor[0];
       var value = _state[key];
-      if (parameterMap[key]) {
-        var params = parameterMap[key](value);
-        if (params && params.length) {
-          if (params[0] instanceof Array) {
-            array = array.concat(params);
-          } else {
-            array.push(params);
-          }
+      var params = keyWithParamsExtractor[1](value);
+      if (params && params.length) {
+        if (params[0] instanceof Array) {
+          array = array.concat(params);
+        } else {
+          array.push(params);
         }
       }
     });
