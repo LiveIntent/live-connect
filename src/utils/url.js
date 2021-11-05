@@ -13,7 +13,7 @@ export const toParams = (tuples) => {
 
 export const prependToQueryString = (query, params) => {
   if (query) {
-    if (query.startsWith('?')) {
+    if (query.charAt(0) === '?') {
       const queryNoQuestionMark = query.substring(1)
       return '?'.concat(params).concat('&').concat(queryNoQuestionMark)
     } else {

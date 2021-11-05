@@ -133,7 +133,7 @@ var toParams = function toParams(tuples) {
 };
 var prependToQueryString = function prependToQueryString(query, params) {
   if (query) {
-    if (query.startsWith('?')) {
+    if (query.charAt(0) === '?') {
       var queryNoQuestionMark = query.substring(1);
       return '?'.concat(params).concat('&').concat(queryNoQuestionMark);
     } else {
