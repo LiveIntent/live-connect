@@ -121,6 +121,63 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
+var toParams = function toParams(tuples) {
+  var acc = '';
+  tuples.forEach(function (tuple) {
+    var operator = acc.length === 0 ? '?' : '&';
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+    }
+  });
+  return acc;
+};
+var prependToQueryString = function prependToQueryString(query, params) {
+  if (query) {
+    if (query.startsWith('?')) {
+      var queryNoQuestionMark = query.substring(1);
+      return '?'.concat(params).concat('&').concat(queryNoQuestionMark);
+    } else {
+      return '?'.concat(params).concat('&').concat(query);
+    }
+  } else {
+    return '?'.concat(params);
+  }
+};
+function _decode(s) {
+  return s.indexOf('%') === -1 ? s : decodeURIComponent(s);
+}
+function _isNum(v) {
+  return isNaN(+v) ? v : +v;
+}
+function _isNull(v) {
+  return v === 'null' || v === 'undefined' ? null : v;
+}
+function _isBoolean(v) {
+  return v === 'false' ? false : v === 'true' ? true : v;
+}
+function _convert(v) {
+  return _isBoolean(_isNull(_isNum(v)));
+}
+function urlParams(url) {
+  var questionMarkIndex, queryParams, historyIndex;
+  var obj = {};
+  if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
+    return obj;
+  }
+  if ((historyIndex = queryParams.indexOf('#')) !== -1 && !(queryParams = queryParams.slice(0, historyIndex))) {
+    return obj;
+  }
+  queryParams.split('&').forEach(function (query) {
+    if (query) {
+      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true']).map(_decode);
+      if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || [];
+      if (!obj[query[0]]) return obj[query[0]] = _convert(query[1]);
+      isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : obj[query[0]] = [obj[query[0]], _convert(query[1])];
+    }
+  });
+  return obj;
+}
+
 var DEFAULT_AJAX_TIMEOUT = 0;
 function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
@@ -159,8 +216,8 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
       }
       var latest = "dtstmp=".concat(utcMillis());
       var queryString = state.asQueryString();
-      var withDt = queryString ? "&".concat(latest) : "?".concat(latest);
-      var uri = "".concat(url, "/").concat(endpoint).concat(queryString).concat(withDt);
+      var queryStringWithDt = prependToQueryString(queryString, latest);
+      var uri = "".concat(url, "/").concat(endpoint).concat(queryStringWithDt);
       makeCall(uri);
     }
   }
@@ -526,51 +583,6 @@ function fiddle(state) {
   }
 }
 
-var toParams = function toParams(tuples) {
-  var acc = '';
-  tuples.forEach(function (tuple) {
-    var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
-    }
-  });
-  return acc;
-};
-function _decode(s) {
-  return s.indexOf('%') === -1 ? s : decodeURIComponent(s);
-}
-function _isNum(v) {
-  return isNaN(+v) ? v : +v;
-}
-function _isNull(v) {
-  return v === 'null' || v === 'undefined' ? null : v;
-}
-function _isBoolean(v) {
-  return v === 'false' ? false : v === 'true' ? true : v;
-}
-function _convert(v) {
-  return _isBoolean(_isNull(_isNum(v)));
-}
-function urlParams(url) {
-  var questionMarkIndex, queryParams, historyIndex;
-  var obj = {};
-  if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
-    return obj;
-  }
-  if ((historyIndex = queryParams.indexOf('#')) !== -1 && !(queryParams = queryParams.slice(0, historyIndex))) {
-    return obj;
-  }
-  queryParams.split('&').forEach(function (query) {
-    if (query) {
-      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true']).map(_decode);
-      if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || [];
-      if (!obj[query[0]]) return obj[query[0]] = _convert(query[1]);
-      isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : obj[query[0]] = [obj[query[0]], _convert(query[1])];
-    }
-  });
-  return obj;
-}
-
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
 var _pMap = {
   appId: function appId(aid) {
@@ -631,7 +643,9 @@ var _pMap = {
   },
   referrer: function referrer(_referrer) {
     return asStringParam('refr', _referrer);
-  },
+  }
+};
+var _pMapLowPriority = {
   contextElements: function contextElements(_contextElements) {
     return asStringParam('c', _contextElements);
   }
@@ -662,11 +676,14 @@ function StateWrapper(state) {
     return new StateWrapper(merge(state, newInfo));
   }
   function _asTuples() {
+    return _tuples(_pMap).concat(_tuples(_pMapLowPriority));
+  }
+  function _tuples(parameterMap) {
     var array = [];
     Object.keys(_state).forEach(function (key) {
       var value = _state[key];
-      if (_pMap[key]) {
-        var params = _pMap[key](value);
+      if (parameterMap[key]) {
+        var params = parameterMap[key](value);
         if (params && params.length) {
           if (params[0] instanceof Array) {
             array = array.concat(params);
