@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { urlParams } from '../../../src/utils/url'
+import { urlParams, prependToQueryString } from '../../../src/utils/url'
 
 const elements = [
   'array=a',
@@ -17,7 +17,7 @@ const elements = [
 
 const params = urlParams(`http://localhost:80/base/path/resource?${elements}`)
 
-describe('UrlUtils', () => {
+describe('UrlUtils - urlParams', () => {
 
   it('should match params and types', () => {
     expect(params.one).to.eq('steve')
@@ -43,5 +43,35 @@ describe('UrlUtils', () => {
 
   it('should parse array values', () => {
     expect(params.array).to.deep.equal(['a', 'b', 'c'])
+  })
+})
+
+describe('UrlUtils - prependToQueryString', () => {
+  it('should prepend params to a query string', () => {
+    const queryString = '?aid=9898'
+    const prependParameters = 'dtstmp=1636104972056'
+    const result = prependToQueryString(queryString, prependParameters)
+    expect(result).to.eq('?dtstmp=1636104972056&aid=9898')
+  })
+
+  it('should prepend params to a query string without a questionmark', () => {
+    const queryString = 'aid=9898'
+    const prependParameters = 'dtstmp=1636104972056'
+    const result = prependToQueryString(queryString, prependParameters)
+    expect(result).to.eq('?dtstmp=1636104972056&aid=9898')
+  })
+
+  it('should compose a query with provided parameters if original query is empty', () => {
+    const queryString = ''
+    const prependParameters = 'dtstmp=1636104972056'
+    const result = prependToQueryString(queryString, prependParameters)
+    expect(result).to.eq('?dtstmp=1636104972056')
+  })
+
+  it('should compose a query with provided parameters if original query is null', () => {
+    const queryString = null
+    const prependParameters = 'dtstmp=1636104972056'
+    const result = prependToQueryString(queryString, prependParameters)
+    expect(result).to.eq('?dtstmp=1636104972056')
   })
 })

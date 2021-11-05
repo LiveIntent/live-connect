@@ -11,6 +11,19 @@ export const toParams = (tuples) => {
   return acc
 }
 
+export const prependToQueryString = (query, params) => {
+  if (query) {
+    if (query.startsWith('?')) {
+      const queryNoQuestionMark = query.substring(1)
+      return '?'.concat(params).concat('&').concat(queryNoQuestionMark)
+    } else {
+      return '?'.concat(params).concat('&').concat(query)
+    }
+  } else {
+    return '?'.concat(params)
+  }
+}
+
 function _decode (s) {
   return s.indexOf('%') === -1 ? s : decodeURIComponent(s)
 }
