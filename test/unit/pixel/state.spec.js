@@ -1,6 +1,9 @@
-import { assert, expect } from 'chai'
+import { assert, expect, use } from 'chai'
 import { StateWrapper } from '../../../src/pixel/state'
 import { hashEmail } from '../../../src/utils/hash'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 const COMMA = encodeURIComponent(',')
 describe('EventComposition', () => {
@@ -251,28 +254,28 @@ describe('EventComposition', () => {
         eventName: 'setEmail',
         email: '  xxx@yyy.com'
       }
-    }).sendsPixel()).to.be.false
+    }).sendsPixel()).to.be.false()
 
     expect(new StateWrapper({
       eventSource: {
         eventName: 'setEmailHash',
         email: '  xxx@yyy.com'
       }
-    }).sendsPixel()).to.be.false
+    }).sendsPixel()).to.be.false()
 
     expect(new StateWrapper({
       eventSource: {
         eventName: 'setHashedEmail',
         email: '  xxx@yyy.com'
       }
-    }).sendsPixel()).to.be.false
+    }).sendsPixel()).to.be.false()
 
     expect(new StateWrapper({
       eventSource: {
         eventName: 'setContent',
         email: '  xxx@yyy.com'
       }
-    }).sendsPixel()).to.be.true
+    }).sendsPixel()).to.be.true()
   })
 
   it('should limit the number of items', function () {

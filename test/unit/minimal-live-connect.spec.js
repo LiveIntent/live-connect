@@ -1,10 +1,12 @@
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
-import { urlParams } from '../../src/utils/url'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { MinimalLiveConnect } from '../../src/minimal-live-connect'
 import * as storage from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('MinimalLiveConnect', () => {
   const sandbox = sinon.createSandbox()
@@ -39,9 +41,9 @@ describe('MinimalLiveConnect', () => {
   })
 
   it('should expose liQ', function () {
-    expect(window.liQ).to.be.undefined
+    expect(window.liQ).to.be.undefined()
     MinimalLiveConnect({}, storage, calls)
-    expect(window.liQ).to.not.be.undefined
+    expect(window.liQ).to.not.be.undefined()
   })
 
   it('should accept a single event and put it in the queue', function () {
@@ -68,5 +70,4 @@ describe('MinimalLiveConnect', () => {
     const lc = MinimalLiveConnect(config, storage, calls)
     expect(lc.config).to.eql(config)
   })
-
 })

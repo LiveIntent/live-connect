@@ -76,23 +76,23 @@ export function isFunction (fun) {
 /**
  * Returns the string representation when something should expire
  * @param expires
- * @return {string}
+ * @return {Date}
  */
 export function expiresInDays (expires) {
-  return expiresIn(expires, 864e5).toUTCString()
+  return _expiresIn(expires, 864e5)
 }
 
-export function expiresIn (expires, number) {
+function _expiresIn (expires, number) {
   return new Date((new Date().getTime() + (expires * number)))
 }
 
 /**
  * Returns the string representation when something should expire
  * @param expires
- * @return {string}
+ * @return {Date}
  */
 export function expiresInHours (expires) {
-  return expiresIn(expires, 36e5).toUTCString()
+  return _expiresIn(expires, 36e5)
 }
 
 export function asParamOrEmpty (param, value, transform) {

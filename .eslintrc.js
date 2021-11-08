@@ -4,13 +4,16 @@ module.exports = {
     'browser': true,
     'commonjs': true,
     'es6': true,
-    'node': true
+    'node': true,
+    'mocha': true
   },
-  extends: [
-    'standard'
+  plugins: [
+    'wdio'
   ],
-  globals: {
-  },
-  rules: {
-  }
+  extends: [
+    'standard',
+    'plugin:wdio/recommended'
+  ],
+  globals: {},
+  rules: {}
 }
