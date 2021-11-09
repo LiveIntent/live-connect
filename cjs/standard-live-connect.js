@@ -1156,7 +1156,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   if (errors.length > 0) {
     error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
   }
-  var genericFunctions = {
+  return {
     get: function get(key) {
       if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
         return null;
@@ -1185,9 +1185,15 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
       } else {
         functions.setCookie(key, value, expirationDate.toUTCString(), 'Lax', domain);
       }
-    }
+    },
+    localStorageIsEnabled: functions.localStorageIsEnabled,
+    getCookie: functions.getCookie,
+    setCookie: functions.setCookie,
+    getDataFromLocalStorage: functions.getDataFromLocalStorage,
+    removeDataFromLocalStorage: functions.removeDataFromLocalStorage,
+    setDataInLocalStorage: functions.setDataInLocalStorage,
+    findSimilarCookies: functions.findSimilarCookies
   };
-  return Object.assign(functions, genericFunctions);
 }
 
 var _noOp$1 = function _noOp() {
