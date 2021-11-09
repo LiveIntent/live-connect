@@ -5,6 +5,7 @@ import { PixelSender } from '../../../src/pixel/sender'
 import * as C from '../../../src/utils/consts'
 import * as bus from '../../../src/events/bus'
 import * as calls from '../../shared/utils/calls'
+import { Query } from '../../../src/pixel/state'
 
 describe('PixelSender', () => {
   let ajaxRequests = []
@@ -51,7 +52,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({}, calls, successCallback)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -61,7 +62,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, successCallback)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -80,7 +81,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({}, calls)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
   })
 
@@ -92,7 +93,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({}, calls)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
@@ -107,7 +108,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({}, calls, onload)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
@@ -117,7 +118,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({}, calls, successCallback)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -127,12 +128,12 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({}, calls, null, presend)
-    sender.sendAjax({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
   })
 
   it('defaults to production if none set when sendPixel', function () {
     const sender = new PixelSender({}, calls)
-    sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.be.undefined
   })
@@ -140,14 +141,14 @@ describe('PixelSender', () => {
   it('sends an image pixel and call onload if request succeeds when sendPixel', function () {
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, onload)
-    sender.sendPixel({ asQueryString: () => '?xxx=yyy', sendsPixel: () => true })
+    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     expect(pixelRequests[0].uri).to.match(/http:\/\/localhost\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.eql(onload)
   })
 
   it('does not send an image pixel if sendsPixel resolves to false when sendPixel', function () {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, null)
-    sender.sendPixel({ asQueryString: () => '?zzz=ccc', sendsPixel: () => false })
+    sender.sendPixel({ asQuery: () => new Query([['zzz', 'ccc']]), sendsPixel: () => false })
     expect(pixelRequests).to.be.empty
   })
 })

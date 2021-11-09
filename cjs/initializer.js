@@ -126,63 +126,6 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-var toParams = function toParams(tuples) {
-  var acc = '';
-  tuples.forEach(function (tuple) {
-    var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
-    }
-  });
-  return acc;
-};
-var prependToQueryString = function prependToQueryString(query, params) {
-  if (query) {
-    if (query.charAt(0) === '?') {
-      var queryNoQuestionMark = query.substring(1);
-      return '?'.concat(params).concat('&').concat(queryNoQuestionMark);
-    } else {
-      return '?'.concat(params).concat('&').concat(query);
-    }
-  } else {
-    return '?'.concat(params);
-  }
-};
-function _decode(s) {
-  return s.indexOf('%') === -1 ? s : decodeURIComponent(s);
-}
-function _isNum(v) {
-  return isNaN(+v) ? v : +v;
-}
-function _isNull(v) {
-  return v === 'null' || v === 'undefined' ? null : v;
-}
-function _isBoolean(v) {
-  return v === 'false' ? false : v === 'true' ? true : v;
-}
-function _convert(v) {
-  return _isBoolean(_isNull(_isNum(v)));
-}
-function urlParams(url) {
-  var questionMarkIndex, queryParams, historyIndex;
-  var obj = {};
-  if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
-    return obj;
-  }
-  if ((historyIndex = queryParams.indexOf('#')) !== -1 && !(queryParams = queryParams.slice(0, historyIndex))) {
-    return obj;
-  }
-  queryParams.split('&').forEach(function (query) {
-    if (query) {
-      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true']).map(_decode);
-      if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || [];
-      if (!obj[query[0]]) return obj[query[0]] = _convert(query[1]);
-      isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : obj[query[0]] = [obj[query[0]], _convert(query[1])];
-    }
-  });
-  return obj;
-}
-
 var DEFAULT_AJAX_TIMEOUT = 0;
 function PixelSender(liveConnectConfig, calls, onload, presend) {
   var url = liveConnectConfig && liveConnectConfig.collectorUrl || 'https://rp.liadm.com';
@@ -219,10 +162,10 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
       if (isFunction(presend)) {
         presend();
       }
-      var latest = "dtstmp=".concat(utcMillis());
-      var queryString = state.asQueryString();
-      var queryStringWithDt = prependToQueryString(queryString, latest);
-      var uri = "".concat(url, "/").concat(endpoint).concat(queryStringWithDt);
+      var dtstmpTuple = asStringParam('dtstmp', utcMillis());
+      var query = state.asQuery().prependParam(dtstmpTuple);
+      var queryString = query.toQueryString();
+      var uri = "".concat(url, "/").concat(endpoint).concat(queryString);
       makeCall(uri);
     }
   }
@@ -591,6 +534,51 @@ function fiddle(state) {
   }
 }
 
+var toParams = function toParams(tuples) {
+  var acc = '';
+  tuples.forEach(function (tuple) {
+    var operator = acc.length === 0 ? '?' : '&';
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+    }
+  });
+  return acc;
+};
+function _decode(s) {
+  return s.indexOf('%') === -1 ? s : decodeURIComponent(s);
+}
+function _isNum(v) {
+  return isNaN(+v) ? v : +v;
+}
+function _isNull(v) {
+  return v === 'null' || v === 'undefined' ? null : v;
+}
+function _isBoolean(v) {
+  return v === 'false' ? false : v === 'true' ? true : v;
+}
+function _convert(v) {
+  return _isBoolean(_isNull(_isNum(v)));
+}
+function urlParams(url) {
+  var questionMarkIndex, queryParams, historyIndex;
+  var obj = {};
+  if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
+    return obj;
+  }
+  if ((historyIndex = queryParams.indexOf('#')) !== -1 && !(queryParams = queryParams.slice(0, historyIndex))) {
+    return obj;
+  }
+  queryParams.split('&').forEach(function (query) {
+    if (query) {
+      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true']).map(_decode);
+      if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || [];
+      if (!obj[query[0]]) return obj[query[0]] = _convert(query[1]);
+      isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : obj[query[0]] = [obj[query[0]], _convert(query[1])];
+    }
+  });
+  return obj;
+}
+
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
 var _pArray = [['appId', function (aid) {
   return asStringParam('aid', aid);
@@ -647,6 +635,17 @@ var _pArray = [['appId', function (aid) {
 }], ['contextElements', function (contextElements) {
   return asStringParam('c', contextElements);
 }]];
+function Query(tuples) {
+  Query.prependParam = function (tuple) {
+    var _tuples = tuples;
+    _tuples.unshift(tuple);
+    return new Query(_tuples);
+  };
+  Query.toQueryString = function () {
+    return toParams(tuples);
+  };
+  return Query;
+}
 function StateWrapper(state) {
   var _state = {};
   if (state) {
@@ -688,13 +687,13 @@ function StateWrapper(state) {
     });
     return array;
   }
-  function _asQueryString() {
-    return toParams(_asTuples());
+  function _asQuery() {
+    return new Query(_asTuples());
   }
   return {
     data: _state,
     combineWith: _combineWith,
-    asQueryString: _asQueryString,
+    asQuery: _asQuery,
     asTuples: _asTuples,
     sendsPixel: _sendsPixel
   };

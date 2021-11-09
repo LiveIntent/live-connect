@@ -159,6 +159,25 @@ const _pArray = [
 ]
 
 /**
+ * @param {string [][]} tuples
+ * @returns {Query}
+ * @constructor
+ */
+export function Query (tuples) {
+  Query.prependParam = function (tuple) {
+    const _tuples = tuples
+    _tuples.unshift(tuple)
+    return new Query(_tuples)
+  }
+
+  Query.toQueryString = function () {
+    console.log(`Using ${tuples} to create query string`)
+    return toParams(tuples)
+  }
+  return Query
+}
+
+/**
  * @param {State} state
  * @returns {StateWrapper}
  * @constructor
@@ -221,18 +240,14 @@ export function StateWrapper (state) {
     return array
   }
 
-  /**
-   * @returns {string}
-   * @private
-   */
-  function _asQueryString () {
-    return toParams(_asTuples())
+  function _asQuery () {
+    return new Query(_asTuples())
   }
 
   return {
     data: _state,
     combineWith: _combineWith,
-    asQueryString: _asQueryString,
+    asQuery: _asQuery,
     asTuples: _asTuples,
     sendsPixel: _sendsPixel
   }
