@@ -31,7 +31,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898')
   })
 
-  it('should append low priority parameters last', function () {
+  it('should append c parameter last', function () {
     const pixelData = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
