@@ -171,7 +171,6 @@ export function Query (tuples) {
   }
 
   Query.toQueryString = function () {
-    console.log(`Using ${tuples} to create query string`)
     return toParams(tuples)
   }
   return Query
