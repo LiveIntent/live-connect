@@ -12,7 +12,7 @@ const commonCapabilities = {
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
   { ...commonCapabilities, browserName: 'Chrome', browser_version: 'latest', os: 'Windows', os_version: '10' },
-  { ...commonCapabilities, browserName: 'Chrome', browser_version: '40.0', os: 'Windows', os_version: '10' },
+  { ...commonCapabilities, browserName: 'Chrome', browser_version: '40.0', os: 'Windows', os_version: '7' },
   { ...commonCapabilities, browserName: 'firefox', browser_version: 'latest', os: 'Windows', os_version: '10' },
   { ...commonCapabilities, browserName: 'firefox', browser_version: '52.0', os: 'Windows', os_version: '7' },
   { ...commonCapabilities, browserName: 'Safari', browser_version: '14.1', os: 'OS X', os_version: 'Big Sur' },
