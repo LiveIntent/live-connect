@@ -138,7 +138,7 @@ describe('PixelSender', () => {
     const sender = new PixelSender({}, calls)
     sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
-    expect(pixelRequests[0].onload).to.be.undefined
+    expect(pixelRequests[0].onload).to.be.undefined()
   })
 
   it('sends an image pixel and call onload if request succeeds when sendPixel', function () {
@@ -152,6 +152,6 @@ describe('PixelSender', () => {
   it('does not send an image pixel if sendsPixel resolves to false when sendPixel', function () {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, null)
     sender.sendPixel({ asQuery: () => new Query([['zzz', 'ccc']]), sendsPixel: () => false })
-    expect(pixelRequests).to.be.empty
+    expect(pixelRequests).to.be.empty()
   })
 })

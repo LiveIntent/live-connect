@@ -31,7 +31,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898')
   })
 
-  it('should append low priority parameters last', function() {
+  it('should append low priority parameters last', function () {
     const pixelData = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
@@ -39,10 +39,10 @@ describe('EventComposition', () => {
       liveConnectId: '213245',
       trackerName: 'test tracker',
       pageUrl: 'https://wwww.example.com?sss',
-      errorDetails: { testError: 'testError'},
+      errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
-          name: 'sample_cookie',
-          value: 'sample_value'
+        name: 'sample_cookie',
+        value: 'sample_value'
       }],
       hashesFromIdentifiers: [{
         md5: '75524519292e51ad6f761baa82d07d76',
@@ -52,7 +52,7 @@ describe('EventComposition', () => {
       decisionIds: ['1', '2'],
       hashedEmail: ['eb2684ead8e942b6c4dc7465de66460a'],
       usPrivacyString: '1---',
-      wrapperName: "test wrapper name",
+      wrapperName: 'test wrapper name',
       gdprApplies: true,
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'

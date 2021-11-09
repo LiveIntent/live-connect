@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { urlParams, prependToQueryString } from '../../../src/utils/url'
+import { urlParams } from '../../../src/utils/url'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)
