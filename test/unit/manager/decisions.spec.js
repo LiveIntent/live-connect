@@ -1,9 +1,12 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import * as decisions from '../../../src/manager/decisions'
 import * as storage from '../../shared/utils/storage'
 import uuid from 'tiny-uuid4'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('DecisionsManager for stored decisions', () => {
   const sandbox = sinon.createSandbox()

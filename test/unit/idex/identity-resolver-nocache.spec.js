@@ -1,10 +1,12 @@
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver-nocache'
-import * as storage from '../../shared/utils/storage'
 import * as calls from '../../shared/utils/calls'
 import { init } from '../../../src/events/bus'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('IdentityResolver without cache', () => {
   let requestToComplete = null
@@ -30,10 +32,10 @@ describe('IdentityResolver without cache', () => {
 
   it('should invoke callback on success', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({}, storage, calls)
+    const identityResolver = IdentityResolver({}, calls)
     const successCallback = (responseAsJson) => {
       expect(callCount).to.be.eql(1)
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(responseAsJson).to.be.eql(response)
@@ -46,10 +48,10 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach the duid', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -59,10 +61,10 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach additional params', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -71,10 +73,10 @@ describe('IdentityResolver without cache', () => {
   })
 
   it('should not attach an empty tuple', function (done) {
-    const identityResolver = IdentityResolver({ peopleVerifiedId: null }, storage, calls)
+    const identityResolver = IdentityResolver({ peopleVerifiedId: null }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql({})
       done()
     }
@@ -96,10 +98,10 @@ describe('IdentityResolver without cache', () => {
           value: 'AnotherId'
         }
       ]
-    }, storage, calls)
+    }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pubcid=exexex&some-id=AnotherId')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -113,10 +115,10 @@ describe('IdentityResolver without cache', () => {
       gdprApplies: false,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
-    }, storage, calls)
+    }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -130,10 +132,10 @@ describe('IdentityResolver without cache', () => {
       gdprApplies: true,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
-    }, storage, calls)
+    }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&gdpr_consent=gdprConsent')
-      expect(errors).to.be.empty
+      expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
@@ -142,7 +144,7 @@ describe('IdentityResolver without cache', () => {
   })
 
   it('should return the default empty response and emit error if response is 500', function (done) {
-    const identityResolver = IdentityResolver({}, storage, calls)
+    const identityResolver = IdentityResolver({}, calls)
     const errorCallback = (error) => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
       done()

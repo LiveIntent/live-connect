@@ -1,6 +1,9 @@
 import jsdom from 'mocha-jsdom'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import * as pageEnricher from '../../../src/enrichers/page'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('PageEnricher', () => {
   const url = 'http://www.example.com/?sad=0&dsad=iou'
@@ -14,11 +17,11 @@ describe('PageEnricher', () => {
   })
 
   it('should return the url, referrer and the contextElements of the page', function () {
-    var newHeadline = document.createElement("h1")
-    var content = document.createTextNode("Some header")
+    var newHeadline = document.createElement('h1')
+    var content = document.createTextNode('Some header')
     newHeadline.appendChild(content)
-    var newP = document.createElement("p")
-    var newContentEmail = document.createTextNode("mailto:john@test.com, also found: another@test.com !")
+    var newP = document.createElement('p')
+    var newContentEmail = document.createTextNode('mailto:john@test.com, also found: another@test.com !')
     newP.appendChild(newContentEmail)
     document.body.appendChild(newHeadline)
     document.body.appendChild(newP)

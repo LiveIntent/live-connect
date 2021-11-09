@@ -3,7 +3,7 @@ import { fromError } from '../utils/emitter'
 import { asParamOrEmpty, asStringParam, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 
-function _responseReceived (storageHandler, successCallback) {
+function _responseReceived (successCallback) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -19,12 +19,11 @@ function _responseReceived (storageHandler, successCallback) {
 
 /**
  * @param {State} config
- * @param {StorageHandler} storageHandler
  * @param {CallHandler} calls
  * @return {{resolve: function(successCallback: function, errorCallback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
-export function IdentityResolver (config, storageHandler, calls) {
+export function IdentityResolver (config, calls) {
   try {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
@@ -48,7 +47,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, successCallback), errorCallback, timeout)
+      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(successCallback), errorCallback, timeout)
     }
     return {
       resolve: (successCallback, errorCallback, additionalParams) => {

@@ -2,10 +2,20 @@ import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
 import { expiresInHours, asParamOrEmpty, asStringParam, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
+import { base64UrlEncode } from '../utils/b64'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-function _responseReceived (storageHandler, domain, expirationHours, successCallback) {
+function _cacheKey (additionalParams) {
+  if (additionalParams) {
+    const suffix = base64UrlEncode(JSON.stringify(additionalParams))
+    return `${IDEX_STORAGE_KEY}_${suffix}`
+  } else {
+    return IDEX_STORAGE_KEY
+  }
+}
+
+function _responseReceived (storageHandler, domain, expirationHours, successCallback, additionalParams) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -17,14 +27,12 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
       }
     }
     try {
-      storageHandler.setCookie(
-        IDEX_STORAGE_KEY,
+      storageHandler.set(
+        _cacheKey(additionalParams),
         JSON.stringify(responseObj),
         expiresInHours(expirationHours),
-        'Lax',
         domain)
     } catch (ex) {
-      console.error('Error storing response to cookies', ex)
       fromError('IdentityResolverStorage', ex)
     }
     successCallback(responseObj)
@@ -63,11 +71,11 @@ export function IdentityResolver (config, storageHandler, calls) {
       return `${url}/${source}/${publisherId}${params}`
     }
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
-      const storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY)
-      if (storedCookie) {
-        successCallback(JSON.parse(storedCookie))
+      const cachedValue = storageHandler.get(_cacheKey(additionalParams))
+      if (cachedValue) {
+        successCallback(JSON.parse(cachedValue))
       } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout)
+        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
       }
     }
     return {

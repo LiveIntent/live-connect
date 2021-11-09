@@ -1,8 +1,11 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import jsdom from 'mocha-jsdom'
 import * as emitter from '../../../src/utils/emitter'
 import * as bus from '../../../src/events/bus'
 import * as C from '../../../src/utils/consts'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Emitter.error', () => {
   let windowBus = null
@@ -33,7 +36,7 @@ describe('Emitter.error', () => {
     emitter.error('some name', null, new Error('the original message'))
     expect(ex[0].name).to.eql('some name')
     expect(ex[0].message).to.eql('the original message')
-    expect(ex[0].stack).to.not.be.empty
+    expect(ex[0].stack).to.not.be.empty()
   })
 
   it('should send a message in a correct namespace', function () {

@@ -1,4 +1,4 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
@@ -6,6 +6,9 @@ import * as C from '../../../src/utils/consts'
 import * as bus from '../../../src/events/bus'
 import * as calls from '../../shared/utils/calls'
 import { Query } from '../../../src/pixel/state'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('PixelSender', () => {
   let ajaxRequests = []
@@ -124,7 +127,7 @@ describe('PixelSender', () => {
 
   it('calls a presend function when sendAjax', function (done) {
     const presend = () => {
-      expect(ajaxRequests).to.be.empty
+      expect(ajaxRequests).to.be.empty()
       done()
     }
     const sender = new PixelSender({}, calls, null, presend)

@@ -29,7 +29,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
     const peopleVerifiedData = merge(liveConnectConfig, peopleVerified(liveConnectConfig, storageHandler))
     const finalData = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
-    const resolver = IdentityResolver(finalData, storageHandler, callHandler)
+    const resolver = IdentityResolver(finalData, callHandler)
     return {
       push: (arg) => window.liQ.push(arg),
       fire: () => window.liQ.push({}),

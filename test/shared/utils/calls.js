@@ -1,4 +1,3 @@
-import * as emitter from '../../../src/utils/emitter'
 import { isFunction } from '../../../src/utils/types'
 
 /**

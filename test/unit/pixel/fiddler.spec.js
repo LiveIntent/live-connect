@@ -1,6 +1,9 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { fiddle } from '../../../src/pixel/fiddler'
 import { hashEmail } from '../../../src/utils/hash'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Fiddler', () => {
   it('should use the providedHash if present', function () {
@@ -48,7 +51,6 @@ describe('Fiddler', () => {
     }
     const result = fiddle(pixelData)
     expect(result.hashedEmail).to.eql([hashes.md5])
-
   })
 
   it('should hash the plain text email if the providedHash if it is not a valid hash', function () {

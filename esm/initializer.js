@@ -45,13 +45,13 @@ function isFunction(fun) {
   return fun && typeof fun === 'function';
 }
 function expiresInDays(expires) {
-  return expiresIn(expires, 864e5).toUTCString();
+  return _expiresIn(expires, 864e5);
 }
-function expiresIn(expires, number) {
+function _expiresIn(expires, number) {
   return new Date(new Date().getTime() + expires * number);
 }
 function expiresInHours(expires) {
-  return expiresIn(expires, 36e5).toUTCString();
+  return _expiresIn(expires, 36e5);
 }
 function asParamOrEmpty(param, value, transform) {
   return isNonEmpty(value) ? [param, isFunction(transform) ? transform(value) : value] : [];
@@ -888,12 +888,6 @@ function ulid() {
   return encodeTime(Date.now(), TIME_LEN) + encodeRandom(RANDOM_LEN);
 }
 
-var StorageStrategy = {
-  cookie: 'cookie',
-  localStorage: 'ls',
-  none: 'none'
-};
-
 var NEXT_GEN_FP_NAME = '_lc2_fpi';
 var TLD_CACHE_KEY = '_li_dcdm_c';
 var DEFAULT_EXPIRATION_DAYS = 730;
@@ -915,50 +909,19 @@ function resolve(state, storageHandler) {
       }
       return ".".concat(domain);
     };
-    var lsGetOrAdd = function lsGetOrAdd(key, value, storageOptions) {
-      var ret = null;
+    var getOrAddWithExpiration = function getOrAddWithExpiration(key, value) {
       try {
-        if (storageHandler.localStorageIsEnabled()) {
-          var expirationKey = "".concat(key, "_exp");
-          var oldLsExpirationEntry = storageHandler.getDataFromLocalStorage(expirationKey);
-          var _expiry = expiresIn(storageOptions.expires, 864e5);
-          if (oldLsExpirationEntry && parseInt(oldLsExpirationEntry) <= new Date().getTime()) {
-            storageHandler.removeDataFromLocalStorage(key);
-          }
-          var oldLsEntry = storageHandler.getDataFromLocalStorage(key);
-          if (!oldLsEntry) {
-            storageHandler.setDataInLocalStorage(key, value);
-          }
-          storageHandler.setDataInLocalStorage(expirationKey, "".concat(_expiry));
-          ret = storageHandler.getDataFromLocalStorage(key);
-        }
-      } catch (e) {
-        error('LSGetOrAdd', 'Error manipulating LS', e);
-      }
-      return ret;
-    };
-    var cookieGetOrAdd = function cookieGetOrAdd(key, value, storageOptions) {
-      var ret = null;
-      try {
-        var oldCookie = storageHandler.getCookie(key);
-        if (oldCookie) {
-          storageHandler.setCookie(key, oldCookie, expiresInDays(storageOptions.expires), 'Lax', storageOptions.domain);
+        var oldValue = storageHandler.get(key);
+        var _expiry = expiresInDays(storageOptions.expires);
+        if (oldValue) {
+          storageHandler.set(key, oldValue, _expiry, storageOptions.domain);
         } else {
-          storageHandler.setCookie(key, value, expiresInDays(storageOptions.expires), 'Lax', storageOptions.domain);
+          storageHandler.set(key, value, _expiry, storageOptions.domain);
         }
-        ret = storageHandler.getCookie(key);
+        return storageHandler.get(key);
       } catch (e) {
-        error('CookieGetOrAdd', 'Failed manipulating cookie jar', e);
-      }
-      return ret;
-    };
-    var getOrAddWithExpiration = function getOrAddWithExpiration(key, value, storageOptions, storageStrategy) {
-      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
-        return lsGetOrAdd(key, value, storageOptions);
-      } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
+        error('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e);
         return null;
-      } else {
-        return cookieGetOrAdd(key, value, storageOptions);
       }
     };
     var generateCookie = function generateCookie(apexDomain) {
@@ -971,7 +934,7 @@ function resolve(state, storageHandler) {
       expires: expiry,
       domain: cookieDomain
     };
-    var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, generateCookie(cookieDomain), storageOptions, state.storageStrategy);
+    var liveConnectIdentifier = getOrAddWithExpiration(NEXT_GEN_FP_NAME, generateCookie(cookieDomain));
     if (liveConnectIdentifier) {
       storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier);
     }
@@ -1077,7 +1040,15 @@ function _deduplicateHashes(hashes) {
 }
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
-function _responseReceived(storageHandler, domain, expirationHours, successCallback) {
+function _cacheKey(additionalParams) {
+  if (additionalParams) {
+    var suffix = base64UrlEncode(JSON.stringify(additionalParams));
+    return "".concat(IDEX_STORAGE_KEY, "_").concat(suffix);
+  } else {
+    return IDEX_STORAGE_KEY;
+  }
+}
+function _responseReceived(storageHandler, domain, expirationHours, successCallback, additionalParams) {
   return function (response) {
     var responseObj = {};
     if (response) {
@@ -1088,7 +1059,7 @@ function _responseReceived(storageHandler, domain, expirationHours, successCallb
       }
     }
     try {
-      storageHandler.setCookie(IDEX_STORAGE_KEY, JSON.stringify(responseObj), expiresInHours(expirationHours), 'Lax', domain);
+      storageHandler.set(_cacheKey(additionalParams), JSON.stringify(responseObj), expiresInHours(expirationHours), domain);
     } catch (ex) {
       fromError('IdentityResolverStorage', ex);
     }
@@ -1121,11 +1092,11 @@ function IdentityResolver(config, storageHandler, calls) {
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
     var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      var storedCookie = storageHandler.getCookie(IDEX_STORAGE_KEY);
-      if (storedCookie) {
-        successCallback(JSON.parse(storedCookie));
+      var cachedValue = storageHandler.get(_cacheKey(additionalParams));
+      if (cachedValue) {
+        successCallback(JSON.parse(cachedValue));
       } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback), errorCallback, timeout);
+        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout);
       }
     };
     return {
@@ -1155,6 +1126,12 @@ function IdentityResolver(config, storageHandler, calls) {
   }
 }
 
+var StorageStrategy = {
+  cookie: 'cookie',
+  localStorage: 'ls',
+  none: 'none'
+};
+
 var _noOp = function _noOp() {
   return undefined;
 };
@@ -1172,7 +1149,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   var _orElseNoOp = function _orElseNoOp(fName) {
     return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName);
   };
-  var handler = {
+  var functions = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
     getCookie: _externalOrError('getCookie'),
     setCookie: _orElseNoOp('setCookie'),
@@ -1184,7 +1161,38 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   if (errors.length > 0) {
     error('StorageHandler', "The storage functions '".concat(JSON.stringify(errors), "' are not provided"));
   }
-  return handler;
+  var genericFunctions = {
+    get: function get(key) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
+        return null;
+      } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
+        if (functions.localStorageIsEnabled()) {
+          var expirationKey = "".concat(key, "_exp");
+          var oldLsExpirationEntry = functions.getDataFromLocalStorage(expirationKey);
+          if (oldLsExpirationEntry && Date.parse(oldLsExpirationEntry) <= new Date().getTime()) {
+            functions.removeDataFromLocalStorage(key);
+          }
+          return functions.getDataFromLocalStorage(key);
+        } else {
+          return null;
+        }
+      } else {
+        return functions.getCookie(key);
+      }
+    },
+    set: function set(key, value, expirationDate, domain) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) ; else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
+        if (functions.localStorageIsEnabled()) {
+          var expirationKey = "".concat(key, "_exp");
+          functions.setDataInLocalStorage(key, value);
+          functions.setDataInLocalStorage(expirationKey, "".concat(expirationDate));
+        }
+      } else {
+        functions.setCookie(key, value, expirationDate.toUTCString(), 'Lax', domain);
+      }
+    }
+  };
+  return Object.assign(functions, genericFunctions);
 }
 
 var _noOp$1 = function _noOp() {
@@ -1330,7 +1338,7 @@ function StandardLiveConnect(liveConnectConfig, externalStorageHandler, external
   return window.liQ;
 }
 
-function _responseReceived$1(storageHandler, successCallback) {
+function _responseReceived$1(successCallback) {
   return function (response) {
     var responseObj = {};
     if (response) {
@@ -1343,7 +1351,7 @@ function _responseReceived$1(storageHandler, successCallback) {
     successCallback(responseObj);
   };
 }
-function IdentityResolver$1(config, storageHandler, calls) {
+function IdentityResolver$1(config, calls) {
   try {
     var nonNullConfig = config || {};
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
@@ -1368,7 +1376,7 @@ function IdentityResolver$1(config, storageHandler, calls) {
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
     var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      calls.ajaxGet(composeUrl(additionalParams), _responseReceived$1(storageHandler, successCallback), errorCallback, timeout);
+      calls.ajaxGet(composeUrl(additionalParams), _responseReceived$1(successCallback), errorCallback, timeout);
     };
     return {
       resolve: function resolve(successCallback, errorCallback, additionalParams) {
@@ -1469,7 +1477,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var storageHandler = StorageHandler$1(liveConnectConfig.storageStrategy, externalStorageHandler);
     var peopleVerifiedData = merge(liveConnectConfig, enrich$2(liveConnectConfig, storageHandler));
     var finalData = merge(peopleVerifiedData, enrich$3(peopleVerifiedData, storageHandler));
-    var resolver = IdentityResolver$1(finalData, storageHandler, callHandler);
+    var resolver = IdentityResolver$1(finalData, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);
