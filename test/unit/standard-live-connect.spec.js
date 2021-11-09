@@ -1,13 +1,16 @@
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { urlParams } from '../../src/utils/url'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { StandardLiveConnect } from '../../src/standard-live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
 import * as storage from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import { hashEmail } from '../../src/utils/hash'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()
@@ -51,19 +54,19 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should expose liQ', function () {
-    expect(window.liQ).to.be.undefined
+    expect(window.liQ).to.be.undefined()
     StandardLiveConnect({}, storage, calls)
-    expect(window.liQ.ready).to.be.true
+    expect(window.liQ.ready).to.be.true()
   })
 
   it('should expose liQ, emit error for any subsequent initialization with different config', function () {
     StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
     let liQ = window.liQ
-    expect(liQ.ready).to.be.true
+    expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
     StandardLiveConnect({ appId: 'config' }, storage, calls)
     liQ = window.liQ
-    expect(liQ.ready).to.be.true
+    expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'config' })
     expect(pixelCalls.length).to.eql(2)
     expect(errorCalls.length).to.eql(1)
@@ -78,7 +81,7 @@ describe('StandardLiveConnect', () => {
     expect(firstCallParams.aid).to.eql('a-00xx')
     expect(firstCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"a-00xx"}'))
     expect(duplicationParams.aid).to.eql('a-00xx')
-    expect(duplicationParams.ae).to.not.be.empty
+    expect(duplicationParams.ae).to.not.be.empty()
     expect(secondCallParams.duid).to.eql(liQ.peopleVerifiedId)
     expect(secondCallParams.aid).to.eql('a-00xx')
     expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
@@ -87,11 +90,11 @@ describe('StandardLiveConnect', () => {
   it('should expose liQ, and not emit error when the config has not changed', function () {
     StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
     let liQ = window.liQ
-    expect(liQ.ready).to.be.true
+    expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
     StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
     liQ = window.liQ
-    expect(liQ.ready).to.be.true
+    expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'config' })
     expect(pixelCalls.length).to.eql(2)
     expect(errorCalls.length).to.eql(0)
@@ -113,7 +116,7 @@ describe('StandardLiveConnect', () => {
     window.liQ.push({ event: 'viewProduct', name: 'first' }, { event: 'viewProduct', name: 'second' })
     StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
     const liQ = window.liQ
-    expect(liQ.ready).to.be.true
+    expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'third' })
     expect(pixelCalls.length).to.eql(3)
     pixelCalls.forEach(call => {
@@ -220,7 +223,7 @@ describe('StandardLiveConnect', () => {
   it('should emit an error if the storage and ajax are not provided', function () {
     StandardLiveConnect({}, undefined, { pixelGet: calls.pixelGet })
     expect(errorCalls.length).to.eql(2)
-    expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined
-    expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined
+    expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined()
+    expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined()
   })
 })

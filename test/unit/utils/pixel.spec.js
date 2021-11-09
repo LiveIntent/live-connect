@@ -1,7 +1,10 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import sinon from 'sinon'
 import { sendPixel } from '../../../src/utils/pixel'
 import jsdom from 'mocha-jsdom'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 describe('Pixel Utils', () => {
   jsdom({
@@ -36,6 +39,6 @@ describe('Pixel Utils', () => {
     sendPixel('http://localhost', null)
 
     expect(obj.src).to.eq('http://localhost')
-    expect(obj.onload).to.be.undefined
+    expect(obj.onload).to.be.undefined()
   })
 })

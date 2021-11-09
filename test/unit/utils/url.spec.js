@@ -1,5 +1,8 @@
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { urlParams, prependToQueryString } from '../../../src/utils/url'
+import dirtyChai from 'dirty-chai'
+
+use(dirtyChai)
 
 const elements = [
   'array=a',
@@ -12,13 +15,12 @@ const elements = [
   'null=undefined',
   'undefined=null',
   'novalue',
-  'array=c',
+  'array=c'
 ].join('&')
 
 const params = urlParams(`http://localhost:80/base/path/resource?${elements}`)
 
 describe('UrlUtils', () => {
-
   it('should match params and types', () => {
     expect(params.one).to.eq('steve')
     expect(params.numeric).to.eq(1234)
