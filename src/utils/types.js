@@ -103,6 +103,10 @@ export function asStringParam (param, value) {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
 }
 
+export function asStringParamTransform (param, value, transform) {
+  return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
+}
+
 export function mapAsParams (paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
     const array = []

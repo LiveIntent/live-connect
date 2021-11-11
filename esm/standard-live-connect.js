@@ -61,6 +61,11 @@ function asStringParam(param, value) {
     return encodeURIComponent(s);
   });
 }
+function asStringParamTransform(param, value, transform) {
+  return asParamOrEmpty(param, value, function (s) {
+    return encodeURIComponent(transform(s));
+  });
+}
 function mapAsParams(paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
     var array = [];
@@ -153,10 +158,10 @@ function PixelSender(liveConnectConfig, calls, onload, presend) {
       if (isFunction(presend)) {
         presend();
       }
-      var latest = "dtstmp=".concat(utcMillis());
-      var queryString = state.asQueryString();
-      var withDt = queryString ? "&".concat(latest) : "?".concat(latest);
-      var uri = "".concat(url, "/").concat(endpoint).concat(queryString).concat(withDt);
+      var dtstmpTuple = asStringParam('dtstmp', utcMillis());
+      var query = state.asQuery().prependParam(dtstmpTuple);
+      var queryString = query.toQueryString();
+      var uri = "".concat(url, "/").concat(endpoint).concat(queryString);
       makeCall(uri);
     }
   }
@@ -568,70 +573,72 @@ function urlParams(url) {
 }
 
 var noOpEvents = ['setemail', 'setemailhash', 'sethashedemail'];
-var _pMap = {
-  appId: function appId(aid) {
-    return asStringParam('aid', aid);
-  },
-  eventSource: function eventSource(source) {
-    return asParamOrEmpty('se', source, function (s) {
-      return base64UrlEncode(JSON.stringify(s, replacer));
-    });
-  },
-  liveConnectId: function liveConnectId(fpc) {
-    return asStringParam('duid', fpc);
-  },
-  trackerName: function trackerName(tn) {
-    return asStringParam('tna', tn || 'unknown');
-  },
-  pageUrl: function pageUrl(purl) {
-    return asStringParam('pu', purl);
-  },
-  errorDetails: function errorDetails(ed) {
-    return asParamOrEmpty('ae', ed, function (s) {
-      return base64UrlEncode(JSON.stringify(s));
-    });
-  },
-  retrievedIdentifiers: function retrievedIdentifiers(identifiers) {
-    var identifierParams = [];
+var _pArray = [['appId', function (aid) {
+  return asStringParam('aid', aid);
+}], ['eventSource', function (source) {
+  return asParamOrEmpty('se', source, function (s) {
+    return base64UrlEncode(JSON.stringify(s, replacer));
+  });
+}], ['liveConnectId', function (fpc) {
+  return asStringParam('duid', fpc);
+}], ['trackerName', function (tn) {
+  return asStringParam('tna', tn);
+}], ['pageUrl', function (purl) {
+  return asStringParam('pu', purl);
+}], ['errorDetails', function (ed) {
+  return asParamOrEmpty('ae', ed, function (s) {
+    return base64UrlEncode(JSON.stringify(s));
+  });
+}], ['retrievedIdentifiers', function (identifiers) {
+  var identifierParams = [];
+  if (isArray(identifiers)) {
     identifiers.forEach(function (i) {
       return identifierParams.push(asStringParam("ext_".concat(i.name), i.value));
     });
-    return identifierParams;
-  },
-  hashesFromIdentifiers: function hashesFromIdentifiers(hashes) {
-    var hashParams = [];
+  }
+  return identifierParams;
+}], ['hashesFromIdentifiers', function (hashes) {
+  var hashParams = [];
+  if (isArray(hashes)) {
     hashes.forEach(function (h) {
       return hashParams.push(asStringParam('scre', "".concat(h.md5, ",").concat(h.sha1, ",").concat(h.sha256)));
     });
-    return hashParams;
-  },
-  decisionIds: function decisionIds(dids) {
-    return asStringParam('li_did', dids.join(','));
-  },
-  hashedEmail: function hashedEmail(he) {
-    return asStringParam('e', he.join(','));
-  },
-  usPrivacyString: function usPrivacyString(usps) {
-    return asStringParam('us_privacy', usps);
-  },
-  wrapperName: function wrapperName(wrapper) {
-    return asStringParam('wpn', wrapper);
-  },
-  gdprApplies: function gdprApplies(_gdprApplies) {
-    return asParamOrEmpty('gdpr', _gdprApplies, function (s) {
-      return encodeURIComponent(s ? 1 : 0);
-    });
-  },
-  gdprConsent: function gdprConsent(gdprConsentString) {
-    return asStringParam('gdpr_consent', gdprConsentString);
-  },
-  referrer: function referrer(_referrer) {
-    return asStringParam('refr', _referrer);
-  },
-  contextElements: function contextElements(_contextElements) {
-    return asStringParam('c', _contextElements);
   }
-};
+  return hashParams;
+}], ['decisionIds', function (dids) {
+  return asStringParamTransform('li_did', dids, function (s) {
+    return s.join(',');
+  });
+}], ['hashedEmail', function (he) {
+  return asStringParamTransform('e', he, function (s) {
+    return s.join(',');
+  });
+}], ['usPrivacyString', function (usps) {
+  return asStringParam('us_privacy', usps);
+}], ['wrapperName', function (wrapper) {
+  return asStringParam('wpn', wrapper);
+}], ['gdprApplies', function (gdprApplies) {
+  return asStringParamTransform('gdpr', gdprApplies, function (s) {
+    return s ? 1 : 0;
+  });
+}], ['gdprConsent', function (gdprConsentString) {
+  return asStringParam('gdpr_consent', gdprConsentString);
+}], ['referrer', function (referrer) {
+  return asStringParam('refr', referrer);
+}], ['contextElements', function (contextElements) {
+  return asStringParam('c', contextElements);
+}]];
+function Query(tuples) {
+  Query.prependParam = function (tuple) {
+    var _tuples = tuples;
+    _tuples.unshift(tuple);
+    return new Query(_tuples);
+  };
+  Query.toQueryString = function () {
+    return toParams(tuples);
+  };
+  return Query;
+}
 function StateWrapper(state) {
   var _state = {};
   if (state) {
@@ -659,28 +666,27 @@ function StateWrapper(state) {
   }
   function _asTuples() {
     var array = [];
-    Object.keys(_state).forEach(function (key) {
+    _pArray.forEach(function (keyWithParamsExtractor) {
+      var key = keyWithParamsExtractor[0];
       var value = _state[key];
-      if (_pMap[key]) {
-        var params = _pMap[key](value);
-        if (params && params.length) {
-          if (params[0] instanceof Array) {
-            array = array.concat(params);
-          } else {
-            array.push(params);
-          }
+      var params = keyWithParamsExtractor[1](value);
+      if (params && params.length) {
+        if (params[0] instanceof Array) {
+          array = array.concat(params);
+        } else {
+          array.push(params);
         }
       }
     });
     return array;
   }
-  function _asQueryString() {
-    return toParams(_asTuples());
+  function _asQuery() {
+    return new Query(_asTuples());
   }
   return {
     data: _state,
     combineWith: _combineWith,
-    asQueryString: _asQueryString,
+    asQuery: _asQuery,
     asTuples: _asTuples,
     sendsPixel: _sendsPixel
   };
