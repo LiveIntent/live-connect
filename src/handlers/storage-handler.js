@@ -55,7 +55,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     emitter.error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
 
-  const genericFunctions = {
+  return {
     get: key => {
       if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
         return null
@@ -85,8 +85,13 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
       } else {
         functions.setCookie(key, value, expirationDate.toUTCString(), 'Lax', domain)
       }
-    }
+    },
+    localStorageIsEnabled: functions.localStorageIsEnabled,
+    getCookie: functions.getCookie,
+    setCookie: functions.setCookie,
+    getDataFromLocalStorage: functions.getDataFromLocalStorage,
+    removeDataFromLocalStorage: functions.removeDataFromLocalStorage,
+    setDataInLocalStorage: functions.setDataInLocalStorage,
+    findSimilarCookies: functions.findSimilarCookies
   }
-
-  return Object.assign(functions, genericFunctions)
 }
