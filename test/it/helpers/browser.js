@@ -45,7 +45,6 @@ export async function resolveIdentity (expectedRequests, server) {
 export async function fetchResolvedIdentity () {
   try {
     browser.waitUntil(async () => {
-      console.log($('#idex').getText())
       const idex = await $('#idex')
       const text = await idex.getText()
       console.log(text)
