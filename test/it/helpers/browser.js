@@ -42,13 +42,16 @@ export function resolveIdentity (expectedRequests, server) {
   }
 }
 
-export function fetchResolvedIdentity () {
+export async function fetchResolvedIdentity () {
   try {
-    browser.waitUntil(() => {
+    browser.waitUntil(async () => {
       console.log($('#idex').getText())
-      return $('#idex').getText() !== 'None'
+      const idex = await $('#idex')
+      return idex.getText().then(e => e !== 'None')
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
-    return $('#idex').getText()
+    const idex = await $('#idex')
+    const text = await idex.getText()
+    return text
   } catch (e) {
     console.error('Error', e)
     return 'None'

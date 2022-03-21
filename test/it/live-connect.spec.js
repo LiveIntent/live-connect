@@ -72,7 +72,7 @@ describe('LiveConnect', function () {
     resolveIdentity(1, server)
     const idexRequests = server.getIdexHistory()
     expect(idexRequests).to.not.be.empty()
-    const idexValue = fetchResolvedIdentity()
+    const idexValue = await fetchResolvedIdentity()
     expect(idexValue).to.eq(JSON.stringify({ unifiedId: 'some-id' }))
   })
 
