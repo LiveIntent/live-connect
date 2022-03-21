@@ -14,6 +14,10 @@ const compression = require('compression')
 
 const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
 
+async function getText (selector) {
+  $(selector).then(e => e.getText())
+}
+
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const fullContent = preamble + bundle
@@ -167,21 +171,21 @@ export function MockServerFactory (config) {
   return {
     openPage: async (domain, page) => {
       await browser.url(`http://${domain}:3001/${page}`)
-      const before = await $('#before').getText()
+      const before = await getText('#before')
       assert.strictEqual(before, 'Before')
-      const after = await $('#after').getText()
+      const after = await getText('#after')
       assert.strictEqual(after, 'After')
     },
     openUriViaReferrer: async (referrerDomain, pageDomain, page) => {
       await browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
-      const before = await $('#referrer-before').getText()
+      const before = await getText('#referrer-before')
       assert.strictEqual(before, 'Before')
-      const after = await $('#referrer-after').getText()
+      const after = await getText('#referrer-after')
       assert.strictEqual(after, 'After')
       $('#page').click()
-      const beforePage = await $('#before').getText()
+      const beforePage = await getText('#before')
       assert.strictEqual(beforePage, 'Before')
-      const afterPage = await $('#after').getText()
+      const afterPage = await getText('#after')
       assert.strictEqual(afterPage, 'After')
     },
     getHistory: () => {
