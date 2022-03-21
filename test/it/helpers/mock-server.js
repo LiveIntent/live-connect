@@ -18,6 +18,10 @@ async function getText (selector) {
   return $(selector).then(e => e.getText())
 }
 
+async function click (selector) {
+  return $(selector).then(e => e.click())
+}
+
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const fullContent = preamble + bundle
@@ -171,20 +175,27 @@ export function MockServerFactory (config) {
   return {
     openPage: async (domain, page) => {
       await browser.url(`http://${domain}:3001/${page}`)
+
       const before = await getText('#before')
       assert.strictEqual(before, 'Before')
+
       const after = await getText('#after')
       assert.strictEqual(after, 'After')
     },
     openUriViaReferrer: async (referrerDomain, pageDomain, page) => {
       await browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
+
       const before = await getText('#referrer-before')
       assert.strictEqual(before, 'Before')
+
       const after = await getText('#referrer-after')
       assert.strictEqual(after, 'After')
-      $('#page').click()
+
+      await click('#page')
+
       const beforePage = await getText('#before')
       assert.strictEqual(beforePage, 'Before')
+
       const afterPage = await getText('#after')
       assert.strictEqual(afterPage, 'After')
     },
