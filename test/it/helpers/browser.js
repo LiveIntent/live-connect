@@ -1,4 +1,4 @@
-const WAIT_UNTIL_TIMEOUT_MILLIS = 10000
+const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 300
 
 export async function sendEvent (event, expectedRequests, server) {
@@ -47,7 +47,9 @@ export async function fetchResolvedIdentity () {
     browser.waitUntil(async () => {
       console.log($('#idex').getText())
       const idex = await $('#idex')
-      return idex.getText().then(e => e !== 'None')
+      const text = await idex.getText()
+      console.log(text)
+      return text !== 'None'
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
     const idex = await $('#idex')
     const text = await idex.getText()
