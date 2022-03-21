@@ -1,19 +1,19 @@
 const WAIT_UNTIL_TIMEOUT_MILLIS = 10000
 const WAIT_UNTIL_INTERVAL = 300
 
-export function sendEvent (event, expectedRequests, server) {
+export async function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
-    browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
-    waitForRequests(expectedRequests, server)
+    await browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
+    await waitForRequests(expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
   }
 }
 
-export function waitForRequests (expectedRequests, server) {
+export async function waitForRequests (expectedRequests, server) {
   try {
-    browser.waitUntil(() => {
+    await browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
@@ -21,9 +21,9 @@ export function waitForRequests (expectedRequests, server) {
   }
 }
 
-export function waitForBakerRequests (expectedRequests, server) {
+export async function waitForBakerRequests (expectedRequests, server) {
   try {
-    browser.waitUntil(() => {
+    await browser.waitUntil(() => {
       return server.getBakerHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
@@ -31,10 +31,10 @@ export function waitForBakerRequests (expectedRequests, server) {
   }
 }
 
-export function resolveIdentity (expectedRequests, server) {
+export async function resolveIdentity (expectedRequests, server) {
   try {
-    browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
-    browser.waitUntil(() => {
+    await browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
+    await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
@@ -76,9 +76,9 @@ export async function probeLS () {
   }
 }
 
-export function deleteAllCookies () {
+export async function deleteAllCookies () {
   try {
-    browser.execute(() => {
+    await browser.execute(() => {
       try {
         const cookies = document.cookie.split('; ')
         for (let c = 0; c < cookies.length; c++) {

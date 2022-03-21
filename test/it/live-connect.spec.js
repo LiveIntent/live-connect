@@ -56,20 +56,20 @@ describe('LiveConnect', function () {
     const supportsLS = await probeLS()
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
 
-    sendEvent({}, supportsLS ? 1 : 2, server)
+    await sendEvent({}, supportsLS ? 1 : 2, server)
     const firstTrackingRequest = server.getTrackingRequests()[0]
     expect(decisionIdOne).to.eq(firstTrackingRequest.query.li_did)
 
     server.clearHistory()
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdTwo}`)
-    sendEvent({}, supportsLS ? 1 : 2, server)
+    await sendEvent({}, supportsLS ? 1 : 2, server)
     const secondTrackingRequest = server.getTrackingRequests()[0]
     expect(`${decisionIdTwo},${decisionIdOne}`).to.eq(secondTrackingRequest.query.li_did)
   })
 
   it('should send and receive results of IdentityResolution', async function () {
     await server.openPage('bln.test.liveintent.com', 'page')
-    resolveIdentity(1, server)
+    await resolveIdentity(1, server)
     const idexRequests = server.getIdexHistory()
     expect(idexRequests).to.not.be.empty()
     const idexValue = await fetchResolvedIdentity()
@@ -80,7 +80,7 @@ describe('LiveConnect', function () {
     await server.openPage('bln.test.liveintent.com', 'page?li_did=something')
     const supportsLS = await probeLS()
     const expectedRequests = supportsLS ? 1 : 2
-    sendEvent({}, expectedRequests, server)
+    await sendEvent({}, expectedRequests, server)
     const trackingRequests = server.getTrackingRequests()
     const cookies = await browser.getCookies()
     const tldCookie = cookies.filter(c => c.name === '_li_dcdm_c')[0].value
@@ -92,7 +92,7 @@ describe('LiveConnect', function () {
 
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
-    sendEvent({}, expectedRequests, server)
+    await sendEvent({}, expectedRequests, server)
     const newTrackingRequests = server.getTrackingRequests()
     const newCookies = await browser.getCookies()
     const newTldCookie = newCookies.filter(c => c.name === '_li_dcdm_c')[0].value
@@ -124,7 +124,7 @@ describe('LiveConnect', function () {
     const supportsLS = await probeLS()
     browser.setCookies(cookie)
     await server.openPage('bln.test.liveintent.com', 'page')
-    sendEvent({}, supportsLS ? 1 : 2, server)
+    await sendEvent({}, supportsLS ? 1 : 2, server)
 
     if (supportsLS) {
       const trackingRequests = server.getTrackingRequests()
@@ -142,7 +142,7 @@ describe('LiveConnect', function () {
   it('should prepend duid cookie with hashed apex domain', async function () {
     const supportsLS = await probeLS()
     await server.openPage('bln.test.liveintent.com', 'framed')
-    waitForRequests(supportsLS ? 1 : 2, server)
+    await waitForRequests(supportsLS ? 1 : 2, server)
 
     if (supportsLS) {
       const trackingRequests = server.getTrackingRequests()
@@ -159,7 +159,7 @@ describe('LiveConnect', function () {
   it('should send only the page url when the tracker is in the top window and there is no referrer', async function () {
     await server.openPage('bln.test.liveintent.com', 'page')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    sendEvent({}, expectedRequests, server)
+    await sendEvent({}, expectedRequests, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (!isMobileSafari()) {
@@ -174,7 +174,7 @@ describe('LiveConnect', function () {
   it('should send the referrer and the page url when the tracker is in the top window', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggering-page')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    waitForRequests(expectedRequests, server)
+    await waitForRequests(expectedRequests, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (isMobileSafari14OrNewer()) {
@@ -192,7 +192,7 @@ describe('LiveConnect', function () {
   it('should send the referrer and the page url when the tracker is in the iframe', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'framed')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    waitForRequests(expectedRequests, server)
+    await waitForRequests(expectedRequests, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (isMobileSafari14OrNewer()) {
@@ -211,7 +211,7 @@ describe('LiveConnect', function () {
   it('should send the referrer and the page url when the tracker is in the nested iframe', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'double-framed')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    waitForRequests(expectedRequests, server)
+    await waitForRequests(expectedRequests, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (isMobileSafari14OrNewer()) {
@@ -230,7 +230,7 @@ describe('LiveConnect', function () {
   it('should send the referrer and the page url when the tracker is in the nested iframe and the iframe is cross-domain', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'double-framed.test.liveintent.com', 'double-framed')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    waitForRequests(expectedRequests, server)
+    await waitForRequests(expectedRequests, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
 
@@ -248,8 +248,8 @@ describe('LiveConnect', function () {
     await server.openPage('baked.liveintent.com', 'page')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
 
-    sendEvent({}, expectedRequests, server)
-    waitForBakerRequests(2, server)
+    await sendEvent({}, expectedRequests, server)
+    await waitForBakerRequests(2, server)
 
     expect(server.getBakerHistory().length).to.eq(2)
   })
@@ -258,7 +258,7 @@ describe('LiveConnect', function () {
     await server.openPage('bln.test.liveintent.com', 'elements')
     const expectedRequests = await probeLS().then(b => b ? 1 : 2)
 
-    sendEvent({}, expectedRequests, server)
+    await sendEvent({}, expectedRequests, server)
 
     // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
     const firstTrackingRequest = server.getTrackingRequests()[0]
