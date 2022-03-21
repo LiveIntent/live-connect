@@ -15,7 +15,7 @@ const compression = require('compression')
 const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
 
 async function getText (selector) {
-  $(selector).then(e => e.getText())
+  return $(selector).then(e => e.getText())
 }
 
 export function MockServerFactory (config) {
