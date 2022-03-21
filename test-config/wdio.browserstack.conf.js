@@ -32,7 +32,6 @@ const allCapabilities = [
 ]
 
 exports.config = {
-  sync: true,
   //
   // ====================
   // Runner Configuration

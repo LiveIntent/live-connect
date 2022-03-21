@@ -167,21 +167,21 @@ export function MockServerFactory (config) {
   return {
     openPage: async (domain, page) => {
       await browser.url(`http://${domain}:3001/${page}`)
-      const before = $('#before').getText()
+      const before = await $('#before').getText()
       assert.strictEqual(before, 'Before')
-      const after = $('#after').getText()
+      const after = await $('#after').getText()
       assert.strictEqual(after, 'After')
     },
     openUriViaReferrer: async (referrerDomain, pageDomain, page) => {
       await browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
-      const before = $('#referrer-before').getText()
+      const before = await $('#referrer-before').getText()
       assert.strictEqual(before, 'Before')
-      const after = $('#referrer-after').getText()
+      const after = await $('#referrer-after').getText()
       assert.strictEqual(after, 'After')
       $('#page').click()
-      const beforePage = $('#before').getText()
+      const beforePage = await $('#before').getText()
       assert.strictEqual(beforePage, 'Before')
-      const afterPage = $('#after').getText()
+      const afterPage = await $('#after').getText()
       assert.strictEqual(afterPage, 'After')
     },
     getHistory: () => {
