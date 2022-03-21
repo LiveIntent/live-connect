@@ -50,25 +50,25 @@ describe('LiveConnect', function () {
     server.stop()
   })
 
-  it('should send decisionIds', function () {
+  it('should send decisionIds', async function () {
     const decisionIdOne = '4ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const decisionIdTwo = '5ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const supportsLS = probeLS()
-    server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
+    await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
 
     sendEvent({}, supportsLS ? 1 : 2, server)
     const firstTrackingRequest = server.getTrackingRequests()[0]
     expect(decisionIdOne).to.eq(firstTrackingRequest.query.li_did)
 
     server.clearHistory()
-    server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdTwo}`)
+    await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdTwo}`)
     sendEvent({}, supportsLS ? 1 : 2, server)
     const secondTrackingRequest = server.getTrackingRequests()[0]
     expect(`${decisionIdTwo},${decisionIdOne}`).to.eq(secondTrackingRequest.query.li_did)
   })
 
-  it('should send and receive results of IdentityResolution', function () {
-    server.openPage('bln.test.liveintent.com', 'page')
+  it('should send and receive results of IdentityResolution', async function () {
+    await server.openPage('bln.test.liveintent.com', 'page')
     resolveIdentity(1, server)
     const idexRequests = server.getIdexHistory()
     expect(idexRequests).to.not.be.empty()
@@ -76,8 +76,8 @@ describe('LiveConnect', function () {
     expect(idexValue).to.eq(JSON.stringify({ unifiedId: 'some-id' }))
   })
 
-  it('should send http request to pixel endpoint, and reuse cookies across subdomains', function () {
-    server.openPage('bln.test.liveintent.com', 'page?li_did=something')
+  it('should send http request to pixel endpoint, and reuse cookies across subdomains', async function () {
+    await server.openPage('bln.test.liveintent.com', 'page?li_did=something')
     const supportsLS = probeLS()
     const expectedRequests = supportsLS ? 1 : 2
     sendEvent({}, expectedRequests, server)
@@ -91,7 +91,7 @@ describe('LiveConnect', function () {
     expect(`${packageJson.versionPrefix}${packageJson.version}`).to.eq(trackingRequests[0].query.tna)
 
     server.clearHistory()
-    server.openPage('test.liveintent.com', 'page')
+    await server.openPage('test.liveintent.com', 'page')
     sendEvent({}, expectedRequests, server)
     const newTrackingRequests = server.getTrackingRequests()
     const newCookies = browser.getCookies()
@@ -109,7 +109,7 @@ describe('LiveConnect', function () {
     }
   })
 
-  it('should send http request to pixel endpoint with scraped cookies and hashes', function () {
+  it('should send http request to pixel endpoint with scraped cookies and hashes', async function () {
     const cookie = {
       name: COOKIE_TO_SCRAPE_NAME,
       value: 'sample@liveintent.com'
@@ -120,10 +120,10 @@ describe('LiveConnect', function () {
       sha256: 'eb274de5c9e88e9388f1a57529c8b13f9245be1d921269fc6aa69ef78b004a9d'
     }
 
-    server.openPage('bln.test.liveintent.com', 'page')
+    await server.openPage('bln.test.liveintent.com', 'page')
     const supportsLS = probeLS()
     browser.setCookies(cookie)
-    server.openPage('bln.test.liveintent.com', 'page')
+    await server.openPage('bln.test.liveintent.com', 'page')
     sendEvent({}, supportsLS ? 1 : 2, server)
 
     if (supportsLS) {
@@ -139,9 +139,9 @@ describe('LiveConnect', function () {
     }
   })
 
-  it('should prepend duid cookie with hashed apex domain', function () {
+  it('should prepend duid cookie with hashed apex domain', async function () {
     const supportsLS = probeLS()
-    server.openPage('bln.test.liveintent.com', 'framed')
+    await server.openPage('bln.test.liveintent.com', 'framed')
     waitForRequests(supportsLS ? 1 : 2, server)
 
     if (supportsLS) {
@@ -156,8 +156,8 @@ describe('LiveConnect', function () {
   })
 
   // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
-  it('should send only the page url when the tracker is in the top window and there is no referrer', function () {
-    server.openPage('bln.test.liveintent.com', 'page')
+  it('should send only the page url when the tracker is in the top window and there is no referrer', async function () {
+    await server.openPage('bln.test.liveintent.com', 'page')
     sendEvent({}, probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
@@ -170,8 +170,8 @@ describe('LiveConnect', function () {
   // - Referrer http://schmoogle.com:3001/referrer?uri=http://bln.test.liveintent.com:3001/self-triggering-page
   // ---->
   // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
-  it('should send the referrer and the page url when the tracker is in the top window', function () {
-    server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggering-page')
+  it('should send the referrer and the page url when the tracker is in the top window', async function () {
+    await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggering-page')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
@@ -187,8 +187,8 @@ describe('LiveConnect', function () {
   // ---->
   // - Main page http://bln.test.liveintent.com:3001/framed
   // - - Iframe1 http://bln.test.liveintent.com:3001/self-triggering-page
-  it('should send the referrer and the page url when the tracker is in the iframe', function () {
-    server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'framed')
+  it('should send the referrer and the page url when the tracker is in the iframe', async function () {
+    await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'framed')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
@@ -205,8 +205,8 @@ describe('LiveConnect', function () {
   // - Main page http://bln.test.liveintent.com:3001/double-framed
   // - - Iframe1 http://framed.test.liveintent.com:3001/framed
   // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggering-page
-  it('should send the referrer and the page url when the tracker is in the nested iframe', function () {
-    server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'double-framed')
+  it('should send the referrer and the page url when the tracker is in the nested iframe', async function () {
+    await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'double-framed')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
@@ -223,8 +223,8 @@ describe('LiveConnect', function () {
   // - Main page http://double-framed.test.liveintent.com:3001/double-framed
   // - - Iframe1 http://framed.test.liveintent.com:3001/framed
   // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggering-page
-  it('should send the referrer and the page url when the tracker is in the nested iframe and the iframe is cross-domain', function () {
-    server.openUriViaReferrer('schmoogle.com', 'double-framed.test.liveintent.com', 'double-framed')
+  it('should send the referrer and the page url when the tracker is in the nested iframe and the iframe is cross-domain', async function () {
+    await server.openUriViaReferrer('schmoogle.com', 'double-framed.test.liveintent.com', 'double-framed')
     waitForRequests(probeLS() ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
@@ -239,16 +239,16 @@ describe('LiveConnect', function () {
     }
   })
 
-  it('should call the baker when the domain has a baker', function () {
-    server.openPage('baked.liveintent.com', 'page')
+  it('should call the baker when the domain has a baker', async function () {
+    await server.openPage('baked.liveintent.com', 'page')
     sendEvent({}, probeLS() ? 1 : 2, server)
     waitForBakerRequests(2, server)
 
     expect(server.getBakerHistory().length).to.eq(2)
   })
 
-  it('should send the collected context elements from page', function () {
-    server.openPage('bln.test.liveintent.com', 'elements')
+  it('should send the collected context elements from page', async function () {
+    await server.openPage('bln.test.liveintent.com', 'elements')
     sendEvent({}, probeLS() ? 1 : 2, server)
     // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
     const firstTrackingRequest = server.getTrackingRequests()[0]
