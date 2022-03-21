@@ -58,9 +58,9 @@ export async function fetchResolvedIdentity () {
   }
 }
 
-export function probeLS () {
+export async function probeLS () {
   try {
-    return browser.execute(() => {
+    return await browser.execute(() => {
       try {
         var key = 'x'
         window.localStorage.removeItem(key)
