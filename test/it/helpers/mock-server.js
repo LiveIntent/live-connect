@@ -166,14 +166,14 @@ export function MockServerFactory (config) {
 
   return {
     openPage: (domain, page) => {
-      browser.url(`http://${domain}:3001/${page}`)
+      await browser.url(`http://${domain}:3001/${page}`)
       const before = $('#before').getText()
       assert.strictEqual(before, 'Before')
       const after = $('#after').getText()
       assert.strictEqual(after, 'After')
     },
     openUriViaReferrer: (referrerDomain, pageDomain, page) => {
-      browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
+      await browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
       const before = $('#referrer-before').getText()
       assert.strictEqual(before, 'Before')
       const after = $('#referrer-after').getText()
