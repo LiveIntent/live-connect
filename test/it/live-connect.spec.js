@@ -82,7 +82,7 @@ describe('LiveConnect', function () {
     const expectedRequests = supportsLS ? 1 : 2
     sendEvent({}, expectedRequests, server)
     const trackingRequests = server.getTrackingRequests()
-    const cookies = browser.getCookies()
+    const cookies = await browser.getCookies()
     const tldCookie = cookies.filter(c => c.name === '_li_dcdm_c')[0].value
     const fpcCookie = cookies.filter(c => c.name === '_lc2_fpi')[0].value
     assert.strictEqual(trackingRequests.length, 1)
@@ -94,7 +94,7 @@ describe('LiveConnect', function () {
     await server.openPage('test.liveintent.com', 'page')
     sendEvent({}, expectedRequests, server)
     const newTrackingRequests = server.getTrackingRequests()
-    const newCookies = browser.getCookies()
+    const newCookies = await browser.getCookies()
     const newTldCookie = newCookies.filter(c => c.name === '_li_dcdm_c')[0].value
     const newFpcCookie = newCookies.filter(c => c.name === '_lc2_fpi')[0].value
     assert.strictEqual(newTrackingRequests.length, 1)
