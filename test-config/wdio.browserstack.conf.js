@@ -168,7 +168,7 @@ exports.config = {
   mochaOpts: {
     ui: 'bdd',
     timeout: 90000,
-    require: ['@babel/register']
+    require: ['@babel/register', '@babel/polyfill']
   }
 
 }

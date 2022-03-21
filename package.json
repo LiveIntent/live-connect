@@ -14,7 +14,7 @@
     "node": ">=8"
   },
   "scripts": {
-    "test:unit": "npm run lint && nyc mocha --config test-config/mocha.unit.json --require @babel/register --require babel-polyfill",
+    "test:unit": "npm run lint && nyc mocha --config test-config/mocha.unit.json --require @babel/register --require @babel/polyfill",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build && wdio test-config/wdio.docker.chrome.conf.js",
