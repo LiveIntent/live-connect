@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as http from 'http'
 import { assert } from 'chai'
+import { WAIT_UNTIL_TIMEOUT_MILLIS, WAIT_UNTIL_INTERVAL } from './browser'
 
 const express = require('express')
 const cors = require('cors')
@@ -193,11 +194,11 @@ export function MockServerFactory (config) {
 
       await click('#page')
 
-      const beforePage = await getText('#before')
-      assert.strictEqual(beforePage, 'Before')
-
-      const afterPage = await getText('#after')
-      assert.strictEqual(afterPage, 'After')
+      await browser.waitUntil(() => {
+        const beforePage = await getText('#before')
+        const afterPage = await getText('#after')
+        return beforePage === 'Before' && afterPage === 'After'
+      }, WAIT_UNTIL_TIMEOUT_MILLIS, 'opening page timed out', WAIT_UNTIL_INTERVAL)
     },
     getHistory: () => {
       return history

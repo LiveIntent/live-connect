@@ -1,4 +1,4 @@
-const WAIT_UNTIL_TIMEOUT_MILLIS = 60000
+const WAIT_UNTIL_TIMEOUT_MILLIS = 90000
 const WAIT_UNTIL_INTERVAL = 600
 
 export async function sendEvent (event, expectedRequests, server) {
