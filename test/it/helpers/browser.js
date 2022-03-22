@@ -68,7 +68,7 @@ export async function fetchResolvedIdentity () {
 }
 
 export async function probeLS () {
-  const result = await browser.executeAsync((done) => {
+  const result = await browser.executeAsync(function (done) {
     try {
       const key = 'x'
       window.localStorage.removeItem(key)
@@ -85,7 +85,7 @@ export async function probeLS () {
 }
 
 export async function deleteAllCookies () {
-  return browser.executeAsync((done) => {
+  return browser.executeAsync(function (done) {
     try {
       const cookies = document.cookie.split('; ')
       for (let c = 0; c < cookies.length; c++) {
