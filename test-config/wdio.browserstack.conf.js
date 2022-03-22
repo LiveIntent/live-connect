@@ -6,7 +6,10 @@ const commonCapabilities = {
   'browserstack.console': 'verbose',
   'browserstack.debug': true,
   'browserstack.networkLogs': true,
-  'browserstack.appium_version': '1.14.0'
+  'browserstack.appium_version': '1.14.0',
+  timeouts: {
+    script: 5000
+  }
 }
 
 // https://www.browserstack.com/automate/capabilities
@@ -116,7 +119,7 @@ exports.config = {
   baseUrl: 'http://localhost',
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 90000,
+  waitforTimeout: 60000,
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
@@ -166,7 +169,7 @@ exports.config = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 90000,
+    timeout: 120000,
     require: ['@babel/register', '@babel/polyfill']
   }
 
