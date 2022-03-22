@@ -1,3 +1,5 @@
+import { assert } from 'chai'
+
 const WAIT_UNTIL_TIMEOUT_MILLIS = 10000
 const WAIT_UNTIL_INTERVAL = 300
 
@@ -20,10 +22,18 @@ export async function click (selector) {
 }
 
 export async function sendEvent (event, expectedRequests, server) {
-  await browser.execute(function (event) {
-    window.liQ = window.liQ || []
-    window.liQ.push(event)
+  const error = await browser.execute(function (event) {
+    try {
+      window.liQ = window.liQ || []
+      window.liQ.push(event)
+      return null
+    } catch (e) {
+      return e
+    }
   }, event)
+  if (error) {
+    assert.fail(`Failed sending event: ${error}`)
+  }
   await waitForRequests(expectedRequests, server)
 }
 
@@ -40,16 +50,24 @@ export async function waitForBakerRequests (expectedRequests, server) {
 }
 
 export async function resolveIdentity (expectedRequests, server) {
-  await browser.executeAsync(function (done) {
-    window.liQ = window.liQ || []
-    window.liQ.resolve(function (response) {
-      document.getElementById('idex').innerHTML = JSON.stringify(response)
-      done(true)
-    })
+  const error = await browser.executeAsync(function (done) {
+    try {
+      window.liQ = window.liQ || []
+      window.liQ.resolve(function (response) {
+        document.getElementById('idex').innerHTML = JSON.stringify(response)
+        done(null)
+      })
+    } catch (e) {
+      done(e)
+    }
   })
-  await browser.waitUntil(() => {
-    return server.getIdexHistory().length === expectedRequests
-  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
+  if (error) {
+    assert.fail(`Failed resolving identity: ${error}`)
+  } else {
+    await browser.waitUntil(() => {
+      return server.getIdexHistory().length === expectedRequests
+    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
+  }
 }
 
 export async function fetchResolvedIdentity () {
@@ -84,22 +102,30 @@ export async function probeLS () {
 }
 
 export async function deleteAllCookies () {
-  return browser.execute(function () {
-    const cookies = document.cookie.split('; ')
-    for (let c = 0; c < cookies.length; c++) {
-      const d = window.location.hostname.split('.')
-      while (d.length > 0) {
-        const cookieBase = encodeURIComponent(cookies[c].split(';')[0].split('=')[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path='
-        const p = location.pathname.split('/')
-        document.cookie = cookieBase + '/'
-        while (p.length > 0) {
-          document.cookie = cookieBase + p.join('/')
-          p.pop()
+  const error = await browser.execute(function () {
+    try {
+      const cookies = document.cookie.split('; ')
+      for (let c = 0; c < cookies.length; c++) {
+        const d = window.location.hostname.split('.')
+        while (d.length > 0) {
+          const cookieBase = encodeURIComponent(cookies[c].split(';')[0].split('=')[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path='
+          const p = location.pathname.split('/')
+          document.cookie = cookieBase + '/'
+          while (p.length > 0) {
+            document.cookie = cookieBase + p.join('/')
+            p.pop()
+          }
+          d.shift()
         }
-        d.shift()
       }
+      return null
+    } catch (e) {
+      return e
     }
   })
+  if (error) {
+    console.error(`failed cleaning cookies: ${error}`)
+  }
 }
 
 export function isMobileSafari () {
