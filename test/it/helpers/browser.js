@@ -45,23 +45,15 @@ export async function resolveIdentity (expectedRequests, server) {
 export async function fetchResolvedIdentity () {
   try {
     var text = 'None'
-    browser.waitUntil(async () => {
+    await browser.waitUntil(async () => {
       const idex = await $('#idex')
-      console.warn(idex)
       if (idex.elementId) {
-        const currentText = await idex.getText()
-        if (currentText !== 'None') {
-          text = currentText
-          console.warn(text)
-          return true
-        } else {
-          return false
-        }
+        text = await idex.getText()
+        return text !== 'None'
       } else {
         return false
       }
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
-    console.warn(text)
     return text
   } catch (e) {
     console.error('Error', e)
