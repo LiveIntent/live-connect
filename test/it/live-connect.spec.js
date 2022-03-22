@@ -57,7 +57,6 @@ describe('LiveConnect', function () {
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
 
     await sendEvent({}, supportsLS ? 1 : 2, server)
-    console.warn(server.getHistory())
     const firstTrackingRequest = server.getTrackingRequests()[0]
     expect(decisionIdOne).to.eq(firstTrackingRequest.query.li_did)
 

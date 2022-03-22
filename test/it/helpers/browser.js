@@ -27,13 +27,12 @@ export async function click (selector) {
 }
 
 export async function sendEvent (event, expectedRequests, server) {
-  const json = JSON.stringify(event)
   try {
     await browser.executeAsync(function (json, done) {
       window.liQ = window.liQ || []
       window.liQ.push(json)
       done(true)
-    }, json)
+    }, event)
     await waitForRequests(expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
