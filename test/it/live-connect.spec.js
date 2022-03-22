@@ -46,7 +46,7 @@ describe('LiveConnect', function () {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Finishing the test: '${this.currentTest.fullTitle()}'`)
   })
 
-  after(function () {
+  after(async function () {
     await server.stop()
   })
 
