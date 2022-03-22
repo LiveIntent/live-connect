@@ -46,8 +46,9 @@ export async function fetchResolvedIdentity () {
   try {
     browser.waitUntil(async () => {
       const idex = await $('#idex')
-      console.warn(idex)
-      if (await idex.isExisting()) {
+      const exists = await idex.isExisting()
+      console.warn((exists, idex))
+      if (exists) {
         const text = await idex.getText()
         return text !== 'None'
       } else {
