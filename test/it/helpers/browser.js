@@ -37,6 +37,7 @@ export async function sendEvent (event, expectedRequests, server) {
     await waitForRequests(expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
+    assert.fail(e)
   }
 }
 
@@ -47,6 +48,7 @@ export async function waitForRequests (expectedRequests, server) {
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
+    assert.fail(e)
   }
 }
 
@@ -57,6 +59,7 @@ export async function waitForBakerRequests (expectedRequests, server) {
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getBakerHistory().length, expectedRequests)
+    assert.fail(e)
   }
 }
 
@@ -74,6 +77,7 @@ export async function resolveIdentity (expectedRequests, server) {
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
+    assert.fail(e)
   }
 }
 
@@ -92,55 +96,46 @@ export async function fetchResolvedIdentity () {
     return text
   } catch (e) {
     console.error('Error', e)
-    return 'None'
+    assert.fail(e)
   }
 }
 
 export async function probeLS () {
-  try {
-    return await browser.executeAsync((done) => {
-      try {
-        var key = 'x'
-        window.localStorage.removeItem(key)
-        window.localStorage.setItem(key, key)
-        done(window.localStorage.getItem(key) === key)
-      } catch (e) {
-        done(false)
-      }
-    })
-  } catch (e) {
-    console.error('Error while probing LS', e)
-    return false
-  }
+  return await browser.executeAsync((done) => {
+    try {
+      var key = 'x'
+      window.localStorage.removeItem(key)
+      window.localStorage.setItem(key, key)
+      done(window.localStorage.getItem(key) === key)
+    } catch (e) {
+      done(false)
+    }
+  })
 }
 
 export async function deleteAllCookies () {
-  try {
-    await browser.executeAsync((done) => {
-      try {
-        const cookies = document.cookie.split('; ')
-        for (let c = 0; c < cookies.length; c++) {
-          const d = window.location.hostname.split('.')
-          while (d.length > 0) {
-            const cookieBase = encodeURIComponent(cookies[c].split(';')[0].split('=')[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path='
-            const p = location.pathname.split('/')
-            document.cookie = cookieBase + '/'
-            while (p.length > 0) {
-              document.cookie = cookieBase + p.join('/')
-              p.pop()
-            }
-            d.shift()
+  await browser.executeAsync((done) => {
+    try {
+      const cookies = document.cookie.split('; ')
+      for (let c = 0; c < cookies.length; c++) {
+        const d = window.location.hostname.split('.')
+        while (d.length > 0) {
+          const cookieBase = encodeURIComponent(cookies[c].split(';')[0].split('=')[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path='
+          const p = location.pathname.split('/')
+          document.cookie = cookieBase + '/'
+          while (p.length > 0) {
+            document.cookie = cookieBase + p.join('/')
+            p.pop()
           }
-          done(true)
+          d.shift()
         }
-      } catch (ex) {
-        console.error(ex)
-        done(false)
+        done(true)
       }
-    })
-  } catch (e) {
-    console.error('Error while Deleting all cookies', e)
-  }
+    } catch (ex) {
+      console.error(ex)
+      done(false)
+    }
+  })
 }
 
 export function isMobileSafari () {
