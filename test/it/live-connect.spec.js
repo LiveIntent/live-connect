@@ -122,7 +122,7 @@ describe('LiveConnect', function () {
 
     await server.openPage('bln.test.liveintent.com', 'page')
     const supportsLS = await probeLS()
-    browser.setCookies(cookie)
+    await browser.setCookies(cookie)
     await server.openPage('bln.test.liveintent.com', 'page')
     await sendEvent({}, supportsLS ? 1 : 2, server)
 
