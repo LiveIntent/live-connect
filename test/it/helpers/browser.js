@@ -69,8 +69,8 @@ export async function resolveIdentity (expectedRequests, server) {
       window.liQ = window.liQ || []
       window.liQ.resolve(function (response) {
         document.getElementById('idex').innerHTML = JSON.stringify(response)
+        done(true)
       })
-      done(true)
     })
     await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
