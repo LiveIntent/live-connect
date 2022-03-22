@@ -195,9 +195,15 @@ export function MockServerFactory (config) {
       await click('#page')
 
       await browser.waitUntil(async () => {
-        const beforePage = await getText('#before')
-        const afterPage = await getText('#after')
-        return beforePage === 'Before' && afterPage === 'After'
+        const beforePage = await $('#before')
+        const afterPage = await $('#after')
+        if (beforePage.elementId && afterPage.elementId) {
+          const beforePageText = await beforePage.getText()
+          const afterPageText = await afterPage.getText()
+          return beforePageText === 'Before' && afterPageText === 'After'
+        } else {
+          return false
+        }
       }, WAIT_UNTIL_TIMEOUT_MILLIS, 'opening page timed out', WAIT_UNTIL_INTERVAL)
     },
     getHistory: () => {
