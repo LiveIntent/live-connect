@@ -108,7 +108,7 @@ export async function probeLS () {
       window.localStorage.setItem(key, key)
       done(window.localStorage.getItem(key) === key)
     } catch (e) {
-      console.warn("LocalStorage not working", e)
+      console.warn('LocalStorage not working', e)
       done(false)
     }
   })
