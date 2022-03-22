@@ -46,8 +46,8 @@ describe('LiveConnect', function () {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Finishing the test: '${this.currentTest.fullTitle()}'`)
   })
 
-  after(async function () {
-    await server.stop()
+  after(function () {
+    server.stop()
   })
 
   it('should send decisionIds', async function () {
