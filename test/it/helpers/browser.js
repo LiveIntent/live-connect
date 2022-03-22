@@ -46,6 +46,7 @@ export async function fetchResolvedIdentity () {
   try {
     browser.waitUntil(async () => {
       const idex = await $('#idex')
+      console.warn(idex)
       if (idex.elementId) {
         const text = await idex.getText()
         return text !== 'None'
