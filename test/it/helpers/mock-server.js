@@ -213,7 +213,15 @@ export function MockServerFactory (config) {
       bakerHistory = []
     },
     stop: () => {
-      server.close()
+      return new Promise((resolve, reject) => {
+        server.close((error) => {
+          if (error) {
+            reject(error)
+          } else {
+            resolve()
+          }
+        })
+      })
     }
   }
 }

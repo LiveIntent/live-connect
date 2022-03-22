@@ -47,7 +47,7 @@ describe('LiveConnect', function () {
   })
 
   after(function () {
-    server.stop()
+    await server.stop()
   })
 
   it('should send decisionIds', async function () {
