@@ -7,7 +7,7 @@ export async function getText (selector) {
   var text
   const resolved = await browser.waitUntil(async () => {
     const element = await $(selector)
-    if (selector.elementId) {
+    if (element.elementId) {
       text = await element.getText()
       return true
     } else {
