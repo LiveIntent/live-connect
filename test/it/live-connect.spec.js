@@ -38,7 +38,9 @@ describe('LiveConnect', function () {
 
   beforeEach(async function () {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Starting the test: '${this.currentTest.fullTitle()}'`)
-    await browser.setAsyncTimeout(5000)
+    await browser.timeouts({
+      script: 5000
+    })
   })
 
   afterEach(async function () {
