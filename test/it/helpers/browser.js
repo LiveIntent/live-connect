@@ -7,7 +7,7 @@ export async function sendEvent (event, expectedRequests, server) {
     await browser.executeAsync(function (json, done) {
       window.liQ = window.liQ || []
       window.liQ.push(json)
-      done()
+      done(true)
     }, json)
     await waitForRequests(expectedRequests, server)
   } catch (e) {
@@ -42,7 +42,7 @@ export async function resolveIdentity (expectedRequests, server) {
       window.liQ.resolve(function (response) {
         document.getElementById('idex').innerHTML = JSON.stringify(response)
       })
-      done()
+      done(true)
     })
     await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
@@ -106,11 +106,11 @@ export async function deleteAllCookies () {
             }
             d.shift()
           }
-          done()
+          done(true)
         }
       } catch (ex) {
         console.error(ex)
-        done()
+        done(false)
       }
     })
   } catch (e) {
