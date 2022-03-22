@@ -23,7 +23,7 @@ export async function getText (selector) {
 }
 
 export async function click (selector) {
-  return $(selector).then(e => e.click())
+  return await $(selector).then(e => e.click())
 }
 
 export async function sendEvent (event, expectedRequests, server) {
