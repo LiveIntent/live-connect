@@ -101,17 +101,18 @@ export async function fetchResolvedIdentity () {
 }
 
 export async function probeLS () {
-  return await browser.executeAsync((done) => {
+  const result = await browser.executeAsync((done) => {
     try {
-      var key = 'x'
+      const key = 'x'
       window.localStorage.removeItem(key)
       window.localStorage.setItem(key, key)
       done(window.localStorage.getItem(key) === key)
     } catch (e) {
-      console.warn('LocalStorage not working', e)
-      done(false)
+      done(e)
     }
   })
+  console.warn(`localstorage: ${result}`)
+  return result
 }
 
 export async function deleteAllCookies () {
