@@ -38,6 +38,9 @@ describe('LiveConnect', function () {
 
   beforeEach(function () {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Starting the test: '${this.currentTest.fullTitle()}'`)
+    browser.timeouts({
+      "script": 5000,
+    });
   })
 
   afterEach(function () {
