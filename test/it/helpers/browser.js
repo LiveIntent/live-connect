@@ -108,13 +108,14 @@ export async function probeLS () {
       window.localStorage.setItem(key, key)
       done(window.localStorage.getItem(key) === key)
     } catch (e) {
+      console.warn("LocalStorage not working", e)
       done(false)
     }
   })
 }
 
 export async function deleteAllCookies () {
-  await browser.executeAsync((done) => {
+  return await browser.executeAsync((done) => {
     try {
       const cookies = document.cookie.split('; ')
       for (let c = 0; c < cookies.length; c++) {
@@ -129,8 +130,8 @@ export async function deleteAllCookies () {
           }
           d.shift()
         }
-        done(true)
       }
+      done(true)
     } catch (ex) {
       console.error(ex)
       done(false)
