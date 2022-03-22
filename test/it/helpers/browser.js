@@ -50,7 +50,7 @@ export async function fetchResolvedIdentity () {
       console.warn(idex)
       if (idex.elementId) {
         const currentText = await idex.getText()
-        if (currentText != 'None') {
+        if (currentText !== 'None') {
           text = currentText
           return true
         } else {
