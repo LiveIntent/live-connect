@@ -52,6 +52,7 @@ export async function fetchResolvedIdentity () {
         const currentText = await idex.getText()
         if (currentText !== 'None') {
           text = currentText
+          console.warn(text)
           return true
         } else {
           return false
@@ -60,6 +61,7 @@ export async function fetchResolvedIdentity () {
         return false
       }
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
+    console.warn(text)
     return text
   } catch (e) {
     console.error('Error', e)
