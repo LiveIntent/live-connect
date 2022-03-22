@@ -4,7 +4,7 @@ const WAIT_UNTIL_INTERVAL = 600
 export async function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
-    await browser.execute(`window.liQ = window.liQ || [];window.liQ.push(${json})`)
+    await browser.executeAsync(`function(done) { window.liQ = window.liQ || []; window.liQ.push(${json}); done() }`)
     await waitForRequests(expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
@@ -33,7 +33,7 @@ export async function waitForBakerRequests (expectedRequests, server) {
 
 export async function resolveIdentity (expectedRequests, server) {
   try {
-    await browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
+    await browser.executeAsync('function(done) { window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); }); done()}')
     await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
@@ -63,14 +63,14 @@ export async function fetchResolvedIdentity () {
 
 export async function probeLS () {
   try {
-    return await browser.execute(() => {
+    return await browser.executeAsync((done) => {
       try {
         var key = 'x'
         window.localStorage.removeItem(key)
         window.localStorage.setItem(key, key)
-        return window.localStorage.getItem(key) === key
+        done(window.localStorage.getItem(key) === key)
       } catch (e) {
-        return false
+        done(false)
       }
     })
   } catch (e) {
@@ -81,7 +81,7 @@ export async function probeLS () {
 
 export async function deleteAllCookies () {
   try {
-    await browser.execute(() => {
+    await browser.executeAsync((done) => {
       try {
         const cookies = document.cookie.split('; ')
         for (let c = 0; c < cookies.length; c++) {
@@ -96,9 +96,11 @@ export async function deleteAllCookies () {
             }
             d.shift()
           }
+          done()
         }
       } catch (ex) {
         console.error(ex)
+        done()
       }
     })
   } catch (e) {
