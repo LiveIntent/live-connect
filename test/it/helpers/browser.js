@@ -4,7 +4,11 @@ const WAIT_UNTIL_INTERVAL = 600
 export async function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)
   try {
-    await browser.executeAsync(`function(done) { window.liQ = window.liQ || []; window.liQ.push(${json}); done() }`)
+    await browser.executeAsync(function (json, done) {
+      window.liQ = window.liQ || []
+      window.liQ.push(json)
+      done()
+    }, json)
     await waitForRequests(expectedRequests, server)
   } catch (e) {
     console.error(e, server.getHistory().length, expectedRequests)
@@ -33,7 +37,13 @@ export async function waitForBakerRequests (expectedRequests, server) {
 
 export async function resolveIdentity (expectedRequests, server) {
   try {
-    await browser.executeAsync('function(done) { window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); }); done()}')
+    await browser.executeAsync(function (done) {
+      window.liQ = window.liQ || []
+      window.liQ.resolve(function (response) {
+        document.getElementById('idex').innerHTML = JSON.stringify(response)
+      })
+      done()
+    })
     await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
