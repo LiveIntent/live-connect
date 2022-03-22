@@ -25,7 +25,7 @@ describe('LiveConnect', function () {
   this.retries(4)
   let server
 
-  before(function () {
+  before(async function () {
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
@@ -34,13 +34,13 @@ describe('LiveConnect', function () {
         ajaxTimeout: 3000
       }
     })
-  })
-
-  beforeEach(async function () {
-    console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Starting the test: '${this.currentTest.fullTitle()}'`)
     await browser.timeouts({
       script: 5000
     })
+  })
+
+  beforeEach(function () {
+    console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Starting the test: '${this.currentTest.fullTitle()}'`)
   })
 
   afterEach(async function () {
