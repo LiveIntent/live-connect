@@ -20,10 +20,9 @@ export async function click (selector) {
 }
 
 export async function sendEvent (event, expectedRequests, server) {
-  await browser.executeAsync(function (json, done) {
+  await browser.execute(function (event) {
     window.liQ = window.liQ || []
-    window.liQ.push(json)
-    done(true)
+    window.liQ.push(event)
   }, event)
   await waitForRequests(expectedRequests, server)
 }
@@ -68,14 +67,14 @@ export async function fetchResolvedIdentity () {
 }
 
 export async function probeLS () {
-  const result = await browser.executeAsync(function (done) {
+  const result = await browser.execute(function () {
     try {
       const key = 'x'
       window.localStorage.removeItem(key)
       window.localStorage.setItem(key, key)
-      done(window.localStorage.getItem(key) === key)
+      return window.localStorage.getItem(key) === key
     } catch (e) {
-      done(false)
+      return false
     }
   })
   if (!result) {
@@ -85,25 +84,20 @@ export async function probeLS () {
 }
 
 export async function deleteAllCookies () {
-  return browser.executeAsync(function (done) {
-    try {
-      const cookies = document.cookie.split('; ')
-      for (let c = 0; c < cookies.length; c++) {
-        const d = window.location.hostname.split('.')
-        while (d.length > 0) {
-          const cookieBase = encodeURIComponent(cookies[c].split(';')[0].split('=')[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path='
-          const p = location.pathname.split('/')
-          document.cookie = cookieBase + '/'
-          while (p.length > 0) {
-            document.cookie = cookieBase + p.join('/')
-            p.pop()
-          }
-          d.shift()
+  return browser.execute(function () {
+    const cookies = document.cookie.split('; ')
+    for (let c = 0; c < cookies.length; c++) {
+      const d = window.location.hostname.split('.')
+      while (d.length > 0) {
+        const cookieBase = encodeURIComponent(cookies[c].split(';')[0].split('=')[0]) + '=; expires=Thu, 01-Jan-1970 00:00:01 GMT; domain=' + d.join('.') + ' ;path='
+        const p = location.pathname.split('/')
+        document.cookie = cookieBase + '/'
+        while (p.length > 0) {
+          document.cookie = cookieBase + p.join('/')
+          p.pop()
         }
+        d.shift()
       }
-      done(true)
-    } catch (ex) {
-      done(false)
     }
   })
 }

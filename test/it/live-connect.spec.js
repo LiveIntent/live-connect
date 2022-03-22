@@ -34,9 +34,6 @@ describe('LiveConnect', function () {
         ajaxTimeout: 3000
       }
     })
-    await browser.timeouts({
-      script: 5000
-    })
   })
 
   beforeEach(function () {
