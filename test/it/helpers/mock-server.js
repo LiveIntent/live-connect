@@ -194,7 +194,7 @@ export function MockServerFactory (config) {
 
       await click('#page')
 
-      await browser.waitUntil(() => {
+      await browser.waitUntil(async () => {
         const beforePage = await getText('#before')
         const afterPage = await getText('#after')
         return beforePage === 'Before' && afterPage === 'After'
