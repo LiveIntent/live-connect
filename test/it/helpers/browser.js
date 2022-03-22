@@ -1,5 +1,30 @@
+import { assert } from 'chai'
+
 const WAIT_UNTIL_TIMEOUT_MILLIS = 90000
 const WAIT_UNTIL_INTERVAL = 600
+
+export async function getText (selector) {
+  var text
+  const resolved = await browser.waitUntil(async () => {
+    const element = await $(selector)
+    if (selector.elementId) {
+      text = await element.getText()
+      return true
+    } else {
+      return false
+    }
+  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'getText timed out', WAIT_UNTIL_INTERVAL)
+  if (resolved) {
+    return text
+  } else {
+    console.error('failed getting text for selector', selector)
+    assert.fail('resolving failed')
+  }
+}
+
+export async function click (selector) {
+  return $(selector).then(e => e.click())
+}
 
 export async function sendEvent (event, expectedRequests, server) {
   const json = JSON.stringify(event)

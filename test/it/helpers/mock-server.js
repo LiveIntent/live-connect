@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as http from 'http'
 import { assert } from 'chai'
-import { WAIT_UNTIL_TIMEOUT_MILLIS, WAIT_UNTIL_INTERVAL } from './browser'
+import { getText, click } from './browser'
 
 const express = require('express')
 const cors = require('cors')
@@ -14,14 +14,6 @@ const port = 3001
 const compression = require('compression')
 
 const bundle = fs.readFileSync('dist/bundle.iife.js', 'utf8')
-
-async function getText (selector) {
-  return $(selector).then(e => e.getText())
-}
-
-async function click (selector) {
-  return $(selector).then(e => e.click())
-}
 
 export function MockServerFactory (config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
@@ -194,17 +186,11 @@ export function MockServerFactory (config) {
 
       await click('#page')
 
-      await browser.waitUntil(async () => {
-        const beforePage = await $('#before')
-        const afterPage = await $('#after')
-        if (beforePage.elementId && afterPage.elementId) {
-          const beforePageText = await beforePage.getText()
-          const afterPageText = await afterPage.getText()
-          return beforePageText === 'Before' && afterPageText === 'After'
-        } else {
-          return false
-        }
-      }, WAIT_UNTIL_TIMEOUT_MILLIS, 'opening page timed out', WAIT_UNTIL_INTERVAL)
+      const beforePage = await getText('#before')
+      assert.strictEqual(beforePage, 'Before')
+
+      const afterPage = await getText('#after')
+      assert.strictEqual(afterPage, 'After')
     },
     getHistory: () => {
       return history
