@@ -50,7 +50,7 @@ export async function fetchResolvedIdentity () {
       console.warn(idex)
       if (idex.elementId) {
         text = await idex.getText()
-        return true
+        return text != 'None'
       } else {
         return false
       }
