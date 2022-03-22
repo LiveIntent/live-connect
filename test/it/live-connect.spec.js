@@ -79,6 +79,7 @@ describe('LiveConnect', function () {
   it('should send http request to pixel endpoint, and reuse cookies across subdomains', async function () {
     await server.openPage('bln.test.liveintent.com', 'page?li_did=something')
     const supportsLS = await probeLS()
+    console.warn(supportsLS)
     const expectedRequests = supportsLS ? 1 : 2
     await sendEvent({}, expectedRequests, server)
     const trackingRequests = server.getTrackingRequests()
