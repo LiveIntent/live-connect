@@ -1,11 +1,9 @@
-import { assert } from 'chai'
-
 const WAIT_UNTIL_TIMEOUT_MILLIS = 90000
 const WAIT_UNTIL_INTERVAL = 600
 
 export async function getText (selector) {
   var text
-  const resolved = await browser.waitUntil(async () => {
+  await browser.waitUntil(async () => {
     const element = await $(selector)
     if (element.elementId) {
       text = await element.getText()
@@ -14,89 +12,59 @@ export async function getText (selector) {
       return false
     }
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'getText timed out', WAIT_UNTIL_INTERVAL)
-  if (resolved) {
-    return text
-  } else {
-    console.error('failed getting text for selector', selector)
-    assert.fail('resolving failed')
-  }
+  return text
 }
 
 export async function click (selector) {
-  return await $(selector).then(e => e.click())
+  return $(selector).then(e => e.click())
 }
 
 export async function sendEvent (event, expectedRequests, server) {
-  try {
-    await browser.executeAsync(function (json, done) {
-      window.liQ = window.liQ || []
-      window.liQ.push(json)
-      done(true)
-    }, event)
-    await waitForRequests(expectedRequests, server)
-  } catch (e) {
-    console.error(e, server.getHistory().length, expectedRequests)
-    assert.fail(e)
-  }
+  await browser.executeAsync(function (json, done) {
+    window.liQ = window.liQ || []
+    window.liQ.push(json)
+    done(true)
+  }, event)
+  await waitForRequests(expectedRequests, server)
 }
 
 export async function waitForRequests (expectedRequests, server) {
-  try {
-    await browser.waitUntil(() => {
-      return server.getHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
-  } catch (e) {
-    console.error(e, server.getHistory().length, expectedRequests)
-    assert.fail(e)
-  }
+  return browser.waitUntil(() => {
+    return server.getHistory().length === expectedRequests
+  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
 }
 
 export async function waitForBakerRequests (expectedRequests, server) {
-  try {
-    await browser.waitUntil(() => {
-      return server.getBakerHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
-  } catch (e) {
-    console.error(e, server.getBakerHistory().length, expectedRequests)
-    assert.fail(e)
-  }
+  return browser.waitUntil(() => {
+    return server.getBakerHistory().length === expectedRequests
+  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
 }
 
 export async function resolveIdentity (expectedRequests, server) {
-  try {
-    await browser.executeAsync(function (done) {
-      window.liQ = window.liQ || []
-      window.liQ.resolve(function (response) {
-        document.getElementById('idex').innerHTML = JSON.stringify(response)
-        done(true)
-      })
+  await browser.executeAsync(function (done) {
+    window.liQ = window.liQ || []
+    window.liQ.resolve(function (response) {
+      document.getElementById('idex').innerHTML = JSON.stringify(response)
+      done(true)
     })
-    await browser.waitUntil(() => {
-      return server.getIdexHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
-  } catch (e) {
-    console.error(e, server.getHistory().length, expectedRequests)
-    assert.fail(e)
-  }
+  })
+  await browser.waitUntil(() => {
+    return server.getIdexHistory().length === expectedRequests
+  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
 }
 
 export async function fetchResolvedIdentity () {
-  try {
-    var text = 'None'
-    await browser.waitUntil(async () => {
-      const idex = await $('#idex')
-      if (idex.elementId) {
-        text = await idex.getText()
-        return text !== 'None'
-      } else {
-        return false
-      }
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
-    return text
-  } catch (e) {
-    console.error('Error', e)
-    assert.fail(e)
-  }
+  var text = 'None'
+  await browser.waitUntil(async () => {
+    const idex = await $('#idex')
+    if (idex.elementId) {
+      text = await idex.getText()
+      return text !== 'None'
+    } else {
+      return false
+    }
+  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
+  return text
 }
 
 export async function probeLS () {
@@ -107,15 +75,17 @@ export async function probeLS () {
       window.localStorage.setItem(key, key)
       done(window.localStorage.getItem(key) === key)
     } catch (e) {
-      done(e)
+      done(false)
     }
   })
-  console.warn(`localstorage: ${result}`)
+  if (!result) {
+    console.warn('localstorage not supported')
+  }
   return result
 }
 
 export async function deleteAllCookies () {
-  return await browser.executeAsync((done) => {
+  return browser.executeAsync((done) => {
     try {
       const cookies = document.cookie.split('; ')
       for (let c = 0; c < cookies.length; c++) {
@@ -133,7 +103,6 @@ export async function deleteAllCookies () {
       }
       done(true)
     } catch (ex) {
-      console.error(ex)
       done(false)
     }
   })
