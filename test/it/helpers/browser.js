@@ -13,7 +13,7 @@ export async function sendEvent (event, expectedRequests, server) {
 
 export async function waitForRequests (expectedRequests, server) {
   try {
-    await browser.waitUntil(async () => {
+    await browser.waitUntil(() => {
       return server.getHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
@@ -23,7 +23,7 @@ export async function waitForRequests (expectedRequests, server) {
 
 export async function waitForBakerRequests (expectedRequests, server) {
   try {
-    await browser.waitUntil(async () => {
+    await browser.waitUntil(() => {
       return server.getBakerHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
@@ -34,7 +34,7 @@ export async function waitForBakerRequests (expectedRequests, server) {
 export async function resolveIdentity (expectedRequests, server) {
   try {
     await browser.execute('window.liQ = window.liQ || [];window.liQ.resolve(function(response) { document.getElementById("idex").innerHTML = JSON.stringify(response); })')
-    await browser.waitUntil(async () => {
+    await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
   } catch (e) {
@@ -46,7 +46,7 @@ export async function fetchResolvedIdentity () {
   try {
     browser.waitUntil(async () => {
       const idex = await $('#idex')
-      if (idex.elementId !== undefined) {
+      if (idex.elementId) {
         const text = await idex.getText()
         return text !== 'None'
       } else {
