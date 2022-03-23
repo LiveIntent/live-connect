@@ -149,7 +149,7 @@ export async function probeLS () {
     } catch (e) {
       error = e
     }
-    return [error, enabled, window]
+    return [error, enabled, window == null]
   })
   const error = result[0]
   const enabled = result[1]
