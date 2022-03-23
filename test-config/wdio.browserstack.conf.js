@@ -44,6 +44,7 @@ exports.config = {
   // WebdriverIO allows it to run your tests in arbitrary locations (e.g. locally or
   // on a remote machine).
   runner: 'local',
+
   //
   // Override default path ('/wd/hub') for chromedriver service.
   // path: '/',
@@ -59,10 +60,12 @@ exports.config = {
   specs: [
     './test/it/**/*.spec.js'
   ],
+
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
   ],
+
   //
   // ============
   // Capabilities
@@ -80,12 +83,14 @@ exports.config = {
   // from the same test should run tests.
   //
   maxInstances: 1,
+
   //
   // If you have trouble getting all important capabilities together, check out the
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://docs.saucelabs.com/reference/platforms-configurator
   //
   capabilities: allCapabilities,
+
   //
   // ===================
   // Test Configurations
@@ -94,6 +99,7 @@ exports.config = {
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
   logLevel: 'warn',
+
   //
   // Set specific log levels per logger
   // loggers:
@@ -108,39 +114,43 @@ exports.config = {
     webdriver: 'warn',
     '@wdio/browserstack-service': 'info'
   },
+
   //
   // If you only want to run your tests until a specific amount of tests have failed use
   // bail (default is 0 - don't bail, run all tests).
   bail: 0,
+
   //
   // Set a base URL in order to shorten url command calls. If your `url` parameter starts
   // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
   // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
   // gets prepended directly.
   baseUrl: 'http://localhost',
+
   //
   // Default timeout for all waitFor* commands.
   waitforTimeout: 10000,
+
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
   connectionRetryTimeout: 30000,
+
   //
   // Default request retries count
   connectionRetryCount: 3,
-  //
-  // Test runner services
-  // Services take over a specific job you don't want to take care of. They enhance
-  // your test setup with almost no effort. Unlike plugins, they don't add new
-  // commands. Instead, they hook themselves up into the test process.
-  services: ['browserstack'],
+
+  services: [["browserstack", {
+    browserstackLocal: true,
+
+    opts: {
+      verbose: true
+    }
+  }]],
 
   user: process.env.BS_USER,
   key: process.env.BS_KEY,
-  browserstackLocal: true,
-  browserstackOpts: {
-    verbose: true
-  },
+
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
   // see also: https://webdriver.io/docs/frameworks.html
@@ -148,9 +158,11 @@ exports.config = {
   // Make sure you have the wdio adapter package for the specific framework installed
   // before running any tests.
   framework: 'mocha',
+
   //
   // The number of times to retry the entire specfile when it fails as a whole
   specFileRetries: 2,
+
   //
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
@@ -173,5 +185,4 @@ exports.config = {
     timeout: 600000,
     require: ['@babel/register', '@babel/polyfill']
   }
-
 }
