@@ -79,15 +79,15 @@ export async function waitForBakerRequests (expectedRequests, server) {
 }
 
 export async function resolveIdentity (expectedRequests, server) {
-  const error = await browser.execute(function () {
+  const error = await browser.executeAsync(function (done) {
     try {
       window.liQ = window.liQ || []
       window.liQ.resolve(function (response) {
         document.getElementById('idex').innerHTML = JSON.stringify(response)
+        done(null)
       })
-      return null
     } catch (e) {
-      return e
+      done(e)
     }
   })
   if (error) {
