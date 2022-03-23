@@ -26,6 +26,8 @@ describe('LiveConnect', function () {
   let server
 
   before(async function () {
+    // wait for environment to become ready
+    await new Promise(resolve => setTimeout(resolve, 10000));
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
@@ -34,8 +36,6 @@ describe('LiveConnect', function () {
         ajaxTimeout: 3000
       }
     })
-    // probe localstorage once on startup
-    await probeLS()
   })
 
   beforeEach(function () {
