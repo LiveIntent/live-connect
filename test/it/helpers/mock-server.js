@@ -23,6 +23,18 @@ export function MockServerFactory (config) {
   let history = []
   let idex = []
   let bakerHistory = []
+  app.get('/empty', (req, res) => {
+    res.send(
+      `<!DOCTYPE html>
+            <html lang="en">
+            <head><title></title>
+            </head>
+            <body>
+            </body>
+            </html>`
+    )
+  })
+
   app.get('/page', (req, res) => {
     res.send(
       `<!DOCTYPE html>
