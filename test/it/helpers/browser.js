@@ -137,24 +137,27 @@ export async function fetchResolvedIdentity () {
 
 export async function probeLS () {
   const result = await browser.execute(function () {
+    var enabled = false
+    var error = null
     try {
-      const key = 'x'
-      window.localStorage.removeItem(key)
-      window.localStorage.setItem(key, key)
-      return [null, window.localStorage.getItem(key) === key]
+      const key = Math.random().toString()
+      localStorage.setItem(key, key)
+      enabled = localStorage.getItem(key) === key
+      localStorage.removeItem(key)
     } catch (e) {
-      return [e, false]
+      error = e
     }
+    return [error, enabled]
   })
   const error = result[0]
-  const supported = result[1]
+  const enabled = result[1]
   if (error) {
-    console.warn(`error while probing localstorage: ${error}`)
+    console.warn(`Error while probing localstorage: ${JSON.stringify(error)}`)
   }
-  if (!supported) {
-    console.warn('Localstorage not supported')
+  if (!enabled) {
+    console.warn('localstorage not supported')
   }
-  return result
+  return enabled
 }
 
 export async function deleteAllCookies () {
