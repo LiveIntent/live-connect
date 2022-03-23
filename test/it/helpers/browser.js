@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 
-const WAIT_UNTIL_TIMEOUT_MILLIS = 240000
+const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 500
 
 export async function getText (selector) {
