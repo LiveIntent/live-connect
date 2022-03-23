@@ -96,7 +96,8 @@ exports.config = {
   //
   // Default request retries count
   connectionRetryCount: 3,
-  services: [['docker', {
+  services: ['docker'],
+  dockerOptions: {
     image: 'selenium/standalone-chrome:3.141.59',
     healthCheck: 'http://bln.test.liveintent.com:4444',
     options: {
@@ -104,7 +105,7 @@ exports.config = {
       shmSize: '1g',
       network: 'host'
     }
-  }]],
+  },
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
   // see also: https://webdriver.io/docs/frameworks.html
