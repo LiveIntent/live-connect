@@ -141,13 +141,18 @@ export async function probeLS () {
       const key = 'x'
       window.localStorage.removeItem(key)
       window.localStorage.setItem(key, key)
-      return window.localStorage.getItem(key) === key
+      return [null, window.localStorage.getItem(key) === key]
     } catch (e) {
-      return false
+      return [e, false]
     }
   })
-  if (!result) {
-    console.warn('localstorage not supported')
+  const error = result[0]
+  const supported = result[1]
+  if (error) {
+    console.warn(`error while probing localstorage: ${error}`)
+  }
+  if (!supported) {
+    console.warn('Localstorage not supported')
   }
   return result
 }
