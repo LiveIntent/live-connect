@@ -9,7 +9,7 @@ const commonCapabilities = {
   'browserstack.appium_version': '1.14.0',
   timeouts: {
     script: 60000,
-    implicit: 1000
+    implicit: 5000
   }
 }
 

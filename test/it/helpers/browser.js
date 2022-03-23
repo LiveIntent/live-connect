@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 
-const WAIT_UNTIL_TIMEOUT_MILLIS = 20000
+const WAIT_UNTIL_TIMEOUT_MILLIS = 60000
 const WAIT_UNTIL_INTERVAL = 300
 
 export async function getText (selector) {
@@ -50,15 +50,15 @@ export async function waitForBakerRequests (expectedRequests, server) {
 }
 
 export async function resolveIdentity (expectedRequests, server) {
-  const error = await browser.executeAsync(function (done) {
+  const error = await browser.execute(function () {
     try {
       window.liQ = window.liQ || []
       window.liQ.resolve(function (response) {
         document.getElementById('idex').innerHTML = JSON.stringify(response)
       })
-      done(null)
+      return null
     } catch (e) {
-      done(e)
+      return e
     }
   })
   if (error) {
