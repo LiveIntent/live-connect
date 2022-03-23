@@ -143,8 +143,8 @@ export async function probeLS () {
       if (window && window.localStorage) {
         const key = Math.random().toString()
         window.localStorage.setItem(key, key)
+        enabled = window.localStorage.getItem(key) === key
         window.localStorage.removeItem(key)
-        enabled = true
       }
     } catch (e) {
       error = e
