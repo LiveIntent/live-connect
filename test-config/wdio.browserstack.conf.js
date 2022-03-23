@@ -1,4 +1,4 @@
-import * as request from 'request'
+const request = require('request')
 
 const currentTime = Date.now()
 const commonCapabilities = {
