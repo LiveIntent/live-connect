@@ -1,3 +1,5 @@
+import * as request from 'request'
+
 const currentTime = Date.now()
 const commonCapabilities = {
   project: 'LiveConnect',
@@ -120,7 +122,7 @@ exports.config = {
   baseUrl: 'http://localhost',
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 120000,
+  waitforTimeout: 10000,
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
@@ -172,6 +174,46 @@ exports.config = {
     ui: 'bdd',
     timeout: 600000,
     require: ['@babel/register', '@babel/polyfill']
+  },
+
+  /**
+   * Function to be executed after a test (in Mocha/Jasmine only)
+   * @param {Object}  test             test object
+   * @param {Object}  context          scope object the test was executed with
+   * @param {Error}   result.error     error object in case the test fails, otherwise `undefined`
+   * @param {Any}     result.result    return object of test function
+   * @param {Number}  result.duration  duration of test
+   * @param {Boolean} result.passed    true if test has passed, otherwise false
+   * @param {Object}  result.retries   informations to spec related retries, e.g. `{ attempts: 0, limit: 0 }`
+   */
+  afterTest: async function (test, context, { error, result, duration, passed, retries }) {
+    let sessionid = browser.sessionId;
+
+    function doRequest(url, testStatus) {
+        return new Promise(function (resolve, reject) {
+            request({
+                uri: url,
+                method: 'PUT',
+                form: { 'status': testStatus, 'reason': "" }
+            }, function (error, response, body) {
+                if (!error && response.statusCode === 200) {
+                    resolve(body)
+                }
+                else {
+                    reject(error)
+                }
+            })
+        })
+    }
+
+    if (test.passed) {
+        let res = await doRequest(`https://${this.user}:${this.key}@api.browserstack.com/automate/sessions/${sessionid}.json`, "passed")
+        console.log(res)
+    }
+    else {
+        let res = await doRequest(`https://${this.user}:${this.key}@api.browserstack.com/automate/sessions/${sessionid}.json`, "error")
+        console.warn(res)
+    }
   }
 
 }
