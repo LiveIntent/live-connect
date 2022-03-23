@@ -149,11 +149,10 @@ export async function probeLS () {
     } catch (e) {
       error = e
     }
-    return [error, enabled, window == null]
+    return [error, enabled]
   })
   const error = result[0]
   const enabled = result[1]
-  console.warn(`window: ${result[2]}`)
   if (error) {
     console.warn(`Error while probing localstorage: ${JSON.stringify(error)}`)
   }

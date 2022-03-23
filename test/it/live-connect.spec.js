@@ -26,6 +26,8 @@ describe('LiveConnect', function () {
   let server
 
   before(async function () {
+    // wait for browserstack to finish setup
+    await browser.pause(10000)
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
