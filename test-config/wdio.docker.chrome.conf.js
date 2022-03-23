@@ -104,7 +104,9 @@ exports.config = {
   services: ['docker'],
   dockerOptions: {
     image: 'selenium/standalone-chrome:3.141.59',
-    healthCheck: 'http://bln.test.liveintent.com:4444',
+    healthCheck: {
+      url: 'http://bln.test.liveintent.com:4444'
+    },
     options: {
       p: ['4444:4444'],
       shmSize: '1g',
