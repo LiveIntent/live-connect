@@ -10,12 +10,8 @@ exports.config = {
 
   hostname: 'localhost',
   port: 4444,
-  path: '/',
+  path: '/wd/hub',
 
-  //
-  // Override default path ('/wd/hub') for chromedriver service.
-  // path: '/',
-  //
   // ==================
   // Specify Test Files
   // ==================
