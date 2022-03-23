@@ -27,7 +27,7 @@ describe('LiveConnect', function () {
 
   before(async function () {
     // wait for environment to become ready
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise(resolve => setTimeout(resolve, 10000))
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
