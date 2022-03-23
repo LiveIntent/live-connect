@@ -1,23 +1,30 @@
 import { assert } from 'chai'
 
-const WAIT_UNTIL_TIMEOUT_MILLIS = 180000
-const WAIT_UNTIL_INTERVAL = 300
+const WAIT_UNTIL_TIMEOUT_MILLIS = 240000
+const WAIT_UNTIL_INTERVAL = 500
 
 export async function getText (selector) {
   var text
-  await browser.waitUntil(async () => {
-    try {
-      const element = await $(selector)
-      if (element.elementId) {
-        text = await element.getText()
-        return true
-      } else {
+  await browser.waitUntil(
+    async () => {
+      try {
+        const element = await $(selector)
+        if (element.elementId) {
+          text = await element.getText()
+          return true
+        } else {
+          return false
+        }
+      } catch {
         return false
       }
-    } catch {
-      return false
+    },
+    {
+      timeout: WAIT_UNTIL_TIMEOUT_MILLIS,
+      timeoutMsg: 'getText timed out',
+      interval: WAIT_UNTIL_INTERVAL
     }
-  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'getText timed out', WAIT_UNTIL_INTERVAL)
+  )
   return text
 }
 
@@ -43,17 +50,31 @@ export async function sendEvent (event, expectedRequests, server) {
 
 export async function waitForRequests (expectedRequests, server) {
   console.info(`Waiting for ${expectedRequests} requests`)
-  await browser.waitUntil(() => {
-    return server.getHistory().length === expectedRequests
-  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
+  await browser.waitUntil(
+    () => {
+      return server.getHistory().length >= expectedRequests
+    },
+    {
+      timeout: WAIT_UNTIL_TIMEOUT_MILLIS,
+      timeoutMsg: 'waitForRequests timed out',
+      interval: WAIT_UNTIL_INTERVAL
+    }
+  )
   console.info('Done waiting for requests')
 }
 
 export async function waitForBakerRequests (expectedRequests, server) {
   console.info(`Waiting for ${expectedRequests} baker requests`)
-  await browser.waitUntil(() => {
-    return server.getBakerHistory().length === expectedRequests
-  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
+  await browser.waitUntil(
+    () => {
+      return server.getBakerHistory().length >= expectedRequests
+    },
+    {
+      timeout: WAIT_UNTIL_TIMEOUT_MILLIS,
+      timeoutMsg: 'waitForBakerRequests timed out',
+      interval: WAIT_UNTIL_INTERVAL
+    }
+  )
   console.info('Done waiting for baker requests')
 }
 
@@ -73,9 +94,16 @@ export async function resolveIdentity (expectedRequests, server) {
     assert.fail(`Failed resolving identity: ${error}`)
   } else {
     console.info(`Waiting for ${expectedRequests} idex requests`)
-    await browser.waitUntil(() => {
-      return server.getIdexHistory().length === expectedRequests
-    }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
+    await browser.waitUntil(
+      () => {
+        return server.getIdexHistory().length >= expectedRequests
+      },
+      {
+        timeout: WAIT_UNTIL_TIMEOUT_MILLIS,
+        timeoutMsg: 'resolveIdentity timed out',
+        interval: WAIT_UNTIL_INTERVAL
+      }
+    )
     console.info('Done waiting for idex requests')
   }
 }
@@ -83,19 +111,26 @@ export async function resolveIdentity (expectedRequests, server) {
 export async function fetchResolvedIdentity () {
   console.info('Waiting for identity to resolve')
   var text = 'None'
-  await browser.waitUntil(async () => {
-    try {
-      const idex = await $('#idex')
-      if (idex.elementId) {
-        text = await idex.getText()
-        return text !== 'None'
-      } else {
+  await browser.waitUntil(
+    async () => {
+      try {
+        const idex = await $('#idex')
+        if (idex.elementId) {
+          text = await idex.getText()
+          return text !== 'None'
+        } else {
+          return false
+        }
+      } catch {
         return false
       }
-    } catch {
-      return false
+    },
+    {
+      timeout: WAIT_UNTIL_TIMEOUT_MILLIS,
+      timeoutMsg: 'fetchResolvedIdentity timed out',
+      interval: WAIT_UNTIL_INTERVAL
     }
-  }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
+  )
   console.info('Done waiting for identity to resolve')
   return text
 }
