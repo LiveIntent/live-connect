@@ -6,11 +6,15 @@ const WAIT_UNTIL_INTERVAL = 300
 export async function getText (selector) {
   var text
   await browser.waitUntil(async () => {
-    const element = await $(selector)
-    if (element.elementId) {
-      text = await element.getText()
-      return true
-    } else {
+    try {
+      const element = await $(selector)
+      if (element.elementId) {
+        text = await element.getText()
+        return true
+      } else {
+        return false
+      }
+    } catch {
       return false
     }
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'getText timed out', WAIT_UNTIL_INTERVAL)
@@ -38,15 +42,19 @@ export async function sendEvent (event, expectedRequests, server) {
 }
 
 export async function waitForRequests (expectedRequests, server) {
-  return browser.waitUntil(() => {
+  console.info(`Waiting for ${expectedRequests} requests`)
+  await browser.waitUntil(() => {
     return server.getHistory().length === expectedRequests
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
+  console.info(`Done waiting for requests`)
 }
 
 export async function waitForBakerRequests (expectedRequests, server) {
-  return browser.waitUntil(() => {
+  console.info(`Waiting for ${expectedRequests} baker requests`)
+  await browser.waitUntil(() => {
     return server.getBakerHistory().length === expectedRequests
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
+  console.info(`Done waiting for baker requests`)
 }
 
 export async function resolveIdentity (expectedRequests, server) {
@@ -64,23 +72,31 @@ export async function resolveIdentity (expectedRequests, server) {
   if (error) {
     assert.fail(`Failed resolving identity: ${error}`)
   } else {
+    console.info(`Waiting for ${expectedRequests} idex requests`)
     await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
+    console.info(`Done waiting for idex requests`)
   }
 }
 
 export async function fetchResolvedIdentity () {
+  console.info(`Waiting for identity to resolve`)
   var text = 'None'
   await browser.waitUntil(async () => {
-    const idex = await $('#idex')
-    if (idex.elementId) {
-      text = await idex.getText()
-      return text !== 'None'
-    } else {
+    try {
+      const idex = await $('#idex')
+      if (idex.elementId) {
+        text = await idex.getText()
+        return text !== 'None'
+      } else {
+        return false
+      }
+    } catch {
       return false
     }
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
+  console.info(`Done waiting for identity to resolve`)
   return text
 }
 
