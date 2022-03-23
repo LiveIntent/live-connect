@@ -46,7 +46,7 @@ export async function waitForRequests (expectedRequests, server) {
   await browser.waitUntil(() => {
     return server.getHistory().length === expectedRequests
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForRequests timed out', WAIT_UNTIL_INTERVAL)
-  console.info(`Done waiting for requests`)
+  console.info('Done waiting for requests')
 }
 
 export async function waitForBakerRequests (expectedRequests, server) {
@@ -54,7 +54,7 @@ export async function waitForBakerRequests (expectedRequests, server) {
   await browser.waitUntil(() => {
     return server.getBakerHistory().length === expectedRequests
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'waitForBakerRequests timed out', WAIT_UNTIL_INTERVAL)
-  console.info(`Done waiting for baker requests`)
+  console.info('Done waiting for baker requests')
 }
 
 export async function resolveIdentity (expectedRequests, server) {
@@ -76,12 +76,12 @@ export async function resolveIdentity (expectedRequests, server) {
     await browser.waitUntil(() => {
       return server.getIdexHistory().length === expectedRequests
     }, WAIT_UNTIL_TIMEOUT_MILLIS, 'resolveIdentity timed out', WAIT_UNTIL_INTERVAL)
-    console.info(`Done waiting for idex requests`)
+    console.info('Done waiting for idex requests')
   }
 }
 
 export async function fetchResolvedIdentity () {
-  console.info(`Waiting for identity to resolve`)
+  console.info('Waiting for identity to resolve')
   var text = 'None'
   await browser.waitUntil(async () => {
     try {
@@ -96,7 +96,7 @@ export async function fetchResolvedIdentity () {
       return false
     }
   }, WAIT_UNTIL_TIMEOUT_MILLIS, 'fetchResolvedIdentity timed out', WAIT_UNTIL_INTERVAL)
-  console.info(`Done waiting for identity to resolve`)
+  console.info('Done waiting for identity to resolve')
   return text
 }
 
