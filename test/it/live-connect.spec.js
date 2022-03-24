@@ -12,7 +12,8 @@ import {
   resolveIdentity,
   sendEvent,
   waitForBakerRequests,
-  waitForRequests
+  waitForRequests,
+  redefineSetTimeout
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 
@@ -26,10 +27,13 @@ describe('LiveConnect', function () {
   let server
 
   before(async function () {
-    // will fail with 'The JSON wire protocol only supports setting one time out at a time' in IE if setting multiple
-    await browser.setTimeout({ implicit: 5000 })
-    await browser.setTimeout({ pageLoad: 10000 })
-    await browser.setTimeout({ script: 60000 })
+    redefineSetTimeout()
+
+    await browser.setTimeout({
+      implicit: 5000,
+      pageLoad: 10000,
+      script: 60000
+    })
 
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
