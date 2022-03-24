@@ -12,8 +12,7 @@ import {
   resolveIdentity,
   sendEvent,
   waitForBakerRequests,
-  waitForRequests,
-  patchSetTimeout
+  waitForRequests
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 
