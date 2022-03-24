@@ -27,12 +27,6 @@ describe('LiveConnect', function () {
   let supportsLS
 
   before(async function () {
-    await browser.setTimeout({
-      implicit: 5000,
-      pageLoad: 10000,
-      script: 15000
-    })
-
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
