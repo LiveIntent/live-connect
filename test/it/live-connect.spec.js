@@ -26,7 +26,7 @@ describe('LiveConnect', function () {
   let server
 
   before(async function () {
-    browser.setTimeout({
+    await browser.setTimeout({
       implicit: 5000,
       pageLoad: 10000,
       script: 60000
