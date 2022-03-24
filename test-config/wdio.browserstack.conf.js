@@ -1,9 +1,11 @@
+const currentTime = Date.now()
 const commonBStackCapabilities = {
-  'video': true,
-  'console': 'verbose',
-  'debug': true,
-  'networkLogs': true,
-  'appium_version': '1.22.0'
+  projectName: 'LiveConnect',
+  buildName: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
+  video: true,
+  console: 'verbose',
+  debug: true,
+  networkLogs: true
 }
 
 // https://www.browserstack.com/automate/capabilities
