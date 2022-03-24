@@ -3,7 +3,6 @@ const commonBStackCapabilities = {
   projectName: 'LiveConnect',
   buildName: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
   video: true,
-  console: 'verbose',
   debug: true,
   networkLogs: true
 }
