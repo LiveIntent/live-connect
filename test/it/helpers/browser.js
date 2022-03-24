@@ -197,7 +197,7 @@ export function isMobileSafari () {
 
 export function isMobileSafari14OrNewer () {
   return browser.capabilities.browserName === 'safari' &&
-    parseInt(browser.capabilities.version.substring(0, 2)) >= 14 &&
+    parseInt(browser.capabilities.browserVersion.substring(0, 2)) >= 14 &&
     browser.capabilities.realMobile
 }
 
