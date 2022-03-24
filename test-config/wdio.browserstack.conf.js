@@ -1,4 +1,7 @@
 const currentTime = Date.now()
+const commonCapabilities = {
+  'browserstack.use_w3c': true
+}
 const commonBStackCapabilities = {
   projectName: 'LiveConnect',
   buildName: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
@@ -9,27 +12,27 @@ const commonBStackCapabilities = {
 
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
-  { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10'}},
-  { browserName: 'Chrome', browserVersion: '40.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
-  { browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
-  { browserName: 'firefox', browserVersion: '52.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
-  { browserName: 'IE', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
-  { browserName: 'Edge', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
+  { ...commonCapabilities, browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10'}},
+  { ...commonCapabilities, browserName: 'Chrome', browserVersion: '40.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
+  { ...commonCapabilities, browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
+  { ...commonCapabilities, browserName: 'firefox', browserVersion: '52.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
+  { ...commonCapabilities, browserName: 'IE', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
+  { ...commonCapabilities, browserName: 'Edge', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
 
-  { browserName: 'Safari', browserVersion: '14.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Big Sur' }},
-  { browserName: 'Safari', browserVersion: '13.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Catalina' }},
-  { browserName: 'Safari', browserVersion: '12.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Mojave' }},
-  { browserName: 'Safari', browserVersion: '11.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'High Sierra' }},
-  { browserName: 'Safari', browserVersion: '10.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Sierra' }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '14.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Big Sur' }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '13.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Catalina' }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '12.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Mojave' }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '11.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'High Sierra' }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '10.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Sierra' }},
 
-  { browserName: 'Safari', browserVersion: '15.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11 Pro', osVersion: '15 Beta', realMobile: true }},
-  { browserName: 'Safari', browserVersion: '14.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 12', osVersion: '14', realMobile: true }},
-  { browserName: 'Safari', browserVersion: '13.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11', osVersion: '13', realMobile: true }},
-  { browserName: 'Safari', browserVersion: '12.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 8', osVersion: '12', realMobile: true }},
-  { browserName: 'Safari', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPad Pro 9.7 2016', osVersion: '11', realMobile: true }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '15.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11 Pro', osVersion: '15 Beta', realMobile: true }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '14.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 12', osVersion: '14', realMobile: true }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '13.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11', osVersion: '13', realMobile: true }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '12.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 8', osVersion: '12', realMobile: true }},
+  { ...commonCapabilities, browserName: 'Safari', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPad Pro 9.7 2016', osVersion: '11', realMobile: true }},
 
-  { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S21', osVersion: '11.0', realMobile: true }},
-  { browserName: 'Chrome', browserVersion: '67', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Google Nexus 6', osVersion: '6.0', realMobile: true }}
+  { ...commonCapabilities, browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S21', osVersion: '11.0', realMobile: true }},
+  { ...commonCapabilities, browserName: 'Chrome', browserVersion: '67', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Google Nexus 6', osVersion: '6.0', realMobile: true }}
 ]
 
 exports.config = {
