@@ -1,21 +1,18 @@
-const currentTime = Date.now()
-const commonCapabilities = {
-  project: 'LiveConnect',
-  build: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
-  'browserstack.video': true,
-  'browserstack.console': 'verbose',
-  'browserstack.debug': true,
-  'browserstack.networkLogs': true,
-  'browserstack.appium_version': '1.22.0'
+const commonBStackCapabilities = {
+  'video': true,
+  'console': 'verbose',
+  'debug': true,
+  'networkLogs': true,
+  'appium_version': '1.22.0'
 }
 
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '15.0', os_version: '15 Beta', device: 'iPhone 11 Pro', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '14.0', os_version: '14', device: 'iPhone 12', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '13.0', os_version: '13', device: 'iPhone 11', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '12.0', os_version: '12', device: 'iPhone 8', real_mobile: true },
-  { ...commonCapabilities, browserName: 'Safari', browser_version: '11.0', os_version: '11', device: 'iPad Pro 9.7 2016', real_mobile: true }
+  { browserName: 'Safari', browser_version: '15.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '15 Beta', deviceName: 'iPhone 11 Pro', realMobile: true }},
+  { browserName: 'Safari', browser_version: '14.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '14', deviceName: 'iPhone 12', realMobile: true }},
+  { browserName: 'Safari', browser_version: '13.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '13', deviceName: 'iPhone 11', realMobile: true }},
+  { browserName: 'Safari', browser_version: '12.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '12', deviceName: 'iPhone 8', realMobile: true }},
+  { browserName: 'Safari', browser_version: '11.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '11', deviceName: 'iPad Pro 9.7 2016', realMobile: true }}
 ]
 
 exports.config = {
