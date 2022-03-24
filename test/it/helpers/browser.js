@@ -1,4 +1,5 @@
 import { assert } from 'chai'
+import { command } from 'webdriver'
 import { JsonWProtocol } from '@wdio/protocols'
 
 const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
@@ -214,12 +215,12 @@ export function isFirefoxAfter86 () {
 }
 
 export function patchSetTimeout () {
-  browser.overwriteCommand('setTimeout', async function (originalFunction, timeouts) {
-    // ios devices on browserstack are not w3c compliant
-    // https://github.com/webdriverio/webdriverio/issues/4273
-    if (isMobileSafari()) {
-      console.warn('Using custom browser.setTimeout implementation to be compatible with ios on browserstack')
+  // ios devices on browserstack are not w3c compliant
+  // https://github.com/webdriverio/webdriverio/issues/4273
+  if (isMobileSafari) {
+    console.warn('Using custom implementation of browser.setTimeout to be compatible with ios on browserstack')
 
+    browser.overwriteCommand('setTimeout', async function (originalFunction, timeouts) {
       if (typeof timeouts !== 'object') {
         throw new Error('Parameter for "setTimeout" command needs to be an object')
       }
@@ -233,21 +234,23 @@ export function patchSetTimeout () {
         throw new Error('Specified timeout values are not valid integer (see https://webdriver.io/docs/api/browser/setTimeout.html for documentation).')
       }
 
-      const implicit = parseInt(timeouts.implicit)
+      const implicit = timeouts.implicit
       // Previously also known as `page load` with JsonWireProtocol
-      const pageLoad = parseInt(timeouts['page load'] || timeouts.pageLoad)
-      const script = parseInt(timeouts.script)
+      const pageLoad = timeouts['page load'] || timeouts.pageLoad
+      const script = timeouts.script
+
+      const protocolPath = '/session/:sessionId/timeouts'
+      const protocolMethod = 'POST'
+      const setTimeouts = command(protocolMethod, protocolPath, JsonWProtocol[protocolPath][protocolMethod]).bind(this)
 
       /**
        * JsonWireProtocol action
        */
       await Promise.all([
-        isFinite(implicit) && JsonWProtocol.setTimeouts('implicit', implicit),
-        isFinite(pageLoad) && JsonWProtocol.setTimeouts('page load', pageLoad),
-        isFinite(script) && JsonWProtocol.setTimeouts('script', script)
+        isFinite(implicit) && setTimeouts('implicit', implicit),
+        isFinite(pageLoad) && setTimeouts('page load', pageLoad),
+        isFinite(script) && setTimeouts('script', script)
       ].filter(Boolean))
-    } else {
-      originalFunction(timeouts)
-    }
-  })
+    })
+  }
 }
