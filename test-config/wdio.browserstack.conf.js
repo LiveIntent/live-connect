@@ -1,4 +1,11 @@
 const currentTime = Date.now()
+const commonCapabilities = {
+  timeouts: {
+    implicit: 5000,
+    pageLoad: 10000,
+    script: 15000
+  }
+}
 const commonBStackCapabilities = {
   projectName: 'LiveConnect',
   buildName: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,

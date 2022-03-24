@@ -247,9 +247,9 @@ export function patchSetTimeout () {
        * JsonWireProtocol action
        */
       await Promise.all([
-        isFinite(implicit) && setTimeouts(this, 'implicit', implicit),
-        isFinite(pageLoad) && setTimeouts(this, 'page load', pageLoad),
-        isFinite(script) && setTimeouts(this, 'script', script)
+        isFinite(implicit) && setTimeouts('implicit', implicit),
+        isFinite(pageLoad) && setTimeouts('page load', pageLoad),
+        isFinite(script) && setTimeouts('script', script)
       ].filter(Boolean))
     })
   }
