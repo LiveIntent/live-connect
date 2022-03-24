@@ -216,6 +216,8 @@ export function redefineSetTimeout () {
   // ios devices on browserstack are not w3c compliant
   // https://github.com/webdriverio/webdriverio/issues/4273
   if (isMobileSafari()) {
+    console.warn('Redefining browser.setTimeout to be compatible with ios on browserstack')
+
     browser.addCommand('setTimeout', async function (timeouts) {
       if (typeof timeouts !== 'object') {
         throw new Error('Parameter for "setTimeout" command needs to be an object')
