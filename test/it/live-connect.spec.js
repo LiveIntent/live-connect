@@ -25,6 +25,7 @@ const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 describe('LiveConnect', function () {
   this.retries(4)
   let server
+  let supportsLS
 
   before(async function () {
     redefineSetTimeout()
@@ -45,6 +46,8 @@ describe('LiveConnect', function () {
     })
     // wait for environment to become ready
     await server.openPage('bln.test.liveintent.com', 'empty')
+
+    supportsLS = await probeLS()
   })
 
   beforeEach(function () {
@@ -64,7 +67,6 @@ describe('LiveConnect', function () {
   it('should send decisionIds', async function () {
     const decisionIdOne = '4ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const decisionIdTwo = '5ca76883-1e26-3fb8-b6d1-f881ac7d6699'
-    const supportsLS = await probeLS()
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
 
     await sendEvent({}, supportsLS ? 1 : 2, server)
@@ -89,8 +91,6 @@ describe('LiveConnect', function () {
 
   it('should send http request to pixel endpoint, and reuse cookies across subdomains', async function () {
     await server.openPage('bln.test.liveintent.com', 'page?li_did=something')
-    const supportsLS = await probeLS()
-    console.warn(supportsLS)
     const expectedRequests = supportsLS ? 1 : 2
     await sendEvent({}, expectedRequests, server)
     const trackingRequests = server.getTrackingRequests()
@@ -133,7 +133,6 @@ describe('LiveConnect', function () {
     }
 
     await server.openPage('bln.test.liveintent.com', 'page')
-    const supportsLS = await probeLS()
     await browser.setCookies(cookie)
     await server.openPage('bln.test.liveintent.com', 'page')
     await sendEvent({}, supportsLS ? 1 : 2, server)
@@ -152,7 +151,6 @@ describe('LiveConnect', function () {
   })
 
   it('should prepend duid cookie with hashed apex domain', async function () {
-    const supportsLS = await probeLS()
     await server.openPage('bln.test.liveintent.com', 'framed')
     await waitForRequests(supportsLS ? 1 : 2, server)
 
@@ -170,8 +168,7 @@ describe('LiveConnect', function () {
   // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send only the page url when the tracker is in the top window and there is no referrer', async function () {
     await server.openPage('bln.test.liveintent.com', 'page')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    await sendEvent({}, expectedRequests, server)
+    await sendEvent({}, supportsLS ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (!isMobileSafari()) {
@@ -185,8 +182,7 @@ describe('LiveConnect', function () {
   // - Main page http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the top window', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'self-triggering-page')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    await waitForRequests(expectedRequests, server)
+    await waitForRequests(supportsLS ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (isMobileSafari14OrNewer()) {
@@ -203,8 +199,7 @@ describe('LiveConnect', function () {
   // - - Iframe1 http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the iframe', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'framed')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    await waitForRequests(expectedRequests, server)
+    await waitForRequests(supportsLS ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (isMobileSafari14OrNewer()) {
@@ -222,8 +217,7 @@ describe('LiveConnect', function () {
   // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the nested iframe', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'bln.test.liveintent.com', 'double-framed')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    await waitForRequests(expectedRequests, server)
+    await waitForRequests(supportsLS ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
     if (isMobileSafari14OrNewer()) {
@@ -241,8 +235,7 @@ describe('LiveConnect', function () {
   // - - - Iframe2 http://bln.test.liveintent.com:3001/self-triggering-page
   it('should send the referrer and the page url when the tracker is in the nested iframe and the iframe is cross-domain', async function () {
     await server.openUriViaReferrer('schmoogle.com', 'double-framed.test.liveintent.com', 'double-framed')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
-    await waitForRequests(expectedRequests, server)
+    await waitForRequests(supportsLS ? 1 : 2, server)
 
     const firstTrackingRequest = server.getTrackingRequests()[0]
 
@@ -258,9 +251,8 @@ describe('LiveConnect', function () {
 
   it('should call the baker when the domain has a baker', async function () {
     await server.openPage('baked.liveintent.com', 'page')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
 
-    await sendEvent({}, expectedRequests, server)
+    await sendEvent({}, supportsLS ? 1 : 2, server)
     await waitForBakerRequests(2, server)
 
     expect(server.getBakerHistory().length).to.eq(2)
@@ -268,9 +260,8 @@ describe('LiveConnect', function () {
 
   it('should send the collected context elements from page', async function () {
     await server.openPage('bln.test.liveintent.com', 'elements')
-    const expectedRequests = await probeLS().then(b => b ? 1 : 2)
 
-    await sendEvent({}, expectedRequests, server)
+    await sendEvent({}, supportsLS ? 1 : 2, server)
 
     // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
     const firstTrackingRequest = server.getTrackingRequests()[0]
