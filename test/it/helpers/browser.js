@@ -215,7 +215,7 @@ export function isFirefoxAfter86 () {
 }
 
 export function isIPad () {
-  return browser.capabilities.deviceName.substring(0, 4) === 'iPad'
+  return browser.capabilities.deviceName && browser.capabilities.deviceName.substring(0, 4) === 'iPad'
 }
 
 export function useJsonWSetTimeout () {
