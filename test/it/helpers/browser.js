@@ -1,4 +1,5 @@
 import { assert } from 'chai'
+import { JsonWProtocol } from '@wdio/protocols'
 
 const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 500
@@ -241,9 +242,9 @@ export function patchSetTimeout () {
        * JsonWireProtocol action
        */
       await Promise.all([
-        isFinite(implicit) && this.setTimeouts('implicit', implicit),
-        isFinite(pageLoad) && this.setTimeouts('page load', pageLoad),
-        isFinite(script) && this.setTimeouts('script', script)
+        isFinite(implicit) && JsonWProtocol.setTimeouts('implicit', implicit),
+        isFinite(pageLoad) && JsonWProtocol.setTimeouts('page load', pageLoad),
+        isFinite(script) && JsonWProtocol.setTimeouts('script', script)
       ].filter(Boolean))
     } else {
       originalFunction(timeouts)
