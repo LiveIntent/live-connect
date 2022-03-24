@@ -232,10 +232,10 @@ export function patchSetTimeout () {
         throw new Error('Specified timeout values are not valid integer (see https://webdriver.io/docs/api/browser/setTimeout.html for documentation).')
       }
 
-      const implicit = timeouts.implicit
+      const implicit = parseInt(timeouts.implicit)
       // Previously also known as `page load` with JsonWireProtocol
-      const pageLoad = timeouts['page load'] || timeouts.pageLoad
-      const script = timeouts.script
+      const pageLoad = parseInt(timeouts['page load'] || timeouts.pageLoad)
+      const script = parseInt(timeouts.script)
       const setTimeouts = this.setTimeouts.bind(this)
 
       /**
