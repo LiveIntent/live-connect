@@ -6,11 +6,7 @@ const commonCapabilities = {
   'browserstack.console': 'verbose',
   'browserstack.debug': true,
   'browserstack.networkLogs': true,
-  'browserstack.appium_version': '1.14.0',
-  timeouts: {
-    script: 60000,
-    implicit: 5000
-  }
+  'browserstack.appium_version': '1.14.0'
 }
 
 // https://www.browserstack.com/automate/capabilities
@@ -129,7 +125,7 @@ exports.config = {
 
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 10000,
+  waitforTimeout: 30000,
 
   //
   // Default timeout in milliseconds for request
