@@ -217,7 +217,7 @@ export function isFirefoxAfter86 () {
 export function patchSetTimeout () {
   // ios devices on browserstack are not w3c compliant
   // https://github.com/webdriverio/webdriverio/issues/4273
-  if (isMobileSafari) {
+  if (isMobileSafari()) {
     console.warn('Using custom implementation of browser.setTimeout to be compatible with ios on browserstack')
 
     browser.overwriteCommand('setTimeout', async function (originalFunction, timeouts) {
