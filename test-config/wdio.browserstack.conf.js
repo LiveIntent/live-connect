@@ -8,11 +8,11 @@ const commonBStackCapabilities = {
 
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
-  { browserName: 'Safari', browser_version: '15.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '15 Beta', deviceName: 'iPhone 11 Pro', realMobile: true }},
-  { browserName: 'Safari', browser_version: '14.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '14', deviceName: 'iPhone 12', realMobile: true }},
-  { browserName: 'Safari', browser_version: '13.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '13', deviceName: 'iPhone 11', realMobile: true }},
-  { browserName: 'Safari', browser_version: '12.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '12', deviceName: 'iPhone 8', realMobile: true }},
-  { browserName: 'Safari', browser_version: '11.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '11', deviceName: 'iPad Pro 9.7 2016', realMobile: true }}
+  { browserName: 'Safari', browserVersion: '15.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '15 Beta', deviceName: 'iPhone 11 Pro', realMobile: true }},
+  { browserName: 'Safari', browserVersion: '14.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '14', deviceName: 'iPhone 12', realMobile: true }},
+  { browserName: 'Safari', browserVersion: '13.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '13', deviceName: 'iPhone 11', realMobile: true }},
+  { browserName: 'Safari', browserVersion: '12.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '12', deviceName: 'iPhone 8', realMobile: true }},
+  { browserName: 'Safari', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, osVersion: '11', deviceName: 'iPad Pro 9.7 2016', realMobile: true }}
 ]
 
 exports.config = {
