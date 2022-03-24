@@ -241,7 +241,7 @@ export function patchSetTimeout () {
 
       const protocolPath = '/session/:sessionId/timeouts'
       const protocolMethod = 'POST'
-      const setTimeouts = command(protocolMethod, protocolPath, JsonWProtocol[protocolPath][protocolMethod], false)
+      const setTimeouts = command(protocolMethod, protocolPath, JsonWProtocol[protocolPath][protocolMethod], this.isSeleniumStandalone)
 
       /**
        * JsonWireProtocol action
