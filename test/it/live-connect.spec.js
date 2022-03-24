@@ -12,9 +12,7 @@ import {
   resolveIdentity,
   sendEvent,
   waitForBakerRequests,
-  waitForRequests,
-  isIPad,
-  useJsonWSetTimeout
+  waitForRequests
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 
@@ -29,13 +27,6 @@ describe('LiveConnect', function () {
   let supportsLS
 
   before(async function () {
-    if (isIPad()) {
-      // ipad devices on browserstack seem to not be w3c compliant
-      // https://github.com/webdriverio/webdriverio/issues/4273
-      console.warn('Using json web implementation of browser.setTimeout to be compatible with ipad on browserstack')
-      useJsonWSetTimeout()
-    }
-
     await browser.setTimeout({
       implicit: 5000,
       pageLoad: 10000,
