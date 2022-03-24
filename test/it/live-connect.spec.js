@@ -12,8 +12,7 @@ import {
   resolveIdentity,
   sendEvent,
   waitForBakerRequests,
-  waitForRequests,
-  patchSetTimeout
+  waitForRequests
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 
@@ -28,8 +27,6 @@ describe('LiveConnect', function () {
   let supportsLS
 
   before(async function () {
-    patchSetTimeout()
-
     await browser.setTimeout({
       implicit: 5000,
       pageLoad: 10000,
