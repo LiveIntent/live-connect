@@ -216,7 +216,7 @@ export function redefineSetTimeout () {
   // ios devices on browserstack are not w3c compliant
   // https://github.com/webdriverio/webdriverio/issues/4273
   if (isMobileSafari()) {
-    browser.addCommand('setTimeout', function (timeouts) {
+    browser.addCommand('setTimeout', async function (timeouts) {
       if (typeof timeouts !== 'object') {
         throw new Error('Parameter for "setTimeout" command needs to be an object')
       }
@@ -227,7 +227,7 @@ export function redefineSetTimeout () {
        */
       const timeoutValues = Object.values(timeouts)
       if (timeoutValues.length && timeoutValues.every(timeout => typeof timeout !== 'number' || timeout < 0 || timeout > Number.MAX_SAFE_INTEGER)) {
-          throw new Error('Specified timeout values are not valid integer (see https://webdriver.io/docs/api/browser/setTimeout.html for documentation).')
+        throw new Error('Specified timeout values are not valid integer (see https://webdriver.io/docs/api/browser/setTimeout.html for documentation).')
       }
 
       const implicit = timeouts.implicit
