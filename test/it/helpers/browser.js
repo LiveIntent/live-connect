@@ -241,15 +241,15 @@ export function patchSetTimeout () {
 
       const protocolPath = '/session/:sessionId/timeouts'
       const protocolMethod = 'POST'
-      const setTimeouts = command(protocolMethod, protocolPath, JsonWProtocol[protocolPath][protocolMethod]).bind(this)
+      const setTimeouts = command(protocolMethod, protocolPath, JsonWProtocol[protocolPath][protocolMethod])
 
       /**
        * JsonWireProtocol action
        */
       await Promise.all([
-        isFinite(implicit) && setTimeouts('implicit', implicit),
-        isFinite(pageLoad) && setTimeouts('page load', pageLoad),
-        isFinite(script) && setTimeouts('script', script)
+        isFinite(implicit) && setTimeouts(this, 'implicit', implicit),
+        isFinite(pageLoad) && setTimeouts(this, 'page load', pageLoad),
+        isFinite(script) && setTimeouts(this, 'script', script)
       ].filter(Boolean))
     })
   }
