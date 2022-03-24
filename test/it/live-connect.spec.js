@@ -29,7 +29,7 @@ describe('LiveConnect', function () {
     browser.setTimeout({
       implicit: 5000,
       pageLoad: 10000,
-      script: 60000,
+      script: 60000
     })
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
