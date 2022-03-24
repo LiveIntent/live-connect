@@ -236,15 +236,14 @@ export function patchSetTimeout () {
       // Previously also known as `page load` with JsonWireProtocol
       const pageLoad = parseInt(timeouts['page load'] || timeouts.pageLoad)
       const script = parseInt(timeouts.script)
-      const setTimeouts = this.setTimeouts.bind(this)
 
       /**
        * JsonWireProtocol action
        */
       await Promise.all([
-        isFinite(implicit) && setTimeouts('implicit', implicit),
-        isFinite(pageLoad) && setTimeouts('page load', pageLoad),
-        isFinite(script) && setTimeouts('script', script)
+        isFinite(implicit) && this.setTimeouts('implicit', implicit),
+        isFinite(pageLoad) && this.setTimeouts('page load', pageLoad),
+        isFinite(script) && this.setTimeouts('script', script)
       ].filter(Boolean))
     } else {
       originalFunction(timeouts)
