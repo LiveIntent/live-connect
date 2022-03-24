@@ -26,11 +26,11 @@ describe('LiveConnect', function () {
   let server
 
   before(async function () {
-    await browser.setTimeout({
-      implicit: 5000,
-      pageLoad: 10000,
-      script: 60000
-    })
+    // will fail with 'The JSON wire protocol only supports setting one time out at a time' in IE if setting multiple
+    await browser.setTimeout({implicit: 5000})
+    await browser.setTimeout({pageLoad: 10000})
+    await browser.setTimeout({script: 60000})
+
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
