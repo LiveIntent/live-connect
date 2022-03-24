@@ -219,8 +219,6 @@ export function isIPad () {
 }
 
 export function useJsonWSetTimeout () {
-  console.warn('Using custom implementation of browser.setTimeout to be compatible with ios on browserstack')
-
   browser.overwriteCommand('setTimeout', async function (originalFunction, timeouts) {
     if (typeof timeouts !== 'object') {
       throw new Error('Parameter for "setTimeout" command needs to be an object')
