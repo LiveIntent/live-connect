@@ -212,13 +212,13 @@ export function isFirefoxAfter86 () {
     parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86
 }
 
-export function redefineSetTimeout () {
-  // ios devices on browserstack are not w3c compliant
-  // https://github.com/webdriverio/webdriverio/issues/4273
-  if (isMobileSafari()) {
-    console.warn('Redefining browser.setTimeout to be compatible with ios on browserstack')
+export function patchSetTimeout () {
+  browser.overwriteCommand('setTimeout', async function (originalFunction, timeouts) {
+    // ios devices on browserstack are not w3c compliant
+    // https://github.com/webdriverio/webdriverio/issues/4273
+    if (isMobileSafari()) {
+      console.warn('Using custom browser.setTimeout implementation to be compatible with ios on browserstack')
 
-    browser.overwriteCommand('setTimeout', async function (timeouts) {
       if (typeof timeouts !== 'object') {
         throw new Error('Parameter for "setTimeout" command needs to be an object')
       }
@@ -246,6 +246,8 @@ export function redefineSetTimeout () {
         isFinite(pageLoad) && setTimeouts('page load', pageLoad),
         isFinite(script) && setTimeouts('script', script)
       ].filter(Boolean))
-    })
-  }
+    } else {
+      originalFunction(timeouts)
+    }
+  })
 }
