@@ -2,7 +2,6 @@ const currentTime = Date.now()
 const commonBStackCapabilities = {
   projectName: 'LiveConnect',
   buildName: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
-  use_w3c: true,
   video: true,
   debug: true,
   networkLogs: true
@@ -14,7 +13,7 @@ const allCapabilities = [
   { browserName: 'Chrome', browserVersion: '40.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
   { browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
   { browserName: 'firefox', browserVersion: '52.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
-  { browserName: 'IE', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
+  { browserName: 'IE', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10', seleniumVersion: "3.5.2" }},
   { browserName: 'Edge', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
 
   { browserName: 'Safari', browserVersion: '14.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Big Sur' }},
