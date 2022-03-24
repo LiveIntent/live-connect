@@ -33,7 +33,7 @@ describe('LiveConnect', function () {
     await browser.setTimeout({
       implicit: 5000,
       pageLoad: 10000,
-      script: 60000
+      script: 15000
     })
 
     server = serverUtil.MockServerFactory({
