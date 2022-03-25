@@ -1,6 +1,4 @@
 import { assert } from 'chai'
-import { command } from 'webdriver'
-import { JsonWProtocol } from '@wdio/protocols'
 
 const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 500
@@ -225,45 +223,6 @@ export function isFirefoxAfter86 () {
       parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86
   } else {
     return browser.capabilities.browserName === 'firefox' &&
-      parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86
+      parseInt(browser.capabilities.version.substring(0, 2)) > 86
   }
-}
-
-export function isIPad () {
-  return browser.capabilities.deviceName && browser.capabilities.deviceName.substring(0, 4) === 'iPad'
-}
-
-export function useJsonWSetTimeout () {
-  browser.overwriteCommand('setTimeout', async function (originalFunction, timeouts) {
-    if (typeof timeouts !== 'object') {
-      throw new Error('Parameter for "setTimeout" command needs to be an object')
-    }
-
-    /**
-     * If value is not an integer, or it is less than 0 or greater than the maximum safe
-     * integer, return error with error code invalid argument.
-     */
-    const timeoutValues = Object.values(timeouts)
-    if (timeoutValues.length && timeoutValues.every(timeout => typeof timeout !== 'number' || timeout < 0 || timeout > Number.MAX_SAFE_INTEGER)) {
-      throw new Error('Specified timeout values are not valid integer (see https://webdriver.io/docs/api/browser/setTimeout.html for documentation).')
-    }
-
-    const implicit = timeouts.implicit
-    // Previously also known as `page load` with JsonWireProtocol
-    const pageLoad = timeouts['page load'] || timeouts.pageLoad
-    const script = timeouts.script
-
-    const protocolPath = '/session/:sessionId/timeouts'
-    const protocolMethod = 'POST'
-    const setTimeouts = command(protocolMethod, protocolPath, JsonWProtocol[protocolPath][protocolMethod], this.isSeleniumStandalone).bind(this)
-
-    /**
-     * JsonWireProtocol action
-     */
-    await Promise.all([
-      isFinite(implicit) && setTimeouts('implicit', implicit),
-      isFinite(pageLoad) && setTimeouts('page load', pageLoad),
-      isFinite(script) && setTimeouts('script', script)
-    ].filter(Boolean))
-  })
 }
