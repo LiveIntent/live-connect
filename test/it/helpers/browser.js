@@ -190,23 +190,17 @@ export async function deleteAllCookies () {
 }
 
 export function isMobileSafari () {
-  if (browser.isW3C) {
-    return browser.capabilities.browserName === 'safari' && browser.capabilities.realMobile
-  } else {
-    return browser.capabilities.browserName === 'safari' && browser.capabilities.real_mobile
-  }
+  return browser.capabilities.browserName === 'safari' &&
+    (browser.capabilities.realMobile || browser.capabilities.real_mobile)
 }
 
 export function isMobileSafari14OrNewer () {
-  if (browser.isW3C) {
-    return browser.capabilities.browserName === 'safari' &&
-      parseInt(browser.capabilities.browserVersion.substring(0, 2)) >= 14 &&
-      browser.capabilities.realMobile
-  } else {
-    return browser.capabilities.browserName === 'safari' &&
-      parseInt(browser.capabilities.version.substring(0, 2)) >= 14 &&
-      browser.capabilities.real_mobile
-  }
+  return browser.capabilities.browserName === 'safari' &&
+    (
+      (browser.capabilities.browserVersion && parseInt(browser.capabilities.browserVersion.substring(0, 2)) >= 14) ||
+      (browser.capabilities.version && parseInt(browser.capabilities.version.substring(0, 2)) >= 14)
+    ) &&
+    (browser.capabilities.realMobile || browser.capabilities.real_mobile)
 }
 
 export function isIE () {
@@ -218,11 +212,9 @@ export function isFirefox () {
 }
 
 export function isFirefoxAfter86 () {
-  if (browser.isW3C) {
-    return browser.capabilities.browserName === 'firefox' &&
-      parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86
-  } else {
-    return browser.capabilities.browserName === 'firefox' &&
-      parseInt(browser.capabilities.version.substring(0, 2)) > 86
-  }
+  return browser.capabilities.browserName === 'firefox' &&
+    (
+      (browser.capabilities.browserVersion && parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86) ||
+      (browser.capabilities.version && parseInt(browser.capabilities.version.substring(0, 2)) > 86)
+    )
 }
