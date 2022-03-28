@@ -7,10 +7,11 @@ exports.config = {
   // WebdriverIO allows it to run your tests in arbitrary locations (e.g. locally or
   // on a remote machine).
   runner: 'local',
-  //
-  // Override default path ('/wd/hub') for chromedriver service.
-  // path: '/',
-  //
+
+  hostname: 'localhost',
+  port: 4444,
+  path: '/wd/hub',
+
   // ==================
   // Specify Test Files
   // ==================
@@ -96,11 +97,6 @@ exports.config = {
   //
   // Default request retries count
   connectionRetryCount: 3,
-  //
-  // Test runner services
-  // Services take over a specific job you don't want to take care of. They enhance
-  // your test setup with almost no effort. Unlike plugins, they don't add new
-  // commands. Instead, they hook themselves up into the test process.
   services: ['docker'],
   dockerOptions: {
     image: 'selenium/standalone-chrome:3.141.59',
@@ -141,6 +137,6 @@ exports.config = {
   mochaOpts: {
     ui: 'bdd',
     timeout: 60000,
-    require: ['@babel/register']
+    require: ['@babel/polyfill']
   }
 }

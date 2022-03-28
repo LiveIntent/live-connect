@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as http from 'http'
 import { assert } from 'chai'
+import { getText, click } from './browser'
 
 const express = require('express')
 const cors = require('cors')
@@ -22,6 +23,20 @@ export function MockServerFactory (config) {
   let history = []
   let idex = []
   let bakerHistory = []
+  app.get('/empty', (req, res) => {
+    res.send(
+      `<!DOCTYPE html>
+            <html lang="en">
+            <head><title></title>
+            </head>
+            <body>
+            <div id="before">Before</div>
+            <div id="after">After</div>
+            </body>
+            </html>`
+    )
+  })
+
   app.get('/page', (req, res) => {
     res.send(
       `<!DOCTYPE html>
@@ -165,23 +180,30 @@ export function MockServerFactory (config) {
   })
 
   return {
-    openPage: (domain, page) => {
-      browser.url(`http://${domain}:3001/${page}`)
-      const before = $('#before').getText()
+    openPage: async (domain, page) => {
+      await browser.url(`http://${domain}:3001/${page}`)
+
+      const before = await getText('#before')
       assert.strictEqual(before, 'Before')
-      const after = $('#after').getText()
+
+      const after = await getText('#after')
       assert.strictEqual(after, 'After')
     },
-    openUriViaReferrer: (referrerDomain, pageDomain, page) => {
-      browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
-      const before = $('#referrer-before').getText()
+    openUriViaReferrer: async (referrerDomain, pageDomain, page) => {
+      await browser.url(`http://${referrerDomain}:3001/referrer?uri=http://${pageDomain}:3001/${page}`)
+
+      const before = await getText('#referrer-before')
       assert.strictEqual(before, 'Before')
-      const after = $('#referrer-after').getText()
+
+      const after = await getText('#referrer-after')
       assert.strictEqual(after, 'After')
-      $('#page').click()
-      const beforePage = $('#before').getText()
+
+      await click('#page')
+
+      const beforePage = await getText('#before')
       assert.strictEqual(beforePage, 'Before')
-      const afterPage = $('#after').getText()
+
+      const afterPage = await getText('#after')
       assert.strictEqual(afterPage, 'After')
     },
     getHistory: () => {
