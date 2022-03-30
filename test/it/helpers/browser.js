@@ -137,11 +137,11 @@ export async function fetchResolvedIdentity () {
 
 export async function probeLS () {
   const result = await browser.execute(function () {
+    const key = '__live-connect-localstorage-probe-test'
     var enabled = false
     var error = null
     try {
       if (window && window.localStorage) {
-        const key = Math.random().toString()
         window.localStorage.setItem(key, key)
         enabled = window.localStorage.getItem(key) === key
         window.localStorage.removeItem(key)

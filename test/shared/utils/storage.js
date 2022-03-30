@@ -29,9 +29,9 @@ export function localStorageIsEnabled () {
  */
 function _checkLocalStorage () {
   let enabled = false
+  const key = '__live-connect-localstorage-probe'
   try {
     if (window && window.localStorage) {
-      const key = Math.random().toString()
       window.localStorage.setItem(key, key)
       enabled = window.localStorage.getItem(key) === key
       window.localStorage.removeItem(key)
