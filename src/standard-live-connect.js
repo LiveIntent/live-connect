@@ -44,6 +44,7 @@ import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
+import { StorageStrategy } from './model/storage-strategy'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState) {
@@ -130,8 +131,8 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
     errorHandler.register(liveConnectConfig, callHandler)
-
-    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
+    const storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy
+    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnrich, identifiersEnrich]

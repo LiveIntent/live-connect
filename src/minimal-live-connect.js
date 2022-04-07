@@ -15,6 +15,7 @@ import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
+import { StorageStrategy } from './model/storage-strategy'
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -26,7 +27,8 @@ import { CallHandler } from './handlers/call-handler'
 function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     const callHandler = CallHandler(externalCallHandler)
-    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
+    const storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy
+    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const peopleVerifiedData = merge(liveConnectConfig, peopleVerified(liveConnectConfig, storageHandler))
     const finalData = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
     const resolver = IdentityResolver(finalData, callHandler)

@@ -5,7 +5,8 @@
 const StorageStrategy = {
   cookie: 'cookie',
   localStorage: 'ls',
-  none: 'none'
+  none: 'none',
+  disabled: 'disabled'
 }
 
 export { StorageStrategy }

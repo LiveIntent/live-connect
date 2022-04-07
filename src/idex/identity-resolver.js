@@ -15,7 +15,7 @@ function _cacheKey (additionalParams) {
   }
 }
 
-function _responseReceived (storageHandler, domain, expirationHours, successCallback, additionalParams) {
+function _responseReceived (storageHandler, domain, expirationHours, successCallback, additionalParams, n3pc) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -27,11 +27,13 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
       }
     }
     try {
-      storageHandler.set(
-        _cacheKey(additionalParams),
-        JSON.stringify(responseObj),
-        expiresInHours(expirationHours),
-        domain)
+      if (n3pc) {} else {
+        storageHandler.set(
+          _cacheKey(additionalParams),
+          JSON.stringify(responseObj),
+          expiresInHours(expirationHours),
+          domain)
+      }
     } catch (ex) {
       fromError('IdentityResolverStorage', ex)
     }
@@ -49,6 +51,7 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
 export function IdentityResolver (config, storageHandler, calls) {
   try {
     const nonNullConfig = config || {}
+    const n3pc = nonNullConfig.gdprApplies
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
     const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
@@ -64,6 +67,7 @@ export function IdentityResolver (config, storageHandler, calls) {
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
+    tuples.push(asParamOrEmpty('n3pc', n3pc, v => encodeURIComponent(v ? 1 : 0)))
 
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
@@ -75,7 +79,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       if (cachedValue) {
         successCallback(JSON.parse(cachedValue))
       } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
+        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams, n3pc), errorCallback, timeout)
       }
     }
     return {
