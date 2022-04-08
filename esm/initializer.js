@@ -1368,6 +1368,7 @@ function _responseReceived$1(successCallback) {
 function IdentityResolver$1(config, calls) {
   try {
     var nonNullConfig = config || {};
+    var n3pc = nonNullConfig.gdprApplies;
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
     var externalIds = nonNullConfig.retrievedIdentifiers || [];
     var source = idexConfig.source || 'unknown';
@@ -1384,6 +1385,9 @@ function IdentityResolver$1(config, calls) {
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
+    tuples.push(asParamOrEmpty('n3pc', n3pc, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
