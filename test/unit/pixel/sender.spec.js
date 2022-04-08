@@ -69,6 +69,16 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
+  it('sends a request with n3pc, n3pc_ttl and nbakers values when gdprApplies is true when sendAjax', function (done) {
+    const successCallback = () => {
+      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1&n3pc=1&n3pc_ttl=1&nbakers=1/)
+      done()
+    }
+    const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, successCallback)
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy'], ['gdpr', 1], ['n3pc', 1], ['n3pc_ttl', 1], ['nbakers', 1]]), sendsPixel: () => true })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
+  })
+
   it('calls bakers when sendAjax', function (done) {
     pixelStub.restore()
     let bakersCount = 0

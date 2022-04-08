@@ -23,9 +23,6 @@
  * @property {(string|undefined)} [gdprConsent]
  * @property {(string|undefined)} [contextSelectors]
  * @property {(string|undefined)} [contextElementsLength]
- * @property {(boolean|undefined)} [n3pc]
- * @property {(boolean|undefined)} [n3pc_ttl]
- * @property {(boolean|undefined)} [nbakers]
  */
 
 /**
@@ -138,7 +135,12 @@ const _pArray = [
   [
     'gdprApplies',
     gdprApplies => {
-      return asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)
+      var params = []
+      params.push(asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0))
+      params.push(asStringParamTransform('n3pc', gdprApplies, (s) => s ? 1 : 0))
+      params.push(asStringParamTransform('n3pc_ttl', gdprApplies, (s) => s ? 1 : 0))
+      params.push(asStringParamTransform('nbakers', gdprApplies, (s) => s ? 1 : 0))
+      return params
     }
   ],
   [
@@ -157,24 +159,6 @@ const _pArray = [
     'contextElements',
     contextElements => {
       return asStringParam('c', contextElements)
-    }
-  ],
-  [
-    'n3pc',
-    n3pc => {
-      return asStringParam('n3pc', n3pc)
-    }
-  ],
-  [
-    'n3pc_ttl',
-    n3pc => {
-      return asStringParam('n3pc_ttl', n3pc)
-    }
-  ],
-  [
-    'nbakers',
-    nbakers => {
-      return asStringParam('nbakers', nbakers)
     }
   ]
 ]

@@ -616,21 +616,26 @@ var _pArray = [['appId', function (aid) {
 }], ['wrapperName', function (wrapper) {
   return asStringParam('wpn', wrapper);
 }], ['gdprApplies', function (gdprApplies) {
-  return asStringParamTransform('gdpr', gdprApplies, function (s) {
+  var params = [];
+  params.push(asStringParamTransform('gdpr', gdprApplies, function (s) {
     return s ? 1 : 0;
-  });
+  }));
+  params.push(asStringParamTransform('n3pc', gdprApplies, function (s) {
+    return s ? 1 : 0;
+  }));
+  params.push(asStringParamTransform('n3pc_ttl', gdprApplies, function (s) {
+    return s ? 1 : 0;
+  }));
+  params.push(asStringParamTransform('nbakers', gdprApplies, function (s) {
+    return s ? 1 : 0;
+  }));
+  return params;
 }], ['gdprConsent', function (gdprConsentString) {
   return asStringParam('gdpr_consent', gdprConsentString);
 }], ['referrer', function (referrer) {
   return asStringParam('refr', referrer);
 }], ['contextElements', function (contextElements) {
   return asStringParam('c', contextElements);
-}], ['n3pc', function (n3pc) {
-  return asStringParam('n3pc', n3pc);
-}], ['n3pc_ttl', function (n3pc) {
-  return asStringParam('n3pc_ttl', n3pc);
-}], ['nbakers', function (nbakers) {
-  return asStringParam('nbakers', nbakers);
 }]];
 function Query(tuples) {
   Query.prependParam = function (tuple) {
