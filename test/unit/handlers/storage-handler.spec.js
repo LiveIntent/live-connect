@@ -49,11 +49,11 @@ describe('StorageHandler', () => {
     expect(emitterErrors[0].exception).to.be.undefined()
   })
 
-  it('should send an error if an external handler is not provided and the storage strategy is disbaled', function () {
+  it('should send an error if an external handler is not provided and the storage strategy is disabled', function () {
     StorageHandler('disabled')
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('StorageHandler')
-    expect(emitterErrors[0].message).to.be.eq('The storage functions \'["getCookie","getDataFromLocalStorage","findSimilarCookies"]\' are not provided')
+    expect(emitterErrors[0].message).to.be.eq('The storage functions \'["localStorageIsEnabled","getCookie","setCookie","getDataFromLocalStorage","removeDataFromLocalStorage","setDataInLocalStorage","findSimilarCookies"]\' are not provided')
     expect(emitterErrors[0].exception).to.be.undefined()
   })
 
@@ -87,14 +87,17 @@ describe('StorageHandler', () => {
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
     expect(storage.getDataFromLocalStorage('key')).to.be.null()
+    expect(emitterErrors.length).to.be.eq(0)
   })
 
   it('should return nothing when the strategy is disabled', function () {
+    expect(emitterErrors.length).to.be.eq(0)
     const storageHandler = StorageHandler('disabled', storage)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
     expect(storage.getDataFromLocalStorage('key')).to.be.null()
+    expect(emitterErrors.length).to.be.eq(1)
   })
 
   it('should return nothing when the strategy is ls and the time is in the past', function () {
