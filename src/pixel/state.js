@@ -23,6 +23,9 @@
  * @property {(string|undefined)} [gdprConsent]
  * @property {(string|undefined)} [contextSelectors]
  * @property {(string|undefined)} [contextElementsLength]
+ * @property {(boolean|undefined)} [n3pc]
+ * @property {(boolean|undefined)} [n3pc_ttl]
+ * @property {(boolean|undefined)} [nbakers]
  */
 
 /**
@@ -135,12 +138,25 @@ const _pArray = [
   [
     'gdprApplies',
     gdprApplies => {
-      var params = []
-      params.push(asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0))
-      params.push(asStringParam('n3pc', gdprApplies))
-      params.push(asStringParam('n3pc_ttl', gdprApplies))
-      params.push(asStringParam('nbakers', gdprApplies))
-      return params
+      return asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)
+    }
+  ],
+  [
+    'n3pc',
+    n3pc => {
+      return asStringParam('n3pc', n3pc)
+    }
+  ],
+  [
+    'n3pc_ttl',
+    n3pcTtl => {
+      return asStringParam('n3pc_ttl', n3pcTtl)
+    }
+  ],
+  [
+    'nbakers',
+    nbakers => {
+      return asStringParam('nbakers', nbakers)
     }
   ],
   [
@@ -190,9 +206,14 @@ export function StateWrapper (state) {
   /**
    * @type {State}
    */
+  let stateWithAdditionalFields = {}
   let _state = {}
   if (state) {
-    _state = _safeFiddle(state)
+    if ('gdprApplies' in state) {
+      const gdprApplies = state.gdprApplies
+      stateWithAdditionalFields = { ...state, n3pc: gdprApplies, n3pc_ttl: gdprApplies, nbakers: gdprApplies }
+    } else stateWithAdditionalFields = state
+    _state = _safeFiddle(stateWithAdditionalFields)
   }
 
   function _sendsPixel () {
@@ -220,7 +241,7 @@ export function StateWrapper (state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper(merge(state, newInfo))
+    return new StateWrapper(merge(stateWithAdditionalFields, newInfo))
   }
 
   /**
