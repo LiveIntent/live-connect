@@ -28,6 +28,12 @@
 - the value of the `config.usPrivacyString` config parameter.
 ### `gdpr`
 - the value of the `config.gdprApplies` config parameter.
+### `n3pc`
+- indicator to not send Set-Cookie header in the response, currently it has the same value as `config.gdprApplies` config parameter.
+### `n3pc_ttl`
+- indicator to not update the TTL of the 3rd party cookies, currently has the same value as `config.gdprApplies` config parameter.
+### `nbakers`
+- indicator to not send bakers to LiveConnect, currently has the same value as `config.gdprApplies` config parameter.
 ### `gdprConsent`
 - the value of the `config.gdprConsent` config parameter.
 ### `dtstmp`

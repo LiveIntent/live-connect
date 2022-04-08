@@ -67,7 +67,7 @@ export function IdentityResolver (config, storageHandler, calls) {
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
-    tuples.push(asParamOrEmpty('n3pc', n3pc, v => encodeURIComponent(v ? 1 : 0)))
+    tuples.push(asStringParam('n3pc', n3pc))
 
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))

@@ -40,7 +40,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     }
   }
 
-  const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
+  const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) ? _noOp : _externalOrError(fName)
 
   const functions = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),

@@ -137,9 +137,9 @@ const _pArray = [
     gdprApplies => {
       var params = []
       params.push(asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0))
-      params.push(asStringParamTransform('n3pc', gdprApplies, (s) => s ? 1 : 0))
-      params.push(asStringParamTransform('n3pc_ttl', gdprApplies, (s) => s ? 1 : 0))
-      params.push(asStringParamTransform('nbakers', gdprApplies, (s) => s ? 1 : 0))
+      params.push(asStringParam('n3pc', gdprApplies))
+      params.push(asStringParam('n3pc_ttl', gdprApplies))
+      params.push(asStringParam('nbakers', gdprApplies))
       return params
     }
   ],
