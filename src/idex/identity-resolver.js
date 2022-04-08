@@ -15,7 +15,7 @@ function _cacheKey (additionalParams) {
   }
 }
 
-function _responseReceived (storageHandler, domain, expirationHours, successCallback, additionalParams, n3pc) {
+function _responseReceived (storageHandler, domain, expirationHours, successCallback, additionalParams) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -27,13 +27,11 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
       }
     }
     try {
-      if (n3pc) {} else {
-        storageHandler.set(
-          _cacheKey(additionalParams),
-          JSON.stringify(responseObj),
-          expiresInHours(expirationHours),
-          domain)
-      }
+      storageHandler.set(
+        _cacheKey(additionalParams),
+        JSON.stringify(responseObj),
+        expiresInHours(expirationHours),
+        domain)
     } catch (ex) {
       fromError('IdentityResolverStorage', ex)
     }
@@ -79,7 +77,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       if (cachedValue) {
         successCallback(JSON.parse(cachedValue))
       } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams, n3pc), errorCallback, timeout)
+        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
       }
     }
     return {
