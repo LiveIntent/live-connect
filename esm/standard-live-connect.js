@@ -684,8 +684,8 @@ function StateWrapper(state) {
   var stateWithAdditionalFields = {};
   var _state = {};
   if (state) {
-    if ('gdprApplies' in state) {
-      var gdprApplies = state.gdprApplies;
+    if ('gdprApplies' in state && state.gdprApplies != null) {
+      var gdprApplies = !!state.gdprApplies;
       stateWithAdditionalFields = _objectSpread2(_objectSpread2({}, state), {}, {
         n3pc: gdprApplies,
         n3pc_ttl: gdprApplies,

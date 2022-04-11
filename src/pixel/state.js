@@ -209,8 +209,8 @@ export function StateWrapper (state) {
   let stateWithAdditionalFields = {}
   let _state = {}
   if (state) {
-    if ('gdprApplies' in state) {
-      const gdprApplies = state.gdprApplies
+    if ('gdprApplies' in state && state.gdprApplies != null) {
+      const gdprApplies = !!state.gdprApplies
       stateWithAdditionalFields = { ...state, n3pc: gdprApplies, n3pc_ttl: gdprApplies, nbakers: gdprApplies }
     } else stateWithAdditionalFields = state
     _state = _safeFiddle(stateWithAdditionalFields)

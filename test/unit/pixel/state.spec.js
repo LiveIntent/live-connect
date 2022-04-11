@@ -83,6 +83,58 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
   })
 
+  it('should set n3pc, n3pc_ttl and nbakers to true, and gdpr to 1 when the gdprApplies has a non boolean value', function () {
+    const pixelData = {
+      contextElements: '<title>This title is a test</title>',
+      appId: '9898',
+      eventSource: { eventName: 'viewContent' },
+      liveConnectId: '213245',
+      trackerName: 'test tracker',
+      pageUrl: 'https://wwww.example.com?sss',
+      errorDetails: { testError: 'testError' },
+      retrievedIdentifiers: [{
+        name: 'sample_cookie',
+        value: 'sample_value'
+      }],
+      hashesFromIdentifiers: [{
+        md5: '75524519292e51ad6f761baa82d07d76',
+        sha1: 'ec3685d99c376b4ee14a5b985a05fc23e21235cb',
+        sha256: 'e168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72'
+      }],
+      decisionIds: ['1', '2'],
+      hashedEmail: ['eb2684ead8e942b6c4dc7465de66460a'],
+      usPrivacyString: '1---',
+      wrapperName: 'test wrapper name',
+      gdprApplies: 'a',
+      gdprConsent: 'test-consent-string',
+      referrer: 'https://some.test.referrer.com'
+    }
+    const event = new StateWrapper(pixelData)
+
+    const expectedPairs = [
+      'aid=9898', // appId
+      'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
+      'duid=213245', // liveConnectId
+      'tna=test%20tracker', // trackerName
+      'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
+      'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
+      'ext_sample_cookie=sample_value', // retrievedIdentifiers
+      'scre=75524519292e51ad6f761baa82d07d76%2Cec3685d99c376b4ee14a5b985a05fc23e21235cb%2Ce168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72', // comma-separated hashesFromIdentifiers
+      'li_did=1%2C2', // decisionIds
+      'e=eb2684ead8e942b6c4dc7465de66460a', // hashedEmail
+      'us_privacy=1---', // usPrivacyString
+      'wpn=test%20wrapper%20name', // wrapperName
+      'gdpr=1', // gdprApplies
+      'n3pc=true', // n3pc
+      'n3pc_ttl=true', // n3pc_ttl
+      'nbakers=true', // nbakers
+      'gdpr_consent=test-consent-string', // gdprConsent
+      'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
+      'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
+    ]
+    expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
+  })
+
   it('should ignore unknown fields', function () {
     const pixelData = {
       appId: '9898',
@@ -113,7 +165,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
-  it('should send the gdprApplies & n3pc & n3pc_ttl & nbakers & gdprConsent', function () {
+  it('should send the gdprApplies as 1 & (n3pc & n3pc_ttl & nbakers) as true & gdprConsent', function () {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,
