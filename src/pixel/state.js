@@ -42,7 +42,7 @@ import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, merge, asStringParam, asParamOrEmpty, asParamWithoutValueOrEmpty, asStringParamTransform, isArray } from '../utils/types'
+import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamTransform, isArray } from '../utils/types'
 import { toParams } from '../utils/url'
 
 /**
@@ -144,19 +144,19 @@ const _pArray = [
   [
     'n3pc',
     n3pc => {
-      return asParamWithoutValueOrEmpty('nc', n3pc)
+      return asStringParam('nc', n3pc)
     }
   ],
   [
     'n3pc_ttl',
     n3pcTtl => {
-      return asParamWithoutValueOrEmpty('nct', n3pcTtl)
+      return asStringParam('nct', n3pcTtl)
     }
   ],
   [
     'nbakers',
     nbakers => {
-      return asParamWithoutValueOrEmpty('nb', nbakers)
+      return asStringParam('nb', nbakers)
     }
   ],
   [

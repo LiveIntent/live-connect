@@ -109,16 +109,16 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent and n3pc values when gpdr does not apply', function (done) {
+  it('should attach the consent and nc values when gpdr does not apply', function (done) {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: false,
-      n3pc: false,
+      n3pc: 0,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&nc=0&gdpr_consent=gdprConsent')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -127,16 +127,16 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent and n3pc values when gpdr applies', function (done) {
+  it('should attach the consent and nc values when gpdr applies', function (done) {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: true,
-      n3pc: true,
+      n3pc: 1,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&gdpr_consent=gdprConsent&nc')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&nc=1&gdpr_consent=gdprConsent')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()

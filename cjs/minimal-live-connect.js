@@ -40,9 +40,6 @@ function isFunction(fun) {
 function asParamOrEmpty(param, value, transform) {
   return isNonEmpty(value) ? [param, isFunction(transform) ? transform(value) : value] : [];
 }
-function asParamWithoutValueOrEmpty(param, value) {
-  return isNonEmpty(value) && value ? [param, null] : [];
-}
 function asStringParam(param, value) {
   return asParamOrEmpty(param, value, function (s) {
     return encodeURIComponent(s);
@@ -80,8 +77,8 @@ var toParams = function toParams(tuples) {
   var acc = '';
   tuples.forEach(function (tuple) {
     var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0]) {
-      acc = tuple[1] == null ? "".concat(acc).concat(operator).concat(tuple[0]) : "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
     }
   });
   return acc;
@@ -137,11 +134,13 @@ function IdentityResolver(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
+    tuples.push(asParamOrEmpty('nc', nonNullConfig.n3pc, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asParamWithoutValueOrEmpty('nc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
@@ -243,7 +242,7 @@ function _parseIdentifiersToResolve(state, storageHandler) {
 
 function enrich$2(state) {
   if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
-    var gdprApplies = !!state.gdprApplies;
+    var gdprApplies = state.gdprApplies ? 1 : 0;
     return {
       n3pc: gdprApplies,
       n3pc_ttl: gdprApplies,

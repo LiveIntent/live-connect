@@ -75,9 +75,9 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'nc', // n3pc
-      'nct', // n3pc_ttl
-      'nb', // nbakers
+      'nc=1', // n3pc
+      'nct=1', // n3pc_ttl
+      'nb=1', // nbakers
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -127,9 +127,9 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'nc', // n3pc
-      'nct', // n3pc_ttl
-      'nb', // nbakers
+      'nc=1', // n3pc
+      'nct=1', // n3pc_ttl
+      'nb=1', // nbakers
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -175,8 +175,8 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&nc&nct&nb&gdpr_consent=some-string`)
-    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['nc', null], ['nct', null], ['nb', null], ['gdpr_consent', 'some-string']])
+    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&nc=1&nct=1&nb=1&gdpr_consent=some-string`)
+    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['nc', '1'], ['nct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
   })
 
   it('should send the gdprApplies as 0 if false', function () {
@@ -187,7 +187,7 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&gdpr_consent=some-string`)
+    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&nc=0&nct=0&nb=0&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0']])
   })
 

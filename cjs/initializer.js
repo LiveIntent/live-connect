@@ -54,9 +54,6 @@ function expiresInHours(expires) {
 function asParamOrEmpty(param, value, transform) {
   return isNonEmpty(value) ? [param, isFunction(transform) ? transform(value) : value] : [];
 }
-function asParamWithoutValueOrEmpty(param, value) {
-  return isNonEmpty(value) && value ? [param, null] : [];
-}
 function asStringParam(param, value) {
   return asParamOrEmpty(param, value, function (s) {
     return encodeURIComponent(s);
@@ -535,8 +532,8 @@ var toParams = function toParams(tuples) {
   var acc = '';
   tuples.forEach(function (tuple) {
     var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0]) {
-      acc = tuple[1] == null ? "".concat(acc).concat(operator).concat(tuple[0]) : "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
     }
   });
   return acc;
@@ -626,11 +623,11 @@ var _pArray = [['appId', function (aid) {
     return s ? 1 : 0;
   });
 }], ['n3pc', function (n3pc) {
-  return asParamWithoutValueOrEmpty('nc', n3pc);
+  return asStringParam('nc', n3pc);
 }], ['n3pc_ttl', function (n3pcTtl) {
-  return asParamWithoutValueOrEmpty('nct', n3pcTtl);
+  return asStringParam('nct', n3pcTtl);
 }], ['nbakers', function (nbakers) {
-  return asParamWithoutValueOrEmpty('nb', nbakers);
+  return asStringParam('nb', nbakers);
 }], ['gdprConsent', function (gdprConsentString) {
   return asStringParam('gdpr_consent', gdprConsentString);
 }], ['referrer', function (referrer) {
@@ -1048,7 +1045,7 @@ function _deduplicateHashes(hashes) {
 
 function enrich$2(state) {
   if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
-    var gdprApplies = !!state.gdprApplies;
+    var gdprApplies = state.gdprApplies ? 1 : 0;
     return {
       n3pc: gdprApplies,
       n3pc_ttl: gdprApplies,
@@ -1100,11 +1097,13 @@ function IdentityResolver(config, storageHandler, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
+    tuples.push(asParamOrEmpty('nc', nonNullConfig.n3pc, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asParamWithoutValueOrEmpty('nc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
@@ -1394,11 +1393,13 @@ function IdentityResolver$1(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
+    tuples.push(asParamOrEmpty('nc', nonNullConfig.n3pc, function (v) {
+      return encodeURIComponent(v ? 1 : 0);
+    }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asParamWithoutValueOrEmpty('nc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
