@@ -29,11 +29,11 @@
 ### `gdpr`
 - the value of the `config.gdprApplies` config parameter.
 ### `nc`
-- indicator to not send 3rd party cookie in the header response, currently it has the same value as `config.gdprApplies` config parameter.
+- indicator to not send 3rd party cookie in the header response, currently it has the same value as `gdpr` config parameter.
 ### `nct`
-- indicator to not update the TTL of the 3rd party cookies, currently has the same value as `config.gdprApplies` config parameter.
+- indicator to not update the TTL of the 3rd party cookies, currently has the same value as `gdpr` config parameter.
 ### `nb`
-- indicator to not send bakers to LiveConnect, currently has the same value as `config.gdprApplies` config parameter.
+- indicator to not send bakers to LiveConnect, currently has the same value as `gdpr` config parameter.
 ### `gdprConsent`
 - the value of the `config.gdprConsent` config parameter.
 ### `dtstmp`
