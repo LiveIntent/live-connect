@@ -1101,7 +1101,7 @@ function IdentityResolver(config, storageHandler, calls) {
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc));
+    tuples.push(asParamWithoutValueOrEmpty('nc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);

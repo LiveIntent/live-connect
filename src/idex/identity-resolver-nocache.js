@@ -1,6 +1,6 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
-import { asParamOrEmpty, asStringParam, mapAsParams } from '../utils/types'
+import { asParamOrEmpty, asParamWithoutValueOrEmpty, asStringParam, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 
 function _responseReceived (successCallback) {
@@ -40,7 +40,7 @@ export function IdentityResolver (config, calls) {
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
-    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc))
+    tuples.push(asParamWithoutValueOrEmpty('nc', nonNullConfig.n3pc))
 
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))

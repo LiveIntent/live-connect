@@ -36,6 +36,9 @@ function isFunction(fun) {
 function asParamOrEmpty(param, value, transform) {
   return isNonEmpty(value) ? [param, isFunction(transform) ? transform(value) : value] : [];
 }
+function asParamWithoutValueOrEmpty(param, value) {
+  return isNonEmpty(value) && value ? [param, null] : [];
+}
 function asStringParam(param, value) {
   return asParamOrEmpty(param, value, function (s) {
     return encodeURIComponent(s);
@@ -134,7 +137,7 @@ function IdentityResolver(config, calls) {
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc));
+    tuples.push(asParamWithoutValueOrEmpty('nc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
