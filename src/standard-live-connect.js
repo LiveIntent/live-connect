@@ -40,7 +40,7 @@ import { resolve as idResolve } from './manager/identifiers'
 import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
-import { enrich as finalState } from './enrichers/state-with-no-cookies-config'
+import { enrich as noCookiesConfig } from './enrichers/no-cookies-config'
 import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
@@ -139,7 +139,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const enrichers = [pageEnrich, identifiersEnrich]
     const managers = [idResolve, decisionsResolve]
 
-    const finalConfig = finalState(liveConnectConfig)
+    const finalConfig = merge(liveConnectConfig, noCookiesConfig(liveConnectConfig))
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig))
     const postManagedState = managers.reduce(reducer, enrichedState)
 

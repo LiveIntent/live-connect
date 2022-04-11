@@ -2,32 +2,6 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
-
-  if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    enumerableOnly && (symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    })), keys.push.apply(keys, symbols);
-  }
-
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = null != arguments[i] ? arguments[i] : {};
-    i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
-      _defineProperty(target, key, source[key]);
-    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
-      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-    });
-  }
-
-  return target;
-}
-
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -36,21 +10,6 @@ function _typeof(obj) {
   } : function (obj) {
     return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   }, _typeof(obj);
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
 }
 
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
@@ -1087,12 +1046,12 @@ function _deduplicateHashes(hashes) {
 function enrich$2(state) {
   if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
     var gdprApplies = !!state.gdprApplies;
-    return _objectSpread2(_objectSpread2({}, state), {}, {
+    return {
       n3pc: gdprApplies,
       n3pc_ttl: gdprApplies,
       nbakers: gdprApplies
-    });
-  } else return state;
+    };
+  } else return {};
 }
 
 var IDEX_STORAGE_KEY = '__li_idex_cache';
@@ -1353,7 +1312,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var finalConfig = enrich$2(liveConnectConfig);
+    var finalConfig = merge(liveConnectConfig, enrich$2(liveConnectConfig));
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig));
     var postManagedState = managers.reduce(reducer, enrichedState);
     var syncContainerData = merge(liveConnectConfig, {
