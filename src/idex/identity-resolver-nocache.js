@@ -26,7 +26,6 @@ function _responseReceived (successCallback) {
 export function IdentityResolver (config, calls) {
   try {
     const nonNullConfig = config || {}
-    const n3pc = nonNullConfig.gdprApplies
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
     const source = idexConfig.source || 'unknown'
@@ -41,7 +40,7 @@ export function IdentityResolver (config, calls) {
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
-    tuples.push(asStringParam('n3pc', n3pc))
+    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc))
 
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
