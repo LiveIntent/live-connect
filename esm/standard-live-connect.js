@@ -1308,7 +1308,8 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
   try {
     init();
     var callHandler = CallHandler(externalCallHandler);
-    register(liveConnectConfig, callHandler);
+    var finalConfig = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    register(finalConfig, callHandler);
     var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
     var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
     var reducer = function reducer(accumulator, func) {
@@ -1316,7 +1317,6 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var finalConfig = merge(liveConnectConfig, enrich$2(liveConnectConfig));
     var enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig));
     var postManagedState = managers.reduce(reducer, enrichedState);
     var syncContainerData = merge(liveConnectConfig, {

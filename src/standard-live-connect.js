@@ -131,7 +131,8 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
-    errorHandler.register(liveConnectConfig, callHandler)
+    const finalConfig = merge(liveConnectConfig, noCookiesConfig(liveConnectConfig))
+    errorHandler.register(finalConfig, callHandler)
     const storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
@@ -139,7 +140,6 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const enrichers = [pageEnrich, identifiersEnrich]
     const managers = [idResolve, decisionsResolve]
 
-    const finalConfig = merge(liveConnectConfig, noCookiesConfig(liveConnectConfig))
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
