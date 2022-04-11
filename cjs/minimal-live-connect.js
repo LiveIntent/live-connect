@@ -118,8 +118,8 @@ var toParams = function toParams(tuples) {
   var acc = '';
   tuples.forEach(function (tuple) {
     var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0]) {
+      acc = tuple[1] == null ? "".concat(acc).concat(operator).concat(tuple[0]) : "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
     }
   });
   return acc;
@@ -280,7 +280,7 @@ function _parseIdentifiersToResolve(state, storageHandler) {
 }
 
 function enrich$2(state) {
-  if (state && state.gdprApplies != null) {
+  if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
     var gdprApplies = !!state.gdprApplies;
     return _objectSpread2(_objectSpread2({}, state), {}, {
       n3pc: gdprApplies,

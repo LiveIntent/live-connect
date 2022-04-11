@@ -99,6 +99,10 @@ export function asParamOrEmpty (param, value, transform) {
   return isNonEmpty(value) ? ([param, isFunction(transform) ? transform(value) : value]) : []
 }
 
+export function asParamWithoutValueOrEmpty (param, value) {
+  return (isNonEmpty(value) && value) ? [param, null] : []
+}
+
 export function asStringParam (param, value) {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
 }

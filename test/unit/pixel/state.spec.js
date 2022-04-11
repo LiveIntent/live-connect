@@ -74,9 +74,9 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'n3pc=true', // n3pc
-      'n3pc_ttl=true', // n3pc_ttl
-      'nbakers=true', // nbakers
+      'nc', // n3pc
+      'nct', // n3pc_ttl
+      'nb', // nbakers
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -126,9 +126,9 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'n3pc=true', // n3pc
-      'n3pc_ttl=true', // n3pc_ttl
-      'nbakers=true', // nbakers
+      'nc', // n3pc
+      'nct', // n3pc_ttl
+      'nb', // nbakers
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -174,8 +174,8 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(finalState(pixelData))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&n3pc=true&n3pc_ttl=true&nbakers=true&gdpr_consent=some-string`)
-    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', 'true'], ['n3pc_ttl', 'true'], ['nbakers', 'true'], ['gdpr_consent', 'some-string']])
+    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&nc&nct&nb&gdpr_consent=some-string`)
+    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['nc', null], ['nct', null], ['nb', null], ['gdpr_consent', 'some-string']])
   })
 
   it('should send the gdprApplies as 0 if false', function () {
@@ -186,8 +186,8 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(finalState(pixelData))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&n3pc=false&n3pc_ttl=false&nbakers=false&gdpr_consent=some-string`)
-    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0'], ['n3pc', 'false'], ['n3pc_ttl', 'false'], ['nbakers', 'false'], ['gdpr_consent', 'some-string']])
+    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&gdpr_consent=some-string`)
+    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0']])
   })
 
   it('should send the tracker name', function () {

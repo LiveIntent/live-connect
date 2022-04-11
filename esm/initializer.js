@@ -91,6 +91,9 @@ function expiresInHours(expires) {
 function asParamOrEmpty(param, value, transform) {
   return isNonEmpty(value) ? [param, isFunction(transform) ? transform(value) : value] : [];
 }
+function asParamWithoutValueOrEmpty(param, value) {
+  return isNonEmpty(value) && value ? [param, null] : [];
+}
 function asStringParam(param, value) {
   return asParamOrEmpty(param, value, function (s) {
     return encodeURIComponent(s);
@@ -569,8 +572,8 @@ var toParams = function toParams(tuples) {
   var acc = '';
   tuples.forEach(function (tuple) {
     var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0]) {
+      acc = tuple[1] == null ? "".concat(acc).concat(operator).concat(tuple[0]) : "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
     }
   });
   return acc;
@@ -660,11 +663,11 @@ var _pArray = [['appId', function (aid) {
     return s ? 1 : 0;
   });
 }], ['n3pc', function (n3pc) {
-  return asStringParam('n3pc', n3pc);
+  return asParamWithoutValueOrEmpty('nc', n3pc);
 }], ['n3pc_ttl', function (n3pcTtl) {
-  return asStringParam('n3pc_ttl', n3pcTtl);
+  return asParamWithoutValueOrEmpty('nct', n3pcTtl);
 }], ['nbakers', function (nbakers) {
-  return asStringParam('nbakers', nbakers);
+  return asParamWithoutValueOrEmpty('nb', nbakers);
 }], ['gdprConsent', function (gdprConsentString) {
   return asStringParam('gdpr_consent', gdprConsentString);
 }], ['referrer', function (referrer) {
@@ -1081,7 +1084,7 @@ function _deduplicateHashes(hashes) {
 }
 
 function enrich$2(state) {
-  if (state && state.gdprApplies != null) {
+  if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
     var gdprApplies = !!state.gdprApplies;
     return _objectSpread2(_objectSpread2({}, state), {}, {
       n3pc: gdprApplies,

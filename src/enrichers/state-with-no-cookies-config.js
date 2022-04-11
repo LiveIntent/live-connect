@@ -1,5 +1,7 @@
+import { isNonEmpty } from '../utils/types'
+
 export function enrich (state) {
-  if (state && state.gdprApplies != null) {
+  if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
     const gdprApplies = !!state.gdprApplies
     return {
       ...state,
