@@ -1189,7 +1189,7 @@ var _noOp = function _noOp() {
 function StorageHandler(storageStrategy, externalStorageHandler) {
   var errors = [];
   function _externalOrError(functionName) {
-    var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]) && !strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled);
+    var hasExternal = !strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) && externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
     if (hasExternal) {
       return externalStorageHandler[functionName];
     } else {

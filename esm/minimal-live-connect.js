@@ -159,7 +159,6 @@ function _responseReceived(successCallback) {
 function IdentityResolver(config, calls) {
   try {
     var nonNullConfig = config || {};
-    var n3pc = nonNullConfig.gdprApplies;
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
     var externalIds = nonNullConfig.retrievedIdentifiers || [];
     var source = idexConfig.source || 'unknown';
@@ -176,7 +175,7 @@ function IdentityResolver(config, calls) {
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asStringParam('n3pc', n3pc));
+    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
@@ -300,7 +299,7 @@ var _noOp = function _noOp() {
 function StorageHandler(storageStrategy, externalStorageHandler) {
   var errors = [];
   function _externalOrError(functionName) {
-    var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]) && !strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled);
+    var hasExternal = !strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) && externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
     if (hasExternal) {
       return externalStorageHandler[functionName];
     } else {
