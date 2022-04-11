@@ -113,12 +113,12 @@ describe('IdentityResolver without cache', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: false,
-      n3pc: 0,
+      n3pc: false,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&nc=0&gdpr_consent=gdprConsent')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -131,7 +131,7 @@ describe('IdentityResolver without cache', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: true,
-      n3pc: 1,
+      n3pc: true,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, calls)

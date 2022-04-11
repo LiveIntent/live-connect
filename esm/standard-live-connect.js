@@ -60,6 +60,9 @@ function asStringParamTransform(param, value, transform) {
     return encodeURIComponent(transform(s));
   });
 }
+function asStringParamOrEmptyWhen(param, value, predicate) {
+  return isNonEmpty(value) && isFunction(predicate) && predicate(value) ? [param, encodeURIComponent(value)] : [];
+}
 function mapAsParams(paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
     var array = [];
@@ -616,11 +619,17 @@ var _pArray = [['appId', function (aid) {
     return s ? 1 : 0;
   });
 }], ['n3pc', function (n3pc) {
-  return asStringParam('nc', n3pc);
+  return asStringParamOrEmptyWhen('nc', n3pc ? 1 : 0, function (v) {
+    return v === 1;
+  });
 }], ['n3pc_ttl', function (n3pcTtl) {
-  return asStringParam('nct', n3pcTtl);
+  return asStringParamOrEmptyWhen('nct', n3pcTtl ? 1 : 0, function (v) {
+    return v === 1;
+  });
 }], ['nbakers', function (nbakers) {
-  return asStringParam('nb', nbakers);
+  return asStringParamOrEmptyWhen('nb', nbakers ? 1 : 0, function (v) {
+    return v === 1;
+  });
 }], ['gdprConsent', function (gdprConsentString) {
   return asStringParam('gdpr_consent', gdprConsentString);
 }], ['referrer', function (referrer) {
@@ -1038,7 +1047,7 @@ function _deduplicateHashes(hashes) {
 
 function enrich$2(state) {
   if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
-    var gdprApplies = state.gdprApplies ? 1 : 0;
+    var gdprApplies = !!state.gdprApplies;
     return {
       n3pc: gdprApplies,
       n3pc_ttl: gdprApplies,
@@ -1090,8 +1099,8 @@ function IdentityResolver(config, storageHandler, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asParamOrEmpty('nc', nonNullConfig.n3pc, function (v) {
-      return encodeURIComponent(v ? 1 : 0);
+    tuples.push(asStringParamOrEmptyWhen('nc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+      return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
