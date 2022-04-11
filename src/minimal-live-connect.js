@@ -13,6 +13,7 @@ import { isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver-nocache'
 import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
+import { enrich as finalState } from './enrichers/state-with-no-cookies-config'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
@@ -31,7 +32,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const peopleVerifiedData = merge(liveConnectConfig, peopleVerified(liveConnectConfig, storageHandler))
     const finalData = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
-    const resolver = IdentityResolver(finalData, callHandler)
+    const finalConfig = finalState(finalData)
+    const resolver = IdentityResolver(finalConfig, callHandler)
     return {
       push: (arg) => window.liQ.push(arg),
       fire: () => window.liQ.push({}),

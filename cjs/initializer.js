@@ -688,18 +688,9 @@ function Query(tuples) {
   return Query;
 }
 function StateWrapper(state) {
-  var stateWithAdditionalFields = {};
   var _state = {};
   if (state) {
-    if ('gdprApplies' in state && state.gdprApplies != null) {
-      var gdprApplies = !!state.gdprApplies;
-      stateWithAdditionalFields = _objectSpread2(_objectSpread2({}, state), {}, {
-        n3pc: gdprApplies,
-        n3pc_ttl: gdprApplies,
-        nbakers: gdprApplies
-      });
-    } else stateWithAdditionalFields = state;
-    _state = _safeFiddle(stateWithAdditionalFields);
+    _state = _safeFiddle(state);
   }
   function _sendsPixel() {
     var source = isObject(_state.eventSource) ? _state.eventSource : {};
@@ -719,7 +710,7 @@ function StateWrapper(state) {
     }
   }
   function _combineWith(newInfo) {
-    return new StateWrapper(merge(stateWithAdditionalFields, newInfo));
+    return new StateWrapper(merge(state, newInfo));
   }
   function _asTuples() {
     var array = [];
@@ -1093,6 +1084,17 @@ function _deduplicateHashes(hashes) {
   return result;
 }
 
+function enrich$2(state) {
+  if (state && state.gdprApplies != null) {
+    var gdprApplies = !!state.gdprApplies;
+    return _objectSpread2(_objectSpread2({}, state), {}, {
+      n3pc: gdprApplies,
+      n3pc_ttl: gdprApplies,
+      nbakers: gdprApplies
+    });
+  } else return state;
+}
+
 var IDEX_STORAGE_KEY = '__li_idex_cache';
 function _cacheKey(additionalParams) {
   if (additionalParams) {
@@ -1123,7 +1125,6 @@ function _responseReceived(storageHandler, domain, expirationHours, successCallb
 function IdentityResolver(config, storageHandler, calls) {
   try {
     var nonNullConfig = config || {};
-    var n3pc = nonNullConfig.gdprApplies;
     var idexConfig = nonNullConfig.identityResolutionConfig || {};
     var externalIds = nonNullConfig.retrievedIdentifiers || [];
     var expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS;
@@ -1141,7 +1142,7 @@ function IdentityResolver(config, storageHandler, calls) {
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
-    tuples.push(asStringParam('n3pc', n3pc));
+    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc));
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
@@ -1352,7 +1353,8 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig));
+    var finalConfig = enrich$2(liveConnectConfig);
+    var enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig));
     var postManagedState = managers.reduce(reducer, enrichedState);
     var syncContainerData = merge(liveConnectConfig, {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
@@ -1471,7 +1473,7 @@ function IdentityResolver$1(config, calls) {
   }
 }
 
-function enrich$2(state, storageHandler) {
+function enrich$3(state, storageHandler) {
   try {
     return {
       peopleVerifiedId: state.peopleVerifiedId || storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
@@ -1482,7 +1484,7 @@ function enrich$2(state, storageHandler) {
   }
 }
 
-function enrich$3(state, storageHandler) {
+function enrich$4(state, storageHandler) {
   try {
     return _parseIdentifiersToResolve$1(state, storageHandler);
   } catch (e) {
@@ -1542,9 +1544,10 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var callHandler = CallHandler(externalCallHandler);
     var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
     var storageHandler = StorageHandler$1(storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = merge(liveConnectConfig, enrich$2(liveConnectConfig, storageHandler));
-    var finalData = merge(peopleVerifiedData, enrich$3(peopleVerifiedData, storageHandler));
-    var resolver = IdentityResolver$1(finalData, callHandler);
+    var peopleVerifiedData = merge(liveConnectConfig, enrich$3(liveConnectConfig, storageHandler));
+    var finalData = merge(peopleVerifiedData, enrich$4(peopleVerifiedData, storageHandler));
+    var finalConfig = enrich$2(finalData);
+    var resolver = IdentityResolver$1(finalConfig, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);

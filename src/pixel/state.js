@@ -206,14 +206,9 @@ export function StateWrapper (state) {
   /**
    * @type {State}
    */
-  let stateWithAdditionalFields = {}
   let _state = {}
   if (state) {
-    if ('gdprApplies' in state && state.gdprApplies != null) {
-      const gdprApplies = !!state.gdprApplies
-      stateWithAdditionalFields = { ...state, n3pc: gdprApplies, n3pc_ttl: gdprApplies, nbakers: gdprApplies }
-    } else stateWithAdditionalFields = state
-    _state = _safeFiddle(stateWithAdditionalFields)
+    _state = _safeFiddle(state)
   }
 
   function _sendsPixel () {
@@ -241,7 +236,7 @@ export function StateWrapper (state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper(merge(stateWithAdditionalFields, newInfo))
+    return new StateWrapper(merge(state, newInfo))
   }
 
   /**

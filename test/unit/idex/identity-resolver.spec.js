@@ -138,6 +138,7 @@ describe('IdentityResolver', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: false,
+      n3pc: false,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, storage, calls)
@@ -155,6 +156,7 @@ describe('IdentityResolver', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: true,
+      n3pc: true,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
     }, storage, calls)

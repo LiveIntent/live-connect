@@ -1,6 +1,7 @@
 import { assert, expect, use } from 'chai'
 import { StateWrapper } from '../../../src/pixel/state'
 import { hashEmail } from '../../../src/utils/hash'
+import { enrich as finalState } from '../../../src/enrichers/state-with-no-cookies-config'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)
@@ -57,7 +58,7 @@ describe('EventComposition', () => {
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(pixelData)
+    const event = new StateWrapper(finalState(pixelData))
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -109,7 +110,7 @@ describe('EventComposition', () => {
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(pixelData)
+    const event = new StateWrapper(finalState(pixelData))
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -171,7 +172,7 @@ describe('EventComposition', () => {
       gdprApplies: true,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(pixelData)
+    const event = new StateWrapper(finalState(pixelData))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&n3pc=true&n3pc_ttl=true&nbakers=true&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', 'true'], ['n3pc_ttl', 'true'], ['nbakers', 'true'], ['gdpr_consent', 'some-string']])
@@ -183,7 +184,7 @@ describe('EventComposition', () => {
       gdprApplies: false,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(pixelData)
+    const event = new StateWrapper(finalState(pixelData))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&n3pc=false&n3pc_ttl=false&nbakers=false&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0'], ['n3pc', 'false'], ['n3pc_ttl', 'false'], ['nbakers', 'false'], ['gdpr_consent', 'some-string']])
@@ -208,7 +209,7 @@ describe('EventComposition', () => {
       gdprConsent: undefined,
       wrapperName: undefined
     }
-    const event = new StateWrapper(pixelData)
+    const event = new StateWrapper(finalState(pixelData))
     expect(event.asQuery().toQueryString()).to.eql(`?tna=${trackerName}`)
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })

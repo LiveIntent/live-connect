@@ -1,3 +1,29 @@
+function ownKeys(object, enumerableOnly) {
+  var keys = Object.keys(object);
+
+  if (Object.getOwnPropertySymbols) {
+    var symbols = Object.getOwnPropertySymbols(object);
+    enumerableOnly && (symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    })), keys.push.apply(keys, symbols);
+  }
+
+  return keys;
+}
+
+function _objectSpread2(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = null != arguments[i] ? arguments[i] : {};
+    i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
+      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+    });
+  }
+
+  return target;
+}
+
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -6,6 +32,21 @@ function _typeof(obj) {
   } : function (obj) {
     return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   }, _typeof(obj);
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
 }
 
 function safeToString(value) {
@@ -235,6 +276,17 @@ function _parseIdentifiersToResolve(state, storageHandler) {
   };
 }
 
+function enrich$2(state) {
+  if (state && state.gdprApplies != null) {
+    var gdprApplies = !!state.gdprApplies;
+    return _objectSpread2(_objectSpread2({}, state), {}, {
+      n3pc: gdprApplies,
+      n3pc_ttl: gdprApplies,
+      nbakers: gdprApplies
+    });
+  } else return state;
+}
+
 var StorageStrategy = {
   cookie: 'cookie',
   localStorage: 'ls',
@@ -301,7 +353,8 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
     var peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
     var finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
-    var resolver = IdentityResolver(finalData, callHandler);
+    var finalConfig = enrich$2(finalData);
+    var resolver = IdentityResolver(finalConfig, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);

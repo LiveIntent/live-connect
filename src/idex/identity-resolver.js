@@ -49,7 +49,6 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
 export function IdentityResolver (config, storageHandler, calls) {
   try {
     const nonNullConfig = config || {}
-    const n3pc = nonNullConfig.gdprApplies
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const externalIds = nonNullConfig.retrievedIdentifiers || []
     const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
@@ -65,7 +64,7 @@ export function IdentityResolver (config, storageHandler, calls) {
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
-    tuples.push(asStringParam('n3pc', n3pc))
+    tuples.push(asStringParam('n3pc', nonNullConfig.n3pc))
 
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
