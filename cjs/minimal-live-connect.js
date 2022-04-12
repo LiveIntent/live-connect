@@ -137,7 +137,7 @@ function IdentityResolver(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamOrEmptyWhen('nc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamOrEmptyWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));

@@ -36,7 +36,7 @@ export function IdentityResolver (config, calls) {
     tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId))
     tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString))
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    tuples.push(asStringParamOrEmptyWhen('nc', nonNullConfig.n3pc ? 1 : 0, v => v === 1))
+    tuples.push(asStringParamOrEmptyWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, v => v === 1))
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent))
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))

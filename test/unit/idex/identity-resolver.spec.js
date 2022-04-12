@@ -161,7 +161,7 @@ describe('IdentityResolver', () => {
       usPrivacyString: 'usPrivacyString'
     }, storage, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&nc=1&gdpr_consent=gdprConsent')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&n3pc=1&gdpr_consent=gdprConsent')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()

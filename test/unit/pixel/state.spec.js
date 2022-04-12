@@ -75,8 +75,8 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'nc=1', // n3pc
-      'nct=1', // n3pc_ttl
+      'n3pc=1', // n3pc
+      'n3pct=1', // n3pc_ttl
       'nb=1', // nbakers
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
@@ -85,7 +85,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
   })
 
-  it('should set n3pc, n3pc_ttl and nbakers to true, and gdpr to 1 when the gdprApplies has a non boolean value', function () {
+  it('should set n3pc, n3pct and nb to 1, and gdpr to 1 when the gdprApplies is defined but has a non boolean value', function () {
     const pixelData = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
@@ -127,8 +127,8 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'nc=1', // n3pc
-      'nct=1', // n3pc_ttl
+      'n3pc=1', // n3pc
+      'n3pct=1', // n3pc_ttl
       'nb=1', // nbakers
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
@@ -167,7 +167,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
-  it('should send the gdprApplies as 1 & (n3pc & n3pc_ttl & nbakers) as true & gdprConsent', function () {
+  it('should send the gdpr as 1 & (n3pc & n3pct & nb) as true & gdprConsent', function () {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,
@@ -175,8 +175,8 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&nc=1&nct=1&nb=1&gdpr_consent=some-string`)
-    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['nc', '1'], ['nct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
+    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&n3pc=1&n3pct=1&nb=1&gdpr_consent=some-string`)
+    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
   })
 
   it('should send the gdprApplies as 0 if false', function () {

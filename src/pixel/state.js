@@ -144,13 +144,13 @@ const _pArray = [
   [
     'n3pc',
     n3pc => {
-      return asStringParamOrEmptyWhen('nc', n3pc ? 1 : 0, v => v === 1)
+      return asStringParamOrEmptyWhen('n3pc', n3pc ? 1 : 0, v => v === 1)
     }
   ],
   [
     'n3pc_ttl',
     n3pcTtl => {
-      return asStringParamOrEmptyWhen('nct', n3pcTtl ? 1 : 0, v => v === 1)
+      return asStringParamOrEmptyWhen('n3pct', n3pcTtl ? 1 : 0, v => v === 1)
     }
   ],
   [

@@ -28,9 +28,9 @@
 - the value of the `config.usPrivacyString` config parameter.
 ### `gdpr`
 - the value of the `config.gdprApplies` config parameter.
-### `nc`
+### `n3pc`
 - indicator to not send 3rd party cookie in the header response, currently it is computed using `config.gdprApplies` config parameter.
-### `nct`
+### `n3pct`
 - indicator to not update the TTL of the 3rd party cookies, currently it is computed using `config.gdprApplies` config parameter.
 ### `nb`
 - indicator to not send bakers to LiveConnect, currently it is computed using `config.gdprApplies` config parameter.

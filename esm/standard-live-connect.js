@@ -619,11 +619,11 @@ var _pArray = [['appId', function (aid) {
     return s ? 1 : 0;
   });
 }], ['n3pc', function (n3pc) {
-  return asStringParamOrEmptyWhen('nc', n3pc ? 1 : 0, function (v) {
+  return asStringParamOrEmptyWhen('n3pc', n3pc ? 1 : 0, function (v) {
     return v === 1;
   });
 }], ['n3pc_ttl', function (n3pcTtl) {
-  return asStringParamOrEmptyWhen('nct', n3pcTtl ? 1 : 0, function (v) {
+  return asStringParamOrEmptyWhen('n3pct', n3pcTtl ? 1 : 0, function (v) {
     return v === 1;
   });
 }], ['nbakers', function (nbakers) {
@@ -1099,7 +1099,7 @@ function IdentityResolver(config, storageHandler, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamOrEmptyWhen('nc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamOrEmptyWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));

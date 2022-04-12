@@ -69,13 +69,13 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('sends a request with nc, nct and nb values when gdprApplies is true when sendAjax', function (done) {
+  it('sends a request with n3pc, n3pct and nb values when gdprApplies is true when sendAjax', function (done) {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1&nc=1&nct=1&nb=1/)
+      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1&n3pc=1&n3pct=1&nb=1/)
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, successCallback)
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy'], ['gdpr', 1], ['nc', 1], ['nct', 1], ['nb', 1]]), sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy'], ['gdpr', 1], ['n3pc', 1], ['n3pct', 1], ['nb', 1]]), sendsPixel: () => true })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
