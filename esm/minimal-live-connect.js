@@ -263,12 +263,16 @@ var _noOp = function _noOp() {
 function StorageHandler(storageStrategy, externalStorageHandler) {
   var errors = [];
   function _externalOrError(functionName) {
-    var hasExternal = !strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) && externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
-    if (hasExternal) {
-      return externalStorageHandler[functionName];
-    } else {
-      errors.push(functionName);
+    var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp;
+    } else {
+      if (hasExternal) {
+        return externalStorageHandler[functionName];
+      } else {
+        errors.push(functionName);
+        return _noOp;
+      }
     }
   }
   var _orElseNoOp = function _orElseNoOp(fName) {

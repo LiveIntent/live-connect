@@ -31,12 +31,16 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
   const errors = []
 
   function _externalOrError (functionName) {
-    const hasExternal = !strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) && externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
-    if (hasExternal) {
-      return externalStorageHandler[functionName]
-    } else {
-      errors.push(functionName)
+    const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp
+    } else {
+      if (hasExternal) {
+        return externalStorageHandler[functionName]
+      } else {
+        errors.push(functionName)
+        return _noOp
+      }
     }
   }
 
