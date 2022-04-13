@@ -60,7 +60,7 @@ function asStringParamTransform(param, value, transform) {
     return encodeURIComponent(transform(s));
   });
 }
-function asStringParamOrEmptyWhen(param, value, predicate) {
+function asStringParamWhen(param, value, predicate) {
   return isNonEmpty(value) && isFunction(predicate) && predicate(value) ? [param, encodeURIComponent(value)] : [];
 }
 function mapAsParams(paramsMap) {
@@ -622,15 +622,15 @@ var _pArray = [['appId', function (aid) {
     return s ? 1 : 0;
   });
 }], ['n3pc', function (n3pc) {
-  return asStringParamOrEmptyWhen('n3pc', n3pc ? 1 : 0, function (v) {
+  return asStringParamWhen('n3pc', n3pc ? 1 : 0, function (v) {
     return v === 1;
   });
 }], ['n3pc_ttl', function (n3pcTtl) {
-  return asStringParamOrEmptyWhen('n3pct', n3pcTtl ? 1 : 0, function (v) {
+  return asStringParamWhen('n3pct', n3pcTtl ? 1 : 0, function (v) {
     return v === 1;
   });
 }], ['nbakers', function (nbakers) {
-  return asStringParamOrEmptyWhen('nb', nbakers ? 1 : 0, function (v) {
+  return asStringParamWhen('nb', nbakers ? 1 : 0, function (v) {
     return v === 1;
   });
 }], ['gdprConsent', function (gdprConsentString) {
@@ -1102,7 +1102,7 @@ function IdentityResolver(config, storageHandler, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamOrEmptyWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
@@ -1402,7 +1402,7 @@ function IdentityResolver$1(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamOrEmptyWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
@@ -1520,8 +1520,8 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
     var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
     var storageHandler = StorageHandler$1(storageStrategy, externalStorageHandler);
     var peopleVerifiedData = merge(liveConnectConfig, enrich$3(liveConnectConfig, storageHandler));
-    var finalData = merge(peopleVerifiedData, enrich$4(peopleVerifiedData, storageHandler));
-    var finalConfig = merge(finalData, enrich$2(finalData));
+    var peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, enrich$4(peopleVerifiedData, storageHandler));
+    var finalConfig = merge(peopleVerifiedDataWithAdditionalIds, enrich$2(peopleVerifiedDataWithAdditionalIds));
     var resolver = IdentityResolver$1(finalConfig, callHandler);
     return {
       push: function push(arg) {

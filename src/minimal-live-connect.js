@@ -31,8 +31,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const peopleVerifiedData = merge(liveConnectConfig, peopleVerified(liveConnectConfig, storageHandler))
-    const finalData = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
-    const finalConfig = merge(finalData, noCookiesConfig(finalData))
+    const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
+    const finalConfig = merge(peopleVerifiedDataWithAdditionalIds, noCookiesConfig(peopleVerifiedDataWithAdditionalIds))
     const resolver = IdentityResolver(finalConfig, callHandler)
     return {
       push: (arg) => window.liQ.push(arg),
