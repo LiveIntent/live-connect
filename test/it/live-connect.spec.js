@@ -58,14 +58,14 @@ describe('LiveConnect', function () {
   it('should send decisionIds', async function () {
     const decisionIdOne = '4ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const decisionIdTwo = '5ca76883-1e26-3fb8-b6d1-f881ac7d6699'
-    await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
+    await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}&gdpr=1&n3pc=1&n3pct=1&nb=1`)
 
     await sendEvent({}, supportsLS ? 1 : 2, server)
     const firstTrackingRequest = server.getTrackingRequests()[0]
     expect(decisionIdOne).to.eq(firstTrackingRequest.query.li_did)
 
     server.clearHistory()
-    await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdTwo}`)
+    await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdTwo}&gdpr=1&n3pc=1&n3pct=1&nb=1`)
     await sendEvent({}, supportsLS ? 1 : 2, server)
     const secondTrackingRequest = server.getTrackingRequests()[0]
     expect(`${decisionIdTwo},${decisionIdOne}`).to.eq(secondTrackingRequest.query.li_did)
@@ -81,7 +81,7 @@ describe('LiveConnect', function () {
   })
 
   it('should send http request to pixel endpoint, and reuse cookies across subdomains', async function () {
-    await server.openPage('bln.test.liveintent.com', 'page?li_did=something')
+    await server.openPage('bln.test.liveintent.com', 'page?li_did=something&gdpr=1&n3pc=1&n3pct=1&nb=1')
     const expectedRequests = supportsLS ? 1 : 2
     await sendEvent({}, expectedRequests, server)
     const trackingRequests = server.getTrackingRequests()
