@@ -314,12 +314,12 @@ function CallHandler(externalCallHandler) {
 function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     var callHandler = CallHandler(externalCallHandler);
-    var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
     var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
+    var peopleVerifiedData = merge(configWithPrivacy, enrich(configWithPrivacy, storageHandler));
     var peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
-    var finalConfig = merge(peopleVerifiedDataWithAdditionalIds, enrich$2(peopleVerifiedDataWithAdditionalIds));
-    var resolver = IdentityResolver(finalConfig, callHandler);
+    var resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);
@@ -327,7 +327,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
       fire: function fire() {
         return window.liQ.push({});
       },
-      peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
+      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,

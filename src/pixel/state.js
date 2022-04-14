@@ -23,6 +23,7 @@
  * @property {(string|undefined)} [gdprConsent]
  * @property {(string|undefined)} [contextSelectors]
  * @property {(string|undefined)} [contextElementsLength]
+ * @property {(string|undefined)} [contextElements]
  * @property {(boolean|undefined)} [privacyMode]
  */
 

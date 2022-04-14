@@ -131,24 +131,24 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
-    const finalConfig = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
-    errorHandler.register(finalConfig, callHandler)
-    const storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy
+    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
+    errorHandler.register(configWithPrivacy, callHandler)
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnrich, identifiersEnrich]
     const managers = [idResolve, decisionsResolve]
 
-    const enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig))
+    const enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
     console.log('LiveConnect.enrichedState', enrichedState)
     console.log('LiveConnect.postManagedState', postManagedState)
-    const syncContainerData = merge(liveConnectConfig, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
+    const syncContainerData = merge(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
-    const pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload)
+    const pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {

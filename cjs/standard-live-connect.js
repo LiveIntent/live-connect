@@ -1314,18 +1314,18 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
   try {
     init();
     var callHandler = CallHandler(externalCallHandler);
-    var finalConfig = merge(liveConnectConfig, enrich$2(liveConnectConfig));
-    register(finalConfig, callHandler);
-    var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    register(configWithPrivacy, callHandler);
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
     var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig));
+    var enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy));
     var postManagedState = managers.reduce(reducer, enrichedState);
-    var syncContainerData = merge(liveConnectConfig, {
+    var syncContainerData = merge(configWithPrivacy, {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
     });
     var onPixelLoad = function onPixelLoad() {
@@ -1334,7 +1334,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     var onPixelPreload = function onPixelPreload() {
       return send(PRELOAD_PIXEL, '0');
     };
-    var pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload);
+    var pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload);
     var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {

@@ -1317,18 +1317,18 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
   try {
     init();
     var callHandler = CallHandler(externalCallHandler);
-    var finalConfig = merge(liveConnectConfig, enrich$2(liveConnectConfig));
-    register(finalConfig, callHandler);
-    var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    register(configWithPrivacy, callHandler);
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
     var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var enrichedState = enrichers.reduce(reducer, new StateWrapper(finalConfig));
+    var enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy));
     var postManagedState = managers.reduce(reducer, enrichedState);
-    var syncContainerData = merge(liveConnectConfig, {
+    var syncContainerData = merge(configWithPrivacy, {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
     });
     var onPixelLoad = function onPixelLoad() {
@@ -1337,7 +1337,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     var onPixelPreload = function onPixelPreload() {
       return send(PRELOAD_PIXEL, '0');
     };
-    var pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload);
+    var pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload);
     var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -1519,12 +1519,12 @@ function StorageHandler$1(storageStrategy, externalStorageHandler) {
 function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     var callHandler = CallHandler(externalCallHandler);
-    var storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy;
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
     var storageHandler = StorageHandler$1(storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = merge(liveConnectConfig, enrich$3(liveConnectConfig, storageHandler));
+    var peopleVerifiedData = merge(configWithPrivacy, enrich$3(configWithPrivacy, storageHandler));
     var peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, enrich$4(peopleVerifiedData, storageHandler));
-    var finalConfig = merge(peopleVerifiedDataWithAdditionalIds, enrich$2(peopleVerifiedDataWithAdditionalIds));
-    var resolver = IdentityResolver$1(finalConfig, callHandler);
+    var resolver = IdentityResolver$1(peopleVerifiedDataWithAdditionalIds, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);
@@ -1532,7 +1532,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
       fire: function fire() {
         return window.liQ.push({});
       },
-      peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
+      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
