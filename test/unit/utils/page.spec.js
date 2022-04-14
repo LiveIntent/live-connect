@@ -141,6 +141,12 @@ describe('Page Utils', () => {
     const result = getContextElements(false, 'p', 1000)
     expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
   })
+
+  it('getContextElements should return empty string when privacyMode is true', function () {
+    createElement('p', 'Some dummy text', document)
+    const result = getContextElements(true, 'p', 1000).length
+    expect(result).to.be.eql(0)
+  })
 })
 
 function createElement (tag, text, document) {
