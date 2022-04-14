@@ -137,7 +137,7 @@ function IdentityResolver(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
@@ -245,11 +245,9 @@ function _parseIdentifiersToResolve(state, storageHandler) {
 
 function enrich$2(state) {
   if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
-    var gdprApplies = !!state.gdprApplies;
+    var privacyMode = !!state.gdprApplies;
     return {
-      n3pc: gdprApplies,
-      n3pc_ttl: gdprApplies,
-      nbakers: gdprApplies
+      privacyMode: privacyMode
     };
   } else return {};
 }

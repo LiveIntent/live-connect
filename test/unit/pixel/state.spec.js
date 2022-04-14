@@ -1,7 +1,7 @@
 import { assert, expect, use } from 'chai'
 import { StateWrapper } from '../../../src/pixel/state'
 import { hashEmail } from '../../../src/utils/hash'
-import { enrich as noCookiesConfig } from '../../../src/enrichers/no-cookies-config'
+import { enrich as privacyConfig } from '../../../src/enrichers/privacy-config'
 import { merge } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'
 
@@ -59,7 +59,7 @@ describe('EventComposition', () => {
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
+    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -75,9 +75,9 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'n3pc=1', // n3pc
-      'n3pct=1', // n3pc_ttl
-      'nb=1', // nbakers
+      'n3pc=1', // privacyMode
+      'n3pct=1', // privacyMode
+      'nb=1', // privacyMode
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -111,7 +111,7 @@ describe('EventComposition', () => {
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
+    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -127,9 +127,9 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'n3pc=1', // n3pc
-      'n3pct=1', // n3pc_ttl
-      'nb=1', // nbakers
+      'n3pc=1', // privacyMode
+      'n3pct=1', // privacyMode
+      'nb=1', // privacyMode
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -173,7 +173,7 @@ describe('EventComposition', () => {
       gdprApplies: true,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
+    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&n3pc=1&n3pct=1&nb=1&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
@@ -185,7 +185,7 @@ describe('EventComposition', () => {
       gdprApplies: false,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
+    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0']])
@@ -210,7 +210,7 @@ describe('EventComposition', () => {
       gdprConsent: undefined,
       wrapperName: undefined
     }
-    const event = new StateWrapper(merge(pixelData, noCookiesConfig(pixelData)))
+    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
     expect(event.asQuery().toQueryString()).to.eql(`?tna=${trackerName}`)
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })

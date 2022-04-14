@@ -118,27 +118,27 @@ describe('Page Utils', () => {
 
   it('getContextElements should properly encode when emails are hashed', function () {
     createElement('h1', 'mailto:john@test.com, also found: another@test.com !', document)
-    const result = getContextElements('h1', 1000).length
+    const result = getContextElements(false, 'h1', 1000).length
     expect(result).to.be.eql(128)
   })
 
   it('getContextElements should return empty when contextSelectors or contextElementsLength is invalid', function () {
     createElement('p', 'mailto:john@test.com, also found: another@test.com !', document)
-    expect(getContextElements('', 1000)).to.be.eql('')
+    expect(getContextElements(false, '', 1000)).to.be.eql('')
   })
 
   it('getContextElements should stop encoding when the next element overflows the contextElementsLength', function () {
     createElement('h1', 'First element', document)
     createElement('h1', 'Second element', document)
-    const result1 = getContextElements('h1', 31).length
-    const result2 = getContextElements('h1', 32).length
+    const result1 = getContextElements(false, 'h1', 31).length
+    const result2 = getContextElements(false, 'h1', 32).length
     expect(result1).to.be.eql(0)
     expect(result2).to.be.eql(30)
   })
 
   it('getContextElements should properly encode the context elements found', function () {
     createElement('p', 'Some dummy text', document)
-    const result = getContextElements('p', 1000)
+    const result = getContextElements(false, 'p', 1000)
     expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
   })
 })

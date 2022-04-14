@@ -621,16 +621,16 @@ var _pArray = [['appId', function (aid) {
   return asStringParamTransform('gdpr', gdprApplies, function (s) {
     return s ? 1 : 0;
   });
-}], ['n3pc', function (n3pc) {
-  return asStringParamWhen('n3pc', n3pc ? 1 : 0, function (v) {
+}], ['privacyMode', function (privacyMode) {
+  return asStringParamWhen('n3pc', privacyMode ? 1 : 0, function (v) {
     return v === 1;
   });
-}], ['n3pc_ttl', function (n3pcTtl) {
-  return asStringParamWhen('n3pct', n3pcTtl ? 1 : 0, function (v) {
+}], ['privacyMode', function (privacyMode) {
+  return asStringParamWhen('n3pct', privacyMode ? 1 : 0, function (v) {
     return v === 1;
   });
-}], ['nbakers', function (nbakers) {
-  return asStringParamWhen('nb', nbakers ? 1 : 0, function (v) {
+}], ['privacyMode', function (privacyMode) {
+  return asStringParamWhen('nb', privacyMode ? 1 : 0, function (v) {
     return v === 1;
   });
 }], ['gdprConsent', function (gdprConsentString) {
@@ -742,8 +742,8 @@ function getPage() {
   }
   return detectedPageUrl;
 }
-function getContextElements(contextSelectors, contextElementsLength) {
-  if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
+function getContextElements(privacyMode, contextSelectors, contextElementsLength) {
+  if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return '';
   } else {
     var collectedElements = _collectElementsText(contextSelectors, contextElementsLength);
@@ -779,7 +779,7 @@ function enrich(state) {
     _currentPage = {
       pageUrl: getPage(),
       referrer: getReferrer(),
-      contextElements: getContextElements(state.contextSelectors, state.contextElementsLength)
+      contextElements: getContextElements(state.privacyMode, state.contextSelectors, state.contextElementsLength)
     };
   }
   return _currentPage;
@@ -1050,11 +1050,9 @@ function _deduplicateHashes(hashes) {
 
 function enrich$2(state) {
   if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
-    var gdprApplies = !!state.gdprApplies;
+    var privacyMode = !!state.gdprApplies;
     return {
-      n3pc: gdprApplies,
-      n3pc_ttl: gdprApplies,
-      nbakers: gdprApplies
+      privacyMode: privacyMode
     };
   } else return {};
 }
@@ -1102,7 +1100,7 @@ function IdentityResolver(config, storageHandler, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
@@ -1402,7 +1400,7 @@ function IdentityResolver$1(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamWhen('n3pc', nonNullConfig.n3pc ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
       return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));

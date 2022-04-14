@@ -14,7 +14,7 @@ export function enrich (state) {
     _currentPage = {
       pageUrl: getPage(),
       referrer: getReferrer(),
-      contextElements: getContextElements(state.contextSelectors, state.contextElementsLength)
+      contextElements: getContextElements(state.privacyMode, state.contextSelectors, state.contextElementsLength)
     }
   }
   return _currentPage

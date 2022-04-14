@@ -40,7 +40,7 @@ import { resolve as idResolve } from './manager/identifiers'
 import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
-import { enrich as noCookiesConfig } from './enrichers/no-cookies-config'
+import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
@@ -131,7 +131,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
-    const finalConfig = merge(liveConnectConfig, noCookiesConfig(liveConnectConfig))
+    const finalConfig = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(finalConfig, callHandler)
     const storageStrategy = liveConnectConfig.gdprApplies ? StorageStrategy.disabled : liveConnectConfig.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)

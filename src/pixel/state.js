@@ -23,9 +23,7 @@
  * @property {(string|undefined)} [gdprConsent]
  * @property {(string|undefined)} [contextSelectors]
  * @property {(string|undefined)} [contextElementsLength]
- * @property {(boolean|undefined)} [n3pc]
- * @property {(boolean|undefined)} [n3pc_ttl]
- * @property {(boolean|undefined)} [nbakers]
+ * @property {(boolean|undefined)} [privacyMode]
  */
 
 /**
@@ -142,21 +140,21 @@ const _pArray = [
     }
   ],
   [
-    'n3pc',
-    n3pc => {
-      return asStringParamWhen('n3pc', n3pc ? 1 : 0, v => v === 1)
+    'privacyMode',
+    privacyMode => {
+      return asStringParamWhen('n3pc', privacyMode ? 1 : 0, v => v === 1)
     }
   ],
   [
-    'n3pc_ttl',
-    n3pcTtl => {
-      return asStringParamWhen('n3pct', n3pcTtl ? 1 : 0, v => v === 1)
+    'privacyMode',
+    privacyMode => {
+      return asStringParamWhen('n3pct', privacyMode ? 1 : 0, v => v === 1)
     }
   ],
   [
-    'nbakers',
-    nbakers => {
-      return asStringParamWhen('nb', nbakers ? 1 : 0, v => v === 1)
+    'privacyMode',
+    privacyMode => {
+      return asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)
     }
   ],
   [
