@@ -38,7 +38,7 @@ There's also an option for the module to never create any first party identifier
 ```
 By setting this flag, LiveConnect will never write anything into any storage, but will still attempt to read from it.
 
-There's also an option for the module to never create any first & third party identifiers, and that can be achieved by setting this parameter as follows:
+There's also an option for the module to never read or create any first & third party identifiers. That can be achieved by setting this parameter as follows:
 ```javascript
 {
   storageStrategy: 'disabled'
