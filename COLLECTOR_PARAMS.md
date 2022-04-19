@@ -29,7 +29,7 @@
 ### `gdpr`
 - the value of the `config.gdprApplies` config parameter.
 ### `n3pc`
-- if present, it indicates to not send Set-Cookie headers in the response to create 3rd party cookies; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
+- if present, it indicates to not send Set-Cookie headers in the response to set 3rd party cookies; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `n3pct`
 - if present, it indicates to not send Set-Cookie headers in the response to update the TTL of existing 3rd party cookies; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `nb`
