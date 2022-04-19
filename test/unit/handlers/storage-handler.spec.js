@@ -89,10 +89,18 @@ describe('StorageHandler', () => {
 
   it('should return nothing when the strategy is disabled', function () {
     const storageHandler = StorageHandler('disabled', storage)
-    storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
-    expect(storageHandler.get('key')).to.be.null()
-    expect(storage.getCookie('key')).to.be.null()
-    expect(storage.getDataFromLocalStorage('key')).to.be.null()
+
+    storageHandler.set('key_any', 'value_any', expiresInDays(1), 'example.com')
+    storageHandler.setDataInLocalStorage('key_ls', 'value_any')
+    storageHandler.setCookie(('key_cookie', 'value_cookie', expiresInDays(1), 'Lax', 'example.com'))
+
+    expect(storageHandler.get('key_any')).to.be.null()
+    expect(storageHandler.getDataFromLocalStorage('key_ls')).to.be.undefined()
+    expect(storageHandler.getCookie('key_cookie')).to.be.undefined()
+
+    expect(storageHandler.removeDataFromLocalStorage('key_ls')).to.be.undefined()
+    expect(storageHandler.findSimilarCookies('key_cookie')).to.be.undefined()
+    expect(storageHandler.localStorageIsEnabled()).to.be.undefined()
     expect(emitterErrors.length).to.be.eq(0)
   })
 

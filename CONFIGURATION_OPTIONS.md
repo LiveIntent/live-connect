@@ -44,7 +44,7 @@ There's also an option for the module to never read or create any first or third
   storageStrategy: 'disabled'
 }
 ```
-LiveConnect uses this strategy if it is required by the provided privacy settings. Currently, if `config.gdprApplies` is true (`config.gdprConsent` is not evaluated for that setting yet), `disabled` strategy will be used.
+LiveConnect uses this strategy if it is required by the provided privacy settings. Currently, if `config.gdprApplies` is true (`config.gdprConsent` is not evaluated for that setting yet), `disabled` strategy will be used. In that case a potentially explicitly configured storage strategy will be overwritten with `disabled`.
 
 #### `collectorUrl` [Optional, HasDefault]
 The parameter defines where the signal pixels are pointing to. The params and paths will be defined subsequently.
