@@ -167,7 +167,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
-  it('should send the gdpr as 1 & (n3pc & n3pct & nb) as true & gdprConsent', function () {
+  it('should send the gdpr, n3pc, n3pct, nb as 1 & gdprConsent', function () {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,
