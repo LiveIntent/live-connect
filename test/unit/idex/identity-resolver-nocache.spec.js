@@ -109,7 +109,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent and nc values when gpdr does not apply', function (done) {
+  it('should attach the consent values when gpdr does not apply', function (done) {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({
       gdprApplies: false,
