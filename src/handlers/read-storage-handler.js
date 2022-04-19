@@ -27,13 +27,11 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
     if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp
+    } else if (hasExternal) {
+      return externalStorageHandler[functionName]
     } else {
-      if (hasExternal) {
-        return externalStorageHandler[functionName]
-      } else {
-        errors.push(functionName)
-        return _noOp
-      }
+      errors.push(functionName)
+      return _noOp
     }
   }
 
