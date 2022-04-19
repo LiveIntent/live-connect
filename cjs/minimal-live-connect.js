@@ -5,17 +5,11 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, _typeof(obj);
 }
 
 function safeToString(value) {
@@ -50,6 +44,9 @@ function asStringParam(param, value) {
   return asParamOrEmpty(param, value, function (s) {
     return encodeURIComponent(s);
   });
+}
+function asStringParamWhen(param, value, predicate) {
+  return isNonEmpty(value) && isFunction(predicate) && predicate(value) ? [param, encodeURIComponent(value)] : [];
 }
 function mapAsParams(paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
@@ -139,6 +136,9 @@ function IdentityResolver(config, calls) {
     tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString));
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
+    }));
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
+      return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
@@ -243,10 +243,20 @@ function _parseIdentifiersToResolve(state, storageHandler) {
   };
 }
 
+function enrich$2(state) {
+  if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
+    var privacyMode = !!state.gdprApplies;
+    return {
+      privacyMode: privacyMode
+    };
+  } else return {};
+}
+
 var StorageStrategy = {
   cookie: 'cookie',
   localStorage: 'ls',
-  none: 'none'
+  none: 'none',
+  disabled: 'disabled'
 };
 
 var _noOp = function _noOp() {
@@ -256,11 +266,15 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   var errors = [];
   function _externalOrError(functionName) {
     var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
-    if (hasExternal) {
-      return externalStorageHandler[functionName];
-    } else {
-      errors.push(functionName);
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp;
+    } else {
+      if (hasExternal) {
+        return externalStorageHandler[functionName];
+      } else {
+        errors.push(functionName);
+        return _noOp;
+      }
     }
   }
   var _orElseNoOp = function _orElseNoOp(fName) {
@@ -304,10 +318,12 @@ function CallHandler(externalCallHandler) {
 function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     var callHandler = CallHandler(externalCallHandler);
-    var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = merge(liveConnectConfig, enrich(liveConnectConfig, storageHandler));
-    var finalData = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
-    var resolver = IdentityResolver(finalData, callHandler);
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
+    var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
+    var peopleVerifiedData = merge(configWithPrivacy, enrich(configWithPrivacy, storageHandler));
+    var peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, enrich$1(peopleVerifiedData, storageHandler));
+    var resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);
@@ -315,7 +331,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
       fire: function fire() {
         return window.liQ.push({});
       },
-      peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
+      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,

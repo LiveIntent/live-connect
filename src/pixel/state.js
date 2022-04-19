@@ -23,6 +23,8 @@
  * @property {(string|undefined)} [gdprConsent]
  * @property {(string|undefined)} [contextSelectors]
  * @property {(string|undefined)} [contextElementsLength]
+ * @property {(string|undefined)} [contextElements]
+ * @property {(boolean|undefined)} [privacyMode]
  */
 
 /**
@@ -39,7 +41,7 @@ import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamTransform, isArray } from '../utils/types'
+import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray } from '../utils/types'
 import { toParams } from '../utils/url'
 
 /**
@@ -136,6 +138,24 @@ const _pArray = [
     'gdprApplies',
     gdprApplies => {
       return asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)
+    }
+  ],
+  [
+    'privacyMode',
+    privacyMode => {
+      return asStringParamWhen('n3pc', privacyMode ? 1 : 0, v => v === 1)
+    }
+  ],
+  [
+    'privacyMode',
+    privacyMode => {
+      return asStringParamWhen('n3pct', privacyMode ? 1 : 0, v => v === 1)
+    }
+  ],
+  [
+    'privacyMode',
+    privacyMode => {
+      return asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)
     }
   ],
   [

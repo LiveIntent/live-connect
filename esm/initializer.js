@@ -1,17 +1,11 @@
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, _typeof(obj);
 }
 
 var UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
@@ -65,6 +59,9 @@ function asStringParamTransform(param, value, transform) {
   return asParamOrEmpty(param, value, function (s) {
     return encodeURIComponent(transform(s));
   });
+}
+function asStringParamWhen(param, value, predicate) {
+  return isNonEmpty(value) && isFunction(predicate) && predicate(value) ? [param, encodeURIComponent(value)] : [];
 }
 function mapAsParams(paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
@@ -624,6 +621,18 @@ var _pArray = [['appId', function (aid) {
   return asStringParamTransform('gdpr', gdprApplies, function (s) {
     return s ? 1 : 0;
   });
+}], ['privacyMode', function (privacyMode) {
+  return asStringParamWhen('n3pc', privacyMode ? 1 : 0, function (v) {
+    return v === 1;
+  });
+}], ['privacyMode', function (privacyMode) {
+  return asStringParamWhen('n3pct', privacyMode ? 1 : 0, function (v) {
+    return v === 1;
+  });
+}], ['privacyMode', function (privacyMode) {
+  return asStringParamWhen('nb', privacyMode ? 1 : 0, function (v) {
+    return v === 1;
+  });
 }], ['gdprConsent', function (gdprConsentString) {
   return asStringParam('gdpr_consent', gdprConsentString);
 }], ['referrer', function (referrer) {
@@ -733,8 +742,8 @@ function getPage() {
   }
   return detectedPageUrl;
 }
-function getContextElements(contextSelectors, contextElementsLength) {
-  if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
+function getContextElements(privacyMode, contextSelectors, contextElementsLength) {
+  if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return '';
   } else {
     var collectedElements = _collectElementsText(contextSelectors, contextElementsLength);
@@ -770,7 +779,7 @@ function enrich(state) {
     _currentPage = {
       pageUrl: getPage(),
       referrer: getReferrer(),
-      contextElements: getContextElements(state.contextSelectors, state.contextElementsLength)
+      contextElements: getContextElements(state.privacyMode, state.contextSelectors, state.contextElementsLength)
     };
   }
   return _currentPage;
@@ -1039,6 +1048,15 @@ function _deduplicateHashes(hashes) {
   return result;
 }
 
+function enrich$2(state) {
+  if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
+    var privacyMode = !!state.gdprApplies;
+    return {
+      privacyMode: privacyMode
+    };
+  } else return {};
+}
+
 var IDEX_STORAGE_KEY = '__li_idex_cache';
 function _cacheKey(additionalParams) {
   if (additionalParams) {
@@ -1081,6 +1099,9 @@ function IdentityResolver(config, storageHandler, calls) {
     tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString));
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
+    }));
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
+      return v === 1;
     }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
@@ -1129,7 +1150,8 @@ function IdentityResolver(config, storageHandler, calls) {
 var StorageStrategy = {
   cookie: 'cookie',
   localStorage: 'ls',
-  none: 'none'
+  none: 'none',
+  disabled: 'disabled'
 };
 
 var _noOp = function _noOp() {
@@ -1139,11 +1161,15 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   var errors = [];
   function _externalOrError(functionName) {
     var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
-    if (hasExternal) {
-      return externalStorageHandler[functionName];
-    } else {
-      errors.push(functionName);
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp;
+    } else {
+      if (hasExternal) {
+        return externalStorageHandler[functionName];
+      } else {
+        errors.push(functionName);
+        return _noOp;
+      }
     }
   }
   var _orElseNoOp = function _orElseNoOp(fName) {
@@ -1163,7 +1189,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
   }
   return {
     get: function get(key) {
-      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
         return null;
       } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
         if (functions.localStorageIsEnabled()) {
@@ -1181,7 +1207,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
       }
     },
     set: function set(key, value, expirationDate, domain) {
-      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) ; else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) ; else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
         if (functions.localStorageIsEnabled()) {
           var expirationKey = "".concat(key, "_exp");
           functions.setDataInLocalStorage(key, value);
@@ -1287,16 +1313,18 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
   try {
     init();
     var callHandler = CallHandler(externalCallHandler);
-    register(liveConnectConfig, callHandler);
-    var storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler);
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    register(configWithPrivacy, callHandler);
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
+    var storageHandler = StorageHandler(storageStrategy, externalStorageHandler);
     var reducer = function reducer(accumulator, func) {
       return accumulator.combineWith(func(accumulator.data, storageHandler));
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var enrichedState = enrichers.reduce(reducer, new StateWrapper(liveConnectConfig));
+    var enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy));
     var postManagedState = managers.reduce(reducer, enrichedState);
-    var syncContainerData = merge(liveConnectConfig, {
+    var syncContainerData = merge(configWithPrivacy, {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
     });
     var onPixelLoad = function onPixelLoad() {
@@ -1305,7 +1333,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     var onPixelPreload = function onPixelPreload() {
       return send(PRELOAD_PIXEL, '0');
     };
-    var pixelClient = new PixelSender(liveConnectConfig, callHandler, onPixelLoad, onPixelPreload);
+    var pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload);
     var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -1372,6 +1400,9 @@ function IdentityResolver$1(config, calls) {
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
+    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
+      return v === 1;
+    }));
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
@@ -1411,7 +1442,7 @@ function IdentityResolver$1(config, calls) {
   }
 }
 
-function enrich$2(state, storageHandler) {
+function enrich$3(state, storageHandler) {
   try {
     return {
       peopleVerifiedId: state.peopleVerifiedId || storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY)
@@ -1422,7 +1453,7 @@ function enrich$2(state, storageHandler) {
   }
 }
 
-function enrich$3(state, storageHandler) {
+function enrich$4(state, storageHandler) {
   try {
     return _parseIdentifiersToResolve$1(state, storageHandler);
   } catch (e) {
@@ -1456,11 +1487,15 @@ function StorageHandler$1(storageStrategy, externalStorageHandler) {
   var errors = [];
   function _externalOrError(functionName) {
     var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
-    if (hasExternal) {
-      return externalStorageHandler[functionName];
-    } else {
-      errors.push(functionName);
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp$2;
+    } else {
+      if (hasExternal) {
+        return externalStorageHandler[functionName];
+      } else {
+        errors.push(functionName);
+        return _noOp$2;
+      }
     }
   }
   var _orElseNoOp = function _orElseNoOp(fName) {
@@ -1480,10 +1515,12 @@ function StorageHandler$1(storageStrategy, externalStorageHandler) {
 function _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     var callHandler = CallHandler(externalCallHandler);
-    var storageHandler = StorageHandler$1(liveConnectConfig.storageStrategy, externalStorageHandler);
-    var peopleVerifiedData = merge(liveConnectConfig, enrich$2(liveConnectConfig, storageHandler));
-    var finalData = merge(peopleVerifiedData, enrich$3(peopleVerifiedData, storageHandler));
-    var resolver = IdentityResolver$1(finalData, callHandler);
+    var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
+    var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
+    var storageHandler = StorageHandler$1(storageStrategy, externalStorageHandler);
+    var peopleVerifiedData = merge(configWithPrivacy, enrich$3(configWithPrivacy, storageHandler));
+    var peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, enrich$4(peopleVerifiedData, storageHandler));
+    var resolver = IdentityResolver$1(peopleVerifiedDataWithAdditionalIds, callHandler);
     return {
       push: function push(arg) {
         return window.liQ.push(arg);
@@ -1491,7 +1528,7 @@ function _minimalInitialization(liveConnectConfig, externalStorageHandler, exter
       fire: function fire() {
         return window.liQ.push({});
       },
-      peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
+      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,

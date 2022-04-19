@@ -25,7 +25,9 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
   const errors = []
   function _externalOrError (functionName) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
-    if (hasExternal) {
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
+      return _noOp
+    } else if (hasExternal) {
       return externalStorageHandler[functionName]
     } else {
       errors.push(functionName)

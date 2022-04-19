@@ -32,7 +32,9 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
 
   function _externalOrError (functionName) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
-    if (hasExternal) {
+    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
+      return _noOp
+    } else if (hasExternal) {
       return externalStorageHandler[functionName]
     } else {
       errors.push(functionName)
@@ -57,7 +59,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
 
   return {
     get: key => {
-      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
         return null
       } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
         if (functions.localStorageIsEnabled()) {
@@ -75,7 +77,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
       }
     },
     set: (key, value, expirationDate, domain) => {
-      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none)) {
+      if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
         if (functions.localStorageIsEnabled()) {
           const expirationKey = `${key}_exp`

@@ -44,8 +44,8 @@ export function getPage (win = window) {
 /**
  * @return {string|undefined}
  */
-export function getContextElements (contextSelectors, contextElementsLength) {
-  if (!contextSelectors || contextSelectors === '' || !contextElementsLength) {
+export function getContextElements (privacyMode, contextSelectors, contextElementsLength) {
+  if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
     var collectedElements = _collectElementsText(contextSelectors, contextElementsLength)

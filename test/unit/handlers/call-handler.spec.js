@@ -48,7 +48,7 @@ describe('CallHandler', () => {
     expect(emitterErrors[0].exception).to.be.undefined()
   })
 
-  it('should send an error if an external handler doesn not have a get function', function () {
+  it('should send an error if an external handler does not have a get function', function () {
     CallHandler({})
 
     expect(emitterErrors.length).to.be.eq(1)

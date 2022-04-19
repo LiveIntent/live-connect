@@ -13,8 +13,10 @@ import { isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver-nocache'
 import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
+import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
+import { StorageStrategy } from './model/storage-strategy'
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -26,14 +28,16 @@ import { CallHandler } from './handlers/call-handler'
 function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     const callHandler = CallHandler(externalCallHandler)
-    const storageHandler = StorageHandler(liveConnectConfig.storageStrategy, externalStorageHandler)
-    const peopleVerifiedData = merge(liveConnectConfig, peopleVerified(liveConnectConfig, storageHandler))
-    const finalData = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
-    const resolver = IdentityResolver(finalData, callHandler)
+    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
+    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
+    const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler))
+    const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
+    const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler)
     return {
       push: (arg) => window.liQ.push(arg),
       fire: () => window.liQ.push({}),
-      peopleVerifiedId: peopleVerifiedData.peopleVerifiedId,
+      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,

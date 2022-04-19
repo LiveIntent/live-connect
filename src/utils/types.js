@@ -107,6 +107,10 @@ export function asStringParamTransform (param, value, transform) {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
 }
 
+export function asStringParamWhen (param, value, predicate) {
+  return (isNonEmpty(value) && isFunction(predicate) && predicate(value)) ? [param, encodeURIComponent(value)] : []
+}
+
 export function mapAsParams (paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
     const array = []
