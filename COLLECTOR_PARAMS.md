@@ -29,11 +29,11 @@
 ### `gdpr`
 - the value of the `config.gdprApplies` config parameter.
 ### `n3pc`
-- indicator to not send 3rd party cookie in the header response, currently it is computed using `config.gdprApplies` config parameter.
+- if present, it indicates to not send Set-Cookie headers in the response to create 3rd party cookies; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `n3pct`
-- indicator to not update the TTL of the 3rd party cookies, currently it is computed using `config.gdprApplies` config parameter.
+- if present, it indicates to not send Set-Cookie headers in the response to update the TTL of existing 3rd party cookies; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `nb`
-- indicator to not send bakers to LiveConnect, currently it is computed using `config.gdprApplies` config parameter.
+- if present, it indicates to not send bakers in the response; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `gdprConsent`
 - the value of the `config.gdprConsent` config parameter.
 ### `dtstmp`

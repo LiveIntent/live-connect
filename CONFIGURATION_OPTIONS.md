@@ -38,13 +38,13 @@ There's also an option for the module to never create any first party identifier
 ```
 By setting this flag, LiveConnect will never write anything into any storage, but will still attempt to read from it.
 
-There's also an option for the module to never read or create any first & third party identifiers. That can be achieved by setting this parameter as follows:
+There's also an option for the module to never read or create any first or third party identifiers. That can be achieved by setting this parameter as follows:
 ```javascript
 {
   storageStrategy: 'disabled'
 }
 ```
-This flag is internally set when the `config.gdprApplies` is true, in this case LiveConnect will never write or read anything into any storage.
+LiveConnect uses this strategy if it is required by the provided privacy settings. Currently, if `config.gdprApplies` is true (`config.gdprConsent` is not evaluated for that setting yet), `disabled` strategy will be used.
 
 #### `collectorUrl` [Optional, HasDefault]
 The parameter defines where the signal pixels are pointing to. The params and paths will be defined subsequently.
