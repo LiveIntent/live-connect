@@ -132,11 +132,11 @@ function mapAsParams(paramsMap) {
     Object.entries(paramsMap).forEach(function (_ref) {
       var _ref2 = _slicedToArray(_ref, 2),
           key = _ref2[0],
-          arr = _ref2[1];
+          values = _ref2[1];
       var value = paramsMap[key];
       if (value && !isObject(value) && value.length) {
-        if (Array.isArray(arr)) {
-          arr.forEach(function (id) {
+        if (Array.isArray(values)) {
+          values.forEach(function (id) {
             return array.push([encodeURIComponent(key), encodeURIComponent(id)]);
           });
         } else {
