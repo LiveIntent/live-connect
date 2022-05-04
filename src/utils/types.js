@@ -114,9 +114,15 @@ export function asStringParamWhen (param, value, predicate) {
 export function mapAsParams (paramsMap) {
   if (paramsMap && isObject(paramsMap)) {
     const array = []
-    Object.keys(paramsMap).forEach((key) => {
+    Object.entries(paramsMap).forEach(([key, arr]) => {
       const value = paramsMap[key]
-      value && !isObject(value) && value.length && array.push([encodeURIComponent(key), encodeURIComponent(value)])
+      if (value && !isObject(value) && value.length) {
+        if (Array.isArray(arr)) {
+          arr.forEach(id => array.push([encodeURIComponent(key), encodeURIComponent(id)]))
+        } else {
+          array.push([encodeURIComponent(key), encodeURIComponent(value)])
+        }
+      }
     })
     return array
   } else {

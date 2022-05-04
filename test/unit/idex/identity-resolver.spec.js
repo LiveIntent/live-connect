@@ -88,12 +88,25 @@ describe('IdentityResolver', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value&aaaa=aaaa&s=123')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => {}, { key: 'value', aaaa: 'aaaa', s: '123' })
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
+  it('should attach additional params with an array that should be serialized as repeated query', function (done) {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&qf=0.1&resolve=age&resolve=gender')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback, () => {}, { qf: '0.1', resolve: ['age', 'gender'] })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
