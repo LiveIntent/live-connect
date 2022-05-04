@@ -88,12 +88,12 @@ describe('IdentityResolver', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value&aaaa=aaaa&s=123')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value', aaaa: 'aaaa', s: '123' })
+    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
