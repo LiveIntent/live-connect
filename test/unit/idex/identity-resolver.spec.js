@@ -97,6 +97,19 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
+  it('should attach additional params with an array that should be serialized as repeated query', function (done) {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, storage, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&qf=0.1&resolve=age&resolve=gender')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback, () => {}, { qf: '0.1', resolve: ['age', 'gender'] })
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
   it('should not attach an empty tuple', function (done) {
     const identityResolver = IdentityResolver({ peopleVerifiedId: null }, storage, calls)
     const successCallback = (responseAsJson) => {

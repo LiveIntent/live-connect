@@ -72,7 +72,15 @@ function mapAsParams(paramsMap) {
     var array = [];
     Object.keys(paramsMap).forEach(function (key) {
       var value = paramsMap[key];
-      value && !isObject(value) && value.length && array.push([encodeURIComponent(key), encodeURIComponent(value)]);
+      if (value && !isObject(value) && value.length) {
+        if (isArray(value)) {
+          value.forEach(function (entry) {
+            return array.push([encodeURIComponent(key), encodeURIComponent(entry)]);
+          });
+        } else {
+          array.push([encodeURIComponent(key), encodeURIComponent(value)]);
+        }
+      }
     });
     return array;
   } else {
@@ -1164,13 +1172,11 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
     var hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName]);
     if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp;
+    } else if (hasExternal) {
+      return externalStorageHandler[functionName];
     } else {
-      if (hasExternal) {
-        return externalStorageHandler[functionName];
-      } else {
-        errors.push(functionName);
-        return _noOp;
-      }
+      errors.push(functionName);
+      return _noOp;
     }
   }
   var _orElseNoOp = function _orElseNoOp(fName) {
