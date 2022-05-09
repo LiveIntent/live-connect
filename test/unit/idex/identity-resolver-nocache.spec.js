@@ -85,6 +85,19 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
+  it('should attach publisher id', function (done) {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/123?duid=987&key=value')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
   it('should not attach an empty tuple', function (done) {
     const identityResolver = IdentityResolver({ peopleVerifiedId: null }, calls)
     const successCallback = (responseAsJson) => {
