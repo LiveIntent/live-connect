@@ -87,7 +87,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach publisher id', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: '123' } }, calls)
+    const identityResolver = IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/123?duid=987&key=value')
       expect(errors).to.be.empty()
