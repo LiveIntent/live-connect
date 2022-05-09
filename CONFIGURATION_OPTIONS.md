@@ -178,7 +178,7 @@ Example:
 ```javascript
 {
   identityResolutionConfig: {
-    source: 'prebid'
+    publisherId: 1234
   }
 }
 ```
