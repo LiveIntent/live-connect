@@ -116,7 +116,13 @@ export function mapAsParams (paramsMap) {
     const array = []
     Object.keys(paramsMap).forEach((key) => {
       const value = paramsMap[key]
-      value && !isObject(value) && value.length && array.push([encodeURIComponent(key), encodeURIComponent(value)])
+      if (value && !isObject(value) && value.length) {
+        if (isArray(value)) {
+          value.forEach(entry => array.push([encodeURIComponent(key), encodeURIComponent(entry)]))
+        } else {
+          array.push([encodeURIComponent(key), encodeURIComponent(value)])
+        }
+      }
     })
     return array
   } else {
