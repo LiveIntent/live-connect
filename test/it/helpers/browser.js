@@ -212,6 +212,7 @@ export function isFirefox () {
 }
 
 export function isFirefoxAfter86 () {
+  console.log(browser.capabilities)
   return browser.capabilities.browserName === 'firefox' &&
     (
       (browser.capabilities.browserVersion && parseInt(browser.capabilities.browserVersion.substring(0, 2)) > 86) ||
