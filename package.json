@@ -18,6 +18,7 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build && wdio test-config/wdio.docker.chrome.conf.js",
+    "test:it:local:chrome": "npm run build && wdio test-config/wdio.local.chrome.conf.js",
     "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "lint": "eslint 'src/**/*.js' 'test/**/*.js'",
     "fix-js": "eslint 'src/**/*.js' 'test/**/*.js' --fix || exit 0",
@@ -39,7 +40,7 @@
     "@rollup/plugin-replace": "^2.3.3",
     "@rollup/plugin-strip": "^1.3.3",
     "@wdio/browserstack-service": "^7.16.3",
-    "@wdio/cli": "^7.18.1",
+    "@wdio/cli": "^7.20.5",
     "@wdio/codemod": "^0.10.1",
     "@wdio/junit-reporter": "^7.18.0",
     "@wdio/local-runner": "^7.18.1",
@@ -53,6 +54,7 @@
     "browser-cookies": "^1.2.0",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
+    "chromedriver": "^103.0.0",
     "codecov": "^3.7.2",
     "compression": "^1.7.4",
     "core-js": "^3.6.5",
@@ -85,6 +87,7 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.5.0",
     "tiny-uuid4": "^1.0.1",
+    "wdio-chromedriver-service": "7.3.2",
     "wdio-docker-service": "3.2.0"
   }
 }
