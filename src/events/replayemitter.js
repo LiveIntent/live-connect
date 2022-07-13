@@ -1,3 +1,5 @@
+import { isFunction } from '../utils/types'
+
 /**
  * @typedef {Object} ReplayEmitter
  * @property {(function)} on
@@ -27,13 +29,13 @@ E.prototype = {
     return this
   },
 
-  once: function (name, callback, ctx) {
+  once: function (name, callback, ctx, prioritize) {
     const self = this
 
     const eventQueue = this.q[name] || []
+    const i = isFunction(prioritize) ? prioritize(eventQueue) : 0
     if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue[0])
-
+      callback.apply(ctx, eventQueue[i])
       return this
     } else {
       const listener = function () {
