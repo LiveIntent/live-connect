@@ -201,11 +201,12 @@ E.prototype = {
     }
     return this;
   },
-  once: function once(name, callback, ctx) {
+  once: function once(name, callback, ctx, prioritize) {
     var self = this;
     var eventQueue = this.q[name] || [];
+    var i = isFunction(prioritize) ? prioritize(eventQueue) : 0;
     if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue[0]);
+      callback.apply(ctx, eventQueue[i]);
       return this;
     } else {
       var listener = function listener() {
