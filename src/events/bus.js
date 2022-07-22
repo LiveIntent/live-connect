@@ -16,26 +16,25 @@ export function init (size, errorCallback) {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
     } else {
-      // Events emitted into the local busses will 
-      // also be emitted into the global ones.
-      // TODO: Events emitted into global bus should 
-      // also be emitted into the currently active 
-      // local bus.
       if (!window[C.EVENT_BUS_NAMESPACE]) {
         const globalBus = new E(size)
-        const localBus = new E(size, globalBus)
+        const localBus = new E(size)
+        localBus.setParent(globalBus)
         window[C.EVENT_BUS_NAMESPACE] = globalBus
         return localBus
       } else {
         if (isFunction(window[C.EVENT_BUS_NAMESPACE].hierarchical)) {
           const globalBus = window[C.EVENT_BUS_NAMESPACE]
-          const localBus = new E(size, globalBus)
+          const localBus = new E(size)
+          localBus.setParent(globalBus)
           return localBus
         } else {
           const globalBus = new E(size)
           const localBusOld = window[C.EVENT_BUS_NAMESPACE]
-          localBusOld.attachTo(globalBus)
-          const localBusNew = new E(size, globalBus)
+          const localBusNew = new E(size)
+          localBusOld.setParent(globalBus)
+          localBusNew.setParent(globalBus)
+          globalBus.setChild(localBusNew)
           window[C.EVENT_BUS_NAMESPACE] = globalBus
           return localBusNew
         }

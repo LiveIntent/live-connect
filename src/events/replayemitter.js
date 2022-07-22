@@ -8,8 +8,7 @@
  * @property {(function)} attachTo
  */
 
-export default function E (replaySize, parent) {
-  this.parent = parent
+export default function E (replaySize) {
   this.size = parseInt(replaySize) || 5
   this.h = {}
   this.q = {}
@@ -51,6 +50,21 @@ E.prototype = {
 
   emit: function (name) {
     const data = [].slice.call(arguments, 1)
+    this.emitNoForward(name, data)
+
+    if (this.parent && !this.child) {
+      this.parent.emitNoForward(name, data)
+    }
+
+    if (!this.parent && this.child) {
+      this.child.emitNoForward(name, data)
+    }
+
+    return this
+  },
+
+  // TODO: hide the emitNoForward function.
+  emitNoForward: function (name, data) {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
@@ -64,9 +78,6 @@ E.prototype = {
       eventQueue.shift()
     }
     eventQueue.push(data)
-    if (this.parent && this.parent.emit) {
-      this.parent.emit(name, data)
-    }
 
     return this
   },
@@ -94,8 +105,13 @@ E.prototype = {
     return true
   },
 
-  attachTo: function (parent) {
+  setParent: function (parent) {
     this.parent = parent
+    return this
+  },
+
+  setChild: function (child) {
+    this.child = child
     return this
   }
 }
