@@ -1,3 +1,5 @@
+import { isFunction } from '../utils/types'
+
 /**
  * @typedef {Object} ReplayEmitter
  * @property {(function)} on
@@ -6,7 +8,8 @@
  * @property {(function)} off
  */
 
-export default function E (replaySize) {
+export default function E (replaySize, parent) {
+  this.parent = parent
   this.size = parseInt(replaySize) || 5
   this.h = {}
   this.q = {}
@@ -61,6 +64,9 @@ E.prototype = {
       eventQueue.shift()
     }
     eventQueue.push(data)
+    if (this.parent && isFunction(this.parent.emit)) {
+      this.parent.emit(name, data)
+    }
 
     return this
   },
@@ -82,5 +88,9 @@ E.prototype = {
       : delete this.h[name]
 
     return this
+  },
+
+  hierarchical: function() {
+    return true
   }
 }
