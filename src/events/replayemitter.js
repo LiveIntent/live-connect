@@ -1,11 +1,11 @@
-import { isFunction } from '../utils/types'
-
 /**
  * @typedef {Object} ReplayEmitter
  * @property {(function)} on
  * @property {(function)} once
  * @property {(function)} emit
  * @property {(function)} off
+ * @property {(function)} hierarchical
+ * @property {(function)} attachTo
  */
 
 export default function E (replaySize, parent) {
@@ -64,7 +64,7 @@ E.prototype = {
       eventQueue.shift()
     }
     eventQueue.push(data)
-    if (this.parent && isFunction(this.parent.emit)) {
+    if (this.parent && this.parent.emit) {
       this.parent.emit(name, data)
     }
 
@@ -90,7 +90,12 @@ E.prototype = {
     return this
   },
 
-  hierarchical: function() {
+  hierarchical: function () {
     return true
+  },
+
+  attachTo: function (parent) {
+    this.parent = parent
+    return this
   }
 }
