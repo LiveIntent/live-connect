@@ -34,8 +34,8 @@ export function init (size, errorCallback) {
         } else {
           const globalBus = new E(size)
           const localBusOld = window[C.EVENT_BUS_NAMESPACE]
-          const localBusNew = new E(size, globalBus)
           localBusOld.attachTo(globalBus)
+          const localBusNew = new E(size, globalBus)
           window[C.EVENT_BUS_NAMESPACE] = globalBus
           return localBusNew
         }
