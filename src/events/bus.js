@@ -20,6 +20,7 @@ export function init (size, errorCallback) {
         const globalBus = new E(size)
         const localBus = new E(size)
         localBus.setParent(globalBus)
+        globalBus.setChild(localBus)
         window[C.EVENT_BUS_NAMESPACE] = globalBus
         return localBus
       } else {
@@ -27,6 +28,7 @@ export function init (size, errorCallback) {
           const globalBus = window[C.EVENT_BUS_NAMESPACE]
           const localBus = new E(size)
           localBus.setParent(globalBus)
+          globalBus.setChild(localBus)
           return localBus
         } else {
           const globalBus = new E(size)
@@ -40,7 +42,6 @@ export function init (size, errorCallback) {
         }
       }
     }
-    return window[C.EVENT_BUS_NAMESPACE]
   } catch (e) {
     console.error('events.bus.init', e)
     errorCallback(e)
