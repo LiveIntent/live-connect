@@ -52,12 +52,12 @@ E.prototype = {
     const data = [].slice.call(arguments, 1)
     this.emitNoForward(name, data)
 
-    if (this.parent && !this.child) {
-      this.parent.emitNoForward(name, data)
+    if (this.global) {
+      this.global.emitNoForward(name, data)
     }
 
-    if (!this.parent && this.child) {
-      this.child.emitNoForward(name, data)
+    if (this.current) {
+      this.current.emitNoForward(name, data)
     }
 
     return this
@@ -105,13 +105,13 @@ E.prototype = {
     return true
   },
 
-  setParent: function (parent) {
-    this.parent = parent
+  setGlobal: function (other) {
+    this.global = other
     return this
   },
 
-  setChild: function (child) {
-    this.child = child
+  setCurrent: function (other) {
+    this.current = other
     return this
   }
 }

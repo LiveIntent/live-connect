@@ -25,7 +25,7 @@ describe('ErrorPixel', () => {
   beforeEach(() => {
     errors = []
     bus.init()
-    windowBus = window[C.EVENT_BUS_NAMESPACE].child
+    windowBus = window[C.EVENT_BUS_NAMESPACE].current
   })
 
   after(() => {
