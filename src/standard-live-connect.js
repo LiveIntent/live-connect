@@ -48,11 +48,11 @@ import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
 
 const hemStore = {}
-function _pushSingleEvent (event, pixelClient, enrichedState) {
+function _pushSingleEvent (event, pixelClient, enrichedState, externalStorageHandler, externalCallHandler) {
   if (!event || !isObject(event)) {
     emitter.error('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {
-    emitter.error('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
+    _initializeLiveConnect(event.config, externalStorageHandler, externalCallHandler)
   } else {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
@@ -81,14 +81,14 @@ function _configMatcher (previousConfig, newConfig) {
   }
 }
 
-function _processArgs (args, pixelClient, enrichedState) {
+function _processArgs (args, pixelClient, enrichedState, externalStorageHandler, externalCallHandler) {
   try {
     args.forEach(arg => {
       const event = arg
       if (isArray(event)) {
-        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState))
+        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState, externalStorageHandler, externalCallHandler))
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState)
+        _pushSingleEvent(event, pixelClient, enrichedState, externalStorageHandler, externalCallHandler)
       }
     })
   } catch (e) {
@@ -97,15 +97,13 @@ function _processArgs (args, pixelClient, enrichedState) {
   }
 }
 
-/**
- *
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @return {StandardLiveConnect|null}
- * @private
- */
-function _getInitializedLiveConnect (liveConnectConfig) {
+function _getOrInitializeLiveConnect(configuration, externalStorageHandler, externalCallHandler, localBus) {
   try {
     if (window && window.liQ && window.liQ.ready) {
+      if (window.liQ.config && !window.liQ.config.appId && configuration.appId) {
+        return _standardInitialization(configuration, externalStorageHandler, externalCallHandler, localBus)
+      }
+
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error()
@@ -115,8 +113,8 @@ function _getInitializedLiveConnect (liveConnectConfig) {
       }
       return window.liQ
     }
-  } catch (e) {
-    console.error('Could not initialize error bus')
+  } catch(e) {
+    console.error('Could not initialize LiveConnect')
   }
 }
 
@@ -127,9 +125,11 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
-    eventBus.init()
+    // TODO: propagte the bus to the emitter and emitter to everywhere the global one is used currently
+    const localBus = localBus || eventBus.init()
+    const emitter = 
     const callHandler = CallHandler(externalCallHandler)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler)
@@ -150,7 +150,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
-    const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
+    const _push = (...args) => _processArgs(args, pixelClient, postManagedState, externalStorageHandler, externalCallHandler)
     return {
       push: _push,
       fire: () => _push({}),
@@ -166,19 +166,13 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   }
 }
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {StandardLiveConnect}
- * @constructor
- */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _initializeLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+  
+    window && (window.liQ = _getOrInitializeLiveConnect(configuration, externalStorageHandler, externalCallHandler, localBus) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])
@@ -189,4 +183,15 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
     emitter.error('LCConstruction', 'Failed to build LC', x)
   }
   return window.liQ
+}
+
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
+ * @returns {StandardLiveConnect}
+ * @constructor
+ */
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
+  return _initializeLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus)
 }
