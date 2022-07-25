@@ -1,7 +1,10 @@
 import * as C from '../utils/consts'
 
 function _emit (prefix, message) {
-  window && window[C.EVENT_BUS_NAMESPACE] && window[C.EVENT_BUS_NAMESPACE].emit(prefix, message)
+  window && ((window[C.EVENT_BUS_NAMESPACE] &&
+    window[C.EVENT_BUS_NAMESPACE].emit(prefix, message)) ||
+    (window[C.EVENT_BUS_NAMESPACE] && window[C.EVENT_BUS_NAMESPACE].child &&
+      window[C.EVENT_BUS_NAMESPACE].child.emit(prefix, message)))
 }
 
 export function send (prefix, message) {

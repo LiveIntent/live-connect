@@ -46,7 +46,7 @@ describe('StandardLiveConnect', () => {
 
   it('should initialise the event bus, and hook the error handler', function () {
     StandardLiveConnect({})
-    const windowBus = window[C.EVENT_BUS_NAMESPACE]
+    const windowBus = window[C.EVENT_BUS_NAMESPACE].child
     const errorHandler = windowBus.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
@@ -212,7 +212,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should emit an error if the pushed value is a config', function () {
-    const lc = StandardLiveConnect({}, storage, calls)
+    const lc = StandardLiveConnect({ appId: 'a-0007' }, storage, calls)
     lc.push({ config: {} })
     expect(errorCalls.length).to.eql(1)
     const params = urlParams(errorCalls[0].src)
