@@ -87,6 +87,52 @@ describe('StandardLiveConnect', () => {
     expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"config"}'))
   })
 
+  it('should replace liQ when config with appId is provided', function () {
+    StandardLiveConnect({ }, storage, calls)
+    let liQ = window.liQ
+    expect(liQ.ready).to.be.true()
+    liQ.push({ event: 'viewProduct', name: 'none' })
+    StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    liQ = window.liQ
+    expect(liQ.ready).to.be.true()
+    liQ.push({ event: 'viewProduct', name: 'a-00xx' })
+    expect(pixelCalls.length).to.eql(2)
+    const firstAppIdEventSrc = pixelCalls[0].url
+    const secondAppIdEventSrc = pixelCalls[1].url
+
+    const firstCallParams = urlParams(firstAppIdEventSrc)
+    const secondCallParams = urlParams(secondAppIdEventSrc)
+    expect(firstCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(firstCallParams.aid).to.eql(undefined)
+    expect(firstCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"none"}'))
+    expect(secondCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(secondCallParams.aid).to.eql('a-00xx')
+    expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"a-00xx"}'))
+  })
+
+  it('should replace liQ when config with appId is pushed', function () {
+    StandardLiveConnect({ }, storage, calls)
+    let liQ = window.liQ
+    expect(liQ.ready).to.be.true()
+    liQ.push({ event: 'viewProduct', name: 'none' })
+    liQ.push({ config: { appId: 'a-00xx' } })
+    liQ = window.liQ
+    expect(liQ.ready).to.be.true()
+    liQ.push({ event: 'viewProduct', name: 'a-00xx' })
+    expect(pixelCalls.length).to.eql(2)
+    const firstAppIdEventSrc = pixelCalls[0].url
+    const secondAppIdEventSrc = pixelCalls[1].url
+
+    const firstCallParams = urlParams(firstAppIdEventSrc)
+    const secondCallParams = urlParams(secondAppIdEventSrc)
+    expect(firstCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(firstCallParams.aid).to.eql(undefined)
+    expect(firstCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"none"}'))
+    expect(secondCallParams.duid).to.eql(liQ.peopleVerifiedId)
+    expect(secondCallParams.aid).to.eql('a-00xx')
+    expect(secondCallParams.se).to.eql(base64UrlEncode('{"event":"viewProduct","name":"a-00xx"}'))
+  })
+
   it('should expose liQ, and not emit error when the config has not changed', function () {
     StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
     let liQ = window.liQ
@@ -211,7 +257,7 @@ describe('StandardLiveConnect', () => {
     expect(params.ae).to.not.eq(undefined)
   })
 
-  it('should emit an error if the pushed value is a config', function () {
+  it('should emit an error if the pushed value is a config without appId and current config has an appId', function () {
     const lc = StandardLiveConnect({ appId: 'a-0007' }, storage, calls)
     lc.push({ config: {} })
     expect(errorCalls.length).to.eql(1)
