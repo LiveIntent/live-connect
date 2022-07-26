@@ -97,11 +97,11 @@ function _processArgs (args, pixelClient, enrichedState, externalStorageHandler,
   }
 }
 
-function _getOrInitializeLiveConnect (configuration, externalStorageHandler, externalCallHandler) {
+function _getOrInitializeLiveConnect (configuration, externalStorageHandler, externalCallHandler, localBus) {
   try {
     if (window && window.liQ && window.liQ.ready) {
       if (window.liQ.config && !window.liQ.config.appId && configuration.appId) {
-        return _standardInitialization(configuration, externalStorageHandler, externalCallHandler)
+        return _standardInitialization(configuration, externalStorageHandler, externalCallHandler, localBus)
       }
 
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, configuration)
@@ -113,7 +113,7 @@ function _getOrInitializeLiveConnect (configuration, externalStorageHandler, ext
       }
       return window.liQ
     } else {
-      return _standardInitialization(configuration, externalStorageHandler, externalCallHandler)
+      return _standardInitialization(configuration, externalStorageHandler, externalCallHandler, localBus, localBus)
     }
   } catch (e) {
     console.error('Could not initialize LiveConnect')
@@ -127,9 +127,9 @@ function _getOrInitializeLiveConnect (configuration, externalStorageHandler, ext
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
-    eventBus.init()
+    eventBus.init(null, null, localBus)
     const callHandler = CallHandler(externalCallHandler)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler)
@@ -166,13 +166,13 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   }
 }
 
-function _initializeLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _initializeLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
 
-    window && (window.liQ = _getOrInitializeLiveConnect(configuration, externalStorageHandler, externalCallHandler) || queue)
+    window && (window.liQ = _getOrInitializeLiveConnect(configuration, externalStorageHandler, externalCallHandler, localBus) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])
@@ -192,6 +192,6 @@ function _initializeLiveConnect (liveConnectConfig, externalStorageHandler, exte
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
-  return _initializeLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler)
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
+  return _initializeLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus)
 }
