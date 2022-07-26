@@ -102,7 +102,7 @@ var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 
 function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+  window && (window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message) || window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].current && window[EVENT_BUS_NAMESPACE].current.emit(prefix, message));
 }
 function fromError(name, exception) {
   error(name, exception.message, exception);

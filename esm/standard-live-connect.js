@@ -109,7 +109,7 @@ var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
 
 function _emit(prefix, message) {
-  window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
+  window && (window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message) || window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].current && window[EVENT_BUS_NAMESPACE].current.emit(prefix, message));
 }
 function send(prefix, message) {
   _emit(prefix, message);
@@ -214,6 +214,16 @@ E.prototype = {
   },
   emit: function emit(name) {
     var data = [].slice.call(arguments, 1);
+    this.emitNoForward(name, data);
+    if (this.global) {
+      this.global.emitNoForward(name, data);
+    }
+    if (this.current) {
+      this.current.emitNoForward(name, data);
+    }
+    return this;
+  },
+  emitNoForward: function emitNoForward(name, data) {
     var evtArr = (this.h[name] || []).slice();
     var i = 0;
     var len = evtArr.length;
@@ -239,21 +249,54 @@ E.prototype = {
     }
     liveEvents.length ? this.h[name] = liveEvents : delete this.h[name];
     return this;
+  },
+  hierarchical: function hierarchical() {
+    return true;
+  },
+  setGlobal: function setGlobal(other) {
+    this.global = other;
+    return this;
+  },
+  setCurrent: function setCurrent(other) {
+    this.current = other;
+    return this;
   }
 };
 
-function init(size, errorCallback) {
+function init(size, errorCallback, bus) {
   if (!size) {
     size = 5;
   }
   try {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'));
+    } else {
+      if (!window[EVENT_BUS_NAMESPACE]) {
+        var globalBus = new E(size);
+        var localBus = bus || new E(size);
+        localBus.setGlobal(globalBus);
+        globalBus.setCurrent(localBus);
+        window[EVENT_BUS_NAMESPACE] = globalBus;
+        return localBus;
+      } else {
+        if (isFunction(window[EVENT_BUS_NAMESPACE].hierarchical)) {
+          var _globalBus = window[EVENT_BUS_NAMESPACE];
+          var _localBus = bus || new E(size);
+          _localBus.setGlobal(_globalBus);
+          _globalBus.setCurrent(_localBus);
+          return _localBus;
+        } else {
+          var _globalBus2 = new E(size);
+          var localBusOld = window[EVENT_BUS_NAMESPACE];
+          var localBusNew = bus || new E(size);
+          localBusOld.setGlobal(_globalBus2);
+          localBusNew.setGlobal(_globalBus2);
+          _globalBus2.setCurrent(localBusNew);
+          window[EVENT_BUS_NAMESPACE] = _globalBus2;
+          return localBusNew;
+        }
+      }
     }
-    if (window && !window[EVENT_BUS_NAMESPACE]) {
-      window[EVENT_BUS_NAMESPACE] = new E(size);
-    }
-    return window[EVENT_BUS_NAMESPACE];
   } catch (e) {
     errorCallback(e);
   }
@@ -837,8 +880,8 @@ function _pixelError(error) {
 }
 function register(state, callHandler) {
   try {
-    if (window && window[EVENT_BUS_NAMESPACE] && isFunction(window[EVENT_BUS_NAMESPACE].on)) {
-      window[EVENT_BUS_NAMESPACE].on(ERRORS_PREFIX, _pixelError);
+    if (window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].current && isFunction(window[EVENT_BUS_NAMESPACE].current.on)) {
+      window[EVENT_BUS_NAMESPACE].current.on(ERRORS_PREFIX, _pixelError);
     }
     _pixelSender = new PixelSender(state, callHandler);
     _state = state || {};
@@ -1255,11 +1298,11 @@ function CallHandler(externalCallHandler) {
 }
 
 var hemStore = {};
-function _pushSingleEvent(event, pixelClient, enrichedState) {
+function _pushSingleEvent(event, pixelClient, enrichedState, externalStorageHandler, externalCallHandler) {
   if (!event || !isObject(event)) {
     error('EventNotAnObject', 'Received event was not an object', new Error(event));
   } else if (event.config) {
-    error('StrayConfig', 'Received a config after LC has already been initialised', new Error(event));
+    _initializeLiveConnect(event.config, externalStorageHandler, externalCallHandler);
   } else {
     var combined = enrichedState.combineWith({
       eventSource: event
@@ -1281,26 +1324,29 @@ function _configMatcher(previousConfig, newConfig) {
     };
   }
 }
-function _processArgs(args, pixelClient, enrichedState) {
+function _processArgs(args, pixelClient, enrichedState, externalStorageHandler, externalCallHandler) {
   try {
     args.forEach(function (arg) {
       var event = arg;
       if (isArray(event)) {
         event.forEach(function (e) {
-          return _pushSingleEvent(e, pixelClient, enrichedState);
+          return _pushSingleEvent(e, pixelClient, enrichedState, externalStorageHandler, externalCallHandler);
         });
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState);
+        _pushSingleEvent(event, pixelClient, enrichedState, externalStorageHandler, externalCallHandler);
       }
     });
   } catch (e) {
     error('LCPush', 'Failed sending an event', e);
   }
 }
-function _getInitializedLiveConnect(liveConnectConfig) {
+function _getOrInitializeLiveConnect(configuration, externalStorageHandler, externalCallHandler, localBus) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
+      if (window.liQ.config && !window.liQ.config.appId && configuration.appId) {
+        return _standardInitialization(configuration, externalStorageHandler, externalCallHandler, localBus);
+      }
+      var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, configuration);
       if (mismatchedConfig) {
         var error$1 = new Error();
         error$1.name = 'ConfigSent';
@@ -1308,13 +1354,15 @@ function _getInitializedLiveConnect(liveConnectConfig) {
         error('LCDuplication', JSON.stringify(mismatchedConfig), error$1);
       }
       return window.liQ;
+    } else {
+      return _standardInitialization(configuration, externalStorageHandler, externalCallHandler, localBus, localBus);
     }
   } catch (e) {
   }
 }
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
-    init();
+    init(null, null, localBus);
     var callHandler = CallHandler(externalCallHandler);
     var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
     register(configWithPrivacy, callHandler);
@@ -1342,7 +1390,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
-      return _processArgs(args, pixelClient, postManagedState);
+      return _processArgs(args, pixelClient, postManagedState, externalStorageHandler, externalCallHandler);
     };
     return {
       push: _push,
@@ -1359,11 +1407,11 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     error('LCConstruction', 'Failed to build LC', x);
   }
 }
-function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _initializeLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue);
+    window && (window.liQ = _getOrInitializeLiveConnect(configuration, externalStorageHandler, externalCallHandler, localBus) || queue);
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i]);
@@ -1373,6 +1421,9 @@ function StandardLiveConnect(liveConnectConfig, externalStorageHandler, external
     error('LCConstruction', 'Failed to build LC', x);
   }
   return window.liQ;
+}
+function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
+  return _initializeLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus);
 }
 
 export { StandardLiveConnect };

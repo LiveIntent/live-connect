@@ -2,6 +2,13 @@ import E from './replayemitter'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
 
+export function local (size) {
+  if (!size) {
+    size = 5
+  }
+  return new E(size)
+}
+
 /**
  * @param {number} size
  * @param {function} errorCallback
