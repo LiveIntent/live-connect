@@ -1,6 +1,10 @@
 import E from './replayemitter'
 import * as C from '../utils/consts'
 
+export function local (size) {
+  return new E(size)
+}
+
 /**
  * @param {number} size
  * @param {function} errorCallback

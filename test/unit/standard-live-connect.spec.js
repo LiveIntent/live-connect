@@ -59,12 +59,12 @@ describe('StandardLiveConnect', () => {
     expect(window.liQ.ready).to.be.true()
   })
 
-  it('should expose liQ, emit error for any subsequent initialization with different config', function () {
+  it('should expose liQ, emit error for any subsequent initialization with config without appId', function () {
     StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
     let liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
-    StandardLiveConnect({ appId: 'config' }, storage, calls)
+    StandardLiveConnect({ }, storage, calls)
     liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'config' })
@@ -211,13 +211,12 @@ describe('StandardLiveConnect', () => {
     expect(params.ae).to.not.eq(undefined)
   })
 
-  it('should emit an error if the pushed value is a config', function () {
-    const lc = StandardLiveConnect({}, storage, calls)
-    lc.push({ config: {} })
-    expect(errorCalls.length).to.eql(1)
-    const params = urlParams(errorCalls[0].src)
-    // I don't want to check the full content here, i'm fine with just being present
-    expect(params.ae).to.not.eq(undefined)
+  it('should store the config in the manager if the pushed value is a config', function () {
+    const lc = StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    lc.push({ config: { appId: 'a-00yy' } })
+    expect(lc.configManager.configs().length).to.eql(2)
+    expect(lc.configManager.configs()[0]).to.eql({ appId: 'a-00xx' })
+    expect(lc.configManager.configs()[1]).to.eql({ appId: 'a-00yy' })
   })
 
   it('should emit an error if the storage and ajax are not provided', function () {

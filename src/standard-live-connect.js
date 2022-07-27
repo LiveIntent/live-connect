@@ -41,18 +41,19 @@ import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
-import { isArray, isObject, merge } from './utils/types'
+import { isArray, isFunction, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
+import ConfigManager, { hasPriorityOver } from './config/config-manager'
 
 const hemStore = {}
-function _pushSingleEvent (event, pixelClient, enrichedState) {
+function _pushSingleEvent (event, pixelClient, enrichedState, configManager) {
   if (!event || !isObject(event)) {
     emitter.error('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {
-    emitter.error('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
+    configManager.push(event.config)
   } else {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
@@ -81,14 +82,14 @@ function _configMatcher (previousConfig, newConfig) {
   }
 }
 
-function _processArgs (args, pixelClient, enrichedState) {
+function _processArgs (args, pixelClient, enrichedState, configManager) {
   try {
     args.forEach(arg => {
       const event = arg
       if (isArray(event)) {
-        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState))
+        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState, configManager))
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState)
+        _pushSingleEvent(event, pixelClient, enrichedState, configManager)
       }
     })
   } catch (e) {
@@ -106,14 +107,16 @@ function _processArgs (args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
-      if (mismatchedConfig) {
-        const error = new Error()
-        error.name = 'ConfigSent'
-        error.message = 'Additional configuration received'
-        emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
+      if (hasPriorityOver(window.liQ.config, liveConnectConfig)) {
+        const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
+        if (mismatchedConfig) {
+          const error = new Error()
+          error.name = 'ConfigSent'
+          error.message = 'Additional configuration received'
+          emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
+        }
+        return window.liQ
       }
-      return window.liQ
     }
   } catch (e) {
     console.error('Could not initialize error bus')
@@ -127,7 +130,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
@@ -150,7 +153,11 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
-    const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
+    const _configManager = _initializeConfigManager(liveConnectConfig)
+    const _push = (...args) => _processArgs(args, pixelClient, postManagedState, _configManager)
+
+    _executeInitializationCallback(initializationCallback, liveConnectConfig)
+
     return {
       push: _push,
       fire: () => _push({}),
@@ -158,11 +165,30 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig
+      config: liveConnectConfig,
+      configManager: _configManager
     }
   } catch (x) {
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)
+  }
+}
+
+function _executeInitializationCallback (callback, config) {
+  if (callback && isFunction(callback)) {
+    callback(config)
+  }
+}
+
+function _initializeConfigManager (config) {
+  if (window.liQ && window.liQ.configManager) {
+    const configManager = window.liQ.configManager
+    configManager.push(config)
+    return configManager
+  } else {
+    const configManager = new ConfigManager()
+    configManager.push(config)
+    return configManager
   }
 }
 
@@ -173,12 +199,12 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])

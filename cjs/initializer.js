@@ -201,6 +201,21 @@ E.prototype = {
     }
     return this;
   },
+  last: function last(name, callback, ctx) {
+    var self = this;
+    var eventQueue = this.q[name] || [];
+    if (eventQueue.length > 0) {
+      callback.apply(ctx, eventQueue.last);
+      return this;
+    } else {
+      var listener = function listener() {
+        self.off(name, listener);
+        callback.apply(ctx, arguments);
+      };
+      listener._ = callback;
+      return this.on(name, listener, ctx);
+    }
+  },
   once: function once(name, callback, ctx) {
     var self = this;
     var eventQueue = this.q[name] || [];
@@ -1261,12 +1276,27 @@ function CallHandler(externalCallHandler) {
   return handler;
 }
 
+function ConfigManager() {
+  this.seenConfigs = [];
+}
+function hasPriorityOver(configA, configB) {
+  return configA.appId && !configB.appId;
+}
+ConfigManager.prototype = {
+  push: function push(config) {
+    this.seenConfigs.push(config);
+  },
+  configs: function configs() {
+    return this.seenConfigs;
+  }
+};
+
 var hemStore = {};
-function _pushSingleEvent(event, pixelClient, enrichedState) {
+function _pushSingleEvent(event, pixelClient, enrichedState, configManager) {
   if (!event || !isObject(event)) {
     error('EventNotAnObject', 'Received event was not an object', new Error(event));
   } else if (event.config) {
-    error('StrayConfig', 'Received a config after LC has already been initialised', new Error(event));
+    configManager.push(event.config);
   } else {
     var combined = enrichedState.combineWith({
       eventSource: event
@@ -1288,16 +1318,16 @@ function _configMatcher(previousConfig, newConfig) {
     };
   }
 }
-function _processArgs(args, pixelClient, enrichedState) {
+function _processArgs(args, pixelClient, enrichedState, configManager) {
   try {
     args.forEach(function (arg) {
       var event = arg;
       if (isArray(event)) {
         event.forEach(function (e) {
-          return _pushSingleEvent(e, pixelClient, enrichedState);
+          return _pushSingleEvent(e, pixelClient, enrichedState, configManager);
         });
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState);
+        _pushSingleEvent(event, pixelClient, enrichedState, configManager);
       }
     });
   } catch (e) {
@@ -1307,19 +1337,21 @@ function _processArgs(args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect(liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
-      if (mismatchedConfig) {
-        var error$1 = new Error();
-        error$1.name = 'ConfigSent';
-        error$1.message = 'Additional configuration received';
-        error('LCDuplication', JSON.stringify(mismatchedConfig), error$1);
+      if (hasPriorityOver(window.liQ.config, liveConnectConfig)) {
+        var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
+        if (mismatchedConfig) {
+          var error$1 = new Error();
+          error$1.name = 'ConfigSent';
+          error$1.message = 'Additional configuration received';
+          error('LCDuplication', JSON.stringify(mismatchedConfig), error$1);
+        }
+        return window.liQ;
       }
-      return window.liQ;
     }
   } catch (e) {
   }
 }
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
   try {
     init();
     var callHandler = CallHandler(externalCallHandler);
@@ -1345,12 +1377,14 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     };
     var pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload);
     var resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler);
+    var _configManager = _initializeConfigManager(liveConnectConfig);
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
-      return _processArgs(args, pixelClient, postManagedState);
+      return _processArgs(args, pixelClient, postManagedState, _configManager);
     };
+    _executeInitializationCallback(initializationCallback, liveConnectConfig);
     return {
       push: _push,
       fire: function fire() {
@@ -1360,17 +1394,34 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig
+      config: liveConnectConfig,
+      configManager: _configManager
     };
   } catch (x) {
     error('LCConstruction', 'Failed to build LC', x);
   }
 }
-function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _executeInitializationCallback(callback, config) {
+  if (callback && isFunction(callback)) {
+    callback(config);
+  }
+}
+function _initializeConfigManager(config) {
+  if (window.liQ && window.liQ.configManager) {
+    var configManager = window.liQ.configManager;
+    configManager.push(config);
+    return configManager;
+  } else {
+    var _configManager2 = new ConfigManager();
+    _configManager2.push(config);
+    return _configManager2;
+  }
+}
+function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue);
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue);
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i]);
