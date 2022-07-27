@@ -46,7 +46,7 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-import ConfigManager, { hasPriorityOver } from './config/config-manager'
+import ConfigManager, { qualifiedConfig } from './config/config-manager'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState, configManager) {
@@ -104,10 +104,10 @@ function _processArgs (args, pixelClient, enrichedState, configManager) {
  * @return {StandardLiveConnect|null}
  * @private
  */
-function _getInitializedLiveConnect (liveConnectConfig) {
+function _getInitializedLiveConnect (liveConnectConfig, initializationCallback) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (hasPriorityOver(window.liQ.config, liveConnectConfig)) {
+      if (qualifiedConfig(window.liQ.config) && !initializationCallback) {
         const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
         if (mismatchedConfig) {
           const error = new Error()
@@ -204,7 +204,7 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration, initializationCallback) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])

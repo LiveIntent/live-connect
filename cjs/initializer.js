@@ -1279,8 +1279,8 @@ function CallHandler(externalCallHandler) {
 function ConfigManager() {
   this.seenConfigs = [];
 }
-function hasPriorityOver(configA, configB) {
-  return configA.appId && !configB.appId;
+function qualifiedConfig(config) {
+  return !!config.appId;
 }
 ConfigManager.prototype = {
   push: function push(config) {
@@ -1334,10 +1334,10 @@ function _processArgs(args, pixelClient, enrichedState, configManager) {
     error('LCPush', 'Failed sending an event', e);
   }
 }
-function _getInitializedLiveConnect(liveConnectConfig) {
+function _getInitializedLiveConnect(liveConnectConfig, initializationCallback) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (hasPriorityOver(window.liQ.config, liveConnectConfig)) {
+      if (qualifiedConfig(window.liQ.config) && !initializationCallback) {
         var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
         if (mismatchedConfig) {
           var error$1 = new Error();
@@ -1421,7 +1421,7 @@ function StandardLiveConnect(liveConnectConfig, externalStorageHandler, external
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue);
+    window && (window.liQ = _getInitializedLiveConnect(configuration, initializationCallback) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue);
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i]);

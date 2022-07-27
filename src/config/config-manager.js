@@ -3,10 +3,6 @@ export default function ConfigManager () {
   this.seenConfigs = []
 }
 
-export function hasPriorityOver (configA, configB) {
-  return qualifiedConfig(configA) && !qualifiedConfig(configB)
-}
-
 export function qualifiedConfig (config) {
   return !!config.appId
 }
