@@ -27,25 +27,6 @@ E.prototype = {
     return this
   },
 
-  last: function (name, callback, ctx) {
-    const self = this
-
-    const eventQueue = this.q[name] || []
-    if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue.last)
-
-      return this
-    } else {
-      const listener = function () {
-        self.off(name, listener)
-        callback.apply(ctx, arguments)
-      }
-
-      listener._ = callback
-      return this.on(name, listener, ctx)
-    }
-  },
-
   once: function (name, callback, ctx) {
     const self = this
 
