@@ -107,7 +107,8 @@ function _processArgs (args, pixelClient, enrichedState, configManager) {
 function _getInitializedLiveConnect (liveConnectConfig, initializationCallback) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (qualifiedConfig(window.liQ.config) && !initializationCallback) {
+      if ((!qualifiedConfig(liveConnectConfig)) ||
+        (qualifiedConfig(liveConnectConfig) && qualifiedConfig(window.liQ.config) && !initializationCallback)) {
         const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
         if (mismatchedConfig) {
           const error = new Error()
