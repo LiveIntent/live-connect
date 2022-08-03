@@ -41,7 +41,7 @@ import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
-import { isArray, isFunction, isObject, merge } from './utils/types'
+import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
@@ -104,11 +104,10 @@ function _processArgs (args, pixelClient, enrichedState, configManager) {
  * @return {StandardLiveConnect|null}
  * @private
  */
-function _getInitializedLiveConnect (liveConnectConfig, initializationCallback) {
+function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if ((!qualifiedConfig(liveConnectConfig)) ||
-        (qualifiedConfig(liveConnectConfig) && qualifiedConfig(window.liQ.config) && !initializationCallback)) {
+      if (!qualifiedConfig(liveConnectConfig)) {
         const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
         if (mismatchedConfig) {
           const error = new Error()
@@ -131,7 +130,7 @@ function _getInitializedLiveConnect (liveConnectConfig, initializationCallback) 
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
@@ -156,8 +155,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _configManager = _initializeConfigManager(liveConnectConfig)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState, _configManager)
-
-    _executeInitializationCallback(initializationCallback, liveConnectConfig)
+    _emitSyncContainerData(syncContainerData)
 
     return {
       push: _push,
@@ -175,10 +173,8 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   }
 }
 
-function _executeInitializationCallback (callback, config) {
-  if (callback && isFunction(callback)) {
-    callback(config)
-  }
+function _emitSyncContainerData (data) {
+  emitter.send(C.SYNC_CONTAINER_CONFIG, data)
 }
 
 function _initializeConfigManager (config) {
@@ -200,12 +196,12 @@ function _initializeConfigManager (config) {
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration, initializationCallback) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])
