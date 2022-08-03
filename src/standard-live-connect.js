@@ -155,7 +155,6 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _configManager = _initializeConfigManager(liveConnectConfig)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState, _configManager)
-    _emitSyncContainerData(syncContainerData)
 
     return {
       push: _push,
@@ -171,10 +170,6 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)
   }
-}
-
-function _emitSyncContainerData (data) {
-  emitter.send(C.SYNC_CONTAINER_CONFIG, data)
 }
 
 function _initializeConfigManager (config) {
