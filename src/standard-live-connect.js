@@ -130,9 +130,10 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
     eventBus.init()
+    _emitShutdownMessage(liveConnectConfig)
     const callHandler = CallHandler(externalCallHandler)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler)
@@ -150,7 +151,12 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     console.log('LiveConnect.postManagedState', postManagedState)
     const syncContainerData = merge(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
-    const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
+    const onPixelPreload = () => {
+      if (localBus) {
+        localBus.emit(C.PRELOAD_PIXEL, '0')
+      }
+      emitter.send(C.PRELOAD_PIXEL, '0')
+    }
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _configManager = _initializeConfigManager(liveConnectConfig)
@@ -172,6 +178,10 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   }
 }
 
+function _emitShutdownMessage (config) {
+  emitter.send(C.LC_SHUTDOWN, config)
+}
+
 function _initializeConfigManager (config) {
   if (window.liQ && window.liQ.configManager) {
     const configManager = window.liQ.configManager
@@ -191,12 +201,12 @@ function _initializeConfigManager (config) {
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, pixelPreload) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, pixelPreload) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i])

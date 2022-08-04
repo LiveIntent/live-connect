@@ -3,6 +3,7 @@ import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
+import {send} from '../utils/emitter'
 
 let _state = null
 let _pixelSender = null
@@ -72,6 +73,12 @@ export function register (state, callHandler) {
     console.log('handlers.error.register', state, _pixelSender)
     if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
       window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
+
+      if (isFunction(window[C.EVENT_BUS_NAMESPACE].off) && isFunction(window[C.EVENT_BUS_NAMESPACE].listen)) {
+        window[C.EVENT_BUS_NAMESPACE].listen(C.LC_SHUTDOWN, function(event) {
+          window[C.EVENT_BUS_NAMESPACE].off(C.ERRORS_PREFIX, _pixelError)
+        })
+      }
     }
     _pixelSender = new PixelSender(state, callHandler)
     _state = state || {}

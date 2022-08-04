@@ -13,6 +13,22 @@ export default function E (replaySize) {
 }
 
 E.prototype = {
+  
+  listen: function (name, callback, ctx) {
+    const listener = function () {
+      self.off(name, listener)
+      callback.apply(ctx, arguments)
+    }
+
+    listener._ = callback
+
+    (this.h[name] || (this.h[name] = [])).push({
+      fn: listener,
+      ctx: ctx
+    })
+    return this
+  },
+
   on: function (name, callback, ctx) {
     (this.h[name] || (this.h[name] = [])).push({
       fn: callback,
