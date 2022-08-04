@@ -3,7 +3,6 @@ import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
-import {send} from '../utils/emitter'
 
 let _state = null
 let _pixelSender = null

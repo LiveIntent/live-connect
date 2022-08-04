@@ -58,7 +58,7 @@ E.prototype = {
     if (this.current) {
       this.current.emitNoForward(name, data)
     }
-    
+
     return this
   },
 

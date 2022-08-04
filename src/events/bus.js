@@ -1,5 +1,6 @@
 import E from './replayemitter'
 import * as C from '../utils/consts'
+import { isFunction } from '../utils/types'
 
 export function local (size) {
   return new E(size)
