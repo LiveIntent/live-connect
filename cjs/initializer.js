@@ -201,21 +201,6 @@ E.prototype = {
     }
     return this;
   },
-  last: function last(name, callback, ctx) {
-    var self = this;
-    var eventQueue = this.q[name] || [];
-    if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue.last);
-      return this;
-    } else {
-      var listener = function listener() {
-        self.off(name, listener);
-        callback.apply(ctx, arguments);
-      };
-      listener._ = callback;
-      return this.on(name, listener, ctx);
-    }
-  },
   once: function once(name, callback, ctx) {
     var self = this;
     var eventQueue = this.q[name] || [];
@@ -233,17 +218,13 @@ E.prototype = {
   },
   emit: function emit(name) {
     var data = [].slice.call(arguments, 1);
-    var evtArr = (this.h[name] || []).slice();
-    var i = 0;
-    var len = evtArr.length;
-    for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data);
+    this.emitNoForward(name, data);
+    if (this.global) {
+      this.global.emitNoForward(name, data);
     }
-    var eventQueue = this.q[name] || (this.q[name] = []);
-    if (eventQueue.length >= this.size) {
-      eventQueue.shift();
+    if (this.current) {
+      this.current.emitNoForward(name, data);
     }
-    eventQueue.push(data);
     return this;
   },
   off: function off(name, callback) {
@@ -258,21 +239,68 @@ E.prototype = {
     }
     liveEvents.length ? this.h[name] = liveEvents : delete this.h[name];
     return this;
+  },
+  emitNoForward: function emitNoForward(name, data) {
+    var evtArr = (this.h[name] || []).slice();
+    var i = 0;
+    var len = evtArr.length;
+    for (i; i < len; i++) {
+      evtArr[i].fn.apply(evtArr[i].ctx, data);
+    }
+    var eventQueue = this.q[name] || (this.q[name] = []);
+    if (eventQueue.length >= this.size) {
+      eventQueue.shift();
+    }
+    eventQueue.push(data);
+    return this;
+  },
+  hierarchical: function hierarchical() {
+    return true;
+  },
+  setGlobal: function setGlobal(other) {
+    this.global = other;
+    return this;
+  },
+  setCurrent: function setCurrent(other) {
+    this.current = other;
+    return this;
   }
 };
 
-function init(size, errorCallback) {
+function init(size, errorCallback, bus) {
   if (!size) {
     size = 5;
   }
   try {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'));
+    } else {
+      if (!window[EVENT_BUS_NAMESPACE]) {
+        var globalBus = new E(size);
+        var localBus = bus || new E(size);
+        localBus.setGlobal(globalBus);
+        globalBus.setCurrent(localBus);
+        window[EVENT_BUS_NAMESPACE] = globalBus;
+        return localBus;
+      } else {
+        if (isFunction(window[EVENT_BUS_NAMESPACE].hierarchical)) {
+          var _globalBus = window[EVENT_BUS_NAMESPACE];
+          var _localBus = bus || new E(size);
+          _localBus.setGlobal(_globalBus);
+          _globalBus.setCurrent(_localBus);
+          return _localBus;
+        } else {
+          var _globalBus2 = new E(size);
+          var localBusOld = window[EVENT_BUS_NAMESPACE];
+          var localBusNew = bus || new E(size);
+          localBusOld.setGlobal(_globalBus2);
+          localBusNew.setGlobal(_globalBus2);
+          _globalBus2.setCurrent(localBusNew);
+          window[EVENT_BUS_NAMESPACE] = _globalBus2;
+          return localBusNew;
+        }
+      }
     }
-    if (window && !window[EVENT_BUS_NAMESPACE]) {
-      window[EVENT_BUS_NAMESPACE] = new E(size);
-    }
-    return window[EVENT_BUS_NAMESPACE];
   } catch (e) {
     errorCallback(e);
   }
@@ -1334,10 +1362,10 @@ function _processArgs(args, pixelClient, enrichedState, configManager) {
     error('LCPush', 'Failed sending an event', e);
   }
 }
-function _getInitializedLiveConnect(liveConnectConfig, initializationCallback) {
+function _getInitializedLiveConnect(liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (qualifiedConfig(window.liQ.config) && !initializationCallback) {
+      if (!qualifiedConfig(liveConnectConfig)) {
         var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
         if (mismatchedConfig) {
           var error$1 = new Error();
@@ -1351,9 +1379,9 @@ function _getInitializedLiveConnect(liveConnectConfig, initializationCallback) {
   } catch (e) {
   }
 }
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
-    init();
+    init(null, null, localBus);
     var callHandler = CallHandler(externalCallHandler);
     var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
     register(configWithPrivacy, callHandler);
@@ -1384,7 +1412,6 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       }
       return _processArgs(args, pixelClient, postManagedState, _configManager);
     };
-    _executeInitializationCallback(initializationCallback, liveConnectConfig);
     return {
       push: _push,
       fire: function fire() {
@@ -1401,11 +1428,6 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
     error('LCConstruction', 'Failed to build LC', x);
   }
 }
-function _executeInitializationCallback(callback, config) {
-  if (callback && isFunction(callback)) {
-    callback(config);
-  }
-}
 function _initializeConfigManager(config) {
   if (window.liQ && window.liQ.configManager) {
     var configManager = window.liQ.configManager;
@@ -1417,11 +1439,11 @@ function _initializeConfigManager(config) {
     return _configManager2;
   }
 }
-function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, initializationCallback) {
+function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, localBus) {
   try {
     var queue = window.liQ || [];
     var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-    window && (window.liQ = _getInitializedLiveConnect(configuration, initializationCallback) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, initializationCallback) || queue);
+    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, localBus) || queue);
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {
         window.liQ.push(queue[i]);
