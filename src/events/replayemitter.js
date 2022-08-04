@@ -13,21 +13,6 @@ export default function E (replaySize) {
 }
 
 E.prototype = {
-  
-  listen: function (name, callback, ctx) {
-    const listener = function () {
-      self.off(name, listener)
-      callback.apply(ctx, arguments)
-    }
-
-    listener._ = callback
-
-    (this.h[name] || (this.h[name] = [])).push({
-      fn: listener,
-      ctx: ctx
-    })
-    return this
-  },
 
   on: function (name, callback, ctx) {
     (this.h[name] || (this.h[name] = [])).push({
@@ -64,20 +49,16 @@ E.prototype = {
 
   emit: function (name) {
     const data = [].slice.call(arguments, 1)
-    const evtArr = (this.h[name] || []).slice()
-    let i = 0
-    const len = evtArr.length
+    this.emitNoForward(name, data)
 
-    for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data)
+    if (this.global) {
+      this.global.emitNoForward(name, data)
     }
 
-    const eventQueue = this.q[name] || (this.q[name] = [])
-    if (eventQueue.length >= this.size) {
-      eventQueue.shift()
+    if (this.current) {
+      this.current.emitNoForward(name, data)
     }
-    eventQueue.push(data)
-
+    
     return this
   },
 
@@ -97,6 +78,35 @@ E.prototype = {
       ? this.h[name] = liveEvents
       : delete this.h[name]
 
+    return this
+  },
+
+  emitNoForward: function (name, data) {
+    const evtArr = (this.h[name] || []).slice()
+    let i = 0
+    const len = evtArr.length
+    for (i; i < len; i++) {
+      evtArr[i].fn.apply(evtArr[i].ctx, data)
+    }
+    const eventQueue = this.q[name] || (this.q[name] = [])
+    if (eventQueue.length >= this.size) {
+      eventQueue.shift()
+    }
+    eventQueue.push(data)
+    return this
+  },
+
+  hierarchical: function () {
+    return true
+  },
+
+  setGlobal: function (other) {
+    this.global = other
+    return this
+  },
+
+  setCurrent: function (other) {
+    this.current = other
     return this
   }
 }
