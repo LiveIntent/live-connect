@@ -70,8 +70,8 @@ function _pixelError (error) {
 export function register (state, callHandler) {
   try {
     console.log('handlers.error.register', state, _pixelSender)
-    if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
-      window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
+    if (window && window[C.EVENT_BUS_NAMESPACE] && window[C.EVENT_BUS_NAMESPACE].current && isFunction(window[C.EVENT_BUS_NAMESPACE].current.on)) {
+      window[C.EVENT_BUS_NAMESPACE].current.on(C.ERRORS_PREFIX, _pixelError)
     }
     _pixelSender = new PixelSender(state, callHandler)
     _state = state || {}
