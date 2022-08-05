@@ -257,6 +257,10 @@ E.prototype = {
     this.global = other;
     return this;
   },
+  unsetGlobal: function unsetGlobal() {
+    delete this.global;
+    return this;
+  },
   setCurrent: function setCurrent(other) {
     this.current = other;
     return this;
@@ -281,19 +285,19 @@ function init(size, errorCallback, bus) {
       } else {
         if (isFunction(window[EVENT_BUS_NAMESPACE].hierarchical)) {
           var _globalBus = window[EVENT_BUS_NAMESPACE];
-          var _localBus = bus || new E(size);
-          _localBus.setGlobal(_globalBus);
-          _globalBus.setCurrent(_localBus);
-          return _localBus;
+          var localBusOld = window[EVENT_BUS_NAMESPACE].current;
+          var localBusNew = bus || new E(size);
+          localBusNew.setGlobal(_globalBus);
+          _globalBus.setCurrent(localBusNew);
+          localBusOld.unsetGlobal();
+          return localBusNew;
         } else {
           var _globalBus2 = new E(size);
-          var localBusOld = window[EVENT_BUS_NAMESPACE];
-          var localBusNew = bus || new E(size);
-          localBusOld.setGlobal(_globalBus2);
-          localBusNew.setGlobal(_globalBus2);
-          _globalBus2.setCurrent(localBusNew);
+          var _localBusNew = bus || new E(size);
+          _localBusNew.setGlobal(_globalBus2);
+          _globalBus2.setCurrent(_localBusNew);
           window[EVENT_BUS_NAMESPACE] = _globalBus2;
-          return localBusNew;
+          return _localBusNew;
         }
       }
     }

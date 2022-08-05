@@ -30,15 +30,16 @@ export function init (size, errorCallback, bus) {
       } else {
         if (isFunction(window[C.EVENT_BUS_NAMESPACE].hierarchical)) {
           const globalBus = window[C.EVENT_BUS_NAMESPACE]
-          const localBus = bus || new E(size)
-          localBus.setGlobal(globalBus)
-          globalBus.setCurrent(localBus)
-          return localBus
-        } else {
-          const globalBus = new E(size)
-          const localBusOld = window[C.EVENT_BUS_NAMESPACE]
+          const localBusOld = window[C.EVENT_BUS_NAMESPACE].current
           const localBusNew = bus || new E(size)
-          localBusOld.setGlobal(globalBus)
+          localBusNew.setGlobal(globalBus)
+          globalBus.setCurrent(localBusNew)
+          localBusOld.unsetGlobal()
+          return localBusNew
+        } else {
+          // This will lead to losing all global bus listeners
+          const globalBus = new E(size)
+          const localBusNew = bus || new E(size)
           localBusNew.setGlobal(globalBus)
           globalBus.setCurrent(localBusNew)
           window[C.EVENT_BUS_NAMESPACE] = globalBus

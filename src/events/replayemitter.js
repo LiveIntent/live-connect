@@ -105,6 +105,11 @@ E.prototype = {
     return this
   },
 
+  unsetGlobal: function () {
+    delete this.global
+    return this
+  },
+
   setCurrent: function (other) {
     this.current = other
     return this
