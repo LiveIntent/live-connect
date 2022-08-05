@@ -887,8 +887,8 @@ function _pixelError(error) {
 }
 function register(state, callHandler) {
   try {
-    if (window && window[EVENT_BUS_NAMESPACE] && isFunction(window[EVENT_BUS_NAMESPACE].on)) {
-      window[EVENT_BUS_NAMESPACE].on(ERRORS_PREFIX, _pixelError);
+    if (window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].current && isFunction(window[EVENT_BUS_NAMESPACE].current.on)) {
+      window[EVENT_BUS_NAMESPACE].current.on(ERRORS_PREFIX, _pixelError);
     }
     _pixelSender = new PixelSender(state, callHandler);
     _state = state || {};
@@ -1365,7 +1365,7 @@ function _processArgs(args, pixelClient, enrichedState, configManager) {
 function _getInitializedLiveConnect(liveConnectConfig) {
   try {
     if (window && window.liQ && window.liQ.ready) {
-      if (!qualifiedConfig(liveConnectConfig)) {
+      if (qualifiedConfig(window.liQ.config) || !qualifiedConfig(liveConnectConfig)) {
         var mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig);
         if (mismatchedConfig) {
           var error$1 = new Error();

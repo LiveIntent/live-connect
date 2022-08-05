@@ -32,9 +32,9 @@ describe('ErrorPixel', () => {
     stub.restore()
   })
 
-  it('should register itself on the global bus', function () {
+  it('should register itself on the current bus', function () {
     errorPixel.register({ collectorUrl: 'http://localhost' })
-    const errorHandler = windowBus.h
+    const errorHandler = windowBus.current.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
     expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')
