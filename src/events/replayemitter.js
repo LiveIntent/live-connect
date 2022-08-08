@@ -61,7 +61,6 @@ E.prototype = {
       eventQueue.shift()
     }
     eventQueue.push(data)
-
     return this
   },
 

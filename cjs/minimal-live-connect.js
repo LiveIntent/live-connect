@@ -300,7 +300,7 @@ function StorageHandler(storageStrategy, externalStorageHandler) {
 var _noOp$1 = function _noOp() {
   return undefined;
 };
-function CallHandler(externalCallHandler) {
+function CallHandler(messageBus, externalCallHandler) {
   var errors = [];
   function _externalOrError(functionName) {
     var hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName]);
@@ -316,7 +316,7 @@ function CallHandler(externalCallHandler) {
     pixelGet: _externalOrError('pixelGet')
   };
   if (errors.length > 0) {
-    error('CallHandler', "The call functions '".concat(JSON.stringify(errors), "' are not provided"));
+    messageBus.emitError('CallHandler', "The call functions '".concat(JSON.stringify(errors), "' are not provided"));
   }
   return handler;
 }

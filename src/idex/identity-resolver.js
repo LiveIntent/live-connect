@@ -1,5 +1,4 @@
 import { toParams } from '../utils/url'
-import { fromError } from '../utils/emitter'
 import { expiresInHours, asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
 import { base64UrlEncode } from '../utils/b64'
@@ -15,7 +14,7 @@ function _cacheKey (additionalParams) {
   }
 }
 
-function _responseReceived (storageHandler, domain, expirationHours, successCallback, additionalParams) {
+function _responseReceived (messageBus, storageHandler, domain, expirationHours, successCallback, additionalParams) {
   return response => {
     let responseObj = {}
     if (response) {
@@ -23,7 +22,7 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
         responseObj = JSON.parse(response)
       } catch (ex) {
         console.error('Error parsing response', ex)
-        fromError('IdentityResolverParser', ex)
+        messageBus.encodeEmitError('IdentityResolverParser', ex)
       }
     }
     try {
@@ -33,7 +32,7 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
         expiresInHours(expirationHours),
         domain)
     } catch (ex) {
-      fromError('IdentityResolverStorage', ex)
+      messageBus.encodeEmitError('IdentityResolverStorage', ex)
     }
     successCallback(responseObj)
   }
@@ -46,7 +45,7 @@ function _responseReceived (storageHandler, domain, expirationHours, successCall
  * @return {{resolve: function(successCallback: function, errorCallback: function, additionalParams: Object), getUrl: function(additionalParams: Object)}}
  * @constructor
  */
-export function IdentityResolver (config, storageHandler, calls) {
+export function IdentityResolver (messageBus, config, storageHandler, calls) {
   try {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
@@ -76,7 +75,7 @@ export function IdentityResolver (config, storageHandler, calls) {
       if (cachedValue) {
         successCallback(JSON.parse(cachedValue))
       } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
+        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(messageBus, storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
       }
     }
     return {
@@ -86,21 +85,21 @@ export function IdentityResolver (config, storageHandler, calls) {
         } catch (e) {
           console.error('IdentityResolve', e)
           errorCallback()
-          fromError('IdentityResolve', e)
+          messageBus.encodeEmitError('IdentityResolve', e)
         }
       },
       getUrl: (additionalParams) => composeUrl(additionalParams)
     }
   } catch (e) {
     console.error('IdentityResolver', e)
-    fromError('IdentityResolver', e)
+    messageBus.encodeEmitError('IdentityResolver', e)
     return {
       resolve: (successCallback, errorCallback) => {
         errorCallback()
-        fromError('IdentityResolver.resolve', e)
+        messageBus.encodeEmitError('IdentityResolver.resolve', e)
       },
       getUrl: () => {
-        fromError('IdentityResolver.getUrl', e)
+        messageBus.encodeEmitError('IdentityResolver.getUrl', e)
       }
     }
   }
