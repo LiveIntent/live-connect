@@ -6,17 +6,14 @@
  * @property {(function)} off
  */
 
-export function fromBus (bus) {
+export function fromBusReset (bus) {
   const e = new E()
   e.size = bus.size
   e.h = bus.h
   e.q = bus.q
-  return e
-}
-
-export function reset (bus) {
   bus.h = {}
   bus.q = {}
+  return e
 }
 
 export default function E (replaySize) {
@@ -116,6 +113,10 @@ E.prototype = {
   setGlobal: function (other) {
     this.global = other
     return this
+  },
+
+  unsetGlobal: function () {
+    delete this.global
   },
 
   setCurrent: function (other) {

@@ -1,4 +1,4 @@
-import E, { fromBus, reset } from './replayemitter'
+import E, { fromBusReset } from './replayemitter'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
 
@@ -31,14 +31,15 @@ export function init (size, errorCallback, bus) {
         if (isFunction(window[C.EVENT_BUS_NAMESPACE].hierarchical)) {
           const globalBus = window[C.EVENT_BUS_NAMESPACE]
           const localBusNew = bus || new E(size)
+          const localBusOld = window[C.EVENT_BUS_NAMESPACE].current
           localBusNew.setGlobal(globalBus)
+          localBusOld.unsetGlobal()
           globalBus.setCurrent(localBusNew)
           return localBusNew
         } else {
           // We keep the old global bus' state in the new global bus.
           const globalBusOld = window[C.EVENT_BUS_NAMESPACE]
-          const globalBusNew = fromBus(globalBusOld)
-          reset(globalBusOld)
+          const globalBusNew = fromBusReset(globalBusOld)
           const localBusNew = bus || new E(size)
           localBusNew.setGlobal(globalBusNew)
           globalBusNew.setCurrent(localBusNew)
