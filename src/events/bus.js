@@ -1,24 +1,28 @@
 import E from './replayemitter'
+import * as C from '../utils/consts'
+
+export function local (size) {
+  return new E(size)
+}
 
 /**
  * @param {number} size
  * @param {function} errorCallback
  * @return {ReplayEmitter}
  */
-export function init (busName, size, errorCallback) {
+export function init (size, errorCallback) {
   if (!size) {
     size = 5
   }
-
   try {
     console.log('events.bus.init')
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
     }
-    if (window && !window[busName]) {
-      window[busName] = new E(size)
+    if (window && !window[C.EVENT_BUS_NAMESPACE]) {
+      window[C.EVENT_BUS_NAMESPACE] = new E(size)
     }
-    return window[busName]
+    return window[C.EVENT_BUS_NAMESPACE]
   } catch (e) {
     console.error('events.bus.init', e)
     errorCallback(e)

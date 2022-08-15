@@ -576,7 +576,7 @@ function StateWrapper(messageBus, state) {
     }
   }
   function _combineWith(newInfo) {
-    return new StateWrapper(merge(state, newInfo));
+    return new StateWrapper(messageBus, merge(state, newInfo));
   }
   function _asTuples() {
     var array = [];
@@ -1223,50 +1223,41 @@ E.prototype = {
   }
 };
 
-function MessageBus(globalName, localName, errorCallback, size) {
+function LocalMessageBus(size) {
   if (!size) {
     size = 5;
   }
-  try {
-    if (!window) {
-      errorCallback(new Error('Bus can only be attached to the window, which is not present'));
-    }
-    if (window && !window[globalName]) {
-      window[globalName] = new E(size);
-    }
-    if (window && !window[localName]) {
-      window[localName] = new E(size);
-    }
-    return {
-      on: function on(name, callback, ctx) {
-        window && window[localName] && window[localName].on(name, callback, ctx);
-      },
-      once: function once(name, callback, ctx) {
-        window && window[localName] && window[localName].once(name, callback, ctx);
-      },
-      emit: function emit(name, message) {
-        window && window[localName] && window[localName].emit(name, message);
-        window && window[globalName] && window[globalName].emit(name, message);
-      },
-      emitError: function emitError(name, message) {
-        var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
-        var wrapped = new Error(message || e.message);
-        wrapped.stack = e.stack;
-        wrapped.name = name || 'unknown error';
-        wrapped.lineNumber = e.lineNumber;
-        wrapped.columnNumber = e.columnNumber;
-        this.emit(ERRORS_PREFIX, wrapped);
-      },
-      encodeEmitError: function encodeEmitError(name, exception) {
-        this.emitError(name, exception.message, exception);
-      },
-      off: function off(name, callback) {
-        window && window[localName] && window[localName].off(name, callback);
-      }
-    };
-  } catch (e) {
-    errorCallback(e);
-  }
+  var bus = new E(size);
+  return wrap(bus);
+}
+function wrap(bus) {
+  return {
+    on: function on(name, callback, ctx) {
+      bus.on(name, callback, ctx);
+    },
+    once: function once(name, callback, ctx) {
+      bus.once(name, callback, ctx);
+    },
+    emit: function emit(name, message) {
+      bus.emit(name, message);
+    },
+    emitError: function emitError(name, message) {
+      var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var wrapped = new Error(message || e.message);
+      wrapped.stack = e.stack;
+      wrapped.name = name || 'unknown error';
+      wrapped.lineNumber = e.lineNumber;
+      wrapped.columnNumber = e.columnNumber;
+      this.emit(ERRORS_PREFIX, wrapped);
+    },
+    encodeEmitError: function encodeEmitError(name, exception) {
+      this.emitError(name, exception.message, exception);
+    },
+    off: function off(name, callback) {
+      bus.off(name, callback);
+    },
+    underlying: bus
+  };
 }
 
 var hemStore = {};
@@ -1358,7 +1349,7 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       }
       return _processArgs(messageBus, args, pixelClient, postManagedState);
     };
-    return {
+    var lc = {
       push: _push,
       fire: function fire() {
         return _push({});
@@ -1369,15 +1360,16 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       resolutionCallUrl: resolver.getUrl,
       config: liveConnectConfig
     };
+    lc[EVENT_BUS_NAMESPACE] = messageBus;
+    return lc;
   } catch (x) {
     messageBus.emitError('LCConstruction', 'Failed to build LC', x);
   }
 }
-function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, externalMessageBus) {
   var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
   configuration.lcGlobalName = configuration.lcGlobalName || 'liQ';
-  configuration.lcLocalBusName = EVENT_BUS_NAMESPACE + '_' + configuration.lcGlobalName;
-  var messageBus = MessageBus(EVENT_BUS_NAMESPACE, configuration.lcLocalBusName);
+  var messageBus = externalMessageBus || LocalMessageBus();
   try {
     var queue = window[configuration.lcGlobalName] || [];
     window && (window[configuration.lcGlobalName] = _getInitializedLiveConnect(configuration, messageBus) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, messageBus) || queue);

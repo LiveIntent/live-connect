@@ -44,7 +44,7 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-import { MessageBus } from './events/message-bus'
+import { LocalMessageBus } from './events/message-bus'
 
 const hemStore = {}
 function _pushSingleEvent (messageBus, event, pixelClient, enrichedState) {
@@ -110,6 +110,7 @@ function _getInitializedLiveConnect (liveConnectConfig, messageBus) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
+        // TODO: use the message bus of the existing LC - caution: this can be an old API, adapter is required!
         messageBus.emitError('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window[liveConnectConfig.lcGlobalName]
@@ -149,15 +150,17 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const pixelClient = new PixelSender(messageBus, configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver(messageBus, postManagedState.data, storageHandler, callHandler)
     const _push = (...args) => _processArgs(messageBus, args, pixelClient, postManagedState)
-    return {
+    const lc = {
       push: _push,
       fire: () => _push({}),
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig
+      config: liveConnectConfig,
     }
+    lc[C.EVENT_BUS_NAMESPACE] = messageBus
+    return lc
   } catch (x) {
     console.error(x)
     messageBus.emitError('LCConstruction', 'Failed to build LC', x)
@@ -171,12 +174,11 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, externalMessageBus) {
   console.log('Initializing LiveConnect')
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   configuration.lcGlobalName = configuration.lcGlobalName || 'liQ'
-  configuration.lcLocalBusName = C.EVENT_BUS_NAMESPACE + '_' + configuration.lcGlobalName
-  const messageBus = MessageBus(C.EVENT_BUS_NAMESPACE, configuration.lcLocalBusName)
+  const messageBus = externalMessageBus || LocalMessageBus()
   try {
     const queue = window[configuration.lcGlobalName] || []
     window && (window[configuration.lcGlobalName] = _getInitializedLiveConnect(configuration, messageBus) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, messageBus) || queue)

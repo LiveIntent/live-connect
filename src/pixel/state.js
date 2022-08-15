@@ -234,7 +234,7 @@ export function StateWrapper (messageBus, state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper(merge(state, newInfo))
+    return new StateWrapper(messageBus, merge(state, newInfo))
   }
 
   /**
