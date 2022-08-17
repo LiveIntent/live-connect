@@ -104,18 +104,18 @@ function _processArgs (eventBus, args, pixelClient, enrichedState) {
  */
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
-    if (window && window[liveConnectConfig.lcGlobalName] && window[liveConnectConfig.lcGlobalName].ready) {
-      const mismatchedConfig = window[liveConnectConfig.lcGlobalName].config && _configMatcher(window[liveConnectConfig.lcGlobalName].config, liveConnectConfig)
+    if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
+      const mismatchedConfig = window[liveConnectConfig.globalVarName].config && _configMatcher(window[liveConnectConfig.globalVarName].config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
 
-        const eventBus = window[liveConnectConfig.lcGlobalName].eventBus || (window[C.EVENT_BUS_NAMESPACE] && wrap(window[C.EVENT_BUS_NAMESPACE]))
-        window[liveConnectConfig.lcGlobalName].eventBus = eventBus
+        const eventBus = window[liveConnectConfig.globalVarName].eventBus || (window[C.EVENT_BUS_NAMESPACE] && wrap(window[C.EVENT_BUS_NAMESPACE]))
+        window[liveConnectConfig.globalVarName].eventBus = eventBus
         eventBus.emitError('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
-      return window[liveConnectConfig.lcGlobalName]
+      return window[liveConnectConfig.globalVarName]
     }
   } catch (e) {
     console.error('Could not initialize error bus')
@@ -179,19 +179,19 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
 export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, externalEventBus) {
   console.log('Initializing LiveConnect')
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-  configuration.lcGlobalName = configuration.lcGlobalName || 'liQ'
+  configuration.globalVarName = configuration.globalVarName || 'liQ'
   const eventBus = externalEventBus || LocalEventBus()
   try {
-    const queue = window[configuration.lcGlobalName] || []
-    window && (window[configuration.lcGlobalName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)
+    const queue = window[configuration.globalVarName] || []
+    window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
-        window[configuration.lcGlobalName].push(queue[i])
+        window[configuration.globalVarName].push(queue[i])
       }
     }
   } catch (x) {
     console.error(x)
     eventBus.emitError('LCConstruction', 'Failed to build LC', x)
   }
-  return window[configuration.lcGlobalName]
+  return window[configuration.globalVarName]
 }

@@ -1226,7 +1226,7 @@ E.prototype = {
   }
 };
 
-function LocalMessageBus(size) {
+function LocalEventBus(size) {
   if (!size) {
     size = 5;
   }
@@ -1235,15 +1235,10 @@ function LocalMessageBus(size) {
 }
 function wrap(bus) {
   return {
-    on: function on(name, callback, ctx) {
-      bus.on(name, callback, ctx);
-    },
-    once: function once(name, callback, ctx) {
-      bus.once(name, callback, ctx);
-    },
-    emit: function emit(name, message) {
-      bus.emit(name, message);
-    },
+    on: bus.on,
+    once: bus.once,
+    emit: bus.emit,
+    off: bus.off,
     emitError: function emitError(name, message) {
       var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       var wrapped = new Error(message || e.message);
@@ -1256,19 +1251,16 @@ function wrap(bus) {
     encodeEmitError: function encodeEmitError(name, exception) {
       this.emitError(name, exception.message, exception);
     },
-    off: function off(name, callback) {
-      bus.off(name, callback);
-    },
     underlying: bus
   };
 }
 
 var hemStore = {};
-function _pushSingleEvent(messageBus, event, pixelClient, enrichedState) {
+function _pushSingleEvent(eventBus, event, pixelClient, enrichedState) {
   if (!event || !isObject(event)) {
-    messageBus.emitError('EventNotAnObject', 'Received event was not an object', new Error(event));
+    eventBus.emitError('EventNotAnObject', 'Received event was not an object', new Error(event));
   } else if (event.config) {
-    messageBus.emitError('StrayConfig', 'Received a config after LC has already been initialised', new Error(event));
+    eventBus.emitError('StrayConfig', 'Received a config after LC has already been initialised', new Error(event));
   } else {
     var combined = enrichedState.combineWith({
       eventSource: event
@@ -1290,67 +1282,69 @@ function _configMatcher(previousConfig, newConfig) {
     };
   }
 }
-function _processArgs(messageBus, args, pixelClient, enrichedState) {
+function _processArgs(eventBus, args, pixelClient, enrichedState) {
   try {
     args.forEach(function (arg) {
       var event = arg;
       if (isArray(event)) {
         event.forEach(function (e) {
-          return _pushSingleEvent(messageBus, e, pixelClient, enrichedState);
+          return _pushSingleEvent(eventBus, e, pixelClient, enrichedState);
         });
       } else {
-        _pushSingleEvent(messageBus, event, pixelClient, enrichedState);
+        _pushSingleEvent(eventBus, event, pixelClient, enrichedState);
       }
     });
   } catch (e) {
-    messageBus.emitError('LCPush', 'Failed sending an event', e);
+    eventBus.emitError('LCPush', 'Failed sending an event', e);
   }
 }
-function _getInitializedLiveConnect(liveConnectConfig, messageBus) {
+function _getInitializedLiveConnect(liveConnectConfig) {
   try {
-    if (window && window[liveConnectConfig.lcGlobalName] && window[liveConnectConfig.lcGlobalName].ready) {
-      var mismatchedConfig = window[liveConnectConfig.lcGlobalName].config && _configMatcher(window[liveConnectConfig.lcGlobalName].config, liveConnectConfig);
+    if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
+      var mismatchedConfig = window[liveConnectConfig.globalVarName].config && _configMatcher(window[liveConnectConfig.globalVarName].config, liveConnectConfig);
       if (mismatchedConfig) {
         var error = new Error();
         error.name = 'ConfigSent';
         error.message = 'Additional configuration received';
-        messageBus.emitError('LCDuplication', JSON.stringify(mismatchedConfig), error);
+        var eventBus = window[liveConnectConfig.globalVarName].eventBus || window[EVENT_BUS_NAMESPACE] && wrap(window[EVENT_BUS_NAMESPACE]);
+        window[liveConnectConfig.globalVarName].eventBus = eventBus;
+        eventBus.emitError('LCDuplication', JSON.stringify(mismatchedConfig), error);
       }
-      return window[liveConnectConfig.lcGlobalName];
+      return window[liveConnectConfig.globalVarName];
     }
   } catch (e) {
   }
 }
-function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, messageBus) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
   try {
-    var callHandler = CallHandler(messageBus, externalCallHandler);
+    var callHandler = CallHandler(eventBus, externalCallHandler);
     var configWithPrivacy = merge(liveConnectConfig, enrich$2(liveConnectConfig));
-    register(messageBus, configWithPrivacy, callHandler);
+    register(eventBus, configWithPrivacy, callHandler);
     var storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy;
-    var storageHandler = StorageHandler(messageBus, storageStrategy, externalStorageHandler);
+    var storageHandler = StorageHandler(eventBus, storageStrategy, externalStorageHandler);
     var reducer = function reducer(accumulator, func) {
-      return accumulator.combineWith(func(accumulator.data, storageHandler, messageBus));
+      return accumulator.combineWith(func(accumulator.data, storageHandler, eventBus));
     };
     var enrichers = [enrich, enrich$1];
     var managers = [resolve, resolve$1];
-    var enrichedState = enrichers.reduce(reducer, new StateWrapper(messageBus, configWithPrivacy));
+    var enrichedState = enrichers.reduce(reducer, new StateWrapper(eventBus, configWithPrivacy));
     var postManagedState = managers.reduce(reducer, enrichedState);
     var syncContainerData = merge(configWithPrivacy, {
       peopleVerifiedId: postManagedState.data.peopleVerifiedId
     });
     var onPixelLoad = function onPixelLoad() {
-      return messageBus.emit(PIXEL_SENT_PREFIX, syncContainerData);
+      return eventBus.emit(PIXEL_SENT_PREFIX, syncContainerData);
     };
     var onPixelPreload = function onPixelPreload() {
-      return messageBus.emit(PRELOAD_PIXEL, '0');
+      return eventBus.emit(PRELOAD_PIXEL, '0');
     };
-    var pixelClient = new PixelSender(messageBus, configWithPrivacy, callHandler, onPixelLoad, onPixelPreload);
-    var resolver = IdentityResolver(messageBus, postManagedState.data, storageHandler, callHandler);
+    var pixelClient = new PixelSender(eventBus, configWithPrivacy, callHandler, onPixelLoad, onPixelPreload);
+    var resolver = IdentityResolver(eventBus, postManagedState.data, storageHandler, callHandler);
     var _push = function _push() {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
-      return _processArgs(messageBus, args, pixelClient, postManagedState);
+      return _processArgs(eventBus, args, pixelClient, postManagedState);
     };
     var lc = {
       push: _push,
@@ -1361,30 +1355,30 @@ function _standardInitialization(liveConnectConfig, externalStorageHandler, exte
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig
+      config: liveConnectConfig,
+      eventBus: eventBus
     };
-    lc[EVENT_BUS_NAMESPACE] = messageBus;
     return lc;
   } catch (x) {
-    messageBus.emitError('LCConstruction', 'Failed to build LC', x);
+    eventBus.emitError('LCConstruction', 'Failed to build LC', x);
   }
 }
-function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, externalMessageBus) {
+function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler, externalEventBus) {
   var configuration = isObject(liveConnectConfig) && liveConnectConfig || {};
-  configuration.lcGlobalName = configuration.lcGlobalName || 'liQ';
-  var messageBus = externalMessageBus || LocalMessageBus();
+  configuration.globalVarName = configuration.globalVarName || 'liQ';
+  var eventBus = externalEventBus || LocalEventBus();
   try {
-    var queue = window[configuration.lcGlobalName] || [];
-    window && (window[configuration.lcGlobalName] = _getInitializedLiveConnect(configuration, messageBus) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, messageBus) || queue);
+    var queue = window[configuration.globalVarName] || [];
+    window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue);
     if (isArray(queue)) {
       for (var i = 0; i < queue.length; i++) {
-        window[configuration.lcGlobalName].push(queue[i]);
+        window[configuration.globalVarName].push(queue[i]);
       }
     }
   } catch (x) {
-    messageBus.emitError('LCConstruction', 'Failed to build LC', x);
+    eventBus.emitError('LCConstruction', 'Failed to build LC', x);
   }
-  return window[configuration.lcGlobalName];
+  return window[configuration.globalVarName];
 }
 
 function _emit(prefix, message) {
