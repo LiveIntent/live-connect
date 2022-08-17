@@ -44,7 +44,7 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-import { LocalEventBus } from './events/event-bus'
+import { LocalEventBus, wrap } from './events/event-bus'
 
 const hemStore = {}
 function _pushSingleEvent (eventBus, event, pixelClient, enrichedState) {
@@ -102,7 +102,7 @@ function _processArgs (eventBus, args, pixelClient, enrichedState) {
  * @return {StandardLiveConnect|null}
  * @private
  */
-function _getInitializedLiveConnect (liveConnectConfig, eventBus) {
+function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window[liveConnectConfig.lcGlobalName] && window[liveConnectConfig.lcGlobalName].ready) {
       const mismatchedConfig = window[liveConnectConfig.lcGlobalName].config && _configMatcher(window[liveConnectConfig.lcGlobalName].config, liveConnectConfig)
@@ -110,7 +110,9 @@ function _getInitializedLiveConnect (liveConnectConfig, eventBus) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
-        // TODO: use the message bus of the existing LC - caution: this can be an old API, adapter is required!
+
+        const eventBus = window[liveConnectConfig.lcGlobalName].eventBus || (window[C.EVENT_BUS_NAMESPACE] && wrap(window[C.EVENT_BUS_NAMESPACE]))
+        window[liveConnectConfig.lcGlobalName].eventBus = eventBus
         eventBus.emitError('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window[liveConnectConfig.lcGlobalName]
@@ -181,7 +183,7 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
   const eventBus = externalEventBus || LocalEventBus()
   try {
     const queue = window[configuration.lcGlobalName] || []
-    window && (window[configuration.lcGlobalName] = _getInitializedLiveConnect(configuration, eventBus) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)
+    window && (window[configuration.lcGlobalName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window[configuration.lcGlobalName].push(queue[i])
