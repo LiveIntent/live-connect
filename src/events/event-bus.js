@@ -1,7 +1,7 @@
 import E from './replayemitter'
 import * as C from '../utils/consts'
 
-export function LocalMessageBus (size) {
+export function LocalEventBus (size) {
   if (!size) {
     size = 5
   }
@@ -9,7 +9,7 @@ export function LocalMessageBus (size) {
   return wrap(bus)
 }
 
-export function GlobalMessageBus(name, size, errorCallback) {
+export function GlobalEventBus(name, size, errorCallback) {
   if (!size) {
     size = 5
   }
