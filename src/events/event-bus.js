@@ -30,11 +30,15 @@ export function GlobalEventBus(name, size, errorCallback) {
 
 export function wrap(bus) {
   return {
-    on: bus.on,
-    once: bus.once, 
-    emit: bus.emit,
-    off: bus.off,
-
+    on: function (name, callback, ctx) {
+      bus.on(name, callback, ctx)
+    },
+    once: function (name, callback, ctx) {
+      bus.once(name, callback, ctx)
+    },
+    emit: function (name, message) {
+      bus.emit(name, message)
+    },
     emitError: function (name, message, e = {}) {
       const wrapped = new Error(message || e.message)
       wrapped.stack = e.stack
@@ -45,6 +49,9 @@ export function wrap(bus) {
     },
     encodeEmitError (name, exception) {
       this.emitError(name, exception.message, exception)
+    },
+    off: function (name, callback) {
+      bus.off(name, callback)
     },
     underlying: bus
   }

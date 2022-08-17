@@ -1232,10 +1232,15 @@ function LocalEventBus(size) {
 }
 function wrap(bus) {
   return {
-    on: bus.on,
-    once: bus.once,
-    emit: bus.emit,
-    off: bus.off,
+    on: function on(name, callback, ctx) {
+      bus.on(name, callback, ctx);
+    },
+    once: function once(name, callback, ctx) {
+      bus.once(name, callback, ctx);
+    },
+    emit: function emit(name, message) {
+      bus.emit(name, message);
+    },
     emitError: function emitError(name, message) {
       var e = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       var wrapped = new Error(message || e.message);
@@ -1247,6 +1252,9 @@ function wrap(bus) {
     },
     encodeEmitError: function encodeEmitError(name, exception) {
       this.emitError(name, exception.message, exception);
+    },
+    off: function off(name, callback) {
+      bus.off(name, callback);
     },
     underlying: bus
   };
