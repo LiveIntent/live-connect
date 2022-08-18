@@ -16,7 +16,6 @@ const cookies = Cookies.withConverter({
   read: function (value, name) {
     try {
       const result = Cookies.converter.read(value, name)
-      console.log('result', result)
       if (result === undefined) {
         return null
       } else {
