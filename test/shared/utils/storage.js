@@ -8,7 +8,7 @@
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
 import Cookies from 'js-cookie'
-import * as emitter from 'live-connect-js/src/utils/emitter'
+import * as emitter from '../../../src/utils/emitter'
 
 let _localStorageIsEnabled = null
 
