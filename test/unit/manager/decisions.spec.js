@@ -42,8 +42,8 @@ describe('DecisionsManager for stored decisions', () => {
 
   it('should return unique decision ids', function () {
     const decisionId = uuid()
-    storage.setCookie('lidids.123', decisionId, { domain: 'something.example.com' })
-    storage.setCookie('lidids.123', decisionId, { domain: 'www.something.example.com' })
+    storage.setCookie('lidids.123', decisionId, undefined, undefined, 'something.example.com')
+    storage.setCookie('lidids.123', decisionId, undefined, undefined, 'www.something.example.com')
     const resolutionResult = decisions.resolve({}, storage)
     expect(resolutionResult.decisionIds).to.eql([decisionId])
   })
