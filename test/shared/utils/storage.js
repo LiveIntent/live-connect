@@ -15,10 +15,16 @@ let _localStorageIsEnabled = null
 const cookies = Cookies.withConverter({
   read: function (value, name) {
     try {
-      return Cookies.converter.read(value, name)
+      const result = Cookies.converter.read(value, name)
+      console.log('result', result)
+      if (result === undefined) {
+        return null
+      } else {
+        return result
+      }
     } catch (e) {
       emitter.error('CookieReadError', `Failed reading cookie ${name}`, e)
-      return undefined // default implementation will return undefined if cookie is not found
+      return null
     }
   }
 })
@@ -58,7 +64,11 @@ function _checkLocalStorage () {
  * @returns {string|null}
  */
 export function getCookie (key) {
-  return cookies.get(key)
+  const result = cookies.get(key)
+  if (result === undefined) {
+    return null
+  }
+  return result
 }
 
 /**
@@ -89,7 +99,7 @@ export function getDataFromLocalStorage (key) {
 export function findSimilarCookies (keyLike) {
   try {
     const allCookies = cookies.get()
-    return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== undefined).map(key => allCookies[key])
+    return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
   } catch (e) {
     emitter.error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
     return []
@@ -99,13 +109,25 @@ export function findSimilarCookies (keyLike) {
 /**
  * @param {string} key
  * @param {string} value
- * @param {string} expires
+ * @param {string|number|date} expires
  * @param {string} sameSite
  * @param {string} domain
  * @returns void
  */
 export function setCookie (key, value, expires, sameSite, domain) {
-  cookies.set(key, value, { domain: domain, expires: expires, samesite: sameSite })
+  if (expires) {
+    let expiresDate
+    if (typeof expires === 'string') {
+      expiresDate = new Date(expires)
+    } else if (typeof expires === 'number') {
+      expiresDate = new Date(Date.now() + expires * 864e5)
+    } else {
+      expiresDate = expires
+    }
+    cookies.set(key, value, { domain: domain, expires: expiresDate, samesite: sameSite })
+  } else {
+    cookies.set(key, value, { domain: domain, samesite: sameSite })
+  }
 }
 
 /**
@@ -115,5 +137,16 @@ export function setCookie (key, value, expires, sameSite, domain) {
 export function removeDataFromLocalStorage (key) {
   if (localStorageIsEnabled()) {
     window.localStorage.removeItem(key)
+  }
+}
+
+/**
+ * @param {string} key
+ * @param {string} value
+ * @returns {string|null}
+ */
+export function setDataInLocalStorage (key, value) {
+  if (localStorageIsEnabled()) {
+    window.localStorage.setItem(key, value)
   }
 }
