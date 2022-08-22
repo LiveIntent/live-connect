@@ -7,10 +7,26 @@
  * @property {(boolean|undefined)} [httponly]
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
-import * as cookies from 'browser-cookies'
+import Cookies from 'js-cookie'
 import * as emitter from '../../../src/utils/emitter'
 
 let _localStorageIsEnabled = null
+
+const cookies = Cookies.withConverter({
+  read: function (value, name) {
+    try {
+      const result = Cookies.converter.read(value, name)
+      if (result === undefined) {
+        return null
+      } else {
+        return result
+      }
+    } catch (e) {
+      emitter.error('CookieReadError', `Failed reading cookie ${name}`, e)
+      return null
+    }
+  }
+})
 
 /**
  * @returns {boolean}
@@ -29,9 +45,9 @@ export function localStorageIsEnabled () {
  */
 function _checkLocalStorage () {
   let enabled = false
-  const key = '__live-connect-localstorage-probe'
   try {
     if (window && window.localStorage) {
+      const key = Math.random().toString()
       window.localStorage.setItem(key, key)
       enabled = window.localStorage.getItem(key) === key
       window.localStorage.removeItem(key)
@@ -47,7 +63,11 @@ function _checkLocalStorage () {
  * @returns {string|null}
  */
 export function getCookie (key) {
-  return cookies.get(key)
+  const result = cookies.get(key)
+  if (result === undefined) {
+    return null
+  }
+  return result
 }
 
 /**
@@ -76,30 +96,37 @@ export function getDataFromLocalStorage (key) {
  * @return {[String]}
  */
 export function findSimilarCookies (keyLike) {
-  const ret = []
   try {
-    const allCookies = cookies.all()
-    for (const cookieName in allCookies) {
-      if (allCookies[cookieName] && cookieName.indexOf(keyLike) >= 0) {
-        ret.push(cookies.get(cookieName))
-      }
-    }
+    const allCookies = cookies.get()
+    return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
   } catch (e) {
     emitter.error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
+    return []
   }
-  return ret
 }
 
 /**
  * @param {string} key
  * @param {string} value
- * @param {number} expires
+ * @param {string|number|date} expires
  * @param {string} sameSite
  * @param {string} domain
  * @returns void
  */
 export function setCookie (key, value, expires, sameSite, domain) {
-  cookies.set(key, value, { domain: domain, expires: expires, samesite: sameSite })
+  if (expires) {
+    let expiresDate
+    if (typeof expires === 'string') {
+      expiresDate = new Date(expires)
+    } else if (typeof expires === 'number') {
+      expiresDate = new Date(Date.now() + expires * 864e5)
+    } else {
+      expiresDate = expires
+    }
+    cookies.set(key, value, { domain: domain, expires: expiresDate, samesite: sameSite })
+  } else {
+    cookies.set(key, value, { domain: domain, samesite: sameSite })
+  }
 }
 
 /**
