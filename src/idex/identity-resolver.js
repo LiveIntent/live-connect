@@ -1,7 +1,7 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
 import { expiresInHours, asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from '../utils/types'
-import { DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
+import { DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
 import { base64UrlEncode } from '../utils/b64'
 
 const IDEX_STORAGE_KEY = '__li_idex_cache'
@@ -56,29 +56,55 @@ export function IdentityResolver (config, storageHandler, calls) {
     const publisherId = idexConfig.publisherId || 'any'
     const url = idexConfig.url || DEFAULT_IDEX_URL
     const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
+    const requestedAttributes = idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
+
     const tuples = []
     tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId))
     tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString))
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
     tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, v => v === 1))
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent))
+
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
+
+    const attributeResolutionAllowed = (attribute) => {
+      if (attribute === 'uid2') {
+        return !config.privacyMode
+      } else {
+        return true
+      }
+    }
+
+    requestedAttributes.filter(attributeResolutionAllowed).forEach(requestedAttribute => {
+      tuples.push(asStringParam('resolve', requestedAttribute))
+    })
+
+    const enrichUnifiedId = (response) => {
+      if (response && response.nonId && !response.unifiedId) {
+        response.unifiedId = response.nonId
+        return response
+      } else {
+        return response
+      }
+    }
 
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
       const params = toParams(originalParams)
       return `${url}/${source}/${publisherId}${params}`
     }
+
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
       const cachedValue = storageHandler.get(_cacheKey(additionalParams))
       if (cachedValue) {
-        successCallback(JSON.parse(cachedValue))
+        successCallback(enrichUnifiedId(JSON.parse(cachedValue)))
       } else {
         calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout)
       }
     }
+
     return {
       resolve: (successCallback, errorCallback, additionalParams) => {
         try {
