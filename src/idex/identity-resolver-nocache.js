@@ -7,5 +7,5 @@ import { noopCache, makeIdentityResolver } from './common'
  * @constructor
  */
 export function IdentityResolver (config, calls) {
-  return makeIdentityResolver(config || {}, calls, noopCache())
+  return makeIdentityResolver(config || {}, calls, noopCache)
 }

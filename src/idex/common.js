@@ -45,16 +45,14 @@ export function storageHandlerBackedCache (expirationHours, domain, storageHandl
 }
 
 /**
- * @return {Cache}
+ * @type {Cache}
  */
-export function noopCache () {
-  return {
-    get: (key) => {
-      return null
-    },
-    set: (key, value) => {
+export const noopCache = {
+  get: (key) => {
+    return null
+  },
+  set: (key, value) => {
 
-    }
   }
 }
 
@@ -65,8 +63,8 @@ export function noopCache () {
 
 /**
  * @param {State} config
- * @param {StorageHandler} storageHandler
  * @param {CallHandler} calls
+ * @param {Cache} cache
  * @return {IdentityResolver}
  */
 export function makeIdentityResolver (config, calls, cache) {
