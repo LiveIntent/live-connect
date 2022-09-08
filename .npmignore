@@ -6,4 +6,4 @@ local.log
 .nyc_output
 *.cid
 coverage.lcov
-driver-logs
+driver-logs/wdio-chromedriver.log
