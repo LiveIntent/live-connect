@@ -122,7 +122,7 @@ export function makeIdentityResolver (config, calls, cache) {
         let responseObj = {}
         if (response) {
           try {
-            responseObj = JSON.parse(response)
+            responseObj = enrichUnifiedId(JSON.parse(response))
           } catch (ex) {
             console.error('Error parsing response', ex)
             fromError('IdentityResolverParser', ex)
@@ -136,7 +136,8 @@ export function makeIdentityResolver (config, calls, cache) {
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
       const cachedValue = cache.get(additionalParams)
       if (cachedValue) {
-        successCallback(enrichUnifiedId(JSON.parse(cachedValue)))
+        // no need to enrich as the cached value was already enriched
+        successCallback(JSON.parse(cachedValue))
       } else {
         calls.ajaxGet(
           composeUrl(additionalParams),
