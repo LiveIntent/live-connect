@@ -37,7 +37,7 @@ describe('IdentityResolver without cache', () => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?resolve=nonId')
       expect(responseAsJson).to.be.eql(response)
       expect(callCount).to.be.eql(1)
       done()
@@ -50,7 +50,7 @@ describe('IdentityResolver without cache', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&resolve=nonId')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -63,7 +63,7 @@ describe('IdentityResolver without cache', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&resolve=nonId&key=value')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -76,7 +76,7 @@ describe('IdentityResolver without cache', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&qf=0.1&resolve=age&resolve=gender')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&resolve=nonId&qf=0.1&resolve=age&resolve=gender')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -89,7 +89,7 @@ describe('IdentityResolver without cache', () => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/123?duid=987&key=value')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/123?duid=987&resolve=nonId&key=value')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -101,7 +101,7 @@ describe('IdentityResolver without cache', () => {
   it('should not attach an empty tuple', function (done) {
     const identityResolver = IdentityResolver({ peopleVerifiedId: null }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?resolve=nonId')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql({})
       done()
@@ -126,7 +126,7 @@ describe('IdentityResolver without cache', () => {
       ]
     }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pubcid=exexex&some-id=AnotherId')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pubcid=exexex&some-id=AnotherId&resolve=nonId')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -144,7 +144,7 @@ describe('IdentityResolver without cache', () => {
       usPrivacyString: 'usPrivacyString'
     }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent&resolve=nonId')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -162,7 +162,7 @@ describe('IdentityResolver without cache', () => {
       usPrivacyString: 'usPrivacyString'
     }, calls)
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&n3pc=1&gdpr_consent=gdprConsent')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&n3pc=1&gdpr_consent=gdprConsent&resolve=nonId')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()

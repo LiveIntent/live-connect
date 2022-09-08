@@ -62,7 +62,7 @@ describe('MinimalLiveConnect', () => {
 
   it('should return the resolution Url', function () {
     const lc = MinimalLiveConnect({}, storage, calls)
-    expect(lc.resolutionCallUrl()).to.eql('https://idx.liadm.com/idex/unknown/any')
+    expect(lc.resolutionCallUrl()).to.eql('https://idx.liadm.com/idex/unknown/any?resolve=nonId')
   })
 
   it('should expose the config', function () {

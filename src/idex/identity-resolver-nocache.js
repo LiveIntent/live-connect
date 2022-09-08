@@ -1,14 +1,23 @@
 import { toParams } from '../utils/url'
 import { fromError } from '../utils/emitter'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from '../utils/types'
-import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL } from '../utils/consts'
+import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
+
+function _enrichUnifiedId (response) {
+  if (response && response.nonId && !response.unifiedId) {
+    response.unifiedId = response.nonId
+    return response
+  } else {
+    return response
+  }
+}
 
 function _responseReceived (successCallback) {
   return response => {
     let responseObj = {}
     if (response) {
       try {
-        responseObj = JSON.parse(response)
+        responseObj = _enrichUnifiedId(JSON.parse(response))
       } catch (ex) {
         fromError('IdentityResolverParser', ex)
       }
@@ -32,14 +41,29 @@ export function IdentityResolver (config, calls) {
     const publisherId = idexConfig.publisherId || 'any'
     const url = idexConfig.url || DEFAULT_IDEX_URL
     const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
+    const requestedAttributes = idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
+
     const tuples = []
     tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId))
     tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString))
     tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
     tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, v => v === 1))
     tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent))
+
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
+    })
+
+    const attributeResolutionAllowed = (attribute) => {
+      if (attribute === 'uid2') {
+        return !config.privacyMode
+      } else {
+        return true
+      }
+    }
+
+    requestedAttributes.filter(attributeResolutionAllowed).forEach(requestedAttribute => {
+      tuples.push(asStringParam('resolve', requestedAttribute))
     })
 
     const composeUrl = (additionalParams) => {
