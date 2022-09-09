@@ -135,7 +135,7 @@ Example:
 
 ##### `identityResolutionConfig.expirationHours` [Optional, HasDefault]
 By default, 1 hour.
-This configuration parameter determines the expiration of a result stored in previous `liveConnect.resolve (...)` calls. The result is stored in a cookie. 
+This configuration parameter determines the expiration of a result stored in previous `liveConnect.resolve (...)` calls. The result is stored in a cookie.
 Example:
 ```javascript
 {
@@ -148,7 +148,7 @@ sets the cookie expiration time to 4 hours, which means that in a given browser,
 
 ##### `identityResolutionConfig.ajaxTimeout` [Optional, HasDefault]
 By default, 5000 milliseconds.
-This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. 
+This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked.
 Example:
 ```javascript
 {
@@ -182,6 +182,19 @@ Example:
   }
 }
 ```
+
+##### `identityResolutionConfig.requestedAttributes` [Optional, HasDefault]
+Attributes that should be resolved by the identity resolution endpoint.
+There is a special attribute 'nonId', that will cause both 'unifiedId' and 'nonId' to be resolved.
+Example:
+```javascript
+{
+  identityResolutionConfig: {
+    requestedAttributes: ['nonId', 'uid2']
+  }
+}
+```
+
 ##### `contextSelectors` [Optional]
 The context selectors to collect from the current page.
 Example:

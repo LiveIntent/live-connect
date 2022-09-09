@@ -1,16 +1,16 @@
 # LiveConnect
 
 [![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)
-[![CircleCI](https://circleci.com/gh/LiveIntent/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/LiveIntent/live-connect/tree/master) 
-[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect) 
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/) 
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript) 
+[![CircleCI](https://circleci.com/gh/LiveIntent/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/LiveIntent/live-connect/tree/master)
+[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript)
 [![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)
 [![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)
 
 # Main concepts
-LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sending that information to a defined endpoint which is responsible for gathering and processing that data. 
-What LiveConnect provides is a simple interface to collect the identifiers from a page, and collect user interactions along with those identifiers. 
+LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sending that information to a defined endpoint which is responsible for gathering and processing that data.
+What LiveConnect provides is a simple interface to collect the identifiers from a page, and collect user interactions along with those identifiers.
 To see what kind of data is being sent, check [what is being sent](#what-is-being-sent).
 
 ## Quick start
@@ -56,11 +56,11 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 - `fire` just fires a pixel, and can be considered as a simple page view.
 - `peopleVerifiedId` returns the most likely first party cookie that can be used for identity resolution.
 - `ready` flag, saying that the LC was loaded and ready, can be used when including LiveConnect as a global var on the window object.
-- `resolve` function accepts a success callback, an error callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The third parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match it's name in the cookie jar, or LocalStorage key.
+- `resolve` function accepts a success callback, an error callback and an additional object with key value pairs. Of course, errors during resolution will be emitted on the EventBus and sent to the collector. The third parameter is `additionalParameters` which is an object, and will be attached to the IdentityResolution request, split into key-value pairs. The purpose of this object is to include key-value pairs in the request, e.g. for identifiers that cannot be found in the cookie jar, or in LocalStorage, or simply there's a requirement for a certain identifier to be represented under a specific key which doesn't match its name in the cookie jar, or LocalStorage key.
 - `resolutionCallUrl` function returns the URL to be called in order to receive the resolution to a stable identifier.
 
 ### Overriding the StorageHandler and CallHandler
-LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on it's own. 
+LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on it's own.
 
 The StorageHandler is an object with functions that adheres to the signature:
 - `function localStorageIsEnabled ()`
@@ -72,13 +72,13 @@ The StorageHandler is an object with functions that adheres to the signature:
 - `function setDataInLocalStorage (key, value)`
 
 The CallHandler is another object with functions:
-- `function ajaxGet (uri, responseHandler, fallback, timeout)` 
+- `function ajaxGet (uri, responseHandler, fallback, timeout)`
 where the `responseHandler` is a `function(body, response)`,
 and the `fallback` is a `function()`
 - `function pixelGet (uri, onload)`
 where the `onload` is a `function()`
 
-If one of the functions is not available in the external handler, LiveConnect will fallback to it's own implementation to ensure that the functionality isn't being affected.
+If one of the functions is not available in the external handler, LiveConnect will fall back to its own implementation to ensure that the functionality isn't being affected.
 
 One way to achieve that is, for example, to initialize LC like this:
 ```javascript
@@ -95,14 +95,14 @@ const storageHandler = {
 }
 const callsHandler = {
   ajaxGet: (url, responseHandler, fallback, timeout) => {
-   //  
+   //
   },
   pixelGet: (url, onload) => {
    //
   }
 }
 const lc = LiveConnect(configOptions, storageHandler, ajaxHandler)
-``` 
+```
 
 ### Configuration options
 Considering the snippet above, LiveConnect accepts a JSON with the config which determines its behaviour.
@@ -122,7 +122,7 @@ How long those identifiers will live is configured in the `config.expirationDays
 In case of localStorage, Identifiers Manager and it's underlying `utils/storage.js` helper will ensure that on the next load, the entry is removed from localstorage in case it's obsolete.
 
 ### People Verified manager
-`managers/people-verified.js` makes sure that either of the selected identifiers is stored as the `_li_duid` key in local storage, as some integrations are using the information stored there. 
+`managers/people-verified.js` makes sure that either of the selected identifiers is stored as the `_li_duid` key in local storage, as some integrations are using the information stored there.
 
 ## Enrichments
 The `enrichers` folder contains code responsible for extracting specific information about the page visit when the module is loaded. It makes sure that the extracted data is stored in the state which contains data which is sent as a single pixel.
@@ -133,7 +133,7 @@ The `enrichers` folder contains code responsible for extracting specific informa
 ### Identifiers enrichment
 `enrichers/identifiers.js` is responsible for reading the `identifiersToResolve` configuration parameter to read any additional identifiers that customers want to share with us.
 
-## Messaging between components via EventBus (`__li__evt_bus`) 
+## Messaging between components via EventBus (`__li__evt_bus`)
 LiveConnect exposes an object on the window level (`window.__li_evt_bus`) which is responsible for communicating various information based on different fields of interests.
 For example, there are three topics which anyone can hook to, and receive information about:
 - errors, on the `li_errors` topic
