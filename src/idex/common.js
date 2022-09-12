@@ -16,9 +16,9 @@ import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUT
 export function storageHandlerBackedCache (expirationHours, domain, storageHandler) {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-  function _cacheKey (additionalParams) {
-    if (additionalParams) {
-      const suffix = base64UrlEncode(JSON.stringify(additionalParams))
+  function _cacheKey (rawKey) {
+    if (rawKey) {
+      const suffix = base64UrlEncode(JSON.stringify(rawKey))
       return `${IDEX_STORAGE_KEY}_${suffix}`
     } else {
       return IDEX_STORAGE_KEY
@@ -27,7 +27,12 @@ export function storageHandlerBackedCache (expirationHours, domain, storageHandl
 
   return {
     get: (key) => {
-      return storageHandler.get(_cacheKey(key))
+      const cachedValue = storageHandler.get(_cacheKey(key))
+      if (cachedValue) {
+        return JSON.parse(cachedValue)
+      } else {
+        return cachedValue
+      }
     },
     set: (key, value) => {
       try {
@@ -135,7 +140,7 @@ export function makeIdentityResolver (config, calls, cache) {
       const cachedValue = cache.get(additionalParams)
       if (cachedValue) {
         // no need to enrich as the cached value was already enriched
-        successCallback(JSON.parse(cachedValue))
+        successCallback(cachedValue)
       } else {
         calls.ajaxGet(
           composeUrl(additionalParams),
