@@ -80,7 +80,7 @@
     "mock-browser": "^0.92.14",
     "mock-require": "^3.0.3",
     "nyc": "^15.1.0",
-    "release-it": "^14.0.2",
+    "release-it": "^15.4.1",
     "rollup": "^2.18.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-cleaner": "^1.0.0",
