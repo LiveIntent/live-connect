@@ -185,7 +185,7 @@ Example:
 
 ##### `identityResolutionConfig.requestedAttributes` [Optional, HasDefault]
 Attributes that should be resolved by the identity resolution endpoint.
-There is a special attribute 'nonId', that will cause both 'unifiedId' and 'nonId' to be resolved.
+For backwards compatibility reasons, specifying 'nonId' will result in resolution of both 'unifiedId' and 'nonId'
 Example:
 ```javascript
 {
