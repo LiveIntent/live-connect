@@ -22,6 +22,12 @@
     "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "lint": "eslint 'src/**/*.js' 'test/**/*.js'",
     "fix-js": "eslint 'src/**/*.js' 'test/**/*.js' --fix || exit 0",
+    "release:ci:prepatch": "release-it patch --preRelease=alpha --ci",
+    "release:ci:preminor": "release-it minor --preRelease=alpha --ci",
+    "release:ci:premajor": "release-it major --preRelease=alpha --ci",
+    "release:ci:bump-prerelease": "release-it --preRelease --ci",
+    "release:ci:alpha->beta": "release-it --preRelease=beta --ci",
+    "release:ci:beta->rc": "release-it --preRelease=rc --ci",
     "release:ci:patch": "release-it patch --ci",
     "release:ci:minor": "release-it minor --ci",
     "release:ci:major": "release-it major --ci"
