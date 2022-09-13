@@ -105,15 +105,6 @@ export function makeIdentityResolver (config, calls, cache) {
       tuples.push(asStringParam('resolve', requestedAttribute))
     })
 
-    const enrichUnifiedId = (response) => {
-      if (response && response.nonId && !response.unifiedId) {
-        response.unifiedId = response.nonId
-        return response
-      } else {
-        return response
-      }
-    }
-
     const composeUrl = (additionalParams) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
       const params = toParams(originalParams)
@@ -125,7 +116,7 @@ export function makeIdentityResolver (config, calls, cache) {
         let responseObj = {}
         if (response) {
           try {
-            responseObj = enrichUnifiedId(JSON.parse(response))
+            responseObj = JSON.parse(response)
           } catch (ex) {
             console.error('Error parsing response', ex)
             fromError('IdentityResolverParser', ex)

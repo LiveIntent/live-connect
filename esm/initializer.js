@@ -107,6 +107,7 @@ var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
 var DEFAULT_IDEX_EXPIRATION_HOURS = 1;
 var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
+var DEFAULT_REQUESTED_ATTRIBUTES = ['nonId'];
 
 function _emit(prefix, message) {
   window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
@@ -1065,67 +1066,105 @@ function enrich$2(state) {
   } else return {};
 }
 
-var IDEX_STORAGE_KEY = '__li_idex_cache';
-function _cacheKey(additionalParams) {
-  if (additionalParams) {
-    var suffix = base64UrlEncode(JSON.stringify(additionalParams));
-    return "".concat(IDEX_STORAGE_KEY, "_").concat(suffix);
-  } else {
-    return IDEX_STORAGE_KEY;
+function storageHandlerBackedCache(expirationHours, domain, storageHandler) {
+  var IDEX_STORAGE_KEY = '__li_idex_cache';
+  function _cacheKey(rawKey) {
+    if (rawKey) {
+      var suffix = base64UrlEncode(JSON.stringify(rawKey));
+      return "".concat(IDEX_STORAGE_KEY, "_").concat(suffix);
+    } else {
+      return IDEX_STORAGE_KEY;
+    }
   }
-}
-function _responseReceived(storageHandler, domain, expirationHours, successCallback, additionalParams) {
-  return function (response) {
-    var responseObj = {};
-    if (response) {
+  return {
+    get: function get(key) {
+      var cachedValue = storageHandler.get(_cacheKey(key));
+      if (cachedValue) {
+        return JSON.parse(cachedValue);
+      } else {
+        return cachedValue;
+      }
+    },
+    set: function set(key, value) {
       try {
-        responseObj = JSON.parse(response);
+        storageHandler.set(_cacheKey(key), JSON.stringify(value), expiresInHours(expirationHours), domain);
       } catch (ex) {
-        fromError('IdentityResolverParser', ex);
+        fromError('IdentityResolverStorage', ex);
       }
     }
-    try {
-      storageHandler.set(_cacheKey(additionalParams), JSON.stringify(responseObj), expiresInHours(expirationHours), domain);
-    } catch (ex) {
-      fromError('IdentityResolverStorage', ex);
-    }
-    successCallback(responseObj);
   };
 }
-function IdentityResolver(config, storageHandler, calls) {
+var noopCache = {
+  get: function get(key) {
+    return null;
+  },
+  set: function set(key, value) {}
+};
+function makeIdentityResolver(config, calls, cache) {
   try {
-    var nonNullConfig = config || {};
-    var idexConfig = nonNullConfig.identityResolutionConfig || {};
-    var externalIds = nonNullConfig.retrievedIdentifiers || [];
-    var expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS;
+    var idexConfig = config.identityResolutionConfig || {};
+    var externalIds = config.retrievedIdentifiers || [];
     var source = idexConfig.source || 'unknown';
     var publisherId = idexConfig.publisherId || 'any';
     var url = idexConfig.url || DEFAULT_IDEX_URL;
     var timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
+    var requestedAttributes = idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES;
     var tuples = [];
-    tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId));
-    tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString));
-    tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
+    tuples.push(asStringParam('duid', config.peopleVerifiedId));
+    tuples.push(asStringParam('us_privacy', config.usPrivacyString));
+    tuples.push(asParamOrEmpty('gdpr', config.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? 1 : 0, function (v) {
       return v === 1;
     }));
-    tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
+    tuples.push(asStringParam('gdpr_consent', config.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
+    var attributeResolutionAllowed = function attributeResolutionAllowed(attribute) {
+      if (attribute === 'uid2') {
+        return !config.privacyMode;
+      } else {
+        return true;
+      }
+    };
+    requestedAttributes.filter(attributeResolutionAllowed).forEach(function (requestedAttribute) {
+      tuples.push(asStringParam('resolve', requestedAttribute));
+    });
+    var enrichUnifiedId = function enrichUnifiedId(response) {
+      if (response && response.nonId && !response.unifiedId) {
+        response.unifiedId = response.nonId;
+        return response;
+      } else {
+        return response;
+      }
+    };
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
+    var responseReceived = function responseReceived(additionalParams, successCallback) {
+      return function (response) {
+        var responseObj = {};
+        if (response) {
+          try {
+            responseObj = enrichUnifiedId(JSON.parse(response));
+          } catch (ex) {
+            fromError('IdentityResolverParser', ex);
+          }
+        }
+        cache.set(additionalParams, responseObj);
+        successCallback(responseObj);
+      };
+    };
     var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      var cachedValue = storageHandler.get(_cacheKey(additionalParams));
+      var cachedValue = cache.get(additionalParams);
       if (cachedValue) {
-        successCallback(JSON.parse(cachedValue));
+        successCallback(cachedValue);
       } else {
-        calls.ajaxGet(composeUrl(additionalParams), _responseReceived(storageHandler, nonNullConfig.domain, expirationHours, successCallback, additionalParams), errorCallback, timeout);
+        calls.ajaxGet(composeUrl(additionalParams), responseReceived(additionalParams, successCallback), errorCallback, timeout);
       }
     };
     return {
@@ -1153,6 +1192,15 @@ function IdentityResolver(config, storageHandler, calls) {
       }
     };
   }
+}
+
+function IdentityResolver(config, storageHandler, calls) {
+  var nonNullConfig = config || {};
+  var idexConfig = nonNullConfig.identityResolutionConfig || {};
+  var expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS;
+  var domain = nonNullConfig.domain;
+  var cache = storageHandlerBackedCache(expirationHours, domain, storageHandler);
+  return makeIdentityResolver(nonNullConfig, calls, cache);
 }
 
 var StorageStrategy = {
@@ -1378,74 +1426,8 @@ function StandardLiveConnect(liveConnectConfig, externalStorageHandler, external
   return window.liQ;
 }
 
-function _responseReceived$1(successCallback) {
-  return function (response) {
-    var responseObj = {};
-    if (response) {
-      try {
-        responseObj = JSON.parse(response);
-      } catch (ex) {
-        fromError('IdentityResolverParser', ex);
-      }
-    }
-    successCallback(responseObj);
-  };
-}
 function IdentityResolver$1(config, calls) {
-  try {
-    var nonNullConfig = config || {};
-    var idexConfig = nonNullConfig.identityResolutionConfig || {};
-    var externalIds = nonNullConfig.retrievedIdentifiers || [];
-    var source = idexConfig.source || 'unknown';
-    var publisherId = idexConfig.publisherId || 'any';
-    var url = idexConfig.url || DEFAULT_IDEX_URL;
-    var timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
-    var tuples = [];
-    tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId));
-    tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString));
-    tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
-      return encodeURIComponent(v ? 1 : 0);
-    }));
-    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
-      return v === 1;
-    }));
-    tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
-    externalIds.forEach(function (retrievedIdentifier) {
-      tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
-    });
-    var composeUrl = function composeUrl(additionalParams) {
-      var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
-      var params = toParams(originalParams);
-      return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
-    };
-    var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      calls.ajaxGet(composeUrl(additionalParams), _responseReceived$1(successCallback), errorCallback, timeout);
-    };
-    return {
-      resolve: function resolve(successCallback, errorCallback, additionalParams) {
-        try {
-          unsafeResolve(successCallback, errorCallback, additionalParams);
-        } catch (e) {
-          errorCallback();
-          fromError('IdentityResolve', e);
-        }
-      },
-      getUrl: function getUrl(additionalParams) {
-        return composeUrl(additionalParams);
-      }
-    };
-  } catch (e) {
-    fromError('IdentityResolver', e);
-    return {
-      resolve: function resolve(successCallback, errorCallback) {
-        errorCallback();
-        fromError('IdentityResolver.resolve', e);
-      },
-      getUrl: function getUrl() {
-        fromError('IdentityResolver.getUrl', e);
-      }
-    };
-  }
+  return makeIdentityResolver(config || {}, calls, noopCache);
 }
 
 function enrich$3(state, storageHandler) {

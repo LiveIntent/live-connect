@@ -84,22 +84,12 @@ function merge(obj1, obj2) {
   return res;
 }
 
-var toParams = function toParams(tuples) {
-  var acc = '';
-  tuples.forEach(function (tuple) {
-    var operator = acc.length === 0 ? '?' : '&';
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
-    }
-  });
-  return acc;
-};
-
 var EVENT_BUS_NAMESPACE = '__li__evt_bus';
 var ERRORS_PREFIX = 'li_errors';
 var PEOPLE_VERIFIED_LS_ENTRY = '_li_duid';
 var DEFAULT_IDEX_AJAX_TIMEOUT = 5000;
 var DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex';
+var DEFAULT_REQUESTED_ATTRIBUTES = ['nonId'];
 
 function _emit(prefix, message) {
   window && window[EVENT_BUS_NAMESPACE] && window[EVENT_BUS_NAMESPACE].emit(prefix, message);
@@ -117,48 +107,89 @@ function error(name, message) {
   _emit(ERRORS_PREFIX, wrapped);
 }
 
-function _responseReceived(successCallback) {
-  return function (response) {
-    var responseObj = {};
-    if (response) {
-      try {
-        responseObj = JSON.parse(response);
-      } catch (ex) {
-        fromError('IdentityResolverParser', ex);
-      }
+var toParams = function toParams(tuples) {
+  var acc = '';
+  tuples.forEach(function (tuple) {
+    var operator = acc.length === 0 ? '?' : '&';
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+      acc = "".concat(acc).concat(operator).concat(tuple[0], "=").concat(tuple[1]);
     }
-    successCallback(responseObj);
-  };
-}
-function IdentityResolver(config, calls) {
+  });
+  return acc;
+};
+
+var noopCache = {
+  get: function get(key) {
+    return null;
+  },
+  set: function set(key, value) {}
+};
+function makeIdentityResolver(config, calls, cache) {
   try {
-    var nonNullConfig = config || {};
-    var idexConfig = nonNullConfig.identityResolutionConfig || {};
-    var externalIds = nonNullConfig.retrievedIdentifiers || [];
+    var idexConfig = config.identityResolutionConfig || {};
+    var externalIds = config.retrievedIdentifiers || [];
     var source = idexConfig.source || 'unknown';
     var publisherId = idexConfig.publisherId || 'any';
     var url = idexConfig.url || DEFAULT_IDEX_URL;
     var timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT;
+    var requestedAttributes = idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES;
     var tuples = [];
-    tuples.push(asStringParam('duid', nonNullConfig.peopleVerifiedId));
-    tuples.push(asStringParam('us_privacy', nonNullConfig.usPrivacyString));
-    tuples.push(asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, function (v) {
+    tuples.push(asStringParam('duid', config.peopleVerifiedId));
+    tuples.push(asStringParam('us_privacy', config.usPrivacyString));
+    tuples.push(asParamOrEmpty('gdpr', config.gdprApplies, function (v) {
       return encodeURIComponent(v ? 1 : 0);
     }));
-    tuples.push(asStringParamWhen('n3pc', nonNullConfig.privacyMode ? 1 : 0, function (v) {
+    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? 1 : 0, function (v) {
       return v === 1;
     }));
-    tuples.push(asStringParam('gdpr_consent', nonNullConfig.gdprConsent));
+    tuples.push(asStringParam('gdpr_consent', config.gdprConsent));
     externalIds.forEach(function (retrievedIdentifier) {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value));
     });
+    var attributeResolutionAllowed = function attributeResolutionAllowed(attribute) {
+      if (attribute === 'uid2') {
+        return !config.privacyMode;
+      } else {
+        return true;
+      }
+    };
+    requestedAttributes.filter(attributeResolutionAllowed).forEach(function (requestedAttribute) {
+      tuples.push(asStringParam('resolve', requestedAttribute));
+    });
+    var enrichUnifiedId = function enrichUnifiedId(response) {
+      if (response && response.nonId && !response.unifiedId) {
+        response.unifiedId = response.nonId;
+        return response;
+      } else {
+        return response;
+      }
+    };
     var composeUrl = function composeUrl(additionalParams) {
       var originalParams = tuples.slice().concat(mapAsParams(additionalParams));
       var params = toParams(originalParams);
       return "".concat(url, "/").concat(source, "/").concat(publisherId).concat(params);
     };
+    var responseReceived = function responseReceived(additionalParams, successCallback) {
+      return function (response) {
+        var responseObj = {};
+        if (response) {
+          try {
+            responseObj = enrichUnifiedId(JSON.parse(response));
+          } catch (ex) {
+            fromError('IdentityResolverParser', ex);
+          }
+        }
+        cache.set(additionalParams, responseObj);
+        successCallback(responseObj);
+      };
+    };
     var unsafeResolve = function unsafeResolve(successCallback, errorCallback, additionalParams) {
-      calls.ajaxGet(composeUrl(additionalParams), _responseReceived(successCallback), errorCallback, timeout);
+      var cachedValue = cache.get(additionalParams);
+      if (cachedValue) {
+        successCallback(cachedValue);
+      } else {
+        calls.ajaxGet(composeUrl(additionalParams), responseReceived(additionalParams, successCallback), errorCallback, timeout);
+      }
     };
     return {
       resolve: function resolve(successCallback, errorCallback, additionalParams) {
@@ -185,6 +216,10 @@ function IdentityResolver(config, calls) {
       }
     };
   }
+}
+
+function IdentityResolver(config, calls) {
+  return makeIdentityResolver(config || {}, calls, noopCache);
 }
 
 function enrich(state, storageHandler) {
