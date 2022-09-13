@@ -1,4 +1,7 @@
 {
+  "hooks": {
+    "after:bump": "npm run build"
+  },
   "git": {
     "tagName": "v${version}"
   },

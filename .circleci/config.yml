@@ -109,7 +109,9 @@ jobs:
     machine: true
     parameters:
       increment:
-        description: "Increment of release. Allowed values `patch`, `minor`, `major`"
+        description: |
+          "Increment of release. Allowed values `prepatch`, `preminor`, `premajor`, `bump-prerelease`,
+          `alpha->beta`, `beta-rc`, `patch`, `minor`, `major`"
         default: "patch"
         type: string
     steps:
@@ -142,7 +144,7 @@ workflows:
           requires:
             - browserstack?
 
-      - release?:
+      - release_prepatch?:
           context: live-connect
           type: approval
           requires:
@@ -153,9 +155,106 @@ workflows:
 
       - release:
           context: live-connect
+          name: release_prepatch
+          increment: "prepatch"
           requires:
-            - release?
+            - release_prepatch?
 
+      - release_preminor?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect
+          name: release_preminor
+          increment: "preminor"
+          requires:
+            - release_preminor?
+
+      - release_premajor?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect
+          name: release_premajor
+          increment: "premajor"
+          requires:
+            - release_premajor?
+
+      - release_bump-prerelease?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect
+          name: release_bump-prerelease
+          increment: "bump-prerelease"
+          requires:
+            - release_bump-prerelease?
+
+      - release_alpha->beta?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect
+          name: release_alpha->beta
+          increment: "alpha->beta"
+          requires:
+            - release_alpha->beta?
+
+      - release_beta->rc?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect
+          name: release_beta->rc
+          increment: "beta->rc"
+          requires:
+            - release_beta->rc?
+
+      - release_patch?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack
+          filters:
+            branches:
+              only: master
+
+      - release:
+          context: live-connect
+          name: release_patch
+          increment: "patch"
+          requires:
+            - release_patch?
 
       - release_minor?:
           context: live-connect
