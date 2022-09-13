@@ -53,12 +53,8 @@ export function storageHandlerBackedCache (expirationHours, domain, storageHandl
  * @type {Cache}
  */
 export const noopCache = {
-  get: (key) => {
-    return null
-  },
-  set: (key, value) => {
-
-  }
+  get: (key) => null,
+  set: (key, value) => undefined
 }
 
 /**
