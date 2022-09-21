@@ -3,8 +3,8 @@ import { urlParams } from '../utils/url'
 import { trim, isUUID, expiresInDays } from '../utils/types'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)
-const DECISION_ID_QUERY_PARAM_NAME = 'li_did'
-const DECISION_ID_COOKIE_NAMESPACE = 'lidids.'
+const DECISION_ID_QUERY_PARAM_NAME:String = 'li_did'
+const DECISION_ID_COOKIE_NAMESPACE:String = 'lidids.'
 
 const _onlyUnique = (value, index, self) => self.indexOf(value) === index
 const _validUuid = (value) => isUUID(value)

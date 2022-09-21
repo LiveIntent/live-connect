@@ -148,7 +148,12 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const syncContainerData = merge(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
-    const pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
+    const pixelClient = new PixelSender({
+      liveConnectConfig: configWithPrivacy,
+      calls: callHandler,
+      onload: onPixelLoad,
+      presend: onPixelPreload,
+    });
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {

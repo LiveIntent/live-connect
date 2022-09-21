@@ -3,6 +3,6 @@ import { trim } from '../utils/types'
 
 export const MASK = '*********'
 
-export function replacer (key, value) {
+export function replacer(value: any) {
   return (typeof value === 'string' && isEmail(trim(value))) ? MASK : value
 }

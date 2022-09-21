@@ -79,7 +79,10 @@ export function register (state: StateWrapper, callHandler: CallHandler) {
     if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
       window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
     }
-    _pixelSender = new PixelSender(state, callHandler)
+    _pixelSender = new PixelSender({
+      liveConnectConfig: state,
+      calls: callHandler,
+    });
     _state = state || {}
   } catch (e) {
     console.error('handlers.error.register', e)
