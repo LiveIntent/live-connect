@@ -1,33 +1,10 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
 import * as emitter from '../utils/emitter'
+import { StorageHandler } from './types'
 
-/**
- * @typedef {Object} ExternalStorageHandler
- * @property {function} [localStorageIsEnabled]
- * @property {function} [getCookie]
- * @property {function} [setCookie]
- * @property {function} [getDataFromLocalStorage]
- * @property {function} [removeDataFromLocalStorage]
- * @property {function} [setDataInLocalStorage]
- * @property {function} [findSimilarCookies]
- */
-
-/**
- * @typedef {Object} StorageHandler
- * @property {function} [get]
- * @property {function} [set]
- */
-const _noOp = () => undefined
-
-/**
- *
- * @param {string} storageStrategy
- * @param {ExternalStorageHandler} [externalStorageHandler]
- * @return {StorageHandler}
- * @constructor
- */
-export function StorageHandler (storageStrategy, externalStorageHandler) {
+// converts an external storage handler to a storage handler, using default implementations for undefined function
+export function StorageHandler (storageStrategy: StorageStrategy, externalStorageHandler: object): StorageHandler {
   const errors = []
 
   function _externalOrError (functionName) {
@@ -97,3 +74,5 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     findSimilarCookies: functions.findSimilarCookies
   }
 }
+
+const _noOp = () => undefined

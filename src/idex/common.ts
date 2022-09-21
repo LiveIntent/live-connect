@@ -1,74 +1,29 @@
-import { base64UrlEncode } from '../utils/b64'
 import { fromError } from '../utils/emitter'
 import { toParams } from '../utils/url'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams } from '../utils/types'
+import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
+import { Cache } from './cache'
+import { CallHandler } from '../handlers/call-handler'
 
-/**
- * @typedef {Object} Cache
- * @property {function} [get]
- * @property {function} [set]
- */
+// Object fields will be name and value of requested attributes
+type IdentityResultionResult = object
 
-/**
- * @return {Cache}
- */
-export function storageHandlerBackedCache (expirationHours, domain, storageHandler) {
-  const IDEX_STORAGE_KEY = '__li_idex_cache'
-
-  function _cacheKey (rawKey) {
-    if (rawKey) {
-      const suffix = base64UrlEncode(JSON.stringify(rawKey))
-      return `${IDEX_STORAGE_KEY}_${suffix}`
-    } else {
-      return IDEX_STORAGE_KEY
-    }
-  }
-
-  return {
-    get: (key) => {
-      const cachedValue = storageHandler.get(_cacheKey(key))
-      if (cachedValue) {
-        return JSON.parse(cachedValue)
-      } else {
-        return cachedValue
-      }
-    },
-    set: (key, value) => {
-      try {
-        storageHandler.set(
-          _cacheKey(key),
-          JSON.stringify(value),
-          expiresInHours(expirationHours),
-          domain
-        )
-      } catch (ex) {
-        fromError('IdentityResolverStorage', ex)
-      }
-    }
-  }
+// Parameters that are a list will be repeated.
+// i.e. { 'resolve': ['a', 'b'] } => resolve=a&resolve=b
+interface ResultionParams {
+  [key: string]: string | string[]
 }
 
-/**
- * @type {Cache}
- */
-export const noopCache = {
-  get: (key) => null,
-  set: (key, value) => undefined
+export interface IdentityResolver {
+  resolve: (
+    successCallBack: (result: IdentityResultionResult) => void,
+    errorCallBack: () => void,
+    additionalParams?: ResultionParams
+  ) => void,
+  getUrl: (additionalParams: object) => string
 }
 
-/**
- * @typedef {Object} IdentityResolver
- * @property {function} [resolve]
- */
-
-/**
- * @param {State} config
- * @param {CallHandler} calls
- * @param {Cache} cache
- * @return {IdentityResolver}
- */
-export function makeIdentityResolver (config, calls, cache) {
+export function makeIdentityResolver (config, calls: CallHandler, cache: Cache): IdentityResolver {
   try {
     const idexConfig = config.identityResolutionConfig || {}
     const externalIds = config.retrievedIdentifiers || []
@@ -107,7 +62,7 @@ export function makeIdentityResolver (config, calls, cache) {
       return `${url}/${source}/${publisherId}${params}`
     }
 
-    const responseReceived = (additionalParams, successCallback) => {
+    const responseReceived = (additionalParams: object, successCallback: (result: any) => void): (response: string) => void => {
       return response => {
         let responseObj = {}
         if (response) {
@@ -123,7 +78,11 @@ export function makeIdentityResolver (config, calls, cache) {
       }
     }
 
-    const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
+    const unsafeResolve = (
+      successCallback: (result: IdentityResultionResult) => void,
+      errorCallback: () => void,
+      additionalParams?: ResultionParams
+    ): void => {
       const cachedValue = cache.get(additionalParams)
       if (cachedValue) {
         // no need to enrich as the cached value was already enriched
@@ -133,7 +92,8 @@ export function makeIdentityResolver (config, calls, cache) {
           composeUrl(additionalParams),
           responseReceived(additionalParams, successCallback),
           errorCallback,
-          timeout)
+          timeout
+        )
       }
     }
 
@@ -153,12 +113,13 @@ export function makeIdentityResolver (config, calls, cache) {
     console.error('IdentityResolver', e)
     fromError('IdentityResolver', e)
     return {
-      resolve: (successCallback, errorCallback) => {
+      resolve: (successCallback, errorCallback, additionalParams) => {
         errorCallback()
         fromError('IdentityResolver.resolve', e)
       },
-      getUrl: () => {
+      getUrl: (additionalParams) => {
         fromError('IdentityResolver.getUrl', e)
+        return null
       }
     }
   }

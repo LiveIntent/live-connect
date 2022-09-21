@@ -7,17 +7,25 @@ import * as emitter from '../utils/emitter'
  * @property {function} [pixelGet]
  */
 
+export interface CallHandler {
+  ajaxGet: (
+    url: String,
+    onSuccess: (responseText: string) => void,
+    onError: () => void,
+    timeout: number
+  ) => void,
+  pixelGet: (
+    url: String,
+    onLoad: () => void
+  ) => void
+}
+
 const _noOp = () => undefined
 
-/**
- * @param {CallHandler} externalCallHandler
- * @returns {CallHandler}
- * @constructor
- */
-export function CallHandler (externalCallHandler) {
+export function CallHandler (externalCallHandler: object): CallHandler {
   const errors = []
 
-  function _externalOrError (functionName) {
+  function _externalOrError (functionName: string): any {
     const hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName])
     if (hasExternal) {
       return externalCallHandler[functionName]

@@ -1,19 +1,15 @@
-/**
- * @typedef {Object} ReplayEmitter
- * @property {(function)} on
- * @property {(function)} once
- * @property {(function)} emit
- * @property {(function)} off
- */
+class ReplayEmitter {
+  size: number
+  h: object
+  q: object
 
-export default function E (replaySize) {
-  this.size = parseInt(replaySize) || 5
-  this.h = {}
-  this.q = {}
-}
+  constructor (replaySize: string) {
+    this.size = parseInt(replaySize) || 5
+    this.h = {}
+    this.q = {}
+  }
 
-E.prototype = {
-  on: function (name, callback, ctx) {
+  on<C>(name: string, callback: (ctx: C, event: object) => void, ctx: C): ReplayEmitter {
     (this.h[name] || (this.h[name] = [])).push({
       fn: callback,
       ctx: ctx
@@ -25,9 +21,9 @@ E.prototype = {
     }
 
     return this
-  },
+  }
 
-  once: function (name, callback, ctx) {
+  once<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): ReplayEmitter {
     const self = this
 
     const eventQueue = this.q[name] || []
@@ -44,9 +40,9 @@ E.prototype = {
       listener._ = callback
       return this.on(name, listener, ctx)
     }
-  },
+  }
 
-  emit: function (name) {
+  emit (name: string, event: object): ReplayEmitter {
     const data = [].slice.call(arguments, 1)
     const evtArr = (this.h[name] || []).slice()
     let i = 0
@@ -63,9 +59,9 @@ E.prototype = {
     eventQueue.push(data)
 
     return this
-  },
+  }
 
-  off: function (name, callback) {
+  off (name: string, callback: (ctx: any, event: object) => void): ReplayEmitter {
     const handlers = this.h[name]
     const liveEvents = []
 
@@ -77,10 +73,7 @@ E.prototype = {
       }
     }
 
-    (liveEvents.length)
-      ? this.h[name] = liveEvents
-      : delete this.h[name]
-
+    (liveEvents.length) ? this.h[name] = liveEvents : delete this.h[name]
     return this
   }
 }

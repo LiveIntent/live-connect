@@ -1,5 +1,7 @@
 import { DEFAULT_IDEX_EXPIRATION_HOURS } from '../utils/consts'
-import { storageHandlerBackedCache, makeIdentityResolver } from './common'
+import { makeIdentityResolver } from './common'
+import { storageHandlerBackedCache } from './cache'
+import { CallHandler } from '../handlers/call-handler'
 
 /**
  * @param {State} config
@@ -8,7 +10,7 @@ import { storageHandlerBackedCache, makeIdentityResolver } from './common'
  * @return {IdentityResolver}
  * @constructor
  */
-export function IdentityResolver (config, storageHandler, calls) {
+export function IdentityResolver (config, storageHandler, calls: CallHandler) {
   const nonNullConfig = config || {}
   const idexConfig = nonNullConfig.identityResolutionConfig || {}
   const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
