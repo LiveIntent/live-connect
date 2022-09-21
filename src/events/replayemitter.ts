@@ -1,15 +1,22 @@
-class ReplayEmitter {
+export default class E {
   size: number
   h: object
   q: object
 
-  constructor (replaySize: string) {
-    this.size = parseInt(replaySize) || 5
+  constructor (replaySize: number | string) {
+    if (typeof(replaySize) == 'string') {
+      this.size = parseInt(replaySize)
+    } else if (typeof(replaySize) == 'number') {
+      this.size = replaySize
+    } else {
+      this.size = 5
+    }
+
     this.h = {}
     this.q = {}
   }
 
-  on<C>(name: string, callback: (ctx: C, event: object) => void, ctx: C): ReplayEmitter {
+  on<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): E {
     (this.h[name] || (this.h[name] = [])).push({
       fn: callback,
       ctx: ctx
@@ -23,7 +30,7 @@ class ReplayEmitter {
     return this
   }
 
-  once<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): ReplayEmitter {
+  once<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): E {
     const self = this
 
     const eventQueue = this.q[name] || []
@@ -42,7 +49,7 @@ class ReplayEmitter {
     }
   }
 
-  emit (name: string, event: object): ReplayEmitter {
+  emit (name: string, event: object): E {
     const data = [].slice.call(arguments, 1)
     const evtArr = (this.h[name] || []).slice()
     let i = 0
@@ -61,7 +68,7 @@ class ReplayEmitter {
     return this
   }
 
-  off (name: string, callback: (ctx: any, event: object) => void): ReplayEmitter {
+  off (name: string, callback: (ctx: any, event: object) => void): E {
     const handlers = this.h[name]
     const liveEvents = []
 

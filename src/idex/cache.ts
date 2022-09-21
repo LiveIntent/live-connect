@@ -1,3 +1,4 @@
+import { StorageHandler } from '../handlers/types'
 import { base64UrlEncode } from '../utils/b64'
 import { fromError } from '../utils/emitter'
 import { expiresInHours } from '../utils/types'
@@ -7,7 +8,7 @@ export interface Cache {
   set: (key: any, value: any) => void
 }
 
-export function storageHandlerBackedCache (expirationHours: Number, domain: String, storageHandler: any): Cache {
+export function storageHandlerBackedCache (expirationHours: number, domain: string, storageHandler: StorageHandler): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey: any): string {

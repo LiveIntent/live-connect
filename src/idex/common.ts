@@ -37,7 +37,7 @@ export function makeIdentityResolver (config, calls: CallHandler, cache: Cache):
     tuples.push(asStringParam('duid', config.peopleVerifiedId))
     tuples.push(asStringParam('us_privacy', config.usPrivacyString))
     tuples.push(asParamOrEmpty('gdpr', config.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? 1 : 0, v => v === 1))
+    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
     tuples.push(asStringParam('gdpr_consent', config.gdprConsent))
 
     externalIds.forEach(retrievedIdentifier => {

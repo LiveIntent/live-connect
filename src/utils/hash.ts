@@ -1,10 +1,3 @@
-/**
- * @typedef {Object} HashedEmail
- * @property {string} md5
- * @property {string} sha1
- * @property {string} sha256
- */
-
 import md5 from 'tiny-hashes/md5'
 import sha1 from 'tiny-hashes/sha1'
 import sha256 from 'tiny-hashes/sha256'
@@ -18,12 +11,18 @@ const lengthToHashType = {
   64: 'sha256'
 }
 
-export function isHash (hash) {
+export interface HashedEmail {
+  md5: string,
+  sha1: string,
+  sha256: string
+}
+
+export function isHash (hash: string): boolean {
   const extractedHash = extractHashValue(hash)
   return !!extractedHash && lengthToHashType[extractedHash.length] != null
 }
 
-export function extractHashValue (s) {
+export function extractHashValue (s: string): string {
   const result = s.match(hashLikeRegex())
   return result && result.map(trim)[0]
 }
@@ -32,7 +31,7 @@ export function extractHashValue (s) {
  * @param {string} email
  * @returns {HashedEmail}
  */
-export function hashEmail (email) {
+export function hashEmail (email: string): HashedEmail {
   const lowerCasedEmail = email.toLowerCase()
   return {
     md5: md5(lowerCasedEmail),
@@ -46,6 +45,6 @@ export function hashEmail (email) {
  * @param limit
  * @returns {string}
  */
-export function domainHash (domain, limit = 12) {
+export function domainHash (domain: string, limit: number = 12): string {
   return sha1(domain.replace(/^\./, '')).substring(0, limit)
 }

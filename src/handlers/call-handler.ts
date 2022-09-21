@@ -11,17 +11,18 @@ export interface CallHandler {
   ajaxGet: (
     url: String,
     onSuccess: (responseText: string) => void,
-    onError: () => void,
-    timeout: number
+    onError?: (error: any) => void,
+    timeout?: number
   ) => void,
   pixelGet: (
     url: String,
-    onLoad: () => void
+    onLoad?: () => void
   ) => void
 }
 
 const _noOp = () => undefined
 
+// wrap an external CallHandler
 export function CallHandler (externalCallHandler: object): CallHandler {
   const errors = []
 
