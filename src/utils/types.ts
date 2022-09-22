@@ -1,4 +1,4 @@
-import { State } from "../pixel/state"
+import { State } from '../pixel/state'
 
 export const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const uuidRegex = new RegExp(`^${UUID}$`, 'i')
@@ -46,24 +46,15 @@ export function isObject (obj: any): boolean {
   return !!obj && typeof obj === 'object' && !isArray(obj)
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function isFunction (fun: Function): boolean {
   return fun && typeof fun === 'function'
 }
 
-/**
- * Returns the string representation when something should expire
- * @param millis
- * @return {Date}
- */
 export function expiresInDays (millis: number): Date {
   return _expiresInMillis(millis * 864e5)
 }
 
-/**
- * Returns the string representation when something should expire
- * @param millis
- * @return {Date}
- */
 export function expiresInHours (millis: number): Date {
   return _expiresInMillis(millis * 36e5)
 }

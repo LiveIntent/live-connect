@@ -5,9 +5,9 @@ import { MinimalStorageHandler } from './types'
 
 // create a ReadStorageHandler from an external storage handler. Undefined functions will be replaced by an default
 // implementation.
-export function StorageHandler (storageStrategy: string, externalStorageHandler: object): MinimalStorageHandler {
+export function minimalFromExternalStorageHandler (storageStrategy: string, externalStorageHandler: object): MinimalStorageHandler {
   const errors = []
-  function _externalOrError (functionName) {
+  function _externalOrError (functionName: string) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
     if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp

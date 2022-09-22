@@ -27,12 +27,13 @@ const _defaultReturn: State = {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function _asInt (field: any): number | undefined {
   try {
     const intValue = field * 1
     return isNaN(intValue) ? undefined : intValue
   } catch {
-
+    return undefined
   }
 }
 
@@ -44,13 +45,11 @@ function _truncate (value: string): string {
       return value
     }
   } catch {
+    return undefined
   }
 }
 
-/**
- * @param {Error} e
- * @return {State}
- */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function asErrorDetails (e: any): State {
   if (e) {
     return {
@@ -83,8 +82,8 @@ export function register (config: LiveConnectConfig, callHandler: CallHandler) {
     }
     _pixelSender = new PixelSender(
       config,
-      callHandler,
-    );
+      callHandler
+    )
     _state = config || {}
   } catch (e) {
     console.error('handlers.error.register', e)

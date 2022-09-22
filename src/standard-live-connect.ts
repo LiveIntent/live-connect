@@ -1,4 +1,4 @@
-import { LiveConnect, LiveConnectConfig } from './types';
+import { LiveConnect, LiveConnectConfig } from './types'
 /**
  * @typedef {Object} StandardLiveConnect
  * @property {(function)} push
@@ -47,8 +47,8 @@ import { identityResolver, IdentityResolver } from './idex/identity-resolver'
 import { fromExternalStorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-import { HashedEmail } from './utils/hash';
-import { ExternalStorageHandler } from './handlers/types';
+import { HashedEmail } from './utils/hash'
+import { ExternalStorageHandler } from './handlers/types'
 
 interface HemStore {
   hashedEmail?: HashedEmail[]
@@ -56,7 +56,7 @@ interface HemStore {
 
 const hemStore: HemStore = {}
 
-function _pushSingleEvent(event: any, pixelClient: PixelSender, enrichedState: StateWrapper) {
+function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper) {
   if (!event || !isObject(event)) {
     emitter.error('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {
@@ -74,7 +74,7 @@ interface ConfigMatcher {
   collectorUrl: string[]
 }
 
-function _configMatcher(previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMatcher | undefined {
+function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMatcher | undefined {
   const equalConfigs = previousConfig.appId === newConfig.appId &&
     previousConfig.wrapperName === newConfig.wrapperName &&
     previousConfig.collectorUrl === newConfig.collectorUrl
@@ -87,7 +87,7 @@ function _configMatcher(previousConfig: LiveConnectConfig, newConfig: LiveConnec
   }
 }
 
-function _processArgs(args: any[], pixelClient: PixelSender, enrichedState: StateWrapper): void {
+function _processArgs (args: any[], pixelClient: PixelSender, enrichedState: StateWrapper): void {
   try {
     args.forEach(arg => {
       const event = arg
@@ -103,7 +103,7 @@ function _processArgs(args: any[], pixelClient: PixelSender, enrichedState: Stat
   }
 }
 
-function _getInitializedLiveConnect(liveConnectConfig: LiveConnectConfig): LiveConnect | undefined {
+function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): LiveConnect | undefined {
   try {
     if (window && window.liQ && window.liQ.ready) {
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
@@ -127,7 +127,7 @@ function _getInitializedLiveConnect(liveConnectConfig: LiveConnectConfig): LiveC
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: any): LiveConnect {
+function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: any): LiveConnect {
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
@@ -152,8 +152,8 @@ function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalS
       configWithPrivacy,
       callHandler,
       onPixelLoad,
-      onPixelPreload,
-    );
+      onPixelPreload
+    )
     const resolver = identityResolver(postManagedState.data, storageHandler, callHandler)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
     return {
@@ -178,7 +178,7 @@ function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalS
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []

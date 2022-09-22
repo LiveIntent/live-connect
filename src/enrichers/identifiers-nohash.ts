@@ -1,19 +1,9 @@
-/**
- * @typedef {Object} RetrievedIdentifier
- * @property {string} name
- * @property {string} value
- */
 import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from '../utils/types'
 import * as emitter from '../utils/emitter'
 import { State } from '../pixel/state'
-import { MinimalStorageHandler, StorageHandler } from '../handlers/types'
+import { MinimalStorageHandler } from '../handlers/types'
 
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
- */
 export function enrich (state: State, storageHandler: MinimalStorageHandler): State {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
@@ -23,12 +13,6 @@ export function enrich (state: State, storageHandler: MinimalStorageHandler): St
   }
 }
 
-/**
- * @param {State} state
- * * @param {StorageHandler} storageHandler
- * @returns {string[]}
- * @private
- */
 function _parseIdentifiersToResolve (state: State, storageHandler: MinimalStorageHandler): State {
   state.identifiersToResolve = state.identifiersToResolve || []
   const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',')

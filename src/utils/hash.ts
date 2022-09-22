@@ -45,6 +45,6 @@ export function hashEmail (email: string): HashedEmail {
  * @param limit
  * @returns {string}
  */
-export function domainHash (domain: string, limit: number = 12): string {
+export function domainHash (domain: string, limit = 12): string {
   return sha1(domain.replace(/^\./, '')).substring(0, limit)
 }

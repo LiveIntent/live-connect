@@ -8,6 +8,11 @@ import { ErrorDetails } from '../events/error-pixel'
 import { HashedEmail } from '../utils/hash'
 import { IdentityResolutionConfig, LiveConnectConfig } from '../types'
 
+export interface RetrievedIdentifier {
+  name: string,
+  value: string
+}
+
 export interface State extends LiveConnectConfig {
   eventSource?: object,
   liveConnectId?: string,
@@ -18,7 +23,7 @@ export interface State extends LiveConnectConfig {
   decisionIds?: string[],
   peopleVerifiedId?: string,
   errorDetails?: ErrorDetails,
-  retrievedIdentifiers?: string[], // TODO: RetrievedIdentifiers[]
+  retrievedIdentifiers?: RetrievedIdentifier[],
   hashedEmail?: HashedEmail[],
   providedHash?: string,
   gdprConsent?: string,
@@ -53,7 +58,7 @@ const _pArray: ((value: State) => ParamOrEmpty)[] = [
     return asParamOrEmptyTransform('ae', state.errorDetails, (s) => base64UrlEncode(JSON.stringify(s)))
   },
   state => {
-    const identifiers: any = state.retrievedIdentifiers
+    const identifiers = state.retrievedIdentifiers
     const identifierParams = []
     if (isArray(identifiers)) {
       identifiers.forEach((i) => identifierParams.push(asStringParam(`ext_${i.name}`, i.value)))

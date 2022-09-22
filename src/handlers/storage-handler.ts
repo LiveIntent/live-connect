@@ -56,6 +56,7 @@ export function fromExternalStorageHandler (storageStrategy: StorageStrategy, ex
     },
     set: (key, value, expirationDate, domain) => {
       if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
+        return undefined
       } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
         if (functions.localStorageIsEnabled()) {
           const expirationKey = `${key}_exp`

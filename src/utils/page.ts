@@ -4,26 +4,26 @@ import { replaceEmailsWithHashes } from './email'
 /**
  * @return {string}
  */
-export function loadedDomain(): string {
+export function loadedDomain (): string {
   return (
     document.domain ||
     (document.location && document.location.host) ||
     (window && window.location && window.location.host) ||
-    "localhost"
-  );
+    'localhost'
+  )
 }
 
 /**
  * @return {string|undefined}
  */
-export function getReferrer(win: Window = window): string | undefined {
+export function getReferrer (win: Window = window): string | undefined {
   return _safeGet(() => win.top.document.referrer)
 }
 
 /**
  * @return {string|undefined}
  */
-export function getPage(win: Window = window): string | undefined {
+export function getPage (win: Window = window): string | undefined {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
   const windows = []
@@ -48,35 +48,35 @@ export function getPage(win: Window = window): string | undefined {
 /**
  * @return {string|undefined}
  */
-export function getContextElements(privacyMode: boolean, contextSelectors: string, contextElementsLength: number): string {
+export function getContextElements (privacyMode: boolean, contextSelectors: string, contextElementsLength: number): string {
   if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
-    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength)
+    const collectedElements = _collectElementsText(contextSelectors, contextElementsLength)
     return base64UrlEncode(collectedElements)
   }
 }
 
-function _collectElementsText(contextSelectors: string, contextElementsLength: number): string {
+function _collectElementsText (contextSelectors: string, contextElementsLength: number): string {
   const collectedElements = window.document.querySelectorAll(contextSelectors)
-  var collectedString = ''
+  let collectedString = ''
   for (let i = 0; i < collectedElements.length; i++) {
-    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails
-    var maybeCollectedString = collectedString + nextElement
+    const nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails
+    const maybeCollectedString = collectedString + nextElement
     if (encodedByteCount(maybeCollectedString) <= contextElementsLength) collectedString = maybeCollectedString
     else return collectedString
   }
   return collectedString
 }
 
-function encodedByteCount(s: string): number {
+function encodedByteCount (s: string): number {
   // From: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string
   const utf8Bytelength = encodeURI(s).split(/%..|./).length - 1
   const base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0)
   return base64EncodedLength
 }
 
-function _safeGet(getter: Function) {
+function _safeGet <A> (getter: () => A): A {
   try {
     return getter()
   } catch (e) {

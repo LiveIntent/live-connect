@@ -12,7 +12,7 @@ const prng = detectPrng()
  * @param {string} message
  * @returns {Error}
  */
-function createError(message: string): Error {
+function createError (message: string): Error {
   const err = new Error(message)
   return err
 }
@@ -22,7 +22,7 @@ function createError(message: string): Error {
  * @function
  * @returns {function} a random number generator
  */
-function detectPrng(): () => number {
+function detectPrng (): () => number {
   const root = typeof window !== 'undefined' ? window : null
   const browserCrypto = root && (root.crypto || root.msCrypto)
   if (browserCrypto) {
@@ -41,7 +41,7 @@ function detectPrng(): () => number {
  * @param len
  * @returns {string} encoded time.
  */
-function encodeTime(now: number, len: number): string {
+function encodeTime (now: number, len: number): string {
   if (now > TIME_MAX) {
     throw createError('cannot encode time greater than ' + TIME_MAX)
   }
@@ -60,7 +60,7 @@ function encodeTime(now: number, len: number): string {
  * @param len
  * @returns {string}
  */
-function encodeRandom(len: number): string {
+function encodeRandom (len: number): string {
   let str = ''
   for (; len > 0; len--) {
     str = randomChar() + str
@@ -72,7 +72,7 @@ function encodeRandom(len: number): string {
  * gets a a random charcter from generated pseudorandom number
  * @returns {string}
  */
-function randomChar(): string {
+function randomChar (): string {
   let rand = Math.floor(prng() * ENCODING_LEN)
   if (rand === ENCODING_LEN) {
     rand = ENCODING_LEN - 1
@@ -83,6 +83,6 @@ function randomChar(): string {
 /**
  * the factory to generate unique identifier based on time and current pseudorandom number
  */
-export function ulid(): string {
+export function ulid (): string {
   return encodeTime(Date.now(), TIME_LEN) + encodeRandom(RANDOM_LEN)
 }

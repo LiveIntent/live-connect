@@ -1,21 +1,28 @@
 import { isFunction } from '../utils/types'
 import * as emitter from '../utils/emitter'
 
-/**
- * @typedef {Object} CallHandler
- * @property {function} [ajaxGet]
- * @property {function} [pixelGet]
- */
+export interface ExternalCallHandler {
+  ajaxGet?: (
+    url: string,
+    onSuccess: (responseText: string) => void,
+    onError?: (error: any) => void,
+    timeout?: number
+  ) => void,
+  pixelGet?: (
+    url: string,
+    onLoad?: () => void
+  ) => void
+}
 
 export interface CallHandler {
   ajaxGet: (
-    url: String,
+    url: string,
     onSuccess: (responseText: string) => void,
     onError?: (error: any) => void,
     timeout?: number
   ) => void,
   pixelGet: (
-    url: String,
+    url: string,
     onLoad?: () => void
   ) => void
 }
@@ -23,7 +30,7 @@ export interface CallHandler {
 const _noOp = () => undefined
 
 // wrap an external CallHandler
-export function CallHandler (externalCallHandler: object): CallHandler {
+export function fromExternalCallHandler (externalCallHandler: ExternalCallHandler): CallHandler {
   const errors = []
 
   function _externalOrError (functionName: string): any {

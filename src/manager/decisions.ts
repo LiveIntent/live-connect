@@ -5,8 +5,8 @@ import { State } from '../pixel/state'
 import { StorageHandler } from '../handlers/types'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES: Date = expiresInDays(30)
-const DECISION_ID_QUERY_PARAM_NAME: string = 'li_did'
-const DECISION_ID_COOKIE_NAMESPACE: string = 'lidids.'
+const DECISION_ID_QUERY_PARAM_NAME = 'li_did'
+const DECISION_ID_COOKIE_NAMESPACE = 'lidids.'
 
 const _onlyUnique = (value: string, index: number, self: string[]) => self.indexOf(value) === index
 const _validUuid = (value: string) => isUUID(value)

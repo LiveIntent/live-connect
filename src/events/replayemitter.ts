@@ -4,9 +4,9 @@ export default class E {
   q: object
 
   constructor (replaySize: number | string) {
-    if (typeof(replaySize) == 'string') {
+    if (typeof (replaySize) === 'string') {
       this.size = parseInt(replaySize)
-    } else if (typeof(replaySize) == 'number') {
+    } else if (typeof (replaySize) === 'number') {
       this.size = replaySize
     } else {
       this.size = 5
@@ -31,6 +31,7 @@ export default class E {
   }
 
   once<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): E {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     const eventQueue = this.q[name] || []
@@ -39,9 +40,10 @@ export default class E {
 
       return this
     } else {
-      const listener = function () {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const listener = function (...rest: any[]) {
         self.off(name, listener)
-        callback.apply(ctx, arguments)
+        callback.apply(ctx, rest)
       }
 
       listener._ = callback
@@ -49,7 +51,9 @@ export default class E {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emit (name: string, event: object): E {
+    // eslint-disable-next-line prefer-rest-params
     const data = [].slice.call(arguments, 1)
     const evtArr = (this.h[name] || []).slice()
     let i = 0

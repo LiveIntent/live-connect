@@ -11,27 +11,27 @@ export const toParams = (tuples: any[]) => {
   return acc
 }
 
-function _decode(s: string) {
+function _decode (s: string) {
   return s.indexOf('%') === -1 ? s : decodeURIComponent(s)
 }
 
-function _isNum(v: number) {
+function _isNum (v: number) {
   return isNaN(+v) ? v : +v
 }
 
-function _isNull(v: string | number) {
+function _isNull (v: string | number) {
   return v === 'null' || v === 'undefined' ? null : v
 }
 
-function _isBoolean(v: string | number) {
+function _isBoolean (v: string | number) {
   return v === 'false' ? false : (v === 'true' ? true : v)
 }
 
-function _convert(v: number) {
+function _convert (v: number) {
   return _isBoolean(_isNull(_isNum(v)))
 }
 
-export function urlParams(url: string) {
+export function urlParams (url: string) {
   // TODO: queryParams
   let questionMarkIndex: number, queryParams: any, historyIndex: number
   const obj = {}

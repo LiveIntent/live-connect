@@ -1,17 +1,18 @@
 import E from './replayemitter'
 import * as C from '../utils/consts'
 
-/**
- * @param {number} size
- * @param {function} errorCallback
- * @return {ReplayEmitter}
- */
-export function init (size?: number | string, errorCallback: (error: any) => void = (error) => {}): E {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function init (size?: number | string, errorCallback?: (error: any) => void): E {
   if (!size) {
     size = 5
   }
   try {
     console.log('events.bus.init')
+
+    if (!errorCallback) {
+      errorCallback = () => { return undefined }
+    }
+
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
     }

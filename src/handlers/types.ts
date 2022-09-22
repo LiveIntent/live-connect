@@ -10,7 +10,7 @@ export interface ExternalStorageHandler {
 export interface MinimalStorageHandler {
   getCookie: (key: string) => string | null,
   getDataFromLocalStorage: (key: string) => string | null,
-  localStorageIsEnabled: () => Boolean
+  localStorageIsEnabled: () => boolean
 }
 
 export interface StorageHandler extends MinimalStorageHandler {

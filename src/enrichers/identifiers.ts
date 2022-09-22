@@ -1,8 +1,3 @@
-/**
- * @typedef {Object} RetrievedIdentifier
- * @property {string} name
- * @property {string} value
- */
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
 import * as emitter from '../utils/emitter'
@@ -10,12 +5,7 @@ import { State } from '../pixel/state'
 import { StorageHandler } from '../handlers/types'
 import { HashedEmail } from '../utils/hash'
 
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
- */
-export function enrich(state: State, storageHandler: StorageHandler): State | {} {
+export function enrich (state: State, storageHandler: StorageHandler): State {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
@@ -24,11 +14,6 @@ export function enrich(state: State, storageHandler: StorageHandler): State | {}
   }
 }
 
-/**
- * @param {State} state
- * @returns {string[]}
- * @private
- */
 function _parseIdentifiersToResolve (state: State): string[] {
   let cookieNames = []
   if (state.identifiersToResolve) {
@@ -44,13 +29,6 @@ function _parseIdentifiersToResolve (state: State): string[] {
   return cookieNames
 }
 
-/**
- * @param {string[]} cookieNames
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]}}
- * @private
- */
 function _getIdentifiers (cookieNames: string[], storageHandler: StorageHandler): State {
   const identifiers = []
   let hashes = []
@@ -72,11 +50,6 @@ function _getIdentifiers (cookieNames: string[], storageHandler: StorageHandler)
   }
 }
 
-/**
- * @param {HashedEmail[]} hashes
- * @returns {HashedEmail[]}
- * @private
- */
 function _deduplicateHashes (hashes: HashedEmail[]): HashedEmail[] {
   const seen = {}
   const result = []
