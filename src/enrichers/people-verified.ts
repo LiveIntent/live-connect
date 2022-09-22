@@ -3,7 +3,7 @@ import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 import { State } from '../pixel/state'
 import { StorageHandler } from '../handlers/types'
 
-export function enrich (state: State, storageHandler: StorageHandler): State {
+export function enrich(state: State, storageHandler: StorageHandler): State | {} {
   console.log('people-verified.enrich', state)
   try {
     return { peopleVerifiedId: state.peopleVerifiedId || storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY) }
