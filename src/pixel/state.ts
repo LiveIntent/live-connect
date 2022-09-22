@@ -29,7 +29,7 @@ export interface State {
   identityResolutionConfig?: object // TODO: IdentityResolutionConfig
   gdprApplies?: boolean,
   gdprConsent?: string,
-  contextSelectors?: string[],
+  contextSelectors?: string,
   contextElementsLength?: number,
   contextElements?: string,
   privacyMode?: boolean,

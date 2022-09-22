@@ -15,7 +15,7 @@ import { HashedEmail } from '../utils/hash'
  * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
-export function enrich (state: State, storageHandler: StorageHandler): State {
+export function enrich(state: State, storageHandler: StorageHandler): State | {} {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {

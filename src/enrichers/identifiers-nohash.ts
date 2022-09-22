@@ -14,7 +14,7 @@ import { StorageHandler } from '../handlers/types'
  * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
-export function enrich (state: State, storageHandler: StorageHandler): State {
+export function enrich(state: State, storageHandler: StorageHandler): State | {} {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
@@ -29,7 +29,7 @@ export function enrich (state: State, storageHandler: StorageHandler): State {
  * @returns {string[]}
  * @private
  */
-function _parseIdentifiersToResolve (state: State, storageHandler: StorageHandler): State {
+function _parseIdentifiersToResolve(state: State, storageHandler: StorageHandler): { retrievedIdentifiers: string[] } {
   state.identifiersToResolve = state.identifiersToResolve || []
   const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',')
   const identifiers = []
