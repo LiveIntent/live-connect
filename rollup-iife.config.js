@@ -7,6 +7,7 @@ import replace from '@rollup/plugin-replace'
 import packageJson from './package.json'
 import cleaner from 'rollup-plugin-cleaner'
 import strip from '@rollup/plugin-strip'
+import typescript from '@rollup/plugin-typescript'
 
 const OUTPUT_DIR = './dist/'
 
@@ -22,6 +23,7 @@ export default {
         OUTPUT_DIR
       ]
     }),
+    typescript(),
     resolve(),
     commonjs(),
     babel(),

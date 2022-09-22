@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "outDir": "./out-tsc",
+    "allowJs": true,
+    "typeRoots": ["./node_modules/@types"],
+    "esModuleInterop": true,
+    "target": "es5",
+  },
+  "include": ["./src/**/*"]
+}
