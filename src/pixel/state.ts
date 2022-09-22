@@ -152,8 +152,8 @@ export class StateWrapper {
 
   asTuples (): [string, string][] {
     let array = []
-    _pArray.forEach((keyWithParamsExtractor) => {
-      const params = keyWithParamsExtractor[1](this.data)
+    _pArray.forEach((paramsExtractor) => {
+      const params = paramsExtractor(this.data)
       if (params && params.length) {
         if (params[0] instanceof Array) {
           array = array.concat(params)

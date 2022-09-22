@@ -1,36 +1,4 @@
 import { LiveConnect, LiveConnectConfig } from './types'
-/**
- * @typedef {Object} StandardLiveConnect
- * @property {(function)} push
- * @property {(function)} fire
- * @property {(function)} peopleVerifiedId
- * @property {(boolean)} ready
- * @property {(function)} resolve
- * @property {(function)} resolutionCallUrl
- * @property {(LiveConnectConfiguration)} config
- */
-
-/**
- * @typedef {Object} IdexConfig
- * @property {(number|undefined)} expirationHours
- * @property {(number|undefined)} ajaxTimeout
- * @property {(string|undefined)} source
- * @property {(number|undefined)} publisherId
- * @property {(string|undefined)} url
- */
-
-/**
- * @typedef {Object} LiveConnectConfiguration
- * @property {(string|undefined)} appId
- * @property {(StorageStrategy|null)} storageStrategy
- * @property {(string|undefined)} collectorUrl
- * @property {(string|undefined)} usPrivacyString
- * @property {(number|undefined)} expirationDays
- * @property {{string[]|undefined}} identifiersToResolve
- * @property {string|undefined} wrapperName
- * @property {{IdexConfig|undefined}} identityResolutionConfig
- */
-
 import { PixelSender } from './pixel/sender'
 import * as eventBus from './events/bus'
 import * as emitter from './utils/emitter'
@@ -45,7 +13,7 @@ import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { isArray, isObject, merge } from './utils/types'
 import { identityResolver, IdentityResolver } from './idex/identity-resolver'
 import { fromExternalStorageHandler } from './handlers/storage-handler'
-import { CallHandler } from './handlers/call-handler'
+import { CallHandler, ExternalCallHandler, fromExternalCallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
 import { HashedEmail } from './utils/hash'
 import { ExternalStorageHandler } from './handlers/types'
@@ -120,17 +88,10 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): Live
   }
 }
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {StandardLiveConnect}
- * @private
- */
-function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: any): LiveConnect {
+function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): LiveConnect {
   try {
     eventBus.init()
-    const callHandler = CallHandler(externalCallHandler)
+    const callHandler = fromExternalCallHandler(externalCallHandler)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler)
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
@@ -171,14 +132,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
   }
 }
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {StandardLiveConnect}
- * @constructor
- */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): LiveConnect {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []

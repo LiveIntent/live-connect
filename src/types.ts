@@ -29,15 +29,15 @@ export type ResolutionParams = Record<string, string | string[]>
 export type IdentityResultionResult = object
 
 export interface LiveConnect {
-    ready: boolean,
-    push: (event: object) => void,
-    fire: () => void,
-    resolve: (
+    ready?: boolean,
+    push?: (event: object) => void,
+    fire?: () => void,
+    resolve?: (
         successCallBack: (result: IdentityResultionResult) => void,
         errorCallBack: () => void,
         additionalParams?: ResolutionParams
     ) => void,
-    resolutionCallUrl: (additionalParams: ResolutionParams) => string,
-    peopleVerifiedId: string,
-    config: LiveConnectConfig,
+    resolutionCallUrl?: (additionalParams: ResolutionParams) => string,
+    peopleVerifiedId?: string,
+    config?: LiveConnectConfig,
 }

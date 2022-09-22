@@ -4,11 +4,13 @@ import * as externalStorage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
+import { fromExternalStorageHandler, StorageHandler } from '../../../src/handlers/storage-handler'
+import { StorageStrategy } from '../../../src/model/storage-strategy'
+import { ExternalStorageHandler } from '../../../src/handlers/types'
 
 use(dirtyChai)
 
-const storage = StorageHandler('cookie', externalStorage)
+const storage = fromExternalStorageHandler(StorageStrategy.cookie, externalStorage as ExternalStorageHandler)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -34,7 +36,7 @@ describe('IdentifiersManager', () => {
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-    const localStorage = StorageHandler('ls', externalStorage)
+    const localStorage = fromExternalStorageHandler(StorageStrategy.localStorage, externalStorage as ExternalStorageHandler)
     const resolutionResult = identifiers.resolve({}, localStorage)
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
@@ -42,7 +44,7 @@ describe('IdentifiersManager', () => {
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
-    const storageNone = StorageHandler('none', externalStorage)
+    const storageNone = fromExternalStorageHandler(StorageStrategy.none, externalStorage as ExternalStorageHandler)
     const resolutionResult = identifiers.resolve({}, storageNone)
     expect(resolutionResult).to.include({ domain: '.www.example.com', liveConnectId: null })
   })
@@ -54,7 +56,7 @@ describe('IdentifiersManager', () => {
 
   it('should re-use a first party cookie if it exist', function () {
     const id = 'xxxxx'
-    storage.setCookie('_lc2_fpi', id, 400, undefined, '.example.com')
+    storage.setCookie('_lc2_fpi', id, undefined, undefined, '.example.com')
     const resolutionResult = identifiers.resolve({}, storage)
     expect(storage.getCookie('_lc2_fpi')).to.eql(id)
     expect(resolutionResult.liveConnectId).to.eql(id)

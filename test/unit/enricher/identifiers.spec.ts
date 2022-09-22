@@ -4,11 +4,13 @@ import jsdom from 'mocha-jsdom'
 import * as externalStorage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
+import { fromExternalStorageHandler } from '../../../src/handlers/storage-handler'
+import { StorageStrategy } from '../../../src/model/storage-strategy'
+import { ExternalStorageHandler } from '../../../src/handlers/types'
 
 use(dirtyChai)
 
-const storage = StorageHandler('cookie', externalStorage)
+const storage = fromExternalStorageHandler(StorageStrategy.cookie, externalStorage as ExternalStorageHandler)
 
 const COOKIE_NAME = 'sample_cookie'
 const SIMPLE_COOKIE1 = 'sample_value1'

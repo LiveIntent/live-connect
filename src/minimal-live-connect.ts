@@ -13,50 +13,37 @@ import { IdentityResultionResult, LiveConnectConfig, ResolutionParams } from './
 import type { LiveConnect } from './types'
 import { ExternalStorageHandler } from './handlers/types'
 
-export class MinimalLiveConnect implements LiveConnect {
-  config: LiveConnectConfig
-  ready = false
-  resolver: IdentityResolver
-  peopleVerifiedId: string
-
-  constructor (liveConnectConfig: State, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler) {
-    console.log('Initializing LiveConnect')
-    try {
-      window && (window.liQ = window.liQ || [])
-      const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-      const callHandler = fromExternalCallHandler(externalCallHandler)
-      const configWithPrivacy = merge(configuration, privacyConfig(configuration))
-      const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
-      const storageHandler = minimalFromExternalStorageHandler(storageStrategy, externalStorageHandler)
-      const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler))
-      const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
-
-      this.resolver = noCacheIdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler)
-      this.config = configuration
-      this.peopleVerifiedId = peopleVerifiedDataWithAdditionalIds.peopleVerifiedId
-      this.ready = true
-    } catch (x) {
-      console.error(x)
+function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): LiveConnect {
+  try {
+    const callHandler = fromExternalCallHandler(externalCallHandler)
+    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
+    const storageHandler = minimalFromExternalStorageHandler(storageStrategy, externalStorageHandler)
+    const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler))
+    const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
+    const resolver = noCacheIdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler)
+    return {
+      push: (arg) => window.liQ.push(arg),
+      fire: () => window.liQ.push({}),
+      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
+      ready: true,
+      resolve: resolver.resolve,
+      resolutionCallUrl: resolver.getUrl,
+      config: liveConnectConfig
     }
+  } catch (x) {
+    console.error(x)
   }
+}
 
-  resolve (
-    successCallBack: (result: IdentityResultionResult) => void,
-    errorCallBack: () => void,
-    additionalParams?: ResolutionParams
-  ): void {
-    return this.resolver.resolve(successCallBack, errorCallBack, additionalParams)
+export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): LiveConnect {
+  console.log('Initializing LiveConnect')
+  try {
+    window && (window.liQ = window.liQ || [])
+    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
+    return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler)
+  } catch (x) {
+    console.error(x)
   }
-
-  resolutionCallUrl (additionalParams: ResolutionParams): string {
-    return this.resolver.getUrl(additionalParams)
-  }
-
-  push (event: object): void {
-    window.liQ.push(event)
-  }
-
-  fire (): void {
-    this.push({})
-  }
+  return {}
 }
