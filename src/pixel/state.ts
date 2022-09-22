@@ -17,8 +17,8 @@ export interface State {
   usPrivacyString?: string,
   expirationDays?: string,
   wrapperName?: string,
-  hashesFromIdentifiers?: string[], // TODO: HashedEmail[]
-  identifiersToResolve?: string,
+  hashesFromIdentifiers?: HashedEmail[],
+  identifiersToResolve?: string | string[],
   decisionIds?: string[],
   peopleVerifiedId?: string,
   storageStrategy?: string,

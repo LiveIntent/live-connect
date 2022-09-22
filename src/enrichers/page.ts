@@ -1,3 +1,4 @@
+import { State } from '../pixel/state'
 import { getPage, getReferrer, getContextElements } from '../utils/page'
 
 /**
@@ -9,7 +10,7 @@ let _currentPage = null
  * @param state
  * @return {{pageUrl: string|undefined, referrer: string|undefined, contextElements: string|undefined}}
  */
-export function enrich (state) {
+export function enrich (state: State): State {
   if (!_currentPage) {
     _currentPage = {
       pageUrl: getPage(),

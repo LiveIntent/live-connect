@@ -73,16 +73,17 @@ function _pixelError (error: Error) {
   }
 }
 
-export function register (state: StateWrapper, callHandler: CallHandler) {
+// TODO state
+export function register (state: any, callHandler: CallHandler) {
   try {
     console.log('handlers.error.register', state, _pixelSender)
     if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
       window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
     }
-    _pixelSender = new PixelSender({
-      liveConnectConfig: state,
-      calls: callHandler,
-    });
+    _pixelSender = new PixelSender(
+      state,
+      callHandler,
+    );
     _state = state || {}
   } catch (e) {
     console.error('handlers.error.register', e)
