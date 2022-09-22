@@ -1,4 +1,4 @@
-import { LiveConnect, LiveConnectConfig, liveConnectConfig } from './types';
+import { LiveConnect, LiveConnectConfig } from './types';
 /**
  * @typedef {Object} StandardLiveConnect
  * @property {(function)} push
@@ -44,10 +44,11 @@ import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { isArray, isObject, merge } from './utils/types'
 import { identityResolver, IdentityResolver } from './idex/identity-resolver'
-import { StorageHandler } from './handlers/storage-handler'
+import { fromExternalStorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
 import { HashedEmail } from './utils/hash';
+import { ExternalStorageHandler } from './handlers/types';
 
 interface HemStore {
   hashedEmail?: HashedEmail[]
@@ -126,14 +127,14 @@ function _getInitializedLiveConnect(liveConnectConfig: LiveConnectConfig): LiveC
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: any, externalCallHandler: any): LiveConnect {
+function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: any): LiveConnect {
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler)
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
+    const storageHandler = fromExternalStorageHandler(storageStrategy, externalStorageHandler)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
 
     const enrichers = [pageEnrich, identifiersEnrich]

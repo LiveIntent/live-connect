@@ -22,11 +22,7 @@ export interface State extends LiveConnectConfig {
   hashedEmail?: HashedEmail[],
   providedHash?: string,
   gdprConsent?: string,
-<<<<<<< Updated upstream
-  contextSelectors?: string,
-=======
   contextSelectors?: string | string[],
->>>>>>> Stashed changes
   contextElementsLength?: number,
   contextElements?: string,
   privacyMode?: boolean,

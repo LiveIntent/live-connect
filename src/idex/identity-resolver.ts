@@ -16,11 +16,12 @@ export interface IdentityResolver {
   getUrl: (additionalParams: object) => string
 }
 
+// TODO: type config
 export function noCacheIdentityResolver (config, calls: CallHandler): IdentityResolver {
   return makeIdentityResolver(config || {}, calls, noopCache)
 }
 
-export function identityResolver(config, storageHandler: StorageHandler, calls: CallHandler): IdentityResolver {
+export function identityResolver (config, storageHandler: StorageHandler, calls: CallHandler): IdentityResolver {
   const nonNullConfig = config || {}
   const idexConfig = nonNullConfig.identityResolutionConfig || {}
   const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS

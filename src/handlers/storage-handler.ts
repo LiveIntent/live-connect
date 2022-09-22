@@ -1,10 +1,10 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
 import * as emitter from '../utils/emitter'
-import { StorageHandler } from './types'
+import { ExternalStorageHandler, StorageHandler } from './types'
 
 // converts an external storage handler to a storage handler, using default implementations for undefined function
-export function StorageHandler (storageStrategy: StorageStrategy, externalStorageHandler: object): StorageHandler {
+export function fromExternalStorageHandler (storageStrategy: StorageStrategy, externalStorageHandler: ExternalStorageHandler): StorageHandler {
   const errors = []
 
   function _externalOrError (functionName) {
@@ -19,7 +19,8 @@ export function StorageHandler (storageStrategy: StorageStrategy, externalStorag
     }
   }
 
-  const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
+  const _orElseNoOp = (fName: string) =>
+    strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
 
   const functions = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),

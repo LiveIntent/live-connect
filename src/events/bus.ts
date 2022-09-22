@@ -6,7 +6,7 @@ import * as C from '../utils/consts'
  * @param {function} errorCallback
  * @return {ReplayEmitter}
  */
-export function init (size: number | string, errorCallback: (error: any) => void): E {
+export function init (size?: number | string, errorCallback: (error: any) => void = (error) => {}): E {
   if (!size) {
     size = 5
   }
