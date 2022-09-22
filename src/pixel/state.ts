@@ -2,34 +2,31 @@ import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, ParamOrEmpty, asParamOrEmptyTransform } from '../utils/types'
+import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, asParamOrEmptyTransform } from '../utils/types'
 import { toParams } from '../utils/url'
 import { ErrorDetails } from '../events/error-pixel'
 import { HashedEmail } from '../utils/hash'
+import { IdentityResolutionConfig, LiveConnectConfig } from '../types'
 
-export interface State {
-  appId?: string,
+export interface State extends LiveConnectConfig {
   eventSource?: object,
   liveConnectId?: string,
   trackerName?: string,
   pageUrl?: string,
   domain?: string,
-  usPrivacyString?: string,
-  expirationDays?: string,
-  wrapperName?: string,
   hashesFromIdentifiers?: HashedEmail[],
-  identifiersToResolve?: string | string[],
   decisionIds?: string[],
   peopleVerifiedId?: string,
-  storageStrategy?: string,
   errorDetails?: ErrorDetails,
   retrievedIdentifiers?: string[], // TODO: RetrievedIdentifiers[]
   hashedEmail?: HashedEmail[],
   providedHash?: string,
-  identityResolutionConfig?: object // TODO: IdentityResolutionConfig
-  gdprApplies?: boolean,
   gdprConsent?: string,
+<<<<<<< Updated upstream
   contextSelectors?: string,
+=======
+  contextSelectors?: string | string[],
+>>>>>>> Stashed changes
   contextElementsLength?: number,
   contextElements?: string,
   privacyMode?: boolean,

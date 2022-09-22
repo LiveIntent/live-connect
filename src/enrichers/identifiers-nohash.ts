@@ -7,14 +7,14 @@ import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from '../utils/types'
 import * as emitter from '../utils/emitter'
 import { State } from '../pixel/state'
-import { StorageHandler } from '../handlers/types'
+import { MinimalStorageHandler, StorageHandler } from '../handlers/types'
 
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
-export function enrich(state: State, storageHandler: StorageHandler): State | {} {
+export function enrich (state: State, storageHandler: MinimalStorageHandler): State {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
@@ -29,7 +29,7 @@ export function enrich(state: State, storageHandler: StorageHandler): State | {}
  * @returns {string[]}
  * @private
  */
-function _parseIdentifiersToResolve(state: State, storageHandler: StorageHandler): { retrievedIdentifiers: string[] } {
+function _parseIdentifiersToResolve (state: State, storageHandler: MinimalStorageHandler): State {
   state.identifiersToResolve = state.identifiersToResolve || []
   const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',')
   const identifiers = []

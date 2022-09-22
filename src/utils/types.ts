@@ -1,3 +1,5 @@
+import { State } from "../pixel/state"
+
 export const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const uuidRegex = new RegExp(`^${UUID}$`, 'i')
 
@@ -109,7 +111,7 @@ export function mapAsParams (paramsMap: Record<string, string | string[]>): [str
   }
 }
 
-export function merge (obj1: object, obj2: object): object {
+export function merge (obj1: State, obj2: State): State {
   const res = {}
   const clean = (obj) => isObject(obj) ? obj : {}
   const first = clean(obj1)

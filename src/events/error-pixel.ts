@@ -4,6 +4,8 @@ import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
 import { CallHandler } from '../handlers/call-handler'
+import { } from '../standard-live-connect'
+import { LiveConnectConfig } from '../types'
 
 let _state = null
 let _pixelSender = null
@@ -73,18 +75,17 @@ function _pixelError (error: Error) {
   }
 }
 
-// TODO state
-export function register (state: any, callHandler: CallHandler) {
+export function register (config: LiveConnectConfig, callHandler: CallHandler) {
   try {
-    console.log('handlers.error.register', state, _pixelSender)
+    console.log('handlers.error.register', config, _pixelSender)
     if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
       window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
     }
     _pixelSender = new PixelSender(
-      state,
+      config,
       callHandler,
     );
-    _state = state || {}
+    _state = config || {}
   } catch (e) {
     console.error('handlers.error.register', e)
   }

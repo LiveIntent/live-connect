@@ -4,6 +4,8 @@ import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from '../utils/types'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
+import { State } from '../pixel/state'
+import { StorageHandler } from '../handlers/types'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
@@ -13,11 +15,11 @@ const DEFAULT_EXPIRATION_DAYS = 730
  * @param {State} state
  * @param {StorageHandler} storageHandler
  */
-export function resolve (state, storageHandler) {
+export function resolve (state: State, storageHandler: StorageHandler): State {
   try {
     console.log('identifiers.resolve', state)
 
-    const determineTld = () => {
+    const determineTld = (): string => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
       if (cachedDomain) {
         return cachedDomain
@@ -34,7 +36,7 @@ export function resolve (state, storageHandler) {
       return `.${domain}`
     }
 
-    const getOrAddWithExpiration = (key, value) => {
+    const getOrAddWithExpiration = (key: string, value: string) => {
       try {
         const oldValue = storageHandler.get(key)
         const expiry = expiresInDays(storageOptions.expires)
@@ -55,17 +57,20 @@ export function resolve (state, storageHandler) {
      * @returns {string}
      * @private
      */
-    const generateCookie = (apexDomain) => {
+    const generateCookie = (apexDomain: string): string => {
       const cookie = `${domainHash(apexDomain)}--${ulid()}`
       return cookie.toLocaleLowerCase()
     }
 
     const expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS
+
     const cookieDomain = determineTld()
+
     const storageOptions = {
       expires: expiry,
       domain: cookieDomain
     }
+
     const liveConnectIdentifier = getOrAddWithExpiration(
       NEXT_GEN_FP_NAME,
       generateCookie(cookieDomain)
@@ -74,6 +79,7 @@ export function resolve (state, storageHandler) {
     if (liveConnectIdentifier) {
       storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)
     }
+
     return {
       domain: cookieDomain,
       liveConnectId: liveConnectIdentifier,
