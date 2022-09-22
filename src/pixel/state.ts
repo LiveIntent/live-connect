@@ -22,7 +22,7 @@ export interface State extends LiveConnectConfig {
   hashedEmail?: HashedEmail[],
   providedHash?: string,
   gdprConsent?: string,
-  contextSelectors?: string | string[],
+  contextSelectors?: string,
   contextElementsLength?: number,
   contextElements?: string,
   privacyMode?: boolean,
@@ -53,7 +53,7 @@ const _pArray: ((value: State) => ParamOrEmpty)[] = [
     return asParamOrEmptyTransform('ae', state.errorDetails, (s) => base64UrlEncode(JSON.stringify(s)))
   },
   state => {
-    const identifiers = state.retrievedIdentifiers
+    const identifiers: any = state.retrievedIdentifiers
     const identifierParams = []
     if (isArray(identifiers)) {
       identifiers.forEach((i) => identifierParams.push(asStringParam(`ext_${i.name}`, i.value)))
