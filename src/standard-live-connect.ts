@@ -1,3 +1,4 @@
+import { liveConnectConfig } from './types';
 /**
  * @typedef {Object} StandardLiveConnect
  * @property {(function)} push
@@ -48,7 +49,7 @@ import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
 
 const hemStore = {}
-function _pushSingleEvent (event, pixelClient, enrichedState) {
+function _pushSingleEvent(event, pixelClient, enrichedState) {
   if (!event || !isObject(event)) {
     emitter.error('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {
@@ -68,7 +69,14 @@ function _pushSingleEvent (event, pixelClient, enrichedState) {
  * @return {Object|null}
  * @private
  */
-function _configMatcher (previousConfig, newConfig) {
+
+interface configMatcher {
+  appId: string[],
+  wrapperName: string[],
+  collectorUrl: string[]
+}
+
+function _configMatcher(previousConfig: liveConnectConfig, newConfig: liveConnectConfig): configMatcher {
   const equalConfigs = previousConfig.appId === newConfig.appId &&
     previousConfig.wrapperName === newConfig.wrapperName &&
     previousConfig.collectorUrl === newConfig.collectorUrl
@@ -81,7 +89,7 @@ function _configMatcher (previousConfig, newConfig) {
   }
 }
 
-function _processArgs (args, pixelClient, enrichedState) {
+function _processArgs(args: any[], pixelClient: PixelSender, enrichedState: any): void {
   try {
     args.forEach(arg => {
       const event = arg
@@ -103,7 +111,7 @@ function _processArgs (args, pixelClient, enrichedState) {
  * @return {StandardLiveConnect|null}
  * @private
  */
-function _getInitializedLiveConnect (liveConnectConfig) {
+function _getInitializedLiveConnect(liveConnectConfig: liveConnectConfig): liveConnectConfig | null {
   try {
     if (window && window.liQ && window.liQ.ready) {
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
@@ -127,7 +135,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @returns {StandardLiveConnect}
  * @private
  */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
@@ -178,7 +186,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  * @returns {StandardLiveConnect}
  * @constructor
  */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect(liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []

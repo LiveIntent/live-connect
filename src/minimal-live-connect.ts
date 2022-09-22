@@ -1,3 +1,5 @@
+import { State } from './pixel/state';
+import { liveConnectConfig } from './types';
 /**
  * @typedef {Object} MinimalLiveConnect
  * @property {(function)} push
@@ -25,10 +27,10 @@ import { StorageStrategy } from './model/storage-strategy'
  * @returns {MinimalLiveConnect}
  * @private
  */
-function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _minimalInitialization(liveConnectConfig: State, externalStorageHandler: any, externalCallHandler: object) {
   try {
     const callHandler = CallHandler(externalCallHandler)
-    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
+    const configWithPrivacy: State = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
     const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler))
@@ -55,7 +57,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
  * @returns {MinimalLiveConnect}
  * @constructor
  */
-export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function MinimalLiveConnect(liveConnectConfig: State, externalStorageHandler: object, externalCallHandler: CallHandler): object {
   console.log('Initializing LiveConnect')
   try {
     window && (window.liQ = window.liQ || [])
