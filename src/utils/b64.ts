@@ -6,7 +6,7 @@ import { isFunction } from './types'
  * @returns {string}
  * @private
  */
-function _safeBtoa (s) {
+function _safeBtoa(s: string): string {
   const res = btoaFromLib(s)
   return res || ''
 }
@@ -15,7 +15,7 @@ function _safeBtoa (s) {
  * @type {RegExp}
  * @private
  */
-const _base64encodeRegex = /[+/]|=+$/g
+const _base64encodeRegex: RegExp = /[+/]|=+$/g
 /**
  * @type {{'+': string, '/': string}}
  * @private
@@ -30,7 +30,7 @@ const _base64ToUrlEncodedChars = {
  * @returns {*|string}
  * @private
  */
-function _replaceBase64Chars (x) {
+function _replaceBase64Chars(x: string): any | string {
   return _base64ToUrlEncodedChars[x] || ''
 }
 
@@ -38,11 +38,11 @@ function _replaceBase64Chars (x) {
  * @param {string} s
  * @returns {*}
  */
-export function base64UrlEncode (s) {
+export function base64UrlEncode(s: string): any {
   let btoa = null
   // First we escape the string using encodeURIComponent to get the UTF-8 encoding of the characters,
   // then we convert the percent encodings into raw bytes, and finally feed it to btoa() function.
-  const utf8Bytes = encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1))
+  const utf8Bytes = encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode(Number('0x') + p1))
   try {
     btoa = (window && isFunction(window.btoa)) ? window.btoa : _safeBtoa
   } catch (e) {

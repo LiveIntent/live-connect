@@ -2,7 +2,7 @@
  * btoa() as defined by the HTML and Infra specs, which mostly just references
  * RFC 4648.
  */
-export function btoa (s) {
+export function btoa(s: string): string {
   let i
   // String conversion as required by Web IDL.
   s = `${s}`
@@ -43,6 +43,6 @@ export function btoa (s) {
  */
 const keystr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-function btoaLookup (index) {
+function btoaLookup(index: number): string | undefined {
   return (index >= 0 && index < 64) ? keystr[index] : undefined
 }

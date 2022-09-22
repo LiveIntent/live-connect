@@ -5,8 +5,8 @@ import { isFunction } from './types'
  * @param uri the pixel uri
  * @param onload a function that is executed if the image is successfully loaded
  */
-export function sendPixel (uri, onload) {
-  const img = new window.Image()
+export function sendPixel(uri: string, onload: () => any) {
+  const img = new (window as any).Image()
   if (isFunction(onload)) {
     img.onload = onload
   }

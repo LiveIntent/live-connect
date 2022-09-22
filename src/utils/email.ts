@@ -1,13 +1,13 @@
 import { trim } from './types'
-import { hashEmail } from '../utils/hash'
+import { hashEmail } from './hash'
 
-const emailRegex = () => /\S+(@|%40)\S+\.\S+/
+const emailRegex = (): RegExp => /\S+(@|%40)\S+\.\S+/
 
 /**
- * @param {string} s
+ * @param {string} 
  * @returns {boolean}
  */
-export function isEmail (s) {
+export function isEmail(s: string): boolean {
   return emailRegex().test(s)
 }
 
@@ -15,11 +15,11 @@ export function isEmail (s) {
  * @param {string} s
  * @returns {boolean}
  */
-export function containsEmailField (s) {
+export function containsEmailField(s: string): boolean {
   return emailRegex().test(s)
 }
 
-export function extractEmail (s) {
+export function extractEmail(s: string): string {
   const result = s.match(emailRegex())
   return result && result.map(trim)[0]
 }
@@ -28,7 +28,7 @@ export function extractEmail (s) {
  * @param {string} s
  * @returns {string[]}
  */
-export function listEmailsInString (s) {
+export function listEmailsInString(s: string): string[] {
   const result = []
   // eslint-disable-next-line
   const emailLikeRegex = `([\\w\\d.+-]+(@|%40)[\\w\\d-]+.[\\w\\d.-]+)`
@@ -46,7 +46,9 @@ export function listEmailsInString (s) {
  * @param originalString
  * @returns {{hashesFromOriginalString: HashedEmail[], stringWithoutRawEmails: string}}
  */
-export function replaceEmailsWithHashes (originalString) {
+
+
+export function replaceEmailsWithHashes(originalString: string): { stringWithoutRawEmails: string; hashesFromOriginalString: string[] } {
   const emailsInString = listEmailsInString(originalString)
   const hashes = []
   var convertedString = originalString
