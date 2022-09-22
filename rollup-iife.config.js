@@ -2,7 +2,7 @@
 import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
-import { uglify } from 'rollup-plugin-uglify'
+import { terser } from 'rollup-plugin-terser'
 import replace from '@rollup/plugin-replace'
 import packageJson from './package.json'
 import cleaner from 'rollup-plugin-cleaner'
@@ -28,7 +28,7 @@ export default {
     commonjs(),
     babel(),
     strip(),
-    uglify(),
+    terser(),
     replace({ LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}` })
   ]
 }
