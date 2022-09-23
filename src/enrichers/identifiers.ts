@@ -1,18 +1,9 @@
-/**
- * @typedef {Object} RetrievedIdentifier
- * @property {string} name
- * @property {string} value
- */
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
 import * as emitter from '../utils/emitter'
+import { HashedEmail, IMinimalStorageHandler, State } from '../types'
 
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
- */
-export function enrich (state, storageHandler) {
+export function enrich (state: State, storageHandler: IMinimalStorageHandler) {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
@@ -21,18 +12,13 @@ export function enrich (state, storageHandler) {
   }
 }
 
-/**
- * @param {State} state
- * @returns {string[]}
- * @private
- */
-function _parseIdentifiersToResolve (state) {
+function _parseIdentifiersToResolve (state: State): string[] {
   let cookieNames = []
   if (state.identifiersToResolve) {
     if (isArray(state.identifiersToResolve)) {
-      cookieNames = state.identifiersToResolve
+      cookieNames = state.identifiersToResolve as string[]
     } else if (isString(state.identifiersToResolve)) {
-      cookieNames = state.identifiersToResolve.split(',')
+      cookieNames = (state.identifiersToResolve as string).split(',')
     }
   }
   for (let i = 0; i < cookieNames.length; i++) {
@@ -41,14 +27,7 @@ function _parseIdentifiersToResolve (state) {
   return cookieNames
 }
 
-/**
- * @param {string[]} cookieNames
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]}}
- * @private
- */
-function _getIdentifiers (cookieNames, storageHandler) {
+function _getIdentifiers (cookieNames: string[], storageHandler: IMinimalStorageHandler): State {
   const identifiers = []
   let hashes = []
   for (let i = 0; i < cookieNames.length; i++) {
@@ -69,12 +48,7 @@ function _getIdentifiers (cookieNames, storageHandler) {
   }
 }
 
-/**
- * @param {HashedEmail[]} hashes
- * @returns {HashedEmail[]}
- * @private
- */
-function _deduplicateHashes (hashes) {
+function _deduplicateHashes (hashes: HashedEmail[]): HashedEmail[] {
   const seen = {}
   const result = []
   for (let i = 0; i < hashes.length; i++) {

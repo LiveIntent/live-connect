@@ -1,35 +1,3 @@
-/**
- * @typedef {Object} StandardLiveConnect
- * @property {(function)} push
- * @property {(function)} fire
- * @property {(function)} peopleVerifiedId
- * @property {(boolean)} ready
- * @property {(function)} resolve
- * @property {(function)} resolutionCallUrl
- * @property {(LiveConnectConfiguration)} config
- */
-
-/**
- * @typedef {Object} IdexConfig
- * @property {(number|undefined)} expirationHours
- * @property {(number|undefined)} ajaxTimeout
- * @property {(string|undefined)} source
- * @property {(number|undefined)} publisherId
- * @property {(string|undefined)} url
- */
-
-/**
- * @typedef {Object} LiveConnectConfiguration
- * @property {(string|undefined)} appId
- * @property {(StorageStrategy|null)} storageStrategy
- * @property {(string|undefined)} collectorUrl
- * @property {(string|undefined)} usPrivacyString
- * @property {(number|undefined)} expirationDays
- * @property {{string[]|undefined}} identifiersToResolve
- * @property {string|undefined} wrapperName
- * @property {{IdexConfig|undefined}} identityResolutionConfig
- */
-
 import { PixelSender } from './pixel/sender'
 import * as eventBus from './events/bus'
 import * as emitter from './utils/emitter'
@@ -46,6 +14,7 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
+import { ConfigMatcher, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState) {
@@ -61,14 +30,7 @@ function _pushSingleEvent (event, pixelClient, enrichedState) {
   }
 }
 
-/**
- *
- * @param {LiveConnectConfiguration} previousConfig
- * @param {LiveConnectConfiguration} newConfig
- * @return {Object|null}
- * @private
- */
-function _configMatcher (previousConfig, newConfig) {
+function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMatcher {
   const equalConfigs = previousConfig.appId === newConfig.appId &&
     previousConfig.wrapperName === newConfig.wrapperName &&
     previousConfig.collectorUrl === newConfig.collectorUrl
@@ -97,13 +59,7 @@ function _processArgs (args, pixelClient, enrichedState) {
   }
 }
 
-/**
- *
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @return {StandardLiveConnect|null}
- * @private
- */
-function _getInitializedLiveConnect (liveConnectConfig) {
+function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiveConnect {
   try {
     if (window && window.liQ && window.liQ.ready) {
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
@@ -120,14 +76,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
   }
 }
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {StandardLiveConnect}
- * @private
- */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
   try {
     eventBus.init()
     const callHandler = CallHandler(externalCallHandler)
@@ -166,14 +115,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   }
 }
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {StandardLiveConnect}
- * @constructor
- */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
   console.log('Initializing LiveConnect')
   try {
     const queue = window.liQ || []

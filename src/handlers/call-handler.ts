@@ -1,23 +1,13 @@
 import { isFunction } from '../utils/types'
 import * as emitter from '../utils/emitter'
-
-/**
- * @typedef {Object} CallHandler
- * @property {function} [ajaxGet]
- * @property {function} [pixelGet]
- */
+import { ExternalCallHandler, ICallHandler } from '../types'
 
 const _noOp = () => undefined
 
-/**
- * @param {CallHandler} externalCallHandler
- * @returns {CallHandler}
- * @constructor
- */
-export function CallHandler (externalCallHandler) {
+export function CallHandler (externalCallHandler: ExternalCallHandler): ICallHandler {
   const errors = []
 
-  function _externalOrError (functionName) {
+  function _externalOrError (functionName: string) {
     const hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName])
     if (hasExternal) {
       return externalCallHandler[functionName]

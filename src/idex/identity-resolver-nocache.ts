@@ -1,11 +1,6 @@
+import { ICallHandler, IIdentityResolver, State } from '../types'
 import { noopCache, makeIdentityResolver } from './common'
 
-/**
- * @param {State} config
- * @param {CallHandler} calls
- * @return {IdentityResolver}
- * @constructor
- */
-export function IdentityResolver (config, calls) {
+export function IdentityResolver (config: State, calls: ICallHandler): IIdentityResolver {
   return makeIdentityResolver(config || {}, calls, noopCache)
 }

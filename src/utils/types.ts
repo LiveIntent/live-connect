@@ -1,126 +1,84 @@
+import { State } from "../types"
+
 export const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const uuidRegex = new RegExp(`^${UUID}$`, 'i')
 
-/**
- * @param {*} value
- * @returns {string}
- */
-export function safeToString (value) {
+export function safeToString (value: any): string {
   return typeof value === 'object' ? JSON.stringify(value) : ('' + value)
 }
 
-/**
- * Checks whether the param NOT `null` and NOT `undefined`
- * @param {*} value
- * @returns {boolean}
- */
-export function isNonEmpty (value) {
+export function isNonEmpty (value: any): boolean {
   return typeof value !== 'undefined' && value !== null && trim(value).length > 0
 }
 
-export function isUUID (value) {
+export function isUUID (value: string): boolean {
   return value && uuidRegex.test(trim(value))
 }
 
-/**
- * @param {*} arr
- * @returns {boolean}
- */
-export function isArray (arr) {
+export function isArray (arr: any): boolean {
   return Object.prototype.toString.call(arr) === '[object Array]'
 }
 
 const hasTrim = !!String.prototype.trim
 
-/**
- * @param value
- * @return {string}
- */
-export function trim (value) {
+export function trim (value: any): string {
   return hasTrim ? ('' + value).trim() : ('' + value).replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
 }
 
-/**
- * @param {*} str
- * @returns {boolean}
- */
-export function isString (str) {
+export function isString (str: any): boolean {
   return typeof str === 'string'
 }
 
-/**
- * @param fistStr
- * @param secondStr
- * @return {boolean}
- */
-export function strEqualsIgnoreCase (fistStr, secondStr) {
+export function strEqualsIgnoreCase (fistStr: string, secondStr: string): boolean {
   return isString(fistStr) && isString(secondStr) && trim(fistStr.toLowerCase()) === trim(secondStr.toLowerCase())
 }
 
-/**
- * @param obj
- * @return {boolean}
- */
-export function isObject (obj) {
+export function isObject (obj: any): boolean {
   return !!obj && typeof obj === 'object' && !isArray(obj)
 }
 
-/**
- * @param fun
- * @return {boolean}
- */
-export function isFunction (fun) {
+export function isFunction (fun: Function): boolean {
   return fun && typeof fun === 'function'
 }
 
-/**
- * Returns the string representation when something should expire
- * @param expires
- * @return {Date}
- */
-export function expiresInDays (expires) {
+export function expiresInDays (expires: number): Date {
   return _expiresIn(expires, 864e5)
 }
 
-function _expiresIn (expires, number) {
+function _expiresIn (expires: number, number: number): Date {
   return new Date((new Date().getTime() + (expires * number)))
 }
 
-/**
- * Returns the string representation when something should expire
- * @param expires
- * @return {Date}
- */
-export function expiresInHours (expires) {
+export function expiresInHours (expires: number): Date {
   return _expiresIn(expires, 36e5)
 }
 
-export function asParamOrEmpty (param, value, transform) {
-  return isNonEmpty(value) ? ([param, isFunction(transform) ? transform(value) : value]) : []
+export function asParamOrEmpty <A> (param: string, value: A, transform: (a: A) => string): [string, string] | [] {
+  return isNonEmpty(value) ? ([param, isFunction(transform) ? transform(value) : value] as [string, string]) : []
 }
 
-export function asStringParam (param, value) {
+export function asStringParam (param: string, value: string | number | boolean): [string, string] | [] {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
 }
 
-export function asStringParamTransform (param, value, transform) {
+export function asStringParamTransform <A> (param: string, value: A, transform: (A) => string): [string, string] | [] {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
 }
 
-export function asStringParamWhen (param, value, predicate) {
+export function asStringParamWhen (param: string, value: string, predicate: (string) => boolean): [string, string] | [] {
   return (isNonEmpty(value) && isFunction(predicate) && predicate(value)) ? [param, encodeURIComponent(value)] : []
 }
 
-export function mapAsParams (paramsMap) {
+export function mapAsParams (paramsMap: Record<string, string | string[]>): [string, string][] {
   if (paramsMap && isObject(paramsMap)) {
     const array = []
     Object.keys(paramsMap).forEach((key) => {
       const value = paramsMap[key]
       if (value && !isObject(value) && value.length) {
         if (isArray(value)) {
-          value.forEach(entry => array.push([encodeURIComponent(key), encodeURIComponent(entry)]))
+          (value as string[]).forEach(entry => array.push([encodeURIComponent(key), encodeURIComponent(entry)]))
         } else {
-          array.push([encodeURIComponent(key), encodeURIComponent(value)])
+          array.push([encodeURIComponent(key), encodeURIComponent(value as string)])
         }
       }
     })
@@ -129,7 +87,8 @@ export function mapAsParams (paramsMap) {
     return []
   }
 }
-export function merge (obj1, obj2) {
+
+export function merge (obj1: State, obj2: State): State {
   const res = {}
   const clean = (obj) => isObject(obj) ? obj : {}
   const first = clean(obj1)

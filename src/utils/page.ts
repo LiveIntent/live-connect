@@ -1,24 +1,15 @@
 import { base64UrlEncode } from '../utils/b64'
 import { replaceEmailsWithHashes } from '../utils/email'
 
-/**
- * @return {string}
- */
-export function loadedDomain () {
+export function loadedDomain (): string {
   return (document.domain || (document.location && document.location.host)) || (window && window.location && window.location.host) || 'localhost'
 }
 
-/**
- * @return {string|undefined}
- */
-export function getReferrer (win = window) {
+export function getReferrer (win = window): string | undefined {
   return _safeGet(() => win.top.document.referrer)
 }
 
-/**
- * @return {string|undefined}
- */
-export function getPage (win = window) {
+export function getPage (win = window): string | undefined {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
   const windows = []
@@ -41,10 +32,7 @@ export function getPage (win = window) {
   return detectedPageUrl
 }
 
-/**
- * @return {string|undefined}
- */
-export function getContextElements (privacyMode, contextSelectors, contextElementsLength) {
+export function getContextElements (privacyMode: boolean, contextSelectors: string, contextElementsLength: number): string {
   if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
@@ -53,7 +41,7 @@ export function getContextElements (privacyMode, contextSelectors, contextElemen
   }
 }
 
-function _collectElementsText (contextSelectors, contextElementsLength) {
+function _collectElementsText (contextSelectors: string, contextElementsLength: number) {
   const collectedElements = window.document.querySelectorAll(contextSelectors)
   var collectedString = ''
   for (let i = 0; i < collectedElements.length; i++) {
@@ -65,14 +53,14 @@ function _collectElementsText (contextSelectors, contextElementsLength) {
   return collectedString
 }
 
-function encodedByteCount (s) {
+function encodedByteCount (s: string): number {
   // From: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string
   const utf8Bytelength = encodeURI(s).split(/%..|./).length - 1
   const base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0)
   return base64EncodedLength
 }
 
-function _safeGet (getter) {
+function _safeGet <A> (getter: () => A): A | undefined {
   try {
     return getter()
   } catch (e) {

@@ -1,33 +1,11 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
 import * as emitter from '../utils/emitter'
+import { ExternalStorageHandler, IStorageHandler, StorageStrategyMode } from '../types'
 
-/**
- * @typedef {Object} ExternalStorageHandler
- * @property {function} [localStorageIsEnabled]
- * @property {function} [getCookie]
- * @property {function} [setCookie]
- * @property {function} [getDataFromLocalStorage]
- * @property {function} [removeDataFromLocalStorage]
- * @property {function} [setDataInLocalStorage]
- * @property {function} [findSimilarCookies]
- */
-
-/**
- * @typedef {Object} StorageHandler
- * @property {function} [get]
- * @property {function} [set]
- */
 const _noOp = () => undefined
 
-/**
- *
- * @param {string} storageStrategy
- * @param {ExternalStorageHandler} [externalStorageHandler]
- * @return {StorageHandler}
- * @constructor
- */
-export function StorageHandler (storageStrategy, externalStorageHandler) {
+export function StorageHandler (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalStorageHandler): IStorageHandler {
   const errors = []
 
   function _externalOrError (functionName) {

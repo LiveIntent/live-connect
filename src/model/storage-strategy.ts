@@ -1,8 +1,6 @@
-/**
- * @typedef {Object} StorageStrategy
- * @type {{cookie: string, localStorage: string, none: string}}
- */
-const StorageStrategy = {
+import { StorageStrategyMode } from "../types"
+
+const StorageStrategy: Record<string, StorageStrategyMode> = {
   cookie: 'cookie',
   localStorage: 'ls',
   none: 'none',

@@ -3,20 +3,12 @@ import { fromError } from '../utils/emitter'
 import { toParams } from '../utils/url'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
+import { IStorageHandler, Cache, IIdentityResolver, ICallHandler, IdentityResolutionConfig, State } from '../types'
 
-/**
- * @typedef {Object} Cache
- * @property {function} [get]
- * @property {function} [set]
- */
-
-/**
- * @return {Cache}
- */
-export function storageHandlerBackedCache (expirationHours, domain, storageHandler) {
+export function storageHandlerBackedCache (expirationHours: number, domain: string, storageHandler: IStorageHandler): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-  function _cacheKey (rawKey) {
+  function _cacheKey (rawKey: any) {
     if (rawKey) {
       const suffix = base64UrlEncode(JSON.stringify(rawKey))
       return `${IDEX_STORAGE_KEY}_${suffix}`
@@ -49,28 +41,14 @@ export function storageHandlerBackedCache (expirationHours, domain, storageHandl
   }
 }
 
-/**
- * @type {Cache}
- */
-export const noopCache = {
+export const noopCache: Cache = {
   get: (key) => null,
   set: (key, value) => undefined
 }
 
-/**
- * @typedef {Object} IdentityResolver
- * @property {function} [resolve]
- */
-
-/**
- * @param {State} config
- * @param {CallHandler} calls
- * @param {Cache} cache
- * @return {IdentityResolver}
- */
-export function makeIdentityResolver (config, calls, cache) {
+export function makeIdentityResolver (config: State, calls: ICallHandler, cache: Cache): IIdentityResolver {
   try {
-    const idexConfig = config.identityResolutionConfig || {}
+    const idexConfig: IdentityResolutionConfig = config.identityResolutionConfig || {}
     const externalIds = config.retrievedIdentifiers || []
     const source = idexConfig.source || 'unknown'
     const publisherId = idexConfig.publisherId || 'any'

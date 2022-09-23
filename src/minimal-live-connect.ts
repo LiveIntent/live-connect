@@ -1,14 +1,3 @@
-/**
- * @typedef {Object} MinimalLiveConnect
- * @property {(function)} push
- * @property {(function)} fire
- * @property {(function)} peopleVerifiedId
- * @property {(boolean)} ready
- * @property {(function)} resolve
- * @property {(function)} resolutionCallUrl
- * @property {(LiveConnectConfiguration)} config
- */
-
 import { isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver-nocache'
 import { enrich as peopleVerified } from './enrichers/people-verified'
@@ -17,15 +6,9 @@ import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
+import { ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {MinimalLiveConnect}
- * @private
- */
-function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
   try {
     const callHandler = CallHandler(externalCallHandler)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
@@ -48,14 +31,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
   }
 }
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @returns {MinimalLiveConnect}
- * @constructor
- */
-export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
   console.log('Initializing LiveConnect')
   try {
     window && (window.liQ = window.liQ || [])

@@ -1,60 +1,14 @@
-/**
- * @typedef {Object} State
- * @property {(string|null)} [appId]
- * @property {(object|undefined)} [eventSource]
- * @property {(string|undefined)} [liveConnectId]
- * @property {(string|undefined)} [trackerName]
- * @property {(string|undefined)} [pageUrl]
- * @property {(string|undefined)} [domain]
- * @property {(string|undefined)} [usPrivacyString]
- * @property {(string|undefined)} [expirationDays]
- * @property {(string|undefined)} [wrapperName]
- * @property {(HashedEmail[])} [hashesFromIdentifiers]
- * @property {(string[]|undefined)} [identifiersToResolve]
- * @property {string[]} [decisionIds]
- * @property {string|undefined} [peopleVerifiedId]
- * @property {(string|undefined)} [storageStrategy]
- * @property {ErrorDetails} [errorDetails]
- * @property {RetrievedIdentifier[]} [retrievedIdentifiers]
- * @property {HashedEmail[]} [hashedEmail]
- * @property {string} [providedHash]
- * @property {(IdexConfig|undefined)} [identityResolutionConfig]
- * @property {(boolean|undefined)} [gdprApplies]
- * @property {(string|undefined)} [gdprConsent]
- * @property {(string|undefined)} [contextSelectors]
- * @property {(string|undefined)} [contextElementsLength]
- * @property {(string|undefined)} [contextElements]
- * @property {(boolean|undefined)} [privacyMode]
- */
-
-/**
- * @typedef {Object} StateWrapper
- * @property {State} data
- * @property {function} asTuples
- * @property {function} asQueryString
- * @property {function} combineWith
- * @property {function} sendsPixel
- * @property {StorageManager} storageHandler
- */
-
 import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
 import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray } from '../utils/types'
 import { toParams } from '../utils/url'
-
-/**
- * @param {string} param
- * @param {string|null} value
- * @param {function} transform
- * @return {*[]|Array}
- * @private
- */
+import { IQuery, IStateWrapper, State } from '../types'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-const _pArray = [
+const _pArray: [string, (value: any) => ([string, string] | [string, string][])][] = [
   [
     'appId',
     aid => {
@@ -178,12 +132,7 @@ const _pArray = [
   ]
 ]
 
-/**
- * @param {string [][]} tuples
- * @returns {Query}
- * @constructor
- */
-export function Query (tuples) {
+export function Query (tuples: [string, string][]): IQuery {
   Query.prependParam = function (tuple) {
     const _tuples = tuples
     _tuples.unshift(tuple)
@@ -196,16 +145,8 @@ export function Query (tuples) {
   return Query
 }
 
-/**
- * @param {State} state
- * @returns {StateWrapper}
- * @constructor
- */
-export function StateWrapper (state) {
-  /**
-   * @type {State}
-   */
-  let _state = {}
+export function StateWrapper (state: State): IStateWrapper {
+  let _state: State = {}
   if (state) {
     _state = _safeFiddle(state)
   }
@@ -234,7 +175,7 @@ export function StateWrapper (state) {
    * @return {StateWrapper}
    * @private
    */
-  function _combineWith (newInfo) {
+  function _combineWith (newInfo: State): IStateWrapper {
     return new StateWrapper(merge(state, newInfo))
   }
 
@@ -242,7 +183,7 @@ export function StateWrapper (state) {
    * @returns {string [][]}
    * @private
    */
-  function _asTuples () {
+  function _asTuples (): [string, string][] {
     let array = []
     _pArray.forEach((keyWithParamsExtractor) => {
       const key = keyWithParamsExtractor[0]
@@ -259,7 +200,7 @@ export function StateWrapper (state) {
     return array
   }
 
-  function _asQuery () {
+  function _asQuery (): IQuery {
     return new Query(_asTuples())
   }
 

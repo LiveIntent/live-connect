@@ -4,16 +4,13 @@ import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from '../utils/types'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
+import { IStorageHandler, State } from '../types'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- */
-export function resolve (state, storageHandler) {
+export function resolve (state: State, storageHandler: IStorageHandler): State {
   try {
     console.log('identifiers.resolve', state)
 

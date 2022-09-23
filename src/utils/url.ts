@@ -1,6 +1,6 @@
 import { isArray } from './types'
 
-export const toParams = (tuples) => {
+export const toParams = (tuples: ([string, string][])) => {
   let acc = ''
   tuples.forEach((tuple) => {
     const operator = acc.length === 0 ? '?' : '&'
@@ -11,23 +11,23 @@ export const toParams = (tuples) => {
   return acc
 }
 
-function _decode (s) {
+function _decode (s: string): string {
   return s.indexOf('%') === -1 ? s : decodeURIComponent(s)
 }
 
-function _isNum (v) {
+function _isNum (v: any): boolean {
   return isNaN(+v) ? v : +v
 }
 
-function _isNull (v) {
+function _isNull (v: any): boolean {
   return v === 'null' || v === 'undefined' ? null : v
 }
 
-function _isBoolean (v) {
+function _isBoolean (v: any): boolean {
   return v === 'false' ? false : (v === 'true' ? true : v)
 }
 
-function _convert (v) {
+function _convert (v: any): boolean {
   return _isBoolean(_isNull(_isNum(v)))
 }
 

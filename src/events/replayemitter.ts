@@ -1,12 +1,4 @@
-/**
- * @typedef {Object} ReplayEmitter
- * @property {(function)} on
- * @property {(function)} once
- * @property {(function)} emit
- * @property {(function)} off
- */
-
-export default function E (replaySize) {
+export default function E (replaySize: any) {
   this.size = parseInt(replaySize) || 5
   this.h = {}
   this.q = {}

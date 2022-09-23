@@ -1,24 +1,13 @@
 import { isArray, isFunction, asStringParam } from '../utils/types'
 import * as emitter from '../utils/emitter'
+import { ICallHandler, IPixelSender, LiveConnectConfig, IStateWrapper } from '../types'
 
 const DEFAULT_AJAX_TIMEOUT = 0
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {CallHandler} calls
- * @param {function} onload
- * @param {function} presend
- * @returns {{sendAjax: *, sendPixel: *}}
- * @constructor
- */
-export function PixelSender (liveConnectConfig, calls, onload, presend) {
+export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallHandler, onload: () => void, presend: () => void): IPixelSender {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
 
-  /**
-   * @param {StateWrapper} state
-   * @private
-   */
-  function _sendAjax (state) {
+  function _sendAjax (state: IStateWrapper) {
     _sendState(state, 'j', uri => {
       calls.ajaxGet(
         uri,
@@ -47,14 +36,14 @@ export function PixelSender (liveConnectConfig, calls, onload, presend) {
   }
 
   /**
-   * @param {StateWrapper} state
+   * @param {IStateWrapper} state
    * @private
    */
-  function _sendPixel (state) {
+  function _sendPixel (state: IStateWrapper) {
     _sendState(state, 'p', uri => calls.pixelGet(uri, onload))
   }
 
-  function _sendState (state, endpoint, makeCall) {
+  function _sendState (state: IStateWrapper, endpoint: string, makeCall: (url: string) => void) {
     if (state.sendsPixel()) {
       if (isFunction(presend)) {
         presend()

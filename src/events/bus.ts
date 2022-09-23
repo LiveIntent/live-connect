@@ -1,12 +1,8 @@
 import E from './replayemitter'
 import * as C from '../utils/consts'
+import { ReplayEmitter } from '../types'
 
-/**
- * @param {number} size
- * @param {function} errorCallback
- * @return {ReplayEmitter}
- */
-export function init (size, errorCallback) {
+export function init (size?: number, errorCallback?: (error: any) => void): ReplayEmitter {
   if (!size) {
     size = 5
   }

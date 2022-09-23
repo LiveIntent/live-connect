@@ -1,3 +1,4 @@
+import { State } from '../types'
 import { extractEmail } from '../utils/email'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
 import { isArray, isObject, safeToString, trim, merge } from '../utils/types'
@@ -6,7 +7,7 @@ const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
 const HASH_BEARERS = ['email', 'emailhash', 'hash', 'hashedemail']
 
-function _provided (state) {
+function _provided (state: State): State {
   const eventSource = state.eventSource
   const objectKeys = Object.keys(eventSource)
   for (const key of objectKeys) {
@@ -26,7 +27,7 @@ function _provided (state) {
   return state
 }
 
-function _itemsLimiter (state) {
+function _itemsLimiter (state: State): State {
   const event = state.eventSource
   Object.keys(event).forEach(key => {
     const lowerCased = key.toLowerCase()
@@ -39,7 +40,7 @@ function _itemsLimiter (state) {
 
 const fiddlers = [_provided, _itemsLimiter]
 
-export function fiddle (state) {
+export function fiddle (state: State): State {
   const reducer = (accumulator, func) => {
     return merge(accumulator, func(accumulator))
   }
