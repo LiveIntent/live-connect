@@ -42,6 +42,34 @@ export interface IStorageHandler extends IMinimalStorageHandler {
     findSimilarCookies: (substring: string) => string[]
 }
 
+export type StorageStrategyMode = 'cookie' | 'ls' | 'none' | 'disabled'
+
+export interface IdentityResolutionConfig {
+    url?: string,
+    expirationHours?: number,
+    ajaxTimeout?: number,
+    source?: string,
+    publisherId?: number
+    requestedAttributes?: string[],
+    contextSelectors?: string,
+    contextElementsLength?: number
+}
+export interface LiveConnectConfig {
+    appId?: string,
+    wrapperName?: string,
+    storageStrategy?: StorageStrategyMode,
+    collectorUrl?: string,
+    usPrivacyString?: string,
+    gdprApplies?: boolean,
+    expirationDays?: number,
+    identifiersToResolve?: string | string[],
+    trackerName?: string,
+    identityResolutionConfig?: IdentityResolutionConfig,
+}
+
+export type ResolutionParams = Record<string, string | string[]>
+// Object fields will be name and value of requested attributes
+export type IdentityResultionResult = object
 export interface ExternalCallHandler {
     ajaxGet?: (
         url: string,
@@ -67,7 +95,11 @@ export interface ICallHandler {
         onLoad?: () => void
     ) => void
 }
-
+export interface HashedEmail {
+    md5: string,
+    sha1: string,
+    sha256: string
+}
 export interface IIdentityResolver {
     resolve: (
         successCallBack: (result: IdentityResultionResult) => void,
@@ -115,35 +147,6 @@ export interface ConfigMatcher {
     collectorUrl: string[]
 }
 
-export interface IdentityResolutionConfig {
-    url?: string,
-    expirationHours?: number,
-    ajaxTimeout?: number,
-    source?: string,
-    publisherId?: number
-    requestedAttributes?: string[],
-    contextSelectors?: string,
-    contextElementsLength?: number
-}
-
-export interface LiveConnectConfig {
-    appId?: string,
-    wrapperName?: string,
-    storageStrategy?: StorageStrategyMode,
-    collectorUrl?: string,
-    usPrivacyString?: string,
-    gdprApplies?: boolean,
-    expirationDays?: number,
-    identifiersToResolve?: string | string[],
-    trackerName?: string,
-    identityResolutionConfig?: IdentityResolutionConfig,
-}
-
-export type ResolutionParams = Record<string, string | string[]>
-
-// Object fields will be name and value of requested attributes
-export type IdentityResultionResult = object
-
 export interface ILiveConnect {
     ready?: boolean,
     push?: (event: object) => void,
@@ -156,12 +159,6 @@ export interface ILiveConnect {
     resolutionCallUrl?: (additionalParams: ResolutionParams) => string,
     peopleVerifiedId?: string,
     config?: LiveConnectConfig,
-}
-
-export interface HashedEmail {
-    md5: string,
-    sha1: string,
-    sha256: string
 }
 
 export interface ReplayEmitter {
@@ -188,5 +185,3 @@ export interface IPixelSender {
     sendAjax (state: IStateWrapper): void,
     sendPixel (state: IStateWrapper): void,
 }
-
-export type StorageStrategyMode = 'cookie' | 'ls' | 'none' | 'disabled'
