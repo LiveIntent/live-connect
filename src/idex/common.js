@@ -13,7 +13,7 @@ import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUT
 /**
  * @return {Cache}
  */
-export function storageHandlerBackedCache (expirationHours, domain, storageHandler) {
+export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler) {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey) {
@@ -34,12 +34,12 @@ export function storageHandlerBackedCache (expirationHours, domain, storageHandl
         return cachedValue
       }
     },
-    set: (key, value) => {
+    set: (key, value, expiresAt) => {
       try {
         storageHandler.set(
           _cacheKey(key),
           JSON.stringify(value),
-          expiresInHours(expirationHours),
+          expiresAt || expiresInHours(defaultExpirationHours),
           domain
         )
       } catch (ex) {
@@ -54,7 +54,7 @@ export function storageHandlerBackedCache (expirationHours, domain, storageHandl
  */
 export const noopCache = {
   get: (key) => null,
-  set: (key, value) => undefined
+  set: (key, value, expiresAt) => undefined
 }
 
 /**
@@ -108,17 +108,20 @@ export function makeIdentityResolver (config, calls, cache) {
     }
 
     const responseReceived = (additionalParams, successCallback) => {
-      return response => {
+      return (responseText, response) => {
         let responseObj = {}
-        if (response) {
+        if (responseText) {
           try {
-            responseObj = JSON.parse(response)
+            responseObj = JSON.parse(responseText)
           } catch (ex) {
             console.error('Error parsing response', ex)
             fromError('IdentityResolverParser', ex)
           }
         }
-        cache.set(additionalParams, responseObj)
+
+        const expiresAt = responseExpires(response)
+
+        cache.set(additionalParams, responseObj, expiresAt)
         successCallback(responseObj)
       }
     }
@@ -126,7 +129,6 @@ export function makeIdentityResolver (config, calls, cache) {
     const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
       const cachedValue = cache.get(additionalParams)
       if (cachedValue) {
-        // no need to enrich as the cached value was already enriched
         successCallback(cachedValue)
       } else {
         calls.ajaxGet(
@@ -160,6 +162,15 @@ export function makeIdentityResolver (config, calls, cache) {
       getUrl: () => {
         fromError('IdentityResolver.getUrl', e)
       }
+    }
+  }
+}
+
+function responseExpires (response) {
+  if (response && typeof response.getResponseHeader === 'function') {
+    const expiresHeader = response.getResponseHeader('expires')
+    if (expiresHeader) {
+      return new Date(expiresHeader)
     }
   }
 }
