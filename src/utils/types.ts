@@ -65,7 +65,7 @@ export function asStringParamTransform <A> (param: string, value: A, transform: 
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
 }
 
-export function asStringParamWhen (param: string, value: string, predicate: (string) => boolean): [string, string] | [] {
+export function asStringParamWhen (param: string, value: string, predicate: (s: string) => boolean): [string, string] | [] {
   return (isNonEmpty(value) && isFunction(predicate) && predicate(value)) ? [param, encodeURIComponent(value)] : []
 }
 
