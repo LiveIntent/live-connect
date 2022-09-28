@@ -1,7 +1,7 @@
 import { base64UrlEncode } from '../utils/b64'
 import { fromError } from '../utils/emitter'
 import { toParams } from '../utils/url'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams } from '../utils/types'
+import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams, isFunction } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
 
 /**
@@ -167,7 +167,7 @@ export function makeIdentityResolver (config, calls, cache) {
 }
 
 function responseExpires (response) {
-  if (response && typeof response.getResponseHeader === 'function') {
+  if (response && isFunction(response.getResponseHeader)) {
     const expiresHeader = response.getResponseHeader('expires')
     if (expiresHeader) {
       return new Date(expiresHeader)
