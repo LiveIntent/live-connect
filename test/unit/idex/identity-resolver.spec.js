@@ -284,4 +284,44 @@ describe('IdentityResolver', () => {
     identityResolver.resolve(successCallback)
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
+
+  it('should prefer expires header from the server', function (done) {
+    const response = { id: 112233 }
+    let recordedExpiresAt
+
+    const customStorage = StorageHandler('cookie', externalStorage)
+    customStorage.set = (key, value, expiresAt, sameSite, domain) => {
+      recordedExpiresAt = expiresAt
+      storage.set(key, value, expiresAt, sameSite, domain)
+    }
+
+    const identityResolver = IdentityResolver({}, customStorage, calls)
+
+    const expiresAt = new Date()
+    expiresAt.setHours(expiresAt.getHours() + 12)
+
+    function epochSeconds (date) {
+      Math.floor(date.getTime() / 1000)
+    }
+
+    const successCallback = (responseAsJson) => {
+      expect(callCount).to.be.eql(1)
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+      expect(responseAsJson).to.be.eql(response)
+      expect(callCount).to.be.eql(1)
+
+      expect(storage.getCookie('__li_idex_cache')).to.be.eq(JSON.stringify(response))
+      expect(epochSeconds(recordedExpiresAt)).to.be.eq(epochSeconds(expiresAt))
+
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(
+      200,
+      { 'Content-Type': 'application/json', Expires: expiresAt.toUTCString() },
+      JSON.stringify(response)
+    )
+  })
 })
