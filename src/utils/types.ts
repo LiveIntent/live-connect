@@ -61,7 +61,7 @@ export function asStringParam (param: string, value: string | number | boolean):
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
 }
 
-export function asStringParamTransform <A> (param: string, value: A, transform: (A) => string): [string, string] | [] {
+export function asStringParamTransform <A> (param: string, value: A, transform: (a: A) => string): [string, string] | [] {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
 }
 
