@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "typeRoots": ["./node_modules/@types"],
+    "esModuleInterop": true,
+    "target": "es5",
+    "types": ["webdriverio/async"]
+  },
+  "include": ["./src/**/*", "./test/**/*"]
+}

@@ -8,11 +8,13 @@ module.exports = {
     'mocha': true
   },
   plugins: [
-    'wdio'
+    'wdio',
+    "@typescript-eslint"
   ],
   extends: [
     'standard',
-    'plugin:wdio/recommended'
+    'plugin:wdio/recommended',
+    "plugin:@typescript-eslint/recommended"
   ],
   globals: {},
   rules: {}
