@@ -5,14 +5,14 @@ export function loadedDomain (): string {
   return (document.domain || (document.location && document.location.host)) || (window && window.location && window.location.host) || 'localhost'
 }
 
-export function getReferrer (win = window): string | undefined {
+export function getReferrer (win: Window = window): string | undefined {
   return _safeGet(() => win.top.document.referrer)
 }
 
-export function getPage (win = window): string | undefined {
+export function getPage (win: Window = window): string | undefined {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
 
-  const windows = []
+  const windows: Window[] = []
   let currentWindow = win
   while (currentWindow !== top) {
     windows.push(currentWindow)
@@ -20,7 +20,7 @@ export function getPage (win = window): string | undefined {
   }
   windows.push(currentWindow)
 
-  let detectedPageUrl
+  let detectedPageUrl: string
   for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
     detectedPageUrl = _safeGet(() => windows[i].location.href)
     if (i !== 0) {
