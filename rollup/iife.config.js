@@ -4,17 +4,17 @@ import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
 import replace from '@rollup/plugin-replace'
-import packageJson from './package.json'
+import packageJson from '../package.json'
 import cleaner from 'rollup-plugin-cleaner'
 import strip from '@rollup/plugin-strip'
-import typescript from '@rollup/plugin-typescript'
+import ts from "rollup-plugin-ts";
 
-const OUTPUT_DIR = './dist/'
+const OUTPUT_DIR = './dist'
 
 export default {
   input: './test/it/helpers/preambled.ts',
   output: {
-    file: `${OUTPUT_DIR}/dist/bundle.iife.js`,
+    file: `${OUTPUT_DIR}/bundle.iife.js`,
     format: 'iife'
   },
   plugins: [
@@ -23,7 +23,7 @@ export default {
         OUTPUT_DIR
       ]
     }),
-    typescript(),
+    ts({transpileOnly: true}),
     resolve(),
     commonjs(),
     babel(),

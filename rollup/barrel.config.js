@@ -2,16 +2,16 @@ import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import commonjs from 'rollup-plugin-commonjs'
 import strip from '@rollup/plugin-strip'
-import typescript from '@rollup/plugin-typescript'
+import ts from "rollup-plugin-ts";
 
 export default {
   input: './src/index.ts',
   output: {
-    file: `./index.js`,
+    file: `./lib/index.js`,
     format: 'es'
   },
   plugins: [
-    typescript({compilerOptions: {declaration: true}}),
+    ts({transpileOnly: true, tsconfig: resolvedConfig => ({...resolvedConfig, declaration: true})}),
     resolve(),
     commonjs(),
     babel(),
