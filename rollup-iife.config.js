@@ -12,9 +12,9 @@ import typescript from '@rollup/plugin-typescript'
 const OUTPUT_DIR = './dist/'
 
 export default {
-  input: 'test/it/helpers/preambled.ts',
+  input: './test/it/helpers/preambled.ts',
   output: {
-    file: `${OUTPUT_DIR}/bundle.iife.js`,
+    file: `${OUTPUT_DIR}/dist/bundle.iife.js`,
     format: 'iife'
   },
   plugins: [

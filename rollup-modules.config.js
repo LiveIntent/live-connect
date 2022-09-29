@@ -6,7 +6,7 @@ import babel from 'rollup-plugin-babel'
 import cleanup from 'rollup-plugin-cleanup'
 import typescript from '@rollup/plugin-typescript'
 
-const OUTPUT_DIR = './'
+const OUTPUT_DIR = '.'
 const plugins = [
   typescript(),
   resolve(),
@@ -19,16 +19,16 @@ const plugins = [
 const filenames = ['initializer.ts', 'standard-live-connect.ts', 'minimal-live-connect.ts']
 const outputs = filenames.reduce((accumulator, sourceFile) => {
   const action = [{
-    input: `src/${sourceFile}`,
+    input: `./src/${sourceFile}`,
     output: {
-      file: `${OUTPUT_DIR}esm/${sourceFile.replace(".ts", ".js")}`,
+      file: `${OUTPUT_DIR}/esm/${sourceFile.replace(".ts", ".js")}`,
       format: 'esm'
     },
     plugins: plugins
   }, {
-    input: `src/${sourceFile}`,
+    input: `./src/${sourceFile}`,
     output: {
-      file: `${OUTPUT_DIR}cjs/${sourceFile.replace(".ts", ".js")}`,
+      file: `${OUTPUT_DIR}/cjs/${sourceFile.replace(".ts", ".js")}`,
       format: 'cjs'
     },
     plugins: plugins
