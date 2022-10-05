@@ -105,7 +105,7 @@ function _processArgs (args, pixelClient, enrichedState) {
  */
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
-    if (window && window.liQ && window.liQ.ready) {
+    if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
       const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error()
@@ -175,13 +175,15 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
  */
 export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
+  const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
+  configuration.globalVarName = configuration.globalVarName || 'liQ'
   try {
-    const queue = window.liQ || []
+    const queue = window[configuration.globalVarName] || []
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+    window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
-        window.liQ.push(queue[i])
+        window[configuration.globalVarName].push(queue[i])
       }
     }
   } catch (x) {
