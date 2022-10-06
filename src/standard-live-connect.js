@@ -106,14 +106,14 @@ function _processArgs (args, pixelClient, enrichedState) {
 function _getInitializedLiveConnect (liveConnectConfig) {
   try {
     if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
-      const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
+      const mismatchedConfig = window[liveConnectConfig.globalVarName].config && _configMatcher(window[liveConnectConfig.globalVarName].config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
         emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
-      return window.liQ
+      return window[liveConnectConfig.globalVarName]
     }
   } catch (e) {
     console.error('Could not initialize error bus')
@@ -179,7 +179,6 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
   configuration.globalVarName = configuration.globalVarName || 'liQ'
   try {
     const queue = window[configuration.globalVarName] || []
-    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
@@ -190,5 +189,5 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
     console.error(x)
     emitter.error('LCConstruction', 'Failed to build LC', x)
   }
-  return window.liQ
+  return window[configuration.globalVarName]
 }
