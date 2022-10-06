@@ -1,11 +1,11 @@
 import { base64UrlEncode } from '../utils/b64'
 import { fromError } from '../utils/emitter'
 import { toParams } from '../utils/url'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams } from '../utils/types'
+import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams, isFunction } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
-import { IStorageHandler, Cache, IIdentityResolver, ICallHandler, IdentityResolutionConfig, State } from '../types'
+import { IStorageHandler, Cache, IIdentityResolver, ICallHandler, IdentityResolutionConfig, State, ResolutionParams } from '../types'
 
-export function storageHandlerBackedCache (expirationHours: number, domain: string, storageHandler: IStorageHandler): Cache {
+export function storageHandlerBackedCache (defaultExpirationHours: number, domain: string, storageHandler: IStorageHandler): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey: any) {
@@ -26,12 +26,12 @@ export function storageHandlerBackedCache (expirationHours: number, domain: stri
         return cachedValue
       }
     },
-    set: (key, value) => {
+    set: (key, value, expiresAt) => {
       try {
         storageHandler.set(
           _cacheKey(key),
           JSON.stringify(value),
-          expiresInHours(expirationHours),
+          expiresAt || expiresInHours(defaultExpirationHours),
           domain
         )
       } catch (ex) {
@@ -42,8 +42,8 @@ export function storageHandlerBackedCache (expirationHours: number, domain: stri
 }
 
 export const noopCache: Cache = {
-  get: (key) => null,
-  set: (key, value) => undefined
+  get: () => null,
+  set: () => undefined
 }
 
 export function makeIdentityResolver (config: State, calls: ICallHandler, cache: Cache): IIdentityResolver {
@@ -60,7 +60,7 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
     tuples.push(asStringParam('duid', config.peopleVerifiedId))
     tuples.push(asStringParam('us_privacy', config.usPrivacyString))
     tuples.push(asParamOrEmpty('gdpr', config.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? 1 : 0, v => v === 1))
+    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
     tuples.push(asStringParam('gdpr_consent', config.gdprConsent))
 
     externalIds.forEach(retrievedIdentifier => {
@@ -85,26 +85,31 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
       return `${url}/${source}/${publisherId}${params}`
     }
 
-    const responseReceived = (additionalParams, successCallback) => {
-      return response => {
+    const responseReceived = (
+      additionalParams: ResolutionParams,
+      successCallback: (result: object) => void
+    ): ((responseText: string, response: any) => void) => {
+      return (responseText, response) => {
         let responseObj = {}
-        if (response) {
+        if (responseText) {
           try {
-            responseObj = JSON.parse(response)
+            responseObj = JSON.parse(responseText)
           } catch (ex) {
             console.error('Error parsing response', ex)
             fromError('IdentityResolverParser', ex)
           }
         }
-        cache.set(additionalParams, responseObj)
+
+        const expiresAt = responseExpires(response)
+
+        cache.set(additionalParams, responseObj, expiresAt)
         successCallback(responseObj)
       }
     }
 
-    const unsafeResolve = (successCallback, errorCallback, additionalParams) => {
+    const unsafeResolve = (successCallback: (result: object) => void, errorCallback: () => void, additionalParams: ResolutionParams) => {
       const cachedValue = cache.get(additionalParams)
       if (cachedValue) {
-        // no need to enrich as the cached value was already enriched
         successCallback(cachedValue)
       } else {
         calls.ajaxGet(
@@ -137,7 +142,17 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
       },
       getUrl: () => {
         fromError('IdentityResolver.getUrl', e)
+        return undefined
       }
+    }
+  }
+}
+
+function responseExpires (response) {
+  if (response && isFunction(response.getResponseHeader)) {
+    const expiresHeader = response.getResponseHeader('expires')
+    if (expiresHeader) {
+      return new Date(expiresHeader)
     }
   }
 }
