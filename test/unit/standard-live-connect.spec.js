@@ -226,4 +226,12 @@ describe('StandardLiveConnect', () => {
     expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined()
     expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined()
   })
+
+  it('should expose the LC instance as globalVarName instead of liQ when provided', function () {
+    expect(window.liQTest).to.be.undefined()
+    expect(window.liQ).to.be.undefined()
+    StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
+    expect(window.liQTest.ready).to.be.true()
+    expect(window.liQ).to.be.undefined()
+  })
 })
