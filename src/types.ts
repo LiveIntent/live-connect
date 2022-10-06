@@ -1,6 +1,6 @@
 export interface Cache {
     get: (key: any) => any
-    set: (key: any, value: any) => void
+    set: (key: any, value: any, expiration: Date) => void
 }
 
 export interface ErrorDetails {
@@ -86,7 +86,7 @@ export interface ExternalCallHandler {
 export interface ICallHandler {
     ajaxGet: (
         url: string,
-        onSuccess: (responseText: string) => void,
+        onSuccess: (responseText: string, response: any) => void,
         onError?: (error: any) => void,
         timeout?: number
     ) => void,
