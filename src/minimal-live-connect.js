@@ -35,8 +35,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
     const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler)
     return {
-      push: (arg) => window.liQ.push(arg),
-      fire: () => window.liQ.push({}),
+      push: (arg) => window[liveConnectConfig.globalVarName].push(arg),
+      fire: () => window[liveConnectConfig.globalVarName].push({}),
       peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
@@ -58,8 +58,9 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
 export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
   console.log('Initializing LiveConnect')
   try {
-    window && (window.liQ = window.liQ || [])
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
+    configuration.globalVarName = configuration.globalVarName || 'liQ'
+    window && (window[configuration.globalVarName] = window[configuration.globalVarName] || [])
     return _minimalInitialization(configuration, externalStorageHandler, externalCallHandler)
   } catch (x) {
     console.error(x)
