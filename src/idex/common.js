@@ -1,5 +1,4 @@
 import { base64UrlEncode } from '../utils/b64'
-import { fromError } from '../utils/emitter'
 import { toParams } from '../utils/url'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams, isFunction } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
@@ -13,7 +12,7 @@ import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUT
 /**
  * @return {Cache}
  */
-export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler) {
+export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler, messageBus) {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey) {
@@ -43,7 +42,7 @@ export function storageHandlerBackedCache (defaultExpirationHours, domain, stora
           domain
         )
       } catch (ex) {
-        fromError('IdentityResolverStorage', ex)
+        messageBus.encodeEmitError('IdentityResolverStorage', ex)
       }
     }
   }
@@ -68,7 +67,7 @@ export const noopCache = {
  * @param {Cache} cache
  * @return {IdentityResolver}
  */
-export function makeIdentityResolver (config, calls, cache) {
+export function makeIdentityResolver (config, calls, cache, messageBus) {
   try {
     const idexConfig = config.identityResolutionConfig || {}
     const externalIds = config.retrievedIdentifiers || []
@@ -115,7 +114,7 @@ export function makeIdentityResolver (config, calls, cache) {
             responseObj = JSON.parse(responseText)
           } catch (ex) {
             console.error('Error parsing response', ex)
-            fromError('IdentityResolverParser', ex)
+            messageBus.encodeEmitError('IdentityResolverParser', ex)
           }
         }
 
@@ -146,21 +145,21 @@ export function makeIdentityResolver (config, calls, cache) {
         } catch (e) {
           console.error('IdentityResolve', e)
           errorCallback()
-          fromError('IdentityResolve', e)
+          messageBus.encodeEmitError('IdentityResolve', e)
         }
       },
       getUrl: (additionalParams) => composeUrl(additionalParams)
     }
   } catch (e) {
     console.error('IdentityResolver', e)
-    fromError('IdentityResolver', e)
+    messageBus.encodeEmitError('IdentityResolver', e)
     return {
       resolve: (successCallback, errorCallback) => {
         errorCallback()
-        fromError('IdentityResolver.resolve', e)
+        messageBus.encodeEmitError('IdentityResolver.resolve', e)
       },
       getUrl: () => {
-        fromError('IdentityResolver.getUrl', e)
+        messageBus.encodeEmitError('IdentityResolver.getUrl', e)
       }
     }
   }

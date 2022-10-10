@@ -1,5 +1,4 @@
 import { ulid } from '../utils/ulid'
-import * as emitter from '../utils/emitter'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from '../utils/types'
@@ -13,7 +12,7 @@ const DEFAULT_EXPIRATION_DAYS = 730
  * @param {State} state
  * @param {StorageHandler} storageHandler
  */
-export function resolve (state, storageHandler) {
+export function resolve (state, storageHandler, messageBus) {
   try {
     console.log('identifiers.resolve', state)
 
@@ -45,7 +44,7 @@ export function resolve (state, storageHandler) {
         }
         return storageHandler.get(key)
       } catch (e) {
-        emitter.error('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
+        messageBus.emitError('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
         return null
       }
     }
@@ -80,7 +79,7 @@ export function resolve (state, storageHandler) {
       peopleVerifiedId: liveConnectIdentifier
     }
   } catch (e) {
-    emitter.error('IdentifiersResolve', 'Error while managing identifiers', e)
+    messageBus.emitError('IdentifiersResolve', 'Error while managing identifiers', e)
     return {}
   }
 }

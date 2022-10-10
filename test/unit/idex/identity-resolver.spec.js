@@ -4,7 +4,7 @@ import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver'
 import * as externalStorage from '../../shared/utils/storage'
 import * as calls from '../../shared/utils/calls'
-import { init } from '../../../src/events/bus'
+import { init } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
 

@@ -3,7 +3,7 @@ import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver-nocache'
 import * as calls from '../../shared/utils/calls'
-import { init } from '../../../src/events/bus'
+import { init } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

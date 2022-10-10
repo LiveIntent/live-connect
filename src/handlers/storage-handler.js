@@ -1,6 +1,5 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
-import * as emitter from '../utils/emitter'
 
 /**
  * @typedef {Object} ExternalStorageHandler
@@ -27,7 +26,7 @@ const _noOp = () => undefined
  * @return {StorageHandler}
  * @constructor
  */
-export function StorageHandler (storageStrategy, externalStorageHandler) {
+export function StorageHandler (storageStrategy, externalStorageHandler, messageBus) {
   const errors = []
 
   function _externalOrError (functionName) {
@@ -54,7 +53,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     findSimilarCookies: _externalOrError('findSimilarCookies')
   }
   if (errors.length > 0) {
-    emitter.error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
+    messageBus.emitError('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
 
   return {

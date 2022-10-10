@@ -37,7 +37,6 @@
  * @property {StorageManager} storageHandler
  */
 
-import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
@@ -201,7 +200,7 @@ export function Query (tuples) {
  * @returns {StateWrapper}
  * @constructor
  */
-export function StateWrapper (state) {
+export function StateWrapper (state, messageBus) {
   /**
    * @type {State}
    */
@@ -224,7 +223,7 @@ export function StateWrapper (state) {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      emitter.error('StateCombineWith', 'Error while extracting event data', e)
+      messageBus.emitError('StateCombineWith', 'Error while extracting event data', e)
       return _state
     }
   }
@@ -235,7 +234,7 @@ export function StateWrapper (state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper(merge(state, newInfo))
+    return new StateWrapper(merge(state, newInfo), messageBus)
   }
 
   /**

@@ -5,18 +5,17 @@
  */
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
-import * as emitter from '../utils/emitter'
 
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
-export function enrich (state, storageHandler) {
+export function enrich (state, storageHandler, messageBus) {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
-    emitter.fromError('IdentifiersEnricher', e)
+    messageBus.encodeEmitError('IdentifiersEnricher', e)
     return {}
   }
 }

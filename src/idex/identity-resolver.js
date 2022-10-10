@@ -8,12 +8,12 @@ import { storageHandlerBackedCache, makeIdentityResolver } from './common'
  * @return {IdentityResolver}
  * @constructor
  */
-export function IdentityResolver (config, storageHandler, calls) {
+export function IdentityResolver (config, storageHandler, calls, messageBus) {
   const nonNullConfig = config || {}
   const idexConfig = nonNullConfig.identityResolutionConfig || {}
   const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
   const domain = nonNullConfig.domain
 
-  const cache = storageHandlerBackedCache(expirationHours, domain, storageHandler)
-  return makeIdentityResolver(nonNullConfig, calls, cache)
+  const cache = storageHandlerBackedCache(expirationHours, domain, storageHandler, messageBus)
+  return makeIdentityResolver(nonNullConfig, calls, cache, messageBus)
 }

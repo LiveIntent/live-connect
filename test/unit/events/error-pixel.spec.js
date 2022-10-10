@@ -3,7 +3,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import * as errorPixel from '../../../src/events/error-pixel'
 import * as pixelSender from '../../../src/pixel/sender'
-import * as bus from '../../../src/events/bus'
+import * as bus from '../../../src/events/event-bus'
 import * as C from '../../../src/utils/consts'
 import dirtyChai from 'dirty-chai'
 

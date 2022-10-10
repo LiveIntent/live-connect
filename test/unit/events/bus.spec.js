@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import * as bus from '../../../src/events/bus'
+import * as bus from '../../../src/events/event-bus'
 import * as C from '../../../src/utils/consts'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
