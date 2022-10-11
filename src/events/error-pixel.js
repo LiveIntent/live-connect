@@ -63,7 +63,7 @@ function _errorHandler (messageBus) {
   function _pixelError (error) {
     console.log(error, _state)
     if (_pixelSender) {
-      _pixelSender.sendPixel(new StateWrapper(messageBus, asErrorDetails(error)).combineWith(_state || {}).combineWith(page.enrich({})))
+      _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), messageBus).combineWith(_state || {}).combineWith(page.enrich({})))
     }
   }
   return _pixelError

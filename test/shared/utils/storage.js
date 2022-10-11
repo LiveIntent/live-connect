@@ -8,9 +8,10 @@
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
 import Cookies from 'js-cookie'
-import * as emitter from '../../../src/utils/emitter'
+import { LocalEventBus } from '../../../src/events/event-bus'
 
 let _localStorageIsEnabled = null
+const messageBus = LocalEventBus()
 
 const cookies = Cookies.withConverter({
   read: function (value, name) {
@@ -22,7 +23,7 @@ const cookies = Cookies.withConverter({
         return result
       }
     } catch (e) {
-      emitter.error('CookieReadError', `Failed reading cookie ${name}`, e)
+      messageBus.emitError('CookieReadError', `Failed reading cookie ${name}`, e)
       return null
     }
   }
@@ -53,7 +54,7 @@ function _checkLocalStorage () {
       window.localStorage.removeItem(key)
     }
   } catch (e) {
-    emitter.error('LSCheckError', e.message, e)
+    messageBus.emitError('LSCheckError', e.message, e)
   }
   return enabled
 }
@@ -100,7 +101,7 @@ export function findSimilarCookies (keyLike) {
     const allCookies = cookies.get()
     return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
   } catch (e) {
-    emitter.error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
+    messageBus.emitError('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
     return []
   }
 }

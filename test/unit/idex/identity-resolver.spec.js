@@ -4,7 +4,7 @@ import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver'
 import * as externalStorage from '../../shared/utils/storage'
 import * as calls from '../../shared/utils/calls'
-import { init } from '../../../src/events/event-bus'
+import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
 
@@ -12,6 +12,7 @@ use(dirtyChai)
 
 describe('IdentityResolver', () => {
   let requestToComplete = null
+  const messageBus = LocalEventBus()
   let errors = []
   let callCount = 0
   const storage = StorageHandler('cookie', externalStorage)
@@ -21,8 +22,7 @@ describe('IdentityResolver', () => {
   })
 
   beforeEach(() => {
-    init()
-    window.__li__evt_bus.on('li_errors', (error) => { errors.push(error) })
+    messageBus.on('li_errors', (error) => { errors.push(error) })
     global.XDomainRequest = null
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
     global.XMLHttpRequest.onCreate = function (request) {
@@ -53,7 +53,7 @@ describe('IdentityResolver', () => {
   it('should invoke callback on success, if storing the result in a cookie fails', function () {
     const setCookieStub = sinon.createSandbox().stub(externalStorage, 'setCookie').throws()
     const failedStorage = StorageHandler('cookie', externalStorage)
-    const identityResolver = IdentityResolver({}, failedStorage, calls)
+    const identityResolver = IdentityResolver({}, failedStorage, calls, messageBus)
     let jsonResponse = null
     const successCallback = (responseAsJson) => {
       jsonResponse = responseAsJson

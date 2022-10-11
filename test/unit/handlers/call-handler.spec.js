@@ -1,15 +1,16 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
 import sinon from 'sinon'
-import * as emitter from '../../../src/utils/emitter'
 import { CallHandler } from '../../../src/handlers/call-handler'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
 describe('CallHandler', () => {
   let emitterErrors = []
-  let emitterStub
+  let messageBusStub
+  const messageBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',
@@ -18,7 +19,7 @@ describe('CallHandler', () => {
 
   beforeEach(() => {
     emitterErrors = []
-    emitterStub = sandbox.stub(emitter, 'error').callsFake((name, message, e) => {
+    messageBusStub = sandbox.stub(messageBus, 'emitError').callsFake((name, message, e) => {
       emitterErrors.push({
         name: name,
         message: message,
@@ -28,7 +29,7 @@ describe('CallHandler', () => {
   })
 
   afterEach(() => {
-    emitterStub.restore()
+    messageBusStub.restore()
   })
 
   it('should return the get function', function () {
@@ -40,8 +41,7 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler is not provided', function () {
-    CallHandler()
-
+    CallHandler({}, messageBus)
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
     expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
@@ -49,7 +49,7 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler does not have a get function', function () {
-    CallHandler({})
+    CallHandler({}, messageBus)
 
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')

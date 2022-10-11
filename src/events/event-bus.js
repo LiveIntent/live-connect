@@ -8,6 +8,10 @@ function initBus (size) {
   return new E(size)
 }
 
+function isWrapped (bus) {
+  return typeof bus.emitError === 'function' && typeof bus.encodeEmitError === 'function'
+}
+
 function wrap (bus) {
   return {
     on: function (name, callback, ctx) {
@@ -49,9 +53,12 @@ export function GlobalEventBus (name, size, errorCallback) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
     }
     if (window && !window[name]) {
-      window[name] = initBus(size)
+      window[name] = wrap(initBus(size))
     }
-    return wrap(window[name])
+    if (!isWrapped(window[name])) {
+      window[name] = wrap(window[name])
+    }
+    return window[name]
   } catch (e) {
     console.error('events.bus.init', e)
     errorCallback(e)

@@ -5,6 +5,7 @@ import uuid from 'tiny-uuid4'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
@@ -49,8 +50,9 @@ describe('DecisionsManager for stored decisions', () => {
   })
 
   it('should emit an error if decisions.resolve fails for some reason, return an empty object', function () {
+    const messageBus = LocalEventBus()
     const stub = sandbox.stub(storage, 'findSimilarCookies').throws()
-    const resolutionResult = decisions.resolve({}, storage)
+    const resolutionResult = decisions.resolve({}, storage, messageBus)
     expect(resolutionResult).to.eql({})
     stub.restore()
   })

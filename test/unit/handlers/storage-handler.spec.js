@@ -3,15 +3,16 @@ import { expect, use } from 'chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
 import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
-import * as emitter from '../../../src/utils/emitter'
 import { expiresInDays } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
 describe('StorageHandler', () => {
-  let emitterErrors = []
-  let emitterStub
+  let errors = []
+  let messageBusStub
+  const messageBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',
@@ -19,9 +20,9 @@ describe('StorageHandler', () => {
   })
 
   beforeEach(() => {
-    emitterErrors = []
-    emitterStub = sandbox.stub(emitter, 'error').callsFake((name, message, e) => {
-      emitterErrors.push({
+    errors = []
+    messageBusStub = sandbox.stub(messageBus, 'emitError').callsFake((name, message, e) => {
+      errors.push({
         name: name,
         message: message,
         exception: e
@@ -30,28 +31,28 @@ describe('StorageHandler', () => {
   })
 
   afterEach(() => {
-    emitterStub.restore()
+    messageBusStub.restore()
   })
 
   it('should send an error if an external handler is not provided', function () {
-    StorageHandler('cookie')
-    expect(emitterErrors.length).to.be.eq(1)
-    expect(emitterErrors[0].name).to.be.eq('StorageHandler')
-    expect(emitterErrors[0].message).to.be.eq('The storage functions \'["localStorageIsEnabled","getCookie","setCookie","getDataFromLocalStorage","removeDataFromLocalStorage","setDataInLocalStorage","findSimilarCookies"]\' are not provided')
-    expect(emitterErrors[0].exception).to.be.undefined()
+    StorageHandler('cookie', {}, messageBus)
+    expect(errors.length).to.be.eq(1)
+    expect(errors[0].name).to.be.eq('StorageHandler')
+    expect(errors[0].message).to.be.eq('The storage functions \'["localStorageIsEnabled","getCookie","setCookie","getDataFromLocalStorage","removeDataFromLocalStorage","setDataInLocalStorage","findSimilarCookies"]\' are not provided')
+    expect(errors[0].exception).to.be.undefined()
   })
 
   it('should send an error if an external handler is not provided and the storage strategy is none', function () {
-    StorageHandler('none')
-    expect(emitterErrors.length).to.be.eq(1)
-    expect(emitterErrors[0].name).to.be.eq('StorageHandler')
-    expect(emitterErrors[0].message).to.be.eq('The storage functions \'["getCookie","getDataFromLocalStorage","findSimilarCookies"]\' are not provided')
-    expect(emitterErrors[0].exception).to.be.undefined()
+    StorageHandler('none', {}, messageBus)
+    expect(errors.length).to.be.eq(1)
+    expect(errors[0].name).to.be.eq('StorageHandler')
+    expect(errors[0].message).to.be.eq('The storage functions \'["getCookie","getDataFromLocalStorage","findSimilarCookies"]\' are not provided')
+    expect(errors[0].exception).to.be.undefined()
   })
 
   it('should not send an error if an external handler is not provided and the storage strategy is disabled', function () {
     StorageHandler('disabled')
-    expect(emitterErrors.length).to.be.eq(0)
+    expect(errors.length).to.be.eq(0)
   })
 
   it('should use local storage', function () {
@@ -84,7 +85,7 @@ describe('StorageHandler', () => {
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
     expect(storage.getDataFromLocalStorage('key')).to.be.null()
-    expect(emitterErrors.length).to.be.eq(0)
+    expect(errors.length).to.be.eq(0)
   })
 
   it('should return nothing when the strategy is disabled', function () {
@@ -101,7 +102,7 @@ describe('StorageHandler', () => {
     expect(storageHandler.removeDataFromLocalStorage('key_ls')).to.be.undefined()
     expect(storageHandler.findSimilarCookies('key_cookie')).to.be.undefined()
     expect(storageHandler.localStorageIsEnabled()).to.be.undefined()
-    expect(emitterErrors.length).to.be.eq(0)
+    expect(errors.length).to.be.eq(0)
   })
 
   it('should return nothing when the strategy is ls and the time is in the past', function () {

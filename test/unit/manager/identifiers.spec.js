@@ -5,10 +5,12 @@ import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
+import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
-const storage = StorageHandler('cookie', externalStorage)
+const messageBus = LocalEventBus()
+const storage = StorageHandler('cookie', externalStorage, messageBus)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -63,7 +65,7 @@ describe('IdentifiersManager', () => {
   it('should emit an error if identifiers.resolve fails for some reason, return an empty object', function () {
     const stub = sandbox.stub(externalStorage, 'getCookie').throws()
     const failedStorage = StorageHandler('cookie', externalStorage)
-    const resolutionResult = identifiers.resolve({}, failedStorage)
+    const resolutionResult = identifiers.resolve({}, failedStorage, messageBus)
     expect(resolutionResult).to.eql({})
     stub.restore()
   })

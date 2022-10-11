@@ -1,8 +1,7 @@
 import { expect, use } from 'chai'
-import * as bus from '../../../src/events/event-bus'
-import * as C from '../../../src/utils/consts'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
+import { GlobalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
@@ -12,28 +11,40 @@ describe('EventsBus in a window', () => {
     useEach: true
   })
 
-  it('should set up a bus on a global namespace according to constants', function () {
-    const eventBus = bus.init()
-    expect(eventBus.size).to.eql(5)
-    expect(window[C.EVENT_BUS_NAMESPACE]).to.not.eql(null)
-    expect(window[C.EVENT_BUS_NAMESPACE].on).to.not.eql(null)
-    expect(typeof window[C.EVENT_BUS_NAMESPACE].on).to.eql('function')
-    expect(window[C.EVENT_BUS_NAMESPACE].emit).to.not.eql(null)
-    expect(typeof window[C.EVENT_BUS_NAMESPACE].emit).to.eql('function')
+  it('should set up a bus under the given variable name', function () {
+    const name = 'testBus'
+    GlobalEventBus(name)
+    expect(window[name].underlying.size).to.eql(5)
+    expect(window[name]).to.not.eql(null)
+    expect(window[name].on).to.not.eql(null)
+    expect(typeof window[name].on).to.eql('function')
+    expect(window[name].emit).to.not.eql(null)
+    expect(typeof window[name].emit).to.eql('function')
   })
 
-  it('should reuse the bus on a global namespace according to constants', function () {
-    bus.init()
-    const firstBus = window[C.EVENT_BUS_NAMESPACE]
+  it('should reuse the bus on a given namespace', function () {
+    const name = 'testBus'
+    const firstBus = GlobalEventBus(name)
     firstBus.on('a-dell', () => console.log('Hello, its me'))
-    bus.init()
-    const secondBus = window[C.EVENT_BUS_NAMESPACE]
+    const secondBus = GlobalEventBus(name)
     expect(firstBus).to.eql(secondBus)
   })
 
   it('should set the size correctly', function () {
-    const eventBus = bus.init(3)
-    expect(eventBus.size).to.eq(3)
+    const name = 'testBus'
+    GlobalEventBus(name, 3)
+    expect(window[name].underlying.size).to.eq(3)
+  })
+
+  it('should wrap the bus with the new interface if needed', function () {
+    const name = 'testBus'
+    window[name] = {}
+    GlobalEventBus(name)
+    expect(window[name]).to.not.eql(null)
+    expect(window[name].emitError).to.not.eql(null)
+    expect(typeof window[name].emitError).to.eql('function')
+    expect(window[name].encodeEmitError).to.not.eql(null)
+    expect(typeof window[name].encodeEmitError).to.eql('function')
   })
 })
 
@@ -43,7 +54,7 @@ describe('EventsBus with no window', () => {
     const callback = (e) => {
       error = e
     }
-    const eventBus = bus.init(1, callback)
+    const eventBus = GlobalEventBus('testBus', 1, callback)
     expect(eventBus).to.eql(undefined)
     expect(error).to.not.eql(null)
   })

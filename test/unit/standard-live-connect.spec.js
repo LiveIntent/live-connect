@@ -46,8 +46,8 @@ describe('StandardLiveConnect', () => {
 
   it('should initialise the event bus, and hook the error handler', function () {
     StandardLiveConnect({})
-    const windowBus = window[C.EVENT_BUS_NAMESPACE]
-    const errorHandler = windowBus.h
+    const eventBus = window.liQ.eventBus
+    const errorHandler = eventBus.underlying.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
     expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')

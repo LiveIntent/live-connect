@@ -4,6 +4,7 @@ import jsdom from 'mocha-jsdom'
 import * as storage from '../../shared/utils/storage'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
@@ -134,8 +135,9 @@ describe('IdentifiersNoHashEnricher', () => {
     const getCookieStub = sandbox.stub(storage, 'getCookie').throws()
     storage.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     const state = { identifiersToResolve: [COOKIE_NAME] }
+    const eventBus = LocalEventBus()
 
-    const resolutionResult = identifiersEnricher.enrich(state, storage)
+    const resolutionResult = identifiersEnricher.enrich(state, storage, eventBus)
 
     expect(resolutionResult).to.eql({})
     getCookieStub.restore()
