@@ -5,11 +5,20 @@ This field does not have the default value. If it is not set, the appId calculat
 Example:
 ```javascript
 {
-  appId:"a-00xx"
+  appId: "a-00xx"
+}
+```
+#### `distributorId` [Optional]
+This parameter is an identifier for distributors, it is not tied to a publisher.  A configuration identified by a distributorId will not have an appId.
+This field does not have the default value and should only be set on distributor scripts. The events sent by distributors' scripts will not be attributed.
+Example:
+```javascript
+{
+  distributorId: "did-00xx"
 }
 ```
 #### `wrapperName` [Optional]
-This parametr should be used when this module is required/imported in within another tracker. Often times, we'd like to separate the events received from a specific library encapsulating LiveConnect. If that is the case, it's recommended to set this parameter accordingly.
+This parameter should be used when this module is required/imported in within another tracker. Often times, we'd like to separate the events received from a specific library encapsulating LiveConnect. If that is the case, it's recommended to set this parameter accordingly.
 Example
 ```javascript
 {

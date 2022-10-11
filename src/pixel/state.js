@@ -61,6 +61,12 @@ const _pArray = [
     }
   ],
   [
+    'distributorId',
+    did => {
+      return asStringParam('did', did)
+    }
+  ],
+  [
     'eventSource',
     source => {
       return asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))

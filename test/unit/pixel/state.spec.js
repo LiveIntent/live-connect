@@ -397,4 +397,16 @@ describe('EventComposition', () => {
     // Making sure this works and that we're not changing the object for the customer
     expect(event.data).to.eql(pixelData)
   })
+
+  it('should send distributorId using the short name: did', function () {
+    const pixelData = {
+      distributorId: 'did-9898',
+      liveConnectId: '213245'
+    }
+    const event = new StateWrapper(pixelData)
+
+    expect(event.data).to.eql(pixelData)
+    expect(event.asQuery().toQueryString()).to.eql('?did=did-9898&duid=213245')
+    assert.includeDeepMembers(event.asTuples(), [['did', 'did-9898'], ['duid', '213245']])
+  })
 })
