@@ -16,7 +16,7 @@
   "scripts": {
     "test:unit": "npm run lint && nyc mocha --config test-config/mocha.unit.json --require @babel/register --require @babel/polyfill",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "test:it:browserstack": "npm run build && wdio test-config/wdio.browserstack.conf.js --require webdriverio",
+    "test:it:browserstack": "npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build && wdio test-config/wdio.docker.chrome.conf.js",
     "test:it:local:chrome": "npm run build && wdio test-config/wdio.local.chrome.conf.js",
     "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
@@ -52,7 +52,6 @@
     "@wdio/local-runner": "^7.25.1",
     "@wdio/mocha-framework": "^7.25.1",
     "@wdio/spec-reporter": "^7.25.1",
-    "webdriverio": "^7.16.3",
     "abab": "^2.0.5",
     "acorn": "^7.2.0",
     "autoprefixer": "^9.8.0",
@@ -92,7 +91,8 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.5.0",
     "tiny-uuid4": "^1.0.1",
-    "@wdio/selenium-standalone-service": "^7.25.1",
+    "wdio-chromedriver-service": "7.3.2",
+    "chromedriver": "^106.0.0",
     "wdio-docker-service": "^3.2.1"
   }
 }
