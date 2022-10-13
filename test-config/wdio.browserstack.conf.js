@@ -147,7 +147,7 @@ exports.config = {
 
   user: process.env.BS_USER,
   key: process.env.BS_KEY,
-  hostname: 'hub.browserstack.com'
+  hostname: 'hub.browserstack.com',
 
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
