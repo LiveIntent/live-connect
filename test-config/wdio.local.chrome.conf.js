@@ -50,7 +50,10 @@ exports.config = {
   // https://docs.saucelabs.com/reference/platforms-configurator
   //
   capabilities: [{
-      browserName: 'chrome'
+    browserName: 'chrome',
+    'goog:chromeOptions': {
+      args: ['--disable-gpu']
+    }
   }],
   //
   // ===================
@@ -96,7 +99,11 @@ exports.config = {
   connectionRetryCount: 3,
 
   services: [
-    ['selenium-standalone', { drivers: { chrome: true } }]
+    ['chromedriver', {
+        logFileName: 'wdio-chromedriver.log', // default
+        outputDir: 'driver-logs', // overwrites the config.outputDir
+        args: ['--silent']
+    }]
   ],
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
