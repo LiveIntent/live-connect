@@ -1,5 +1,13 @@
 version: 2.1
 
+orbs:
+  node: circleci/node@5.0.3
+
+parameters:
+  node_version:
+    type: string
+    default: "12.22.11"
+
 references:
   restore_cache: &restore_cache
     restore_cache:
@@ -28,20 +36,6 @@ references:
         echo "127.0.0.1 double-framed.test.liveintent.com" | sudo tee -a /etc/hosts
         echo "127.0.0.1 baked.liveintent.com" | sudo tee -a /etc/hosts
 
-  install_node: &install_node
-    run:
-      name: Install node v12
-      command: |
-        set +e
-        export NVM_DIR="/opt/circleci/.nvm"
-        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-        nvm install v12.22.11
-        nvm alias default v12.22.11
-
-        # Each step uses the same `$BASH_ENV`, so need to modify it
-        echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
-        echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> $BASH_ENV
-
   configure_git: &configure_git
     run:
       name: Configure Git
@@ -68,7 +62,8 @@ jobs:
       - checkout
       - *restore_cache
       - *host_setup
-      - *install_node
+      - node/install:
+          node-version: << pipeline.parameters.node_version >>
       - *npm_install
       - *save_cache
       - run:
@@ -93,7 +88,8 @@ jobs:
       - checkout
       - *restore_cache
       - *host_setup
-      - *install_node
+      - node/install:
+          node-version: << pipeline.parameters.node_version >>
       - *npm_install
       - run:
           name: Run browserstack tests
@@ -116,7 +112,8 @@ jobs:
         type: string
     steps:
       - checkout
-      - *install_node
+      - node/install:
+          node-version: << pipeline.parameters.node_version >>
       - *npm_install
       - *configure_git
       - *set_ssh_key
