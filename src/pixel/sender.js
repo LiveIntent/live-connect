@@ -5,6 +5,7 @@ const DEFAULT_AJAX_TIMEOUT = 0
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
+ * @param {EventBus} messageBus
  * @param {function} onload
  * @param {function} presend
  * @returns {{sendAjax: *, sendPixel: *}}

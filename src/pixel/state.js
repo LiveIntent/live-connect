@@ -203,6 +203,7 @@ export function Query (tuples) {
 
 /**
  * @param {State} state
+ * @param {EventBus} messageBus
  * @returns {StateWrapper}
  * @constructor
  */

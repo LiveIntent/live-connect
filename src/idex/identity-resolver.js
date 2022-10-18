@@ -5,6 +5,7 @@ import { storageHandlerBackedCache, makeIdentityResolver } from './common'
  * @param {State} config
  * @param {StorageHandler} storageHandler
  * @param {CallHandler} calls
+ * @param {EventBus} messageBus
  * @return {IdentityResolver}
  * @constructor
  */

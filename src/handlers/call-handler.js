@@ -10,6 +10,7 @@ const _noOp = () => undefined
 
 /**
  * @param {CallHandler} externalCallHandler
+ * @param {EventBus} messageBus
  * @returns {CallHandler}
  * @constructor
  */

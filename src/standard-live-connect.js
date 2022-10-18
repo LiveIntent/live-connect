@@ -30,6 +30,17 @@
  * @property {{IdexConfig|undefined}} identityResolutionConfig
  */
 
+/**
+ * @typedef {Object} EventBus
+ * @property {(function)} on
+ * @property {(function)} once
+ * @property {(function)} emit
+ * @property {(function)} off
+ * @property {(function)} emitError
+ * @property {(function)} encodeEmitError
+ * @property {(number)} size
+ */
+
 import { PixelSender } from './pixel/sender'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
@@ -124,6 +135,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
+ * @param {EventBus} eventBus
  * @returns {StandardLiveConnect}
  * @private
  */
