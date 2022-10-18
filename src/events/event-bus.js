@@ -1,4 +1,4 @@
-import E from './replayemitter'
+import { E, wrapError } from './replayemitter'
 import * as C from '../utils/consts'
 
 function initBus (size) {
@@ -8,42 +8,27 @@ function initBus (size) {
   return new E(size)
 }
 
-function isWrapped (bus) {
+function isNewEmitter (bus) {
   return typeof bus.emitError === 'function' && typeof bus.encodeEmitError === 'function'
 }
 
-function wrap (bus) {
-  return {
-    on: function (name, callback, ctx) {
-      bus.on(name, callback, ctx)
-    },
-    once: function (name, callback, ctx) {
-      bus.once(name, callback, ctx)
-    },
-    emit: function (name, message) {
-      bus.emit(name, message)
-    },
-    emitError: function (name, message, e = {}) {
-      const wrapped = new Error(message || e.message)
-      wrapped.stack = e.stack
-      wrapped.name = name || 'unknown error'
-      wrapped.lineNumber = e.lineNumber
-      wrapped.columnNumber = e.columnNumber
-      this.emit(C.ERRORS_PREFIX, wrapped)
-    },
-    encodeEmitError (name, exception) {
-      this.emitError(name, exception.message, exception)
-    },
-    off: function (name, callback) {
-      bus.off(name, callback)
-    },
-    underlying: bus
+function extendBusIfNeeded (bus) {
+  if (isNewEmitter(bus)) {
+    return
+  }
+
+  bus.emitError = function (name, message, e = {}) {
+    const wrappedError = wrapError(name, message, e)
+    bus.emit(C.ERRORS_PREFIX, wrappedError)
+  }
+
+  bus.encodeEmitError = function (name, exception) {
+    bus.emitError(name, exception.message, exception)
   }
 }
 
 export function LocalEventBus (size) {
-  const bus = initBus(size)
-  return wrap(bus)
+  return initBus(size)
 }
 
 export function GlobalEventBus (name, size, errorCallback) {
@@ -53,11 +38,9 @@ export function GlobalEventBus (name, size, errorCallback) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
     }
     if (window && !window[name]) {
-      window[name] = wrap(initBus(size))
+      window[name] = initBus(size)
     }
-    if (!isWrapped(window[name])) {
-      window[name] = wrap(window[name])
-    }
+    extendBusIfNeeded(window[name])
     return window[name]
   } catch (e) {
     console.error('events.bus.init', e)
@@ -65,8 +48,9 @@ export function GlobalEventBus (name, size, errorCallback) {
   }
 }
 
-export function getAndAttachWrappedGlobalBus (name) {
-  const eventBus = window[name].eventBus || (window[C.EVENT_BUS_NAMESPACE] && wrap(window[C.EVENT_BUS_NAMESPACE]))
+export function getAndAttachGlobalBus (name) {
+  const eventBus = window[name].eventBus || window[C.EVENT_BUS_NAMESPACE]
+  extendBusIfNeeded(eventBus)
   window[name].eventBus = eventBus
   return eventBus
 }

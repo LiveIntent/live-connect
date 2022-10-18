@@ -1,6 +1,6 @@
 import { expect, spy, use } from 'chai'
 import chaiSpies from 'chai-spies'
-import ReplayEmitter from '../../../src/events/replayemitter'
+import { E as ReplayEmitter } from '../../../src/events/replayemitter'
 
 use(chaiSpies)
 
