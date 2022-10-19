@@ -5,7 +5,7 @@ export function enrich (state, storageHandler, messageBus) {
   try {
     return { peopleVerifiedId: state.peopleVerifiedId || storageHandler.getDataFromLocalStorage(PEOPLE_VERIFIED_LS_ENTRY) }
   } catch (e) {
-    messageBus.emitError('PeopleVerifiedEnrich', e.message, e)
+    messageBus.encodeEmitError('PeopleVerifiedEnrich', e)
     return {}
   }
 }

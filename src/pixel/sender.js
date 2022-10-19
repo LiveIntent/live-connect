@@ -28,7 +28,7 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
         },
         (e) => {
           _sendPixel(state)
-          messageBus.emitError('AjaxFailed', e.message, e)
+          messageBus.encodeEmitError('AjaxFailed', e)
         },
         DEFAULT_AJAX_TIMEOUT
       )

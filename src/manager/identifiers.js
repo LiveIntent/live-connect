@@ -11,6 +11,7 @@ const DEFAULT_EXPIRATION_DAYS = 730
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
+ * @param {EventBus} messageBus
  */
 export function resolve (state, storageHandler, messageBus) {
   try {

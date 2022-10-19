@@ -9,8 +9,13 @@ Example:
 }
 ```
 #### `distributorId` [Optional]
-This parameter is an identifier for distributors, it is not tied to a publisher.  A configuration identified by a distributorId will not have an appId.
-This field does not have the default value and should only be set on distributor scripts. The events sent by distributors' scripts will not be attributed.
+This parameter is an identifier for distributors.
+`distributorId` does not have a default value and must be set in case of distributors scripts.
+Note: The distributor script has `globalVarName` property that enables to:
+ * initialize LiveConnect configuration for distributors including the `distributorId`.
+ * send distributors events.
+
+If `distributorId` is provided, the `appId` configuration parameter must not be set.
 Example:
 ```javascript
 {

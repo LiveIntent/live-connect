@@ -9,13 +9,14 @@ import { safeToString, isArray, trim } from '../utils/types'
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
+ * @param {EventBus} messageBus
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
 export function enrich (state, storageHandler, messageBus) {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
-    messageBus.emitError('IdentifiersEnrich', e)
+    messageBus.encodeEmitError('IdentifiersEnrich', e)
     return {}
   }
 }

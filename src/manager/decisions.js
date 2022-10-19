@@ -12,6 +12,7 @@ const _nonEmpty = (value) => value && trim(value).length > 0
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
+ * @param {EventBus} messageBus
  */
 export function resolve (state, storageHandler, messageBus) {
   console.log('decisions.resolve', state)

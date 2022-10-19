@@ -9,6 +9,7 @@ import { safeToString, isString, isArray } from '../utils/types'
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
+ * @param {EventBus} messageBus
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
 export function enrich (state, storageHandler, messageBus) {
