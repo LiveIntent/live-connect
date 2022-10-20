@@ -177,7 +177,7 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - simple_test
           filters:
             branches:
               only:
