@@ -212,8 +212,9 @@ workflows:
             - browserstack
           filters:
             branches:
-              - master
-              - cm-607
+              only:
+                - master
+                - cm-607
 
       - release:
           context: live-connect
