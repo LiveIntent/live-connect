@@ -45,7 +45,7 @@ export function resolve (state, storageHandler, messageBus) {
       .filter(_onlyUnique)
     ret = { decisionIds: allDecisions }
   } catch (e) {
-    messageBus.emitError('DecisionsResolve', 'Error while managing decision ids', e)
+    messageBus.emitErrorWithMessage('DecisionsResolve', 'Error while managing decision ids', e)
   }
   return ret
 }

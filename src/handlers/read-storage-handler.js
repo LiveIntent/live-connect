@@ -42,7 +42,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler, message
     getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage')
   }
   if (errors.length > 0) {
-    messageBus.emitError('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
+    messageBus.emitErrorWithMessage('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
   return handler
 }

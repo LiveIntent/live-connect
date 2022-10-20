@@ -16,7 +16,7 @@ export function enrich (state, storageHandler, messageBus) {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
-    messageBus.encodeEmitError('IdentifiersEnrich', e)
+    messageBus.emitError('IdentifiersEnrich', e)
     return {}
   }
 }

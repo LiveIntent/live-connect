@@ -42,7 +42,7 @@ export function storageHandlerBackedCache (defaultExpirationHours, domain, stora
           domain
         )
       } catch (ex) {
-        messageBus.encodeEmitError('IdentityResolverStorage', ex)
+        messageBus.emitError('IdentityResolverStorage', ex)
       }
     }
   }
@@ -114,7 +114,7 @@ export function makeIdentityResolver (config, calls, cache, messageBus) {
             responseObj = JSON.parse(responseText)
           } catch (ex) {
             console.error('Error parsing response', ex)
-            messageBus.encodeEmitError('IdentityResolverParser', ex)
+            messageBus.emitError('IdentityResolverParser', ex)
           }
         }
 
@@ -145,21 +145,21 @@ export function makeIdentityResolver (config, calls, cache, messageBus) {
         } catch (e) {
           console.error('IdentityResolve', e)
           errorCallback()
-          messageBus.encodeEmitError('IdentityResolve', e)
+          messageBus.emitError('IdentityResolve', e)
         }
       },
       getUrl: (additionalParams) => composeUrl(additionalParams)
     }
   } catch (e) {
     console.error('IdentityResolver', e)
-    messageBus.encodeEmitError('IdentityResolver', e)
+    messageBus.emitError('IdentityResolver', e)
     return {
       resolve: (successCallback, errorCallback) => {
         errorCallback()
-        messageBus.encodeEmitError('IdentityResolver.resolve', e)
+        messageBus.emitError('IdentityResolver.resolve', e)
       },
       getUrl: () => {
-        messageBus.encodeEmitError('IdentityResolver.getUrl', e)
+        messageBus.emitError('IdentityResolver.getUrl', e)
       }
     }
   }

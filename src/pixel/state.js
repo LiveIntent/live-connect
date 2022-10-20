@@ -230,7 +230,7 @@ export function StateWrapper (state, messageBus) {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      messageBus.emitError('StateCombineWith', 'Error while extracting event data', e)
+      messageBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
       return _state
     }
   }

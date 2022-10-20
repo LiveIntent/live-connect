@@ -45,7 +45,7 @@ export function resolve (state, storageHandler, messageBus) {
         }
         return storageHandler.get(key)
       } catch (e) {
-        messageBus.emitError('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
+        messageBus.emitErrorWithMessage('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
         return null
       }
     }
@@ -80,7 +80,7 @@ export function resolve (state, storageHandler, messageBus) {
       peopleVerifiedId: liveConnectIdentifier
     }
   } catch (e) {
-    messageBus.emitError('IdentifiersResolve', 'Error while managing identifiers', e)
+    messageBus.emitErrorWithMessage('IdentifiersResolve', 'Error while managing identifiers', e)
     return {}
   }
 }

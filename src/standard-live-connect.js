@@ -30,17 +30,6 @@
  * @property {{IdexConfig|undefined}} identityResolutionConfig
  */
 
-/**
- * @typedef {Object} EventBus
- * @property {(function)} on
- * @property {(function)} once
- * @property {(function)} emit
- * @property {(function)} off
- * @property {(function)} emitError
- * @property {(function)} encodeEmitError
- * @property {(number)} size
- */
-
 import { PixelSender } from './pixel/sender'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
@@ -60,9 +49,9 @@ import { LocalEventBus, getAndAttachGlobalBus } from './events/event-bus'
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState, eventBus) {
   if (!event || !isObject(event)) {
-    eventBus.emitError('EventNotAnObject', 'Received event was not an object', new Error(event))
+    eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {
-    eventBus.emitError('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
+    eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
   } else {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
@@ -103,7 +92,7 @@ function _processArgs (args, pixelClient, enrichedState, eventBus) {
     })
   } catch (e) {
     console.error('Error sending events', e)
-    eventBus.emitError('LCPush', 'Failed sending an event', e)
+    eventBus.emitErrorWithMessage('LCPush', 'Failed sending an event', e)
   }
 }
 
@@ -122,7 +111,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
         const eventBus = getAndAttachGlobalBus(liveConnectConfig.globalVarName)
-        eventBus.emitError('LCDuplication', JSON.stringify(mismatchedConfig), error)
+        eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window[liveConnectConfig.globalVarName]
     }
@@ -174,7 +163,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     }
   } catch (x) {
     console.error(x)
-    eventBus.emitError('LCConstruction', 'Failed to build LC', x)
+    eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', x)
   }
 }
 
@@ -201,7 +190,7 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
     }
   } catch (x) {
     console.error(x)
-    eventBus.emitError('LCConstruction', 'Failed to build LC', x)
+    eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', x)
   }
   return window[configuration.globalVarName]
 }

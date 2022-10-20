@@ -57,6 +57,7 @@ export function asErrorDetails (e) {
 
 /**
  * @param {Error} error
+ * @param {EventBus} messageBus
  * @private
  */
 function _errorHandler (messageBus) {

@@ -1,5 +1,17 @@
 import { E, wrapError } from './replayemitter'
 import * as C from '../utils/consts'
+import { isFunction } from '../utils/types'
+
+/**
+ * @typedef {Object} EventBus
+ * @property {(function)} on
+ * @property {(function)} once
+ * @property {(function)} emit
+ * @property {(function)} off
+ * @property {(function)} emitErrorWithMessage
+ * @property {(function)} emitError
+ * @property {(number)} size
+ */
 
 function initBus (size) {
   if (!size) {
@@ -8,22 +20,19 @@ function initBus (size) {
   return new E(size)
 }
 
-function isNewEmitter (bus) {
-  return typeof bus.emitError === 'function' && typeof bus.encodeEmitError === 'function'
-}
-
 function extendBusIfNeeded (bus) {
-  if (isNewEmitter(bus)) {
+  const isNewEmitter = isFunction(bus.emitErrorWithMessage) && isFunction(bus.emitError)
+  if (isNewEmitter) {
     return
   }
 
-  bus.emitError = function (name, message, e = {}) {
+  bus.emitErrorWithMessage = function (name, message, e = {}) {
     const wrappedError = wrapError(name, message, e)
     bus.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  bus.encodeEmitError = function (name, exception) {
-    bus.emitError(name, exception.message, exception)
+  bus.emitError = function (name, exception) {
+    bus.emitErrorWithMessage(name, exception.message, exception)
   }
 }
 

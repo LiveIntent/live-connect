@@ -42,10 +42,12 @@ describe('EventsBus in a window', () => {
     window[name] = {}
     GlobalEventBus(name)
     expect(window[name]).to.not.eql(null)
+    expect(window[name].emitErrorWithMessage).to.not.eql(null)
+    expect(window[name].emitErrorWithMessage).to.not.eql(undefined)
+    expect(typeof window[name].emitErrorWithMessage).to.eql('function')
     expect(window[name].emitError).to.not.eql(null)
+    expect(window[name].emitError).to.not.eql(undefined)
     expect(typeof window[name].emitError).to.eql('function')
-    expect(window[name].encodeEmitError).to.not.eql(null)
-    expect(typeof window[name].encodeEmitError).to.eql('function')
   })
 
   it('should attach global bus to the LC instance if missing', function () {

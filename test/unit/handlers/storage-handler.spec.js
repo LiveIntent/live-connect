@@ -21,7 +21,7 @@ describe('StorageHandler', () => {
 
   beforeEach(() => {
     errors = []
-    messageBusStub = sandbox.stub(messageBus, 'emitError').callsFake((name, message, e) => {
+    messageBusStub = sandbox.stub(messageBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
       errors.push({
         name: name,
         message: message,

@@ -41,7 +41,7 @@ describe('ErrorPixel', () => {
 
   it('should call the pixel once registered', function () {
     errorPixel.register({ collectorUrl: 'http://localhost' }, {}, eventBus)
-    eventBus.emitError('Error', 'some other message')
+    eventBus.emitErrorWithMessage('Error', 'some other message')
     expect(errors.length).to.eql(1)
     const errorDetails = errors[0].data.errorDetails
     console.log(errors[0].data)

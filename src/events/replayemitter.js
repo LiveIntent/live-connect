@@ -4,8 +4,8 @@
  * @property {(function)} once
  * @property {(function)} emit
  * @property {(function)} off
+ * @property {(function)} emitErrorWithMessage
  * @property {(function)} emitError
- * @property {(function)} encodeEmitError
  */
 
 import * as C from '../utils/consts'
@@ -88,13 +88,13 @@ export class E {
     return this
   }
 
-  emitError (name, message, e = {}) {
+  emitErrorWithMessage (name, message, e = {}) {
     const wrappedError = wrapError(name, message, e)
     this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  encodeEmitError (name, exception) {
-    this.emitError(name, exception.message, exception)
+  emitError (name, exception) {
+    this.emitErrorWithMessage(name, exception.message, exception)
   }
 }
 

@@ -28,7 +28,7 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
         },
         (e) => {
           _sendPixel(state)
-          messageBus.encodeEmitError('AjaxFailed', e)
+          messageBus.emitError('AjaxFailed', e)
         },
         DEFAULT_AJAX_TIMEOUT
       )
@@ -42,7 +42,7 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
         for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
-      messageBus.emitError('CallBakers', 'Error while calling bakers', e)
+      messageBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
     }
   }
 

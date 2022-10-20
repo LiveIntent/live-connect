@@ -32,7 +32,7 @@ export function CallHandler (externalCallHandler, messageBus) {
     pixelGet: _externalOrError('pixelGet')
   }
   if (errors.length > 0) {
-    messageBus.emitError('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
+    messageBus.emitErrorWithMessage('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
   }
 
   return handler

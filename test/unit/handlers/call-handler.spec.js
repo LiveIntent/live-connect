@@ -19,7 +19,7 @@ describe('CallHandler', () => {
 
   beforeEach(() => {
     emitterErrors = []
-    messageBusStub = sandbox.stub(messageBus, 'emitError').callsFake((name, message, e) => {
+    messageBusStub = sandbox.stub(messageBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
       emitterErrors.push({
         name: name,
         message: message,
