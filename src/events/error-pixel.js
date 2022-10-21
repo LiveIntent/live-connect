@@ -61,7 +61,7 @@ export function asErrorDetails (e) {
  * @private
  */
 function _errorHandler (messageBus) {
-  function _pixelError (error) {
+  const _pixelError = (error) => {
     console.log(error, _state)
     if (_pixelSender) {
       _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), messageBus).combineWith(_state || {}).combineWith(page.enrich({})))

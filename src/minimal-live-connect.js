@@ -23,6 +23,7 @@ import { LocalEventBus } from './events/event-bus'
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
+ * @param {EventBus} eventBus
  * @returns {MinimalLiveConnect}
  * @private
  */
@@ -53,6 +54,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {StorageHandler} externalStorageHandler
  * @param {CallHandler} externalCallHandler
+ * @param {EventBus} externalEventBus
  * @returns {MinimalLiveConnect}
  * @constructor
  */

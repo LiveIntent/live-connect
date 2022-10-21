@@ -11,8 +11,8 @@ const _initializationFunction = _minimalMode ? MinimalLiveConnect : StandardLive
 * @returns {LiveConnect}
 * @constructor
 */
-export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler) {
+export function LiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, externalEventBus) {
   console.log('Initializing LiveConnect', liveConnectConfig)
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-  return _initializationFunction(configuration, externalStorageHandler, externalCallHandler)
+  return _initializationFunction(configuration, externalStorageHandler, externalCallHandler, externalEventBus)
 }
