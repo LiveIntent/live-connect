@@ -61,13 +61,13 @@ export function asErrorDetails (e) {
  * @private
  */
 function _errorHandler (messageBus) {
-  const _pixelError = (error) => {
+  function pixelError (error) {
     console.log(error, _state)
     if (_pixelSender) {
       _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), messageBus).combineWith(_state || {}).combineWith(page.enrich({})))
     }
   }
-  return _pixelError
+  return pixelError
 }
 
 export function register (state, callHandler, messageBus) {

@@ -36,7 +36,7 @@ describe('ErrorPixel', () => {
     const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
-    expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')
+    expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('pixelError')
   })
 
   it('should call the pixel once registered', function () {
