@@ -12,7 +12,8 @@ import {
   resolveIdentity,
   sendEvent,
   waitForBakerRequests,
-  waitForRequests
+  waitForRequests,
+  clearLS
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 
@@ -51,8 +52,9 @@ describe('LiveConnect', function () {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Finishing the test: '${this.currentTest.fullTitle()}'`)
   })
 
-  after(function () {
+  after(async function () {
     server.stop()
+    await clearLS()
   })
 
   it('should send decisionIds', async function () {

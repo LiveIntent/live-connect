@@ -157,11 +157,22 @@ export async function probeLS () {
     console.warn(`Error while probing localstorage: ${JSON.stringify(error)}`)
   }
   if (!enabled) {
-    console.warn('localstorage not supported')
+    console.warn('[probeLS] localstorage not supported')
   }
   return enabled
 }
 
+export async function clearLS () {
+  await browser.execute(function () {
+    try {
+      if (window && window.localStorage) {
+        window.localStorage.clear()
+      }
+    } catch (e) {
+      console.warn('[clearLS] localstorage not supported')
+    }
+  })
+}
 export async function deleteAllCookies () {
   const error = await browser.execute(function () {
     try {
