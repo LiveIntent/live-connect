@@ -134,7 +134,6 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  */
 function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
   try {
-    console.log('ok I am heeereee ' + liveConnectConfig.globalVarName)
     const callHandler = CallHandler(externalCallHandler, eventBus)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler, eventBus)

@@ -9,12 +9,8 @@ Example:
 }
 ```
 #### `distributorId` [Optional]
-This parameter is an identifier for distributors.
-`distributorId` does not have a default value and must be set in case of distributors scripts.
-Note: The distributor script has `globalVarName` property that enables to:
- * initialize LiveConnect configuration for distributors including the `distributorId`.
- * send distributors events.
-
+This parameter is an identifier for distributors. 
+It does not have a default value and must be set in case of distributors scripts.
 If `distributorId` is provided, the `appId` configuration parameter must not be set.
 Example:
 ```javascript
