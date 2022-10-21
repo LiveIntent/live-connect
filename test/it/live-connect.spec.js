@@ -12,8 +12,7 @@ import {
   resolveIdentity,
   sendEvent,
   waitForBakerRequests,
-  waitForRequests,
-  clearLS
+  waitForRequests
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 
@@ -28,7 +27,6 @@ describe('LiveConnect', function () {
   let supportsLS
 
   before(async function () {
-    await clearLS()
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],

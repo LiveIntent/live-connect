@@ -162,17 +162,6 @@ export async function probeLS () {
   return enabled
 }
 
-export async function clearLS () {
-  await browser.execute(function () {
-    try {
-      if (window && window.localStorage) {
-        window.localStorage.clear()
-      }
-    } catch (e) {
-      console.warn('[clearLS] localstorage not supported')
-    }
-  })
-}
 export async function deleteAllCookies () {
   const error = await browser.execute(function () {
     try {
