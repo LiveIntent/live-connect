@@ -28,6 +28,7 @@ describe('LiveConnect', function () {
   let supportsLS
 
   before(async function () {
+    await clearLS()
     server = serverUtil.MockServerFactory({
       collectorUrl: 'http://bln.test.liveintent.com:3001',
       identifiersToResolve: [COOKIE_TO_SCRAPE_NAME],
@@ -52,9 +53,8 @@ describe('LiveConnect', function () {
     console.log('\x1b[35m\x1b[4m%s\x1b[0m', `##### Finishing the test: '${this.currentTest.fullTitle()}'`)
   })
 
-  after(async function () {
+  after(function () {
     server.stop()
-    await clearLS()
   })
 
   it('should send decisionIds', async function () {
