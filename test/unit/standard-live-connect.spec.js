@@ -232,6 +232,6 @@ describe('StandardLiveConnect', () => {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
     expect(window.liQTest.ready).to.be.true()
-    expect(window.liQ).to.be.undefined()
+    expect(window.liQ_instances).to.have.members(['liQTest'])
   })
 })

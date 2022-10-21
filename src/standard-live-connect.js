@@ -115,6 +115,10 @@ function _getInitializedLiveConnect (liveConnectConfig) {
       }
       return window[liveConnectConfig.globalVarName]
     }
+    if (liveConnectConfig.globalVarName !== 'liQ') {
+      window.liQ_instances = window.liQ_instances || []
+      window.liQ_instances.push(liveConnectConfig.globalVarName)
+    }
   } catch (e) {
     console.error('Could not initialize error bus')
   }
@@ -130,6 +134,7 @@ function _getInitializedLiveConnect (liveConnectConfig) {
  */
 function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
   try {
+    console.log('ok I am heeereee ' + liveConnectConfig.globalVarName)
     const callHandler = CallHandler(externalCallHandler, eventBus)
     const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler, eventBus)
