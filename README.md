@@ -143,12 +143,12 @@ For example, there are three topics which anyone can hook to, and receive inform
 The following snippets can be used to hook up to one of the topics and receive events as they happen.
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message, will continue receiving them', message) }
-window[globalVarName].eventBus.on('lips', logger)
+window[globalVarName].eventBus.on('lips', lipsLogger)
 ```
 or
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message once, i will self destruct now.', message) }
-window[globalVarName].eventBus.once('lips', logger)
+window[globalVarName].eventBus.once('lips', lipsLogger)
 ```
 
 There are a two ways this can be achieved:
