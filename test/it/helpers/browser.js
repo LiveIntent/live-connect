@@ -155,6 +155,7 @@ export async function probeLS () {
   const enabled = result[1]
   if (error) {
     console.warn(`Error while probing localstorage: ${JSON.stringify(error)}`)
+    enabled = false
   }
   if (!enabled) {
     console.warn('[probeLS] localstorage not supported')
