@@ -9,6 +9,7 @@ const commonBStackCapabilities = {
 
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
+  { browserName: 'Safari', browserVersion: '10.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Sierra' }},
   { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10'}},
   { browserName: 'Chrome', browserVersion: '40.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' }},
   { browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' }},
@@ -20,7 +21,6 @@ const allCapabilities = [
   { browserName: 'Safari', browserVersion: '13.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Catalina' }},
   { browserName: 'Safari', browserVersion: '12.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Mojave' }},
   { browserName: 'Safari', browserVersion: '11.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'High Sierra' }},
-  { browserName: 'Safari', browserVersion: '10.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Sierra' }},
 
   { browserName: 'Safari', browserVersion: '15.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11 Pro', osVersion: '15 Beta', realMobile: true }},
   { browserName: 'Safari', browserVersion: '14.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 12', osVersion: '14', realMobile: true }},
