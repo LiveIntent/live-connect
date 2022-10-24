@@ -17,6 +17,7 @@ const _noOp = () => undefined
  *
  * @param {string} storageStrategy
  * @param {StorageHandler} [externalStorageHandler]
+ * @param {EventBus} messageBus
  * @return {StorageHandler}
  * @constructor
  */

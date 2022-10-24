@@ -3,6 +3,7 @@ import { noopCache, makeIdentityResolver } from './common'
 /**
  * @param {State} config
  * @param {CallHandler} calls
+ * @param {EventBus} messageBus
  * @return {IdentityResolver}
  * @constructor
  */
