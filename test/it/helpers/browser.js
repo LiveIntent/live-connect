@@ -152,7 +152,7 @@ export async function probeLS () {
     return [error, enabled]
   })
   const error = result[0]
-  const enabled = result[1]
+  var enabled = result[1]
   if (error) {
     console.warn(`Error while probing localstorage: ${JSON.stringify(error)}`)
     enabled = false
