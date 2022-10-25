@@ -5,7 +5,7 @@ const commonBStackCapabilities = {
   video: true,
   debug: true,
   networkLogs: true,
-  consoleLogs: error
+  consoleLogs: 'error'
 }
 
 // https://www.browserstack.com/automate/capabilities
