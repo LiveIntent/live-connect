@@ -64,6 +64,7 @@ export const noopCache = {
 /**
  * @param {State} config
  * @param {CallHandler} calls
+ * @param {EventBus} messageBus
  * @param {Cache} cache
  * @return {IdentityResolver}
  */
