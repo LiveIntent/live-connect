@@ -39,6 +39,7 @@ export async function sendEvent (event, expectedRequests, server) {
       window.liQ.push(event)
       return null
     } catch (e) {
+      console.info(`Failed pushing event: ${e}`)
       return e
     }
   }, event)
