@@ -50,7 +50,6 @@ describe('StandardLiveConnect', () => {
     const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
-    expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('pixelError')
     expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
