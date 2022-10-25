@@ -58,10 +58,15 @@ describe('LiveConnect', function () {
   it('should send decisionIds', async function () {
     const decisionIdOne = '4ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     const decisionIdTwo = '5ca76883-1e26-3fb8-b6d1-f881ac7d6699'
+    console.log("    ----  Before openPage  ----")
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
-
+    console.log("    ----  After openPage  ----")
+    console.log("    ----  Before sendEvent  ----")
     await sendEvent({}, supportsLS ? 1 : 2, server)
+    console.log("    ----  After sendEvent  ----")
+    console.log("    ----  Before getTrackingRequests  ----")
     const firstTrackingRequest = server.getTrackingRequests()[0]
+    console.log("    ----  After getTrackingRequests  ----")
     expect(decisionIdOne).to.eq(firstTrackingRequest.query.li_did)
 
     server.clearHistory()

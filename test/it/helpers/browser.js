@@ -43,6 +43,7 @@ export async function sendEvent (event, expectedRequests, server) {
     }
   }, event)
   if (error) {
+    console.info(`Failed sending event: ${error}`)
     assert.fail(`Failed sending event: ${error}`)
   }
   await waitForRequests(expectedRequests, server)
