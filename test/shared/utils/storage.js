@@ -8,10 +8,13 @@
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
 import Cookies from 'js-cookie'
-import { LocalEventBus } from '../../../src/events/event-bus'
 
 let _localStorageIsEnabled = null
-const messageBus = LocalEventBus()
+let messageBus
+
+export function setMessageBus (bus) {
+  messageBus = bus
+}
 
 const cookies = Cookies.withConverter({
   read: function (value, name) {
