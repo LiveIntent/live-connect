@@ -21,7 +21,7 @@ const cookies = Cookies.withConverter({
         return result
       }
     } catch (e) {
-      console.error(`CookieReadError: Failed reading cookie ${name}`, e)
+      messageBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
       return null
     }
   }
@@ -52,7 +52,7 @@ function _checkLocalStorage () {
       window.localStorage.removeItem(key)
     }
   } catch (e) {
-    console.error('LSCheckError', e)
+    messageBus.emitErrorWithMessage('LSCheckError', e.message, e)
   }
   return enabled
 }
@@ -99,7 +99,7 @@ export function findSimilarCookies (keyLike) {
     const allCookies = cookies.get()
     return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
   } catch (e) {
-    console.error('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
+    messageBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
     return []
   }
 }
