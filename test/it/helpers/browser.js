@@ -39,10 +39,12 @@ export async function sendEvent (event, expectedRequests, server) {
       window.liQ.push(event)
       return null
     } catch (e) {
+      console.info(`Failed pushing event: ${e}`)
       return e
     }
   }, event)
   if (error) {
+    console.info(`Failed sending event: ${error}`)
     assert.fail(`Failed sending event: ${error}`)
   }
   await waitForRequests(expectedRequests, server)
