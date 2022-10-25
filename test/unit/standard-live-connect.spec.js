@@ -51,6 +51,7 @@ describe('StandardLiveConnect', () => {
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
     expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('pixelError')
+    expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
   it('should expose liQ', function () {
@@ -232,6 +233,6 @@ describe('StandardLiveConnect', () => {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
     expect(window.liQTest.ready).to.be.true()
-    expect(window.liQ_instances).to.have.members(['liQTest'])
+    expect(window.liQ_instances).to.have.members([window.liQTest])
   })
 })

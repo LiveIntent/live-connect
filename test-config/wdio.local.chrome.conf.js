@@ -51,7 +51,9 @@ exports.config = {
   //
   capabilities: [{
     browserName: 'chrome',
-    port: 4444
+    'goog:chromeOptions': {
+      args: ['--disable-gpu']
+    }
   }],
   //
   // ===================

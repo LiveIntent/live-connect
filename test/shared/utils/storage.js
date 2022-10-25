@@ -54,7 +54,7 @@ function _checkLocalStorage () {
       window.localStorage.removeItem(key)
     }
   } catch (e) {
-    messageBus.emitErrorWithMessage('LSCheckError', e.message, e)
+    messageBus.emitError('LSCheckError', e)
   }
   return enabled
 }

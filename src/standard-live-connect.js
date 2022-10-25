@@ -115,10 +115,6 @@ function _getInitializedLiveConnect (liveConnectConfig) {
       }
       return window[liveConnectConfig.globalVarName]
     }
-    if (liveConnectConfig.globalVarName !== 'liQ') {
-      window.liQ_instances = window.liQ_instances || []
-      window.liQ_instances.push(liveConnectConfig.globalVarName)
-    }
   } catch (e) {
     console.error('Could not initialize error bus')
   }
@@ -191,6 +187,11 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
       for (let i = 0; i < queue.length; i++) {
         window[configuration.globalVarName].push(queue[i])
       }
+    }
+    window.liQ_instances = window.liQ_instances || []
+
+    if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
+      window.liQ_instances.push(window[configuration.globalVarName])
     }
   } catch (x) {
     console.error(x)
