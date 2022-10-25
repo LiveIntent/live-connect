@@ -1,3 +1,7 @@
+const drivers = {
+    chrome: { version: '106.0.5249.61' }, // put the version you are using here
+}
+
 exports.config = {
   //
   // ====================
@@ -51,9 +55,7 @@ exports.config = {
   //
   capabilities: [{
     browserName: 'chrome',
-    'goog:chromeOptions': {
-      args: ['--disable-gpu']
-    }
+    port: 4444
   }],
   //
   // ===================
@@ -98,9 +100,14 @@ exports.config = {
   // Default request retries count
   connectionRetryCount: 3,
 
+
   services: [
-      ['selenium-standalone', { drivers: { chrome: true } }]
-  ],
+        ['selenium-standalone', {
+            logPath: 'logs',
+            installArgs: { drivers }, // drivers to install
+            args: { drivers } // drivers to use
+        }]
+    ],
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
   // see also: https://webdriver.io/docs/frameworks.html
