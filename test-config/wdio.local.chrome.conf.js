@@ -1,7 +1,3 @@
-const drivers = {
-    chrome: { version: '106.0.5249.61' }, // put the version you are using here
-}
-
 exports.config = {
   //
   // ====================
@@ -100,14 +96,9 @@ exports.config = {
   // Default request retries count
   connectionRetryCount: 3,
 
-
   services: [
-        ['selenium-standalone', {
-            logPath: 'logs',
-            installArgs: { drivers }, // drivers to install
-            args: { drivers } // drivers to use
-        }]
-    ],
+      ['selenium-standalone', { drivers: { chrome: '106.0.5249.61' } }]
+  ],
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
   // see also: https://webdriver.io/docs/frameworks.html
