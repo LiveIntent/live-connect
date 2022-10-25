@@ -4,7 +4,8 @@ const commonBStackCapabilities = {
   buildName: `${process.env.CIRCLE_BRANCH || process.env.DEV_BRANCH || 'X'}-${process.env.CIRCLE_BUILD_NUM || currentTime}`,
   video: true,
   debug: true,
-  networkLogs: true
+  networkLogs: true,
+  consoleLogs: error
 }
 
 // https://www.browserstack.com/automate/capabilities
