@@ -27,7 +27,6 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
           _callBakers(bakersJson)
         },
         (e) => {
-          console.log(`    --- Sender AjaxFailed ${e}`)
           _sendPixel(state)
           messageBus.emitError('AjaxFailed', e)
         },
@@ -66,7 +65,6 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
       const queryString = query.toQueryString()
       const uri = `${url}/${endpoint}${queryString}`
 
-      console.log(`   ---- Sender sendState to ${uri}`)
       makeCall(uri)
     }
   }
