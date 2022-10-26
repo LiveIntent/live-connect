@@ -19,7 +19,7 @@
     "test:it:browserstack": "npm run build && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build && wdio test-config/wdio.docker.chrome.conf.js",
     "test:it:local:chrome": "npm run build && wdio test-config/wdio.local.chrome.conf.js",
-    "build": "npm run test:unit && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
+    "build": "npm run lint && rollup -c rollup-iife.config.js && rollup -c rollup-modules.config.js",
     "lint": "eslint 'src/**/*.js' 'test/**/*.js'",
     "fix-js": "eslint 'src/**/*.js' 'test/**/*.js' --fix || exit 0",
     "release:ci:prepatch": "release-it patch --preRelease=alpha --ci",
