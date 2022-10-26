@@ -12,7 +12,7 @@ import { GlobalEventBus } from '../../../src/events/event-bus'
 import { EVENT_BUS_NAMESPACE } from '../../../src/utils/consts'
 
 let _localStorageIsEnabled = null
-const messageBus = GlobalEventBus(EVENT_BUS_NAMESPACE)
+const messageBus = (typeof window !== 'undefined') && GlobalEventBus(EVENT_BUS_NAMESPACE)
 
 const cookies = Cookies.withConverter({
   read: function (value, name) {

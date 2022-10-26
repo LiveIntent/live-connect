@@ -180,7 +180,7 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
   console.log('Initializing LiveConnect')
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   configuration.globalVarName = configuration.globalVarName || 'liQ'
-  const eventBus = externalEventBus || GlobalEventBus(EVENT_BUS_NAMESPACE)
+  const eventBus = window && (externalEventBus || GlobalEventBus(EVENT_BUS_NAMESPACE))
   try {
     const queue = window[configuration.globalVarName] || []
     window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)
