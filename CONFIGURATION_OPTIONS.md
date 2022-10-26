@@ -9,7 +9,7 @@ Example:
 }
 ```
 #### `distributorId` [Optional]
-This parameter is an identifier for distributors. 
+This parameter is an identifier for distributors.
 It does not have a default value and must be set in case of distributors scripts.
 If `distributorId` is provided, the `appId` configuration parameter must not be set.
 Example:
@@ -219,5 +219,17 @@ Example:
 ```javascript
 {
   contextElementsLength: 6000
+}
+```
+
+##### `globalVarName` [Optional]
+
+This parameter allows to define the name for the Live Connect instance that is attached to the window object, by default: `liQ`.
+For example `globalVarName: "liQ2"` will make the instance name `window.liQ2` instead of `window.liQ`.
+
+Example:
+```javascript
+{
+  globalVarName: "liQ2"
 }
 ```
