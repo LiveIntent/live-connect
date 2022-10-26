@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers-nohash'
 import jsdom from 'mocha-jsdom'
-import * as storage from '../../shared/utils/storage'
+import { ExternalStorage as storage } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'

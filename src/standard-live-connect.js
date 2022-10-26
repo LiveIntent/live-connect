@@ -44,8 +44,7 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-import { GlobalEventBus, getAndAttachGlobalBus } from './events/event-bus'
-import { EVENT_BUS_NAMESPACE } from './utils/consts'
+import { LocalEventBus, getAndAttachGlobalBus } from './events/event-bus'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState, eventBus) {
@@ -180,7 +179,7 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
   console.log('Initializing LiveConnect')
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   configuration.globalVarName = configuration.globalVarName || 'liQ'
-  const eventBus = window && (externalEventBus || GlobalEventBus(EVENT_BUS_NAMESPACE))
+  const eventBus = externalEventBus || LocalEventBus()
   try {
     const queue = window[configuration.globalVarName] || []
     window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)

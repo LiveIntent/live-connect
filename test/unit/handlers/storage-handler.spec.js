@@ -1,7 +1,7 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
-import * as storage from '../../shared/utils/storage'
+import { ExternalStorage as storage } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import { expiresInDays } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'

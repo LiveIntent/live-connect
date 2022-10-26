@@ -2,7 +2,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver'
-import * as externalStorage from '../../shared/utils/storage'
+import { ExternalStorage } from '../../shared/utils/storage'
 import * as calls from '../../shared/utils/calls'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
@@ -15,7 +15,7 @@ describe('IdentityResolver', () => {
   const messageBus = LocalEventBus()
   let errors = []
   let callCount = 0
-  const storage = StorageHandler('cookie', externalStorage)
+  const storage = StorageHandler('cookie', ExternalStorage)
   jsdom({
     url: 'http://www.something.example.com',
     useEach: true
@@ -51,8 +51,8 @@ describe('IdentityResolver', () => {
   })
 
   it('should invoke callback on success, if storing the result in a cookie fails', function () {
-    const setCookieStub = sinon.createSandbox().stub(externalStorage, 'setCookie').throws()
-    const failedStorage = StorageHandler('cookie', externalStorage)
+    const setCookieStub = sinon.createSandbox().stub(ExternalStorage, 'setCookie').throws()
+    const failedStorage = StorageHandler('cookie', ExternalStorage)
     const identityResolver = IdentityResolver({}, failedStorage, calls, messageBus)
     let jsonResponse = null
     const successCallback = (responseAsJson) => {
@@ -289,7 +289,7 @@ describe('IdentityResolver', () => {
     const response = { id: 112233 }
     let recordedExpiresAt
 
-    const customStorage = StorageHandler('cookie', externalStorage)
+    const customStorage = StorageHandler('cookie', ExternalStorage)
     customStorage.set = (key, value, expiresAt, sameSite, domain) => {
       recordedExpiresAt = expiresAt
       storage.set(key, value, expiresAt, sameSite, domain)

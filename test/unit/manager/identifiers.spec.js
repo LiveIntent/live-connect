@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import * as identifiers from '../../../src/manager/identifiers'
-import * as externalStorage from '../../shared/utils/storage'
+import { ExternalStorage } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
@@ -10,7 +10,7 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 use(dirtyChai)
 
 const messageBus = LocalEventBus()
-const storage = StorageHandler('cookie', externalStorage, messageBus)
+const storage = StorageHandler('cookie', ExternalStorage, messageBus)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -36,7 +36,7 @@ describe('IdentifiersManager', () => {
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-    const localStorage = StorageHandler('ls', externalStorage)
+    const localStorage = StorageHandler('ls', ExternalStorage)
     const resolutionResult = identifiers.resolve({}, localStorage)
     expect(storage.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storage.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
@@ -44,7 +44,7 @@ describe('IdentifiersManager', () => {
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
-    const storageNone = StorageHandler('none', externalStorage)
+    const storageNone = StorageHandler('none', ExternalStorage)
     const resolutionResult = identifiers.resolve({}, storageNone)
     expect(resolutionResult).to.include({ domain: '.www.example.com', liveConnectId: null })
   })
@@ -63,8 +63,8 @@ describe('IdentifiersManager', () => {
   })
 
   it('should emit an error if identifiers.resolve fails for some reason, return an empty object', function () {
-    const stub = sandbox.stub(externalStorage, 'getCookie').throws()
-    const failedStorage = StorageHandler('cookie', externalStorage)
+    const stub = sandbox.stub(ExternalStorage, 'getCookie').throws()
+    const failedStorage = StorageHandler('cookie', ExternalStorage)
     const resolutionResult = identifiers.resolve({}, failedStorage, messageBus)
     expect(resolutionResult).to.eql({})
     stub.restore()
