@@ -57,15 +57,16 @@ export function asErrorDetails (e) {
 
 export function register (state, callHandler, messageBus) {
   try {
+    _pixelSender = new PixelSender(state, callHandler, messageBus)
+    _state = state || {}    
     console.log('handlers.error.register', state, _pixelSender)
+
     messageBus.on(C.ERRORS_PREFIX, (error) => {
       console.log(error, _state)
       if (_pixelSender) {
         _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), messageBus).combineWith(_state || {}).combineWith(page.enrich({})))
       }
     })
-    _pixelSender = new PixelSender(state, callHandler, messageBus)
-    _state = state || {}
   } catch (e) {
     console.error('handlers.error.register', e)
   }
