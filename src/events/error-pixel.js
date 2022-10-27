@@ -58,7 +58,7 @@ export function asErrorDetails (e) {
 export function register (state, callHandler, messageBus) {
   try {
     _pixelSender = new PixelSender(state, callHandler, messageBus)
-    _state = state || {}    
+    _state = state || {}
     console.log('handlers.error.register', state, _pixelSender)
 
     messageBus.on(C.ERRORS_PREFIX, (error) => {
