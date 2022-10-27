@@ -177,12 +177,10 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - simple_test
+            - browserstack
           filters:
             branches:
-              only:
-                - master
-                - cm-607
+              only: master
 
       - release:
           context: live-connect
