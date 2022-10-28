@@ -57,9 +57,8 @@ export function GlobalEventBus (name, size, errorCallback) {
   }
 }
 
-export function getAndAttachGlobalBus (name) {
+export function getAvailableBus (name) {
   const eventBus = window[name].eventBus || window[C.EVENT_BUS_NAMESPACE]
   extendBusIfNeeded(eventBus)
-  window[name].eventBus = eventBus
   return eventBus
 }

@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
-import { GlobalEventBus, getAndAttachGlobalBus, LocalEventBus } from '../../../src/events/event-bus'
+import { GlobalEventBus, getAvailableBus, LocalEventBus } from '../../../src/events/event-bus'
 import * as C from '../../../src/utils/consts'
 
 use(dirtyChai)
@@ -50,14 +50,13 @@ describe('EventsBus in a window', () => {
     expect(typeof window[name].emitError).to.eql('function')
   })
 
-  it('should attach global bus to the LC instance if missing', function () {
+  it('should retrieve global bus if the instance bus missing', function () {
     const globalVarName = 'testName'
     window[globalVarName] = {}
     window[C.EVENT_BUS_NAMESPACE] = LocalEventBus()
     expect(window[globalVarName].eventBus).to.eql(undefined)
-    getAndAttachGlobalBus(globalVarName)
-    expect(window[globalVarName].eventBus).to.not.eql(null)
-    expect(window[globalVarName].eventBus).to.eql(window[C.EVENT_BUS_NAMESPACE])
+    const retrievedBus = getAvailableBus(globalVarName)
+    expect(retrievedBus).to.eql(window[C.EVENT_BUS_NAMESPACE])
   })
 })
 

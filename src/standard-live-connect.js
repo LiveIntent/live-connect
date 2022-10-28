@@ -44,7 +44,7 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-import { LocalEventBus, getAndAttachGlobalBus } from './events/event-bus'
+import { LocalEventBus, getAvailableBus } from './events/event-bus'
 
 const hemStore = {}
 function _pushSingleEvent (event, pixelClient, enrichedState, eventBus) {
@@ -110,7 +110,8 @@ function _getInitializedLiveConnect (liveConnectConfig) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
-        const eventBus = getAndAttachGlobalBus(liveConnectConfig.globalVarName)
+        const eventBus = getAvailableBus(liveConnectConfig.globalVarName)
+        window[liveConnectConfig.globalVarName].eventBus = eventBus
         eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window[liveConnectConfig.globalVarName]
