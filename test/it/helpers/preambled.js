@@ -7,10 +7,10 @@ import * as helpers from '../../../src/utils/types'
 const customerSpecifics = window.LI || {}
 const queue = window.liQ || []
 
-const messageBus = LocalEventBus()
-const storage = new Storage(messageBus)
+const eventBus = LocalEventBus()
+const storage = new Storage(eventBus)
 
-const lc = liveConnect.StandardLiveConnect(helpers.merge(customerSpecifics, { trackerName: 'LC_VERSION', contextSelectors: 'p', contextElementsLength: '100' }), storage, calls, messageBus)
+const lc = liveConnect.StandardLiveConnect(helpers.merge(customerSpecifics, { trackerName: 'LC_VERSION', contextSelectors: 'p', contextElementsLength: '100' }), storage, calls, eventBus)
 
 if (Array.isArray(queue)) {
   for (let i = 0; i < queue.length; i++) {

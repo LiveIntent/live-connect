@@ -11,7 +11,7 @@ import Cookies from 'js-cookie'
 import { GlobalEventBus } from '../../../src/events/event-bus'
 import { EVENT_BUS_NAMESPACE } from '../../../src/utils/consts'
 
-export function Storage (messageBus) {
+export function Storage (eventBus) {
   let _localStorageIsEnabled = null
 
   const cookies = Cookies.withConverter({
@@ -24,7 +24,7 @@ export function Storage (messageBus) {
           return result
         }
       } catch (e) {
-        messageBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
+        eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
         return null
       }
     }
@@ -54,7 +54,7 @@ export function Storage (messageBus) {
         window.localStorage.removeItem(key)
       }
     } catch (e) {
-      messageBus.emitError('LSCheckError', e)
+      eventBus.emitError('LSCheckError', e)
     }
     return enabled
   }
@@ -101,7 +101,7 @@ export function Storage (messageBus) {
       const allCookies = cookies.get()
       return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
     } catch (e) {
-      messageBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
+      eventBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
       return []
     }
   }

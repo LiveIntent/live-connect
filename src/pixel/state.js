@@ -203,11 +203,11 @@ export function Query (tuples) {
 
 /**
  * @param {State} state
- * @param {EventBus} messageBus
+ * @param {EventBus} eventBus
  * @returns {StateWrapper}
  * @constructor
  */
-export function StateWrapper (state, messageBus) {
+export function StateWrapper (state, eventBus) {
   /**
    * @type {State}
    */
@@ -230,7 +230,7 @@ export function StateWrapper (state, messageBus) {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      messageBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
+      eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
       return _state
     }
   }
@@ -241,7 +241,7 @@ export function StateWrapper (state, messageBus) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper(merge(state, newInfo), messageBus)
+    return new StateWrapper(merge(state, newInfo), eventBus)
   }
 
   /**

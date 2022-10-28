@@ -10,7 +10,7 @@ use(dirtyChai)
 
 describe('IdentityResolver without cache', () => {
   let requestToComplete = null
-  const messageBus = LocalEventBus()
+  const eventBus = LocalEventBus()
   let errors = []
   let callCount = 0
   jsdom({
@@ -19,7 +19,7 @@ describe('IdentityResolver without cache', () => {
   })
 
   beforeEach(() => {
-    messageBus.on('li_errors', (error) => { errors.push(error) })
+    eventBus.on('li_errors', (error) => { errors.push(error) })
     global.XDomainRequest = null
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
     global.XMLHttpRequest.onCreate = function (request) {
@@ -32,7 +32,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should invoke callback on success', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({}, calls, messageBus)
+    const identityResolver = IdentityResolver({}, calls, eventBus)
     const successCallback = (responseAsJson) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()

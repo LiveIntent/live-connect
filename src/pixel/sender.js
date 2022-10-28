@@ -5,13 +5,13 @@ const DEFAULT_AJAX_TIMEOUT = 0
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
  * @param {CallHandler} calls
- * @param {EventBus} messageBus
+ * @param {EventBus} eventBus
  * @param {function} onload
  * @param {function} presend
  * @returns {{sendAjax: *, sendPixel: *}}
  * @constructor
  */
-export function PixelSender (liveConnectConfig, calls, messageBus, onload, presend) {
+export function PixelSender (liveConnectConfig, calls, eventBus, onload, presend) {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
 
   /**
@@ -28,7 +28,7 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
         },
         (e) => {
           _sendPixel(state)
-          messageBus.emitError('AjaxFailed', e)
+          eventBus.emitError('AjaxFailed', e)
         },
         DEFAULT_AJAX_TIMEOUT
       )
@@ -42,7 +42,7 @@ export function PixelSender (liveConnectConfig, calls, messageBus, onload, prese
         for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
-      messageBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
+      eventBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
     }
   }
 

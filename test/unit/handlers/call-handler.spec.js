@@ -9,8 +9,8 @@ use(dirtyChai)
 
 describe('CallHandler', () => {
   let emitterErrors = []
-  let messageBusStub
-  const messageBus = LocalEventBus()
+  let eventBusStub
+  const eventBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',
@@ -19,7 +19,7 @@ describe('CallHandler', () => {
 
   beforeEach(() => {
     emitterErrors = []
-    messageBusStub = sandbox.stub(messageBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
+    eventBusStub = sandbox.stub(eventBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
       emitterErrors.push({
         name: name,
         message: message,
@@ -29,7 +29,7 @@ describe('CallHandler', () => {
   })
 
   afterEach(() => {
-    messageBusStub.restore()
+    eventBusStub.restore()
   })
 
   it('should return the get function', function () {
@@ -41,7 +41,7 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler is not provided', function () {
-    CallHandler({}, messageBus)
+    CallHandler({}, eventBus)
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
     expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
@@ -49,7 +49,7 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler does not have a get function', function () {
-    CallHandler({}, messageBus)
+    CallHandler({}, eventBus)
 
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')

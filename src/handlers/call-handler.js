@@ -10,11 +10,11 @@ const _noOp = () => undefined
 
 /**
  * @param {CallHandler} externalCallHandler
- * @param {EventBus} messageBus
+ * @param {EventBus} eventBus
  * @returns {CallHandler}
  * @constructor
  */
-export function CallHandler (externalCallHandler, messageBus) {
+export function CallHandler (externalCallHandler, eventBus) {
   const errors = []
 
   function _externalOrError (functionName) {
@@ -32,7 +32,7 @@ export function CallHandler (externalCallHandler, messageBus) {
     pixelGet: _externalOrError('pixelGet')
   }
   if (errors.length > 0) {
-    messageBus.emitErrorWithMessage('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
+    eventBus.emitErrorWithMessage('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
   }
 
   return handler

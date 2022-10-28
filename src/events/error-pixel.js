@@ -55,16 +55,16 @@ export function asErrorDetails (e) {
   }
 }
 
-export function register (state, callHandler, messageBus) {
+export function register (state, callHandler, eventBus) {
   try {
-    _pixelSender = new PixelSender(state, callHandler, messageBus)
+    _pixelSender = new PixelSender(state, callHandler, eventBus)
     _state = state || {}
     console.log('handlers.error.register', state, _pixelSender)
 
-    messageBus.on(C.ERRORS_PREFIX, (error) => {
+    eventBus.on(C.ERRORS_PREFIX, (error) => {
       console.log(error, _state)
       if (_pixelSender) {
-        _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), messageBus).combineWith(_state || {}).combineWith(page.enrich({})))
+        _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(_state || {}).combineWith(page.enrich({})))
       }
     })
   } catch (e) {

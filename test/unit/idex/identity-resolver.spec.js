@@ -12,7 +12,7 @@ use(dirtyChai)
 
 describe('IdentityResolver', () => {
   let requestToComplete = null
-  const messageBus = LocalEventBus()
+  const eventBus = LocalEventBus()
   let errors = []
   let callCount = 0
   const storage = StorageHandler('cookie', ExternalStorage)
@@ -22,7 +22,7 @@ describe('IdentityResolver', () => {
   })
 
   beforeEach(() => {
-    messageBus.on('li_errors', (error) => { errors.push(error) })
+    eventBus.on('li_errors', (error) => { errors.push(error) })
     global.XDomainRequest = null
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
     global.XMLHttpRequest.onCreate = function (request) {
@@ -53,7 +53,7 @@ describe('IdentityResolver', () => {
   it('should invoke callback on success, if storing the result in a cookie fails', function () {
     const setCookieStub = sinon.createSandbox().stub(ExternalStorage, 'setCookie').throws()
     const failedStorage = StorageHandler('cookie', ExternalStorage)
-    const identityResolver = IdentityResolver({}, failedStorage, calls, messageBus)
+    const identityResolver = IdentityResolver({}, failedStorage, calls, eventBus)
     let jsonResponse = null
     const successCallback = (responseAsJson) => {
       jsonResponse = responseAsJson

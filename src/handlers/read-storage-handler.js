@@ -17,11 +17,11 @@ const _noOp = () => undefined
  *
  * @param {string} storageStrategy
  * @param {StorageHandler} [externalStorageHandler]
- * @param {EventBus} messageBus
+ * @param {EventBus} eventBus
  * @return {StorageHandler}
  * @constructor
  */
-export function StorageHandler (storageStrategy, externalStorageHandler, messageBus) {
+export function StorageHandler (storageStrategy, externalStorageHandler, eventBus) {
   const errors = []
   function _externalOrError (functionName) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
@@ -43,7 +43,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler, message
     getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage')
   }
   if (errors.length > 0) {
-    messageBus.emitErrorWithMessage('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
+    eventBus.emitErrorWithMessage('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
   return handler
 }

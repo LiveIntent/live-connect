@@ -11,8 +11,8 @@ use(dirtyChai)
 
 describe('StorageHandler', () => {
   let errors = []
-  let messageBusStub
-  const messageBus = LocalEventBus()
+  let eventBusStub
+  const eventBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',
@@ -21,7 +21,7 @@ describe('StorageHandler', () => {
 
   beforeEach(() => {
     errors = []
-    messageBusStub = sandbox.stub(messageBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
+    eventBusStub = sandbox.stub(eventBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
       errors.push({
         name: name,
         message: message,
@@ -31,11 +31,11 @@ describe('StorageHandler', () => {
   })
 
   afterEach(() => {
-    messageBusStub.restore()
+    eventBusStub.restore()
   })
 
   it('should send an error if an external handler is not provided', function () {
-    StorageHandler('cookie', {}, messageBus)
+    StorageHandler('cookie', {}, eventBus)
     expect(errors.length).to.be.eq(1)
     expect(errors[0].name).to.be.eq('StorageHandler')
     expect(errors[0].message).to.be.eq('The storage functions \'["localStorageIsEnabled","getCookie","setCookie","getDataFromLocalStorage","removeDataFromLocalStorage","setDataInLocalStorage","findSimilarCookies"]\' are not provided')
@@ -43,7 +43,7 @@ describe('StorageHandler', () => {
   })
 
   it('should send an error if an external handler is not provided and the storage strategy is none', function () {
-    StorageHandler('none', {}, messageBus)
+    StorageHandler('none', {}, eventBus)
     expect(errors.length).to.be.eq(1)
     expect(errors[0].name).to.be.eq('StorageHandler')
     expect(errors[0].message).to.be.eq('The storage functions \'["getCookie","getDataFromLocalStorage","findSimilarCookies"]\' are not provided')

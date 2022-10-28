@@ -12,9 +12,9 @@ const _nonEmpty = (value) => value && trim(value).length > 0
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
- * @param {EventBus} messageBus
+ * @param {EventBus} eventBus
  */
-export function resolve (state, storageHandler, messageBus) {
+export function resolve (state, storageHandler, eventBus) {
   console.log('decisions.resolve', state)
   let ret = {}
   function _addDecisionId (key, cookieDomain) {
@@ -45,7 +45,7 @@ export function resolve (state, storageHandler, messageBus) {
       .filter(_onlyUnique)
     ret = { decisionIds: allDecisions }
   } catch (e) {
-    messageBus.emitErrorWithMessage('DecisionsResolve', 'Error while managing decision ids', e)
+    eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while managing decision ids', e)
   }
   return ret
 }

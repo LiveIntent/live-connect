@@ -12,7 +12,7 @@ import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUT
 /**
  * @return {Cache}
  */
-export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler, messageBus) {
+export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler, eventBus) {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey) {
@@ -42,7 +42,7 @@ export function storageHandlerBackedCache (defaultExpirationHours, domain, stora
           domain
         )
       } catch (ex) {
-        messageBus.emitError('IdentityResolverStorage', ex)
+        eventBus.emitError('IdentityResolverStorage', ex)
       }
     }
   }
@@ -64,11 +64,11 @@ export const noopCache = {
 /**
  * @param {State} config
  * @param {CallHandler} calls
- * @param {EventBus} messageBus
+ * @param {EventBus} eventBus
  * @param {Cache} cache
  * @return {IdentityResolver}
  */
-export function makeIdentityResolver (config, calls, cache, messageBus) {
+export function makeIdentityResolver (config, calls, cache, eventBus) {
   try {
     const idexConfig = config.identityResolutionConfig || {}
     const externalIds = config.retrievedIdentifiers || []
@@ -115,7 +115,7 @@ export function makeIdentityResolver (config, calls, cache, messageBus) {
             responseObj = JSON.parse(responseText)
           } catch (ex) {
             console.error('Error parsing response', ex)
-            messageBus.emitError('IdentityResolverParser', ex)
+            eventBus.emitError('IdentityResolverParser', ex)
           }
         }
 
@@ -146,21 +146,21 @@ export function makeIdentityResolver (config, calls, cache, messageBus) {
         } catch (e) {
           console.error('IdentityResolve', e)
           errorCallback()
-          messageBus.emitError('IdentityResolve', e)
+          eventBus.emitError('IdentityResolve', e)
         }
       },
       getUrl: (additionalParams) => composeUrl(additionalParams)
     }
   } catch (e) {
     console.error('IdentityResolver', e)
-    messageBus.emitError('IdentityResolver', e)
+    eventBus.emitError('IdentityResolver', e)
     return {
       resolve: (successCallback, errorCallback) => {
         errorCallback()
-        messageBus.emitError('IdentityResolver.resolve', e)
+        eventBus.emitError('IdentityResolver.resolve', e)
       },
       getUrl: () => {
-        messageBus.emitError('IdentityResolver.getUrl', e)
+        eventBus.emitError('IdentityResolver.getUrl', e)
       }
     }
   }

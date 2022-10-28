@@ -9,8 +9,8 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
-const messageBus = LocalEventBus()
-const storage = StorageHandler('cookie', ExternalStorage, messageBus)
+const eventBus = LocalEventBus()
+const storage = StorageHandler('cookie', ExternalStorage, eventBus)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -65,7 +65,7 @@ describe('IdentifiersManager', () => {
   it('should emit an error if identifiers.resolve fails for some reason, return an empty object', function () {
     const stub = sandbox.stub(ExternalStorage, 'getCookie').throws()
     const failedStorage = StorageHandler('cookie', ExternalStorage)
-    const resolutionResult = identifiers.resolve({}, failedStorage, messageBus)
+    const resolutionResult = identifiers.resolve({}, failedStorage, eventBus)
     expect(resolutionResult).to.eql({})
     stub.restore()
   })

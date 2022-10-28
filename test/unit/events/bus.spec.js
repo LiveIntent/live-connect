@@ -37,7 +37,7 @@ describe('EventsBus in a window', () => {
     expect(window[name].size).to.eq(3)
   })
 
-  it('should wrap the bus with the new interface if needed', function () {
+  it('should extend the bus with the new interface if needed', function () {
     const name = 'testBus'
     window[name] = {}
     GlobalEventBus(name)

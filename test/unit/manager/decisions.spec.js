@@ -50,9 +50,9 @@ describe('DecisionsManager for stored decisions', () => {
   })
 
   it('should emit an error if decisions.resolve fails for some reason, return an empty object', function () {
-    const messageBus = LocalEventBus()
+    const eventBus = LocalEventBus()
     const stub = sandbox.stub(storage, 'findSimilarCookies').throws()
-    const resolutionResult = decisions.resolve({}, storage, messageBus)
+    const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult).to.eql({})
     stub.restore()
   })
