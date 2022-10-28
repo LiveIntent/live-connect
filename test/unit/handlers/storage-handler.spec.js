@@ -1,7 +1,7 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
-import { ExternalStorage as storage } from '../../shared/utils/storage'
+import { Storage } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import { expiresInDays } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'
@@ -13,6 +13,7 @@ describe('StorageHandler', () => {
   let errors = []
   let eventBusStub
   const eventBus = LocalEventBus()
+  const storage = new Storage(eventBus)
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',
@@ -56,7 +57,7 @@ describe('StorageHandler', () => {
   })
 
   it('should use local storage', function () {
-    const storageHandler = StorageHandler('ls', storage)
+    const storageHandler = StorageHandler('ls', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
     expect(storage.getDataFromLocalStorage('key')).to.be.eq('value')
@@ -64,7 +65,7 @@ describe('StorageHandler', () => {
   })
 
   it('should use cookies', function () {
-    const storageHandler = StorageHandler('cookie', storage)
+    const storageHandler = StorageHandler('cookie', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
@@ -72,7 +73,7 @@ describe('StorageHandler', () => {
   })
 
   it('should use cookies when the strategy is not defined', function () {
-    const storageHandler = StorageHandler(null, storage)
+    const storageHandler = StorageHandler(null, storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
@@ -80,7 +81,7 @@ describe('StorageHandler', () => {
   })
 
   it('should return nothing when the strategy is none', function () {
-    const storageHandler = StorageHandler('none', storage)
+    const storageHandler = StorageHandler('none', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
@@ -89,7 +90,7 @@ describe('StorageHandler', () => {
   })
 
   it('should return nothing when the strategy is disabled', function () {
-    const storageHandler = StorageHandler('disabled', storage)
+    const storageHandler = StorageHandler('disabled', storage, eventBus)
 
     storageHandler.set('key_any', 'value_any', expiresInDays(1), 'example.com')
     storageHandler.setDataInLocalStorage('key_ls', 'value_any')
@@ -106,21 +107,21 @@ describe('StorageHandler', () => {
   })
 
   it('should return nothing when the strategy is ls and the time is in the past', function () {
-    const storageHandler = StorageHandler('ls', storage)
+    const storageHandler = StorageHandler('ls', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(-1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getDataFromLocalStorage('key')).to.be.null()
   })
 
   it('should return nothing when the strategy is cookie and the time is in the past', function () {
-    const storageHandler = StorageHandler('cookie', storage)
+    const storageHandler = StorageHandler('cookie', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(-1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
   })
 
   it('should return nothing when the strategy is undefined and the time is in the past', function () {
-    const storageHandler = StorageHandler(null, storage)
+    const storageHandler = StorageHandler(null, storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(-1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()

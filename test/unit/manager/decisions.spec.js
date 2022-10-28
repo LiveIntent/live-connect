@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import * as decisions from '../../../src/manager/decisions'
-import { ExternalStorage as storage } from '../../shared/utils/storage'
+import { Storage } from '../../shared/utils/storage'
 import uuid from 'tiny-uuid4'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
@@ -8,6 +8,9 @@ import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
+
+const eventBus = LocalEventBus()
+const storage = new Storage(eventBus)
 
 describe('DecisionsManager for stored decisions', () => {
   const sandbox = sinon.createSandbox()
@@ -50,7 +53,6 @@ describe('DecisionsManager for stored decisions', () => {
   })
 
   it('should emit an error if decisions.resolve fails for some reason, return an empty object', function () {
-    const eventBus = LocalEventBus()
     const stub = sandbox.stub(storage, 'findSimilarCookies').throws()
     const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult).to.eql({})

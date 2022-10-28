@@ -5,12 +5,16 @@ import { expect, use } from 'chai'
 import { StandardLiveConnect } from '../../src/standard-live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
-import { ExternalStorage as storage } from '../shared/utils/storage'
+import { Storage } from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import { hashEmail } from '../../src/utils/hash'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../src/events/event-bus'
+import { StorageHandler } from '../../src/handlers/storage-handler'
 
 use(dirtyChai)
+const eventBus = LocalEventBus()
+const storage = StorageHandler('cookie', new Storage(eventBus), eventBus)
 
 describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()

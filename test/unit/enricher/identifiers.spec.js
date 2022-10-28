@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers'
 import jsdom from 'mocha-jsdom'
-import { ExternalStorage } from '../../shared/utils/storage'
+import { Storage } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
@@ -9,7 +9,8 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
-const storage = StorageHandler('cookie', ExternalStorage)
+const eventBus = LocalEventBus()
+const storage = StorageHandler('cookie', new Storage(eventBus), eventBus)
 
 const COOKIE_NAME = 'sample_cookie'
 const SIMPLE_COOKIE1 = 'sample_value1'
@@ -189,8 +190,6 @@ describe('IdentifiersEnricher', () => {
     const getCookieStub = sandbox.stub(storage, 'getCookie').throws()
     storage.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     const state = { identifiersToResolve: [COOKIE_NAME] }
-    const eventBus = LocalEventBus()
-
     const resolutionResult = identifiersEnricher.enrich(state, storage, eventBus)
 
     expect(resolutionResult).to.eql({})

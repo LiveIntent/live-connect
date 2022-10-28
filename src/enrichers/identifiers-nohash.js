@@ -23,7 +23,7 @@ export function enrich (state, storageHandler, eventBus) {
 
 /**
  * @param {State} state
- * * @param {StorageHandler} storageHandler
+ * @param {StorageHandler} storageHandler
  * @returns {string[]}
  * @private
  */

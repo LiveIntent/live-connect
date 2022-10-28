@@ -8,8 +8,6 @@
  * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
  */
 import Cookies from 'js-cookie'
-import { GlobalEventBus } from '../../../src/events/event-bus'
-import { EVENT_BUS_NAMESPACE } from '../../../src/utils/consts'
 
 export function Storage (eventBus) {
   let _localStorageIsEnabled = null
@@ -161,5 +159,3 @@ export function Storage (eventBus) {
     setDataInLocalStorage: setDataInLocalStorage
   }
 }
-
-export const ExternalStorage = new Storage((typeof window !== 'undefined') && GlobalEventBus(EVENT_BUS_NAMESPACE))

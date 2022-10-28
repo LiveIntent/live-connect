@@ -20,7 +20,6 @@ import { StorageStrategy } from '../model/storage-strategy'
 const _noOp = () => undefined
 
 /**
- *
  * @param {string} storageStrategy
  * @param {ExternalStorageHandler} [externalStorageHandler]
  * @param {EventBus} eventBus
