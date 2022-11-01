@@ -183,7 +183,9 @@ export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, 
   const eventBus = externalEventBus || LocalEventBus()
   try {
     const queue = window[configuration.globalVarName] || []
-    window && (window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue)
+    if (window) {
+      window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue
+    }
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
         window[configuration.globalVarName].push(queue[i])

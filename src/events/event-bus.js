@@ -21,8 +21,7 @@ function initBus (size) {
 }
 
 function extendBusIfNeeded (bus) {
-  const isNewEmitter = isFunction(bus.emitErrorWithMessage) && isFunction(bus.emitError)
-  if (isNewEmitter) {
+  if (isFunction(bus.emitErrorWithMessage) && isFunction(bus.emitError)) {
     return
   }
 
