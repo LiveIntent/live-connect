@@ -265,7 +265,15 @@ export function StateWrapper (state, eventBus) {
     return array
   }
 
+  function _removeInvalidPair () {
+    if (_state.appId && _state.distributorId) {
+      eventBus.emitErrorWithMessage('InvalidEvent', 'Event contains both appId and distributorId. Ignoring distributorId')
+      delete _state.distributorId
+    }
+  }
+
   function _asQuery () {
+    _removeInvalidPair()
     return new Query(_asTuples())
   }
 

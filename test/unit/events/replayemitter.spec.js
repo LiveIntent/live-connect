@@ -1,6 +1,7 @@
 import { expect, spy, use } from 'chai'
 import chaiSpies from 'chai-spies'
-import { E as ReplayEmitter } from '../../../src/events/replayemitter'
+import { E as ReplayEmitter, wrapError } from '../../../src/events/replayemitter'
+import * as C from '../../../src/utils/consts'
 
 use(chaiSpies)
 
@@ -105,5 +106,50 @@ describe('ReplayEmitter', () => {
 
     emitter.off('test')
     expect(emitter.h.test).to.be.undefined()
+  })
+
+  it('should wrap an exception with name, message and stack trace', () => {
+    const wrappedError = wrapError('some name', 'message', new Error('the original message'))
+    expect(wrappedError.name).to.eql('some name')
+    expect(wrappedError.message).to.eql('message')
+    expect(wrappedError.stack).to.have.string('the original message')
+  })
+
+  it('should use exception message if message has not been sent', () => {
+    const wrappedError = wrapError('some name', null, new Error('the original message'))
+    expect(wrappedError.name).to.eql('some name')
+    expect(wrappedError.message).to.eql('the original message')
+    expect(wrappedError.stack).to.have.string('the original message')
+  })
+
+  it('should emit error with message to error namespace', () => {
+    const emitter = new ReplayEmitter(5)
+    const ex = []
+    const reporter = (error) => ex.push(error)
+    emitter.on(C.ERRORS_PREFIX, reporter)
+    emitter.emitErrorWithMessage('some name', 'message', new Error('the original message'))
+    expect(ex[0].name).to.eql('some name')
+    expect(ex[0].message).to.eql('message')
+    expect(ex[0].stack).to.have.string('the original message')
+  })
+
+  it('should emit error using the message in the exception', () => {
+    const emitter = new ReplayEmitter(5)
+    const ex = []
+    const reporter = (error) => ex.push(error)
+    emitter.on(C.ERRORS_PREFIX, reporter)
+    emitter.emitError('some name', new Error('the original message'))
+    expect(ex[0].name).to.eql('some name')
+    expect(ex[0].message).to.eql('the original message')
+    expect(ex[0].stack).to.have.string('the original message')
+  })
+
+  it('should not emit error on an different namespace', () => {
+    const emitter = new ReplayEmitter(5)
+    const messages = []
+    const reporter = (error) => messages.push(error)
+    emitter.on(C.PIXEL_SENT_PREFIX, reporter)
+    emitter.emitError('some name', new Error('the original message'))
+    expect(messages.length).to.eql(0)
   })
 })

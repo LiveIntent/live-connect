@@ -63,9 +63,7 @@ export function register (state, callHandler, eventBus) {
 
     eventBus.on(C.ERRORS_PREFIX, (error) => {
       console.log(error, _state)
-      if (_pixelSender) {
-        _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(_state || {}).combineWith(page.enrich({})))
-      }
+      _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(_state || {}).combineWith(page.enrich({})))
     })
   } catch (e) {
     console.error('handlers.error.register', e)
