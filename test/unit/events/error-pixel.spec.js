@@ -18,7 +18,7 @@ describe('ErrorPixel', () => {
     mock: true
   })
   jsdom({
-    url: 'http://www.example.com/?sad=0&dsad=iou',
+    url: 'http://www.example.com/',
     useEach: true
   })
 

@@ -43,7 +43,6 @@ export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 10
     const request = (window && window.XDomainRequest) ? xdrCall() : xhrCall()
     request.ontimeout = () => {
       const error = new Error(`Timeout after ${timeout}, url : ${url}`)
-      console.error('an error during ajaxCall ' + error)
       errorCallback('AjaxTimeout', `Timeout after ${timeout}`, error, request)
     }
     request.open('GET', url, true)
@@ -51,8 +50,6 @@ export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 10
     request.withCredentials = true
     request.send()
   } catch (error) {
-    console.error('an error during ajaxCall AjaxCompositionError' + error)
-
     errorCallback('AjaxCompositionError', `Error while constructing ajax request, ${error}`, error, undefined)
   }
 }
