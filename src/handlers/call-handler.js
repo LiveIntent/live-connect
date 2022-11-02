@@ -1,5 +1,4 @@
 import { isFunction } from '../utils/types'
-import * as emitter from '../utils/emitter'
 
 /**
  * @typedef {Object} CallHandler
@@ -11,10 +10,11 @@ const _noOp = () => undefined
 
 /**
  * @param {CallHandler} externalCallHandler
+ * @param {EventBus} eventBus
  * @returns {CallHandler}
  * @constructor
  */
-export function CallHandler (externalCallHandler) {
+export function CallHandler (externalCallHandler, eventBus) {
   const errors = []
 
   function _externalOrError (functionName) {
@@ -32,7 +32,7 @@ export function CallHandler (externalCallHandler) {
     pixelGet: _externalOrError('pixelGet')
   }
   if (errors.length > 0) {
-    emitter.error('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
+    eventBus.emitErrorWithMessage('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
   }
 
   return handler

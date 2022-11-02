@@ -37,7 +37,6 @@
  * @property {StorageManager} storageHandler
  */
 
-import * as emitter from '../utils/emitter'
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
@@ -59,6 +58,12 @@ const _pArray = [
     'appId',
     aid => {
       return asStringParam('aid', aid)
+    }
+  ],
+  [
+    'distributorId',
+    did => {
+      return asStringParam('did', did)
     }
   ],
   [
@@ -198,10 +203,11 @@ export function Query (tuples) {
 
 /**
  * @param {State} state
+ * @param {EventBus} eventBus
  * @returns {StateWrapper}
  * @constructor
  */
-export function StateWrapper (state) {
+export function StateWrapper (state, eventBus) {
   /**
    * @type {State}
    */
@@ -224,7 +230,7 @@ export function StateWrapper (state) {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      emitter.error('StateCombineWith', 'Error while extracting event data', e)
+      eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
       return _state
     }
   }
@@ -235,7 +241,7 @@ export function StateWrapper (state) {
    * @private
    */
   function _combineWith (newInfo) {
-    return new StateWrapper(merge(state, newInfo))
+    return new StateWrapper(merge(state, newInfo), eventBus)
   }
 
   /**
@@ -259,7 +265,15 @@ export function StateWrapper (state) {
     return array
   }
 
+  function _removeInvalidPair () {
+    if (_state.appId && _state.distributorId) {
+      eventBus.emitError('AppIdAndDistributorIdPresent', new Error(`Event contains both appId: ${_state.appId} and distributorId ${_state.distributorId}. Ignoring distributorId`))
+      delete _state.distributorId
+    }
+  }
+
   function _asQuery () {
+    _removeInvalidPair()
     return new Query(_asTuples())
   }
 

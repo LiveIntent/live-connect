@@ -5,12 +5,16 @@ import { expect, use } from 'chai'
 import { StandardLiveConnect } from '../../src/standard-live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
-import * as storage from '../shared/utils/storage'
+import { Storage } from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import { hashEmail } from '../../src/utils/hash'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../src/events/event-bus'
+import { StorageHandler } from '../../src/handlers/storage-handler'
 
 use(dirtyChai)
+const eventBus = LocalEventBus()
+const storage = StorageHandler('cookie', new Storage(eventBus), eventBus)
 
 describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()
@@ -46,11 +50,11 @@ describe('StandardLiveConnect', () => {
 
   it('should initialise the event bus, and hook the error handler', function () {
     StandardLiveConnect({})
-    const windowBus = window[C.EVENT_BUS_NAMESPACE]
-    const errorHandler = windowBus.h
+    const eventBus = window.liQ.eventBus
+    const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
-    expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')
+    expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
   it('should expose liQ', function () {
@@ -225,5 +229,13 @@ describe('StandardLiveConnect', () => {
     expect(errorCalls.length).to.eql(2)
     expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined()
     expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined()
+  })
+
+  it('should expose the LC instance as globalVarName instead of liQ when provided', function () {
+    expect(window.liQTest).to.be.undefined()
+    expect(window.liQ).to.be.undefined()
+    StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
+    expect(window.liQTest.ready).to.be.true()
+    expect(window.liQ_instances).to.have.members([window.liQTest])
   })
 })

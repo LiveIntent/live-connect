@@ -70,4 +70,12 @@ describe('MinimalLiveConnect', () => {
     const lc = MinimalLiveConnect(config, storage, calls)
     expect(lc.config).to.eql(config)
   })
+
+  it('should expose the LC instance as globalVarName instead of liQ when provided', function () {
+    expect(window.liQTest).to.be.undefined()
+    expect(window.liQ).to.be.undefined()
+    MinimalLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
+    expect(window.liQ).to.be.undefined()
+    expect(window.liQTest).to.not.be.undefined()
+  })
 })

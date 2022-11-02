@@ -1,6 +1,5 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
-import * as emitter from '../utils/emitter'
 
 /**
  * @typedef {Object} StorageHandler
@@ -18,10 +17,11 @@ const _noOp = () => undefined
  *
  * @param {string} storageStrategy
  * @param {StorageHandler} [externalStorageHandler]
+ * @param {EventBus} eventBus
  * @return {StorageHandler}
  * @constructor
  */
-export function StorageHandler (storageStrategy, externalStorageHandler) {
+export function StorageHandler (storageStrategy, externalStorageHandler, eventBus) {
   const errors = []
   function _externalOrError (functionName) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
@@ -43,7 +43,7 @@ export function StorageHandler (storageStrategy, externalStorageHandler) {
     getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage')
   }
   if (errors.length > 0) {
-    emitter.error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
+    eventBus.emitErrorWithMessage('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
   return handler
 }

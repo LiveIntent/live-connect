@@ -99,6 +99,9 @@ exports.config = {
   connectionRetryCount: 3,
 
   services: [
+      // If testing locally fails due to a mismatch of the chrome versions, adjust the value to use the closest version
+      // to yours from the released drivers listed here: https://chromedriver.chromium.org/downloads
+      // For example: { drivers: { chrome: '106.0.5249.61'  } }
       ['selenium-standalone', { drivers: { chrome: true } }]
   ],
   // Framework you want to run your specs with.

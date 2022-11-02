@@ -5,25 +5,25 @@
  */
 import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from '../utils/types'
-import * as emitter from '../utils/emitter'
 
 /**
  * @param {State} state
  * @param {StorageHandler} storageHandler
+ * @param {EventBus} eventBus
  * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
  */
-export function enrich (state, storageHandler) {
+export function enrich (state, storageHandler, eventBus) {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
-    emitter.fromError('IdentifiersEnrich', e)
+    eventBus.emitError('IdentifiersEnrich', e)
     return {}
   }
 }
 
 /**
  * @param {State} state
- * * @param {StorageHandler} storageHandler
+ * @param {StorageHandler} storageHandler
  * @returns {string[]}
  * @private
  */

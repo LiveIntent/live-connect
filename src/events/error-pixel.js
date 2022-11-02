@@ -2,7 +2,6 @@ import { PixelSender } from '../pixel/sender'
 import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
-import { isFunction } from '../utils/types'
 
 let _state = null
 let _pixelSender = null
@@ -56,25 +55,16 @@ export function asErrorDetails (e) {
   }
 }
 
-/**
- * @param {Error} error
- * @private
- */
-function _pixelError (error) {
-  console.log(error, _state)
-  if (_pixelSender) {
-    _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error)).combineWith(_state || {}).combineWith(page.enrich({})))
-  }
-}
-
-export function register (state, callHandler) {
+export function register (state, callHandler, eventBus) {
   try {
-    console.log('handlers.error.register', state, _pixelSender)
-    if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
-      window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
-    }
-    _pixelSender = new PixelSender(state, callHandler)
+    _pixelSender = new PixelSender(state, callHandler, eventBus)
     _state = state || {}
+    console.log('handlers.error.register', state, _pixelSender)
+
+    eventBus.on(C.ERRORS_PREFIX, (error) => {
+      console.log(error, _state)
+      _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(_state || {}).combineWith(page.enrich({})))
+    })
   } catch (e) {
     console.error('handlers.error.register', e)
   }
