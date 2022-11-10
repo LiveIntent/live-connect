@@ -85,4 +85,9 @@ describe('MinimalLiveConnect', () => {
     const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
     expect(lc.config).to.eql(expectedConfig)
   })
+
+  it('should expose the eventBus through the LC instance', function () {
+    const lc = MinimalLiveConnect({}, storage, calls)
+    expect(lc.eventBus).to.not.be.undefined()
+  })
 })

@@ -45,7 +45,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: validLiveConnectConfig
+      config: validLiveConnectConfig,
+      eventBus: eventBus
     }
   } catch (x) {
     console.error(x)
