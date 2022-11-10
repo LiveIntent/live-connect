@@ -411,17 +411,4 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?did=did-9898&duid=213245')
     assert.includeDeepMembers(event.asTuples(), [['did', 'did-9898'], ['duid', '213245']])
   })
-
-  it('should ignore distributorId when both appId and distributorId are present', function () {
-    const eventBus = LocalEventBus()
-    const pixelData = {
-      appId: 'a-0100',
-      distributorId: 'did-9898'
-    }
-    const event = new StateWrapper(pixelData, eventBus)
-
-    expect(event.data).to.eql(pixelData)
-    expect(event.asQuery().toQueryString()).to.eql('?aid=a-0100')
-    assert.includeDeepMembers(event.asTuples(), [['aid', 'a-0100']])
-  })
 })

@@ -238,4 +238,11 @@ describe('StandardLiveConnect', () => {
     expect(window.liQTest.ready).to.be.true()
     expect(window.liQ_instances).to.have.members([window.liQTest])
   })
+
+  it('should remove distributorId when both appId and distributorId are present', function () {
+    const config = { appId: 'a-00xx', distributorId: 'did-00xx', globalVarName: 'liQTest' }
+    const lc = StandardLiveConnect(config, storage, calls)
+    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
+    expect(lc.config).to.eql(expectedConfig)
+  })
 })

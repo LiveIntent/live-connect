@@ -78,4 +78,11 @@ describe('MinimalLiveConnect', () => {
     expect(window.liQ).to.be.undefined()
     expect(window.liQTest).to.not.be.undefined()
   })
+
+  it('should remove distributorId when both appId and distributorId are present', function () {
+    const config = { appId: 'a-00xx', distributorId: 'did-00xx', globalVarName: 'liQTest' }
+    const lc = MinimalLiveConnect(config, storage, calls)
+    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
+    expect(lc.config).to.eql(expectedConfig)
+  })
 })

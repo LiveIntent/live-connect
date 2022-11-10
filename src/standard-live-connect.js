@@ -39,6 +39,7 @@ import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
+import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
@@ -132,7 +133,8 @@ function _getInitializedLiveConnect (liveConnectConfig) {
 function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
   try {
     const callHandler = CallHandler(externalCallHandler, eventBus)
-    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
+    const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
+    const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler, eventBus)
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler, eventBus)
@@ -159,7 +161,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig,
+      config: validLiveConnectConfig,
       eventBus: eventBus
     }
   } catch (x) {

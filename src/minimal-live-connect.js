@@ -14,6 +14,7 @@ import { IdentityResolver } from './idex/identity-resolver-nocache'
 import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
+import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
@@ -30,7 +31,8 @@ import { LocalEventBus } from './events/event-bus'
 function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
   try {
     const callHandler = CallHandler(externalCallHandler, eventBus)
-    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
+    const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
+    const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler, eventBus)
     const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler))
