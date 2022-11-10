@@ -39,13 +39,13 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
     const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)
     return {
-      push: (arg) => window[liveConnectConfig.globalVarName].push(arg),
-      fire: () => window[liveConnectConfig.globalVarName].push({}),
+      push: (arg) => window[validLiveConnectConfig.globalVarName].push(arg),
+      fire: () => window[validLiveConnectConfig.globalVarName].push({}),
       peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig
+      config: validLiveConnectConfig
     }
   } catch (x) {
     console.error(x)
