@@ -74,9 +74,12 @@ describe('MinimalLiveConnect', () => {
   it('should expose the LC instance as globalVarName instead of liQ when provided', function () {
     expect(window.liQTest).to.be.undefined()
     expect(window.liQ).to.be.undefined()
-    MinimalLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
+    const lc = MinimalLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
     expect(window.liQ).to.be.undefined()
     expect(window.liQTest).to.not.be.undefined()
+    expect(window.liQTest).to.be.an('array')
+    expect(lc.ready).to.be.true()
+    expect(window.liQ_instances).to.have.members([lc])
   })
 
   it('should remove distributorId when both appId and distributorId are present', function () {

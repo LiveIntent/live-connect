@@ -73,7 +73,7 @@ export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, e
     const lc = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus)
     window.liQ_instances = window.liQ_instances || []
     if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
-      window.liQ_instances.push(window[configuration.globalVarName])
+      window.liQ_instances.push(lc)
     }
     return lc
   } catch (x) {
