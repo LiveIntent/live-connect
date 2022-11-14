@@ -14,7 +14,7 @@ const plugins = [
   strip()
 ]
 
-const filenames = ['initializer.js', 'standard-live-connect.js', 'minimal-live-connect.js', 'events/event-bus.js']
+const filenames = ['initializer.js', 'standard-live-connect.js', 'minimal-live-connect.js']
 const outputs = filenames.reduce((accumulator, sourceFile) => {
   const action = [{
     input: `src/${sourceFile}`,

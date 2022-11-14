@@ -11,6 +11,8 @@ import { hashEmail } from '../../src/utils/hash'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../src/events/event-bus'
 import { StorageHandler } from '../../src/handlers/storage-handler'
+import { EVENT_BUS_NAMESPACE } from '../../src/utils/consts'
+import { LiveConnect } from '../../src/initializer'
 
 use(dirtyChai)
 const eventBus = LocalEventBus()
@@ -57,6 +59,15 @@ describe('StandardLiveConnect', () => {
     expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
+  it('should initialise the event bus, and hook the error handler via the initializer', function () {
+    LiveConnect({})
+    const eventBus = window.liQ.eventBus
+    const errorHandler = eventBus.h
+    expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
+    expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
+    expect(window.liQ_instances).to.have.members([window.liQ])
+    expect(window[EVENT_BUS_NAMESPACE]).to.be.eq(eventBus)
+  })
   it('should expose liQ', function () {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({}, storage, calls)
