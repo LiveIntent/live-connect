@@ -18,6 +18,6 @@ export function LiveConnect (liveConnectConfig, externalStorageHandler, external
   const minimalMode = mode === 'minimal' || process.env.LiveConnectMode === 'minimal'
   const bus = externalEventBus || GlobalEventBus(EVENT_BUS_NAMESPACE, 5, err => console.error(err))
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-  const _initializationFunction = minimalMode ? MinimalLiveConnect : StandardLiveConnect
-  return _initializationFunction(configuration, externalStorageHandler, externalCallHandler, bus)
+  const initializationFunction = minimalMode ? MinimalLiveConnect : StandardLiveConnect
+  return initializationFunction(configuration, externalStorageHandler, externalCallHandler, bus)
 }
