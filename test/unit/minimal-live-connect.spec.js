@@ -2,6 +2,8 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { MinimalLiveConnect } from '../../src/minimal-live-connect'
+import { EVENT_BUS_NAMESPACE } from '../../src/utils/consts'
+import { LiveConnect } from '../../src/initializer'
 import * as storage from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import dirtyChai from 'dirty-chai'
@@ -46,6 +48,13 @@ describe('MinimalLiveConnect', () => {
     expect(window.liQ).to.not.be.undefined()
   })
 
+  it('should expose liQ via the initializer', function () {
+    expect(window.liQ).to.be.undefined()
+    LiveConnect({}, storage, calls, 'minimal')
+    expect(window.liQ).to.not.be.undefined()
+    expect(window[EVENT_BUS_NAMESPACE]).to.not.be.undefined()
+  })
+
   it('should accept a single event and put it in the queue', function () {
     const lc = MinimalLiveConnect({}, storage, calls)
     lc.push({ event: 'some' })
@@ -53,11 +62,27 @@ describe('MinimalLiveConnect', () => {
     expect(window.liQ.length).to.eql(1)
   })
 
+  it('should accept a single event and put it in the queue via the initializer', function () {
+    const lc = LiveConnect({}, storage, calls, 'minimal')
+    lc.push({ event: 'some' })
+    console.log(window.liQ)
+    expect(window.liQ.length).to.eql(1)
+    expect(window[EVENT_BUS_NAMESPACE]).to.not.be.undefined()
+  })
+
   it('should accept firing an event and put it in the queue', function () {
     const lc = MinimalLiveConnect({}, storage, calls)
     lc.fire()
     console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
+  })
+
+  it('should accept firing an event and put it in the queue via the initializer', function () {
+    const lc = LiveConnect({}, storage, calls, 'minimal')
+    lc.fire()
+    console.log(window.liQ)
+    expect(window.liQ.length).to.eql(1)
+    expect(window[EVENT_BUS_NAMESPACE]).to.not.be.undefined()
   })
 
   it('should return the resolution Url', function () {
@@ -74,8 +99,23 @@ describe('MinimalLiveConnect', () => {
   it('should expose the LC instance as globalVarName instead of liQ when provided', function () {
     expect(window.liQTest).to.be.undefined()
     expect(window.liQ).to.be.undefined()
-    MinimalLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
+    const lc = MinimalLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
     expect(window.liQ).to.be.undefined()
     expect(window.liQTest).to.not.be.undefined()
+    expect(window.liQTest).to.be.an('array')
+    expect(lc.ready).to.be.true()
+    expect(window.liQ_instances).to.have.members([lc])
+  })
+
+  it('should remove distributorId when both appId and distributorId are present', function () {
+    const config = { appId: 'a-00xx', distributorId: 'did-00xx', globalVarName: 'liQTest' }
+    const lc = MinimalLiveConnect(config, storage, calls)
+    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
+    expect(lc.config).to.eql(expectedConfig)
+  })
+
+  it('should expose the eventBus through the LC instance', function () {
+    const lc = MinimalLiveConnect({}, storage, calls)
+    expect(lc.eventBus).to.not.be.undefined()
   })
 })
