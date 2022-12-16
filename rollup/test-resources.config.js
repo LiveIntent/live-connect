@@ -9,7 +9,7 @@ import cleaner from 'rollup-plugin-cleaner'
 import strip from '@rollup/plugin-strip'
 import ts from "rollup-plugin-ts";
 
-const OUTPUT_DIR = './dist'
+const OUTPUT_DIR = './test-resources'
 
 export default {
   input: './test/it/helpers/preambled.ts',
@@ -18,11 +18,7 @@ export default {
     format: 'iife'
   },
   plugins: [
-    cleaner({
-      targets: [
-        OUTPUT_DIR
-      ]
-    }),
+    cleaner({targets: [OUTPUT_DIR]}),
     ts({transpileOnly: true}),
     resolve(),
     commonjs(),
