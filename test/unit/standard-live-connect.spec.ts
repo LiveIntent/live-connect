@@ -5,12 +5,18 @@ import { expect, use } from 'chai'
 import { StandardLiveConnect } from '../../src/standard-live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
-import * as storage from '../shared/utils/storage'
+import { Storage } from '../shared/utils/storage'
 import * as calls from '../shared/utils/calls'
 import { hashEmail } from '../../src/utils/hash'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../src/events/event-bus'
+import { StorageHandler } from '../../src/handlers/storage-handler'
+import { EVENT_BUS_NAMESPACE } from '../../src/utils/consts'
+import { LiveConnect } from '../../src/initializer'
 
 use(dirtyChai)
+const eventBus = LocalEventBus()
+const storage = StorageHandler('cookie', new Storage(eventBus), eventBus)
 
 describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()
@@ -46,13 +52,22 @@ describe('StandardLiveConnect', () => {
 
   it('should initialise the event bus, and hook the error handler', function () {
     StandardLiveConnect({})
-    const windowBus = window[C.EVENT_BUS_NAMESPACE]
-    const errorHandler = windowBus.h
+    const eventBus = window.liQ.eventBus
+    const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
-    expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')
+    expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
+  it('should initialise the event bus, and hook the error handler via the initializer', function () {
+    LiveConnect({})
+    const eventBus = window.liQ.eventBus
+    const errorHandler = eventBus.h
+    expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
+    expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
+    expect(window.liQ_instances).to.have.members([window.liQ])
+    expect(window[EVENT_BUS_NAMESPACE]).to.be.eq(eventBus)
+  })
   it('should expose liQ', function () {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({}, storage, calls)
@@ -225,5 +240,25 @@ describe('StandardLiveConnect', () => {
     expect(errorCalls.length).to.eql(2)
     expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined()
     expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined()
+  })
+
+  it('should expose the LC instance as globalVarName instead of liQ when provided', function () {
+    expect(window.liQTest).to.be.undefined()
+    expect(window.liQ).to.be.undefined()
+    StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
+    expect(window.liQTest.ready).to.be.true()
+    expect(window.liQ_instances).to.have.members([window.liQTest])
+  })
+
+  it('should remove distributorId when both appId and distributorId are present', function () {
+    const config = { appId: 'a-00xx', distributorId: 'did-00xx', globalVarName: 'liQTest' }
+    const lc = StandardLiveConnect(config, storage, calls)
+    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
+    expect(lc.config).to.eql(expectedConfig)
+  })
+
+  it('should expose the eventBus through the LC instance', function () {
+    const lc = StandardLiveConnect({}, storage, calls)
+    expect(lc.eventBus).to.not.be.undefined()
   })
 })

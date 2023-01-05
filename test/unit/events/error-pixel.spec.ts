@@ -3,7 +3,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import * as errorPixel from '../../../src/events/error-pixel'
 import * as pixelSender from '../../../src/pixel/sender'
-import * as bus from '../../../src/events/bus'
+import { LocalEventBus } from '../../../src/events/event-bus'
 import * as C from '../../../src/utils/consts'
 import dirtyChai from 'dirty-chai'
 
@@ -11,7 +11,7 @@ use(dirtyChai)
 
 describe('ErrorPixel', () => {
   const sandbox = sinon.createSandbox()
-  let windowBus = null
+  let eventBus = null
   let errors = []
   const stub = sandbox.stub(pixelSender, 'PixelSender').returns({
     sendPixel: (data) => errors.push(data),
@@ -24,8 +24,7 @@ describe('ErrorPixel', () => {
 
   beforeEach(() => {
     errors = []
-    bus.init()
-    windowBus = window[C.EVENT_BUS_NAMESPACE]
+    eventBus = LocalEventBus()
   })
 
   after(() => {
@@ -33,18 +32,18 @@ describe('ErrorPixel', () => {
   })
 
   it('should register itself on the global bus', function () {
-    errorPixel.register({ collectorUrl: 'http://localhost' })
-    const errorHandler = windowBus.h
+    errorPixel.register({ collectorUrl: 'http://localhost' }, {}, eventBus)
+    const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
     expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
-    expect(errorHandler[C.ERRORS_PREFIX][0].fn.name).to.eql('_pixelError')
   })
 
   it('should call the pixel once registered', function () {
-    errorPixel.register({ collectorUrl: 'http://localhost' })
-    windowBus.emit(C.ERRORS_PREFIX, new Error('some other message'))
+    errorPixel.register({ collectorUrl: 'http://localhost' }, {}, eventBus)
+    eventBus.emitErrorWithMessage('Error', 'some other message')
     expect(errors.length).to.eql(1)
     const errorDetails = errors[0].data.errorDetails
+    console.log(errors[0].data)
     expect(errorDetails.message).to.eql('some other message')
     expect(errorDetails.name).to.eql('Error')
     expect(errors[0].data.pageUrl).to.equal('http://www.example.com/?sad=0&dsad=iou')

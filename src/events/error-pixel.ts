@@ -3,7 +3,7 @@ import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
-import { ICallHandler, IPixelSender, State } from '../types'
+import { EventBus, ICallHandler, IPixelSender, State } from '../types'
 
 let _state = null
 let _pixelSender: IPixelSender = null
@@ -60,14 +60,16 @@ function _pixelError (error: any) {
   }
 }
 
-export function register (state: State, callHandler: ICallHandler): void {
+export function register (state: State, callHandler: ICallHandler, eventBus: EventBus): void {
   try {
-    console.log('handlers.error.register', state, _pixelSender)
-    if (window && window[C.EVENT_BUS_NAMESPACE] && isFunction(window[C.EVENT_BUS_NAMESPACE].on)) {
-      window[C.EVENT_BUS_NAMESPACE].on(C.ERRORS_PREFIX, _pixelError)
-    }
-    _pixelSender = new PixelSender(state, callHandler)
+    _pixelSender = new PixelSender(state, callHandler, eventBus)
     _state = state || {}
+    console.log('handlers.error.register', state, _pixelSender)
+
+    eventBus.on(C.ERRORS_PREFIX, (error) => {
+      console.log(error, _state)
+      _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(_state || {}).combineWith(page.enrich({})))
+    })
   } catch (e) {
     console.error('handlers.error.register', e)
   }

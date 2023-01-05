@@ -1,5 +1,4 @@
 import { ulid } from '../utils/ulid'
-import * as emitter from '../utils/emitter'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from '../utils/types'
@@ -10,7 +9,16 @@ const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
+<<<<<<< HEAD:src/manager/identifiers.ts
 export function resolve (state: State, storageHandler: IStorageHandler): State {
+=======
+/**
+ * @param {State} state
+ * @param {StorageHandler} storageHandler
+ * @param {EventBus} eventBus
+ */
+export function resolve (state, storageHandler, eventBus) {
+>>>>>>> master:src/manager/identifiers.js
   try {
     console.log('identifiers.resolve', state)
 
@@ -42,7 +50,7 @@ export function resolve (state: State, storageHandler: IStorageHandler): State {
         }
         return storageHandler.get(key)
       } catch (e) {
-        emitter.error('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
+        eventBus.emitErrorWithMessage('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
         return null
       }
     }
@@ -77,7 +85,7 @@ export function resolve (state: State, storageHandler: IStorageHandler): State {
       peopleVerifiedId: liveConnectIdentifier
     }
   } catch (e) {
-    emitter.error('IdentifiersResolve', 'Error while managing identifiers', e)
+    eventBus.emitErrorWithMessage('IdentifiersResolve', 'Error while managing identifiers', e)
     return {}
   }
 }

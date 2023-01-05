@@ -1,18 +1,64 @@
 import * as emitter from '../utils/emitter'
+
+/**
+ * @typedef {Object} State
+ * @property {(string|null)} [appId]
+ * @property {(object|undefined)} [eventSource]
+ * @property {(string|undefined)} [liveConnectId]
+ * @property {(string|undefined)} [trackerName]
+ * @property {(string|undefined)} [pageUrl]
+ * @property {(string|undefined)} [domain]
+ * @property {(string|undefined)} [usPrivacyString]
+ * @property {(string|undefined)} [expirationDays]
+ * @property {(string|undefined)} [wrapperName]
+ * @property {(HashedEmail[])} [hashesFromIdentifiers]
+ * @property {(string[]|undefined)} [identifiersToResolve]
+ * @property {string[]} [decisionIds]
+ * @property {string|undefined} [peopleVerifiedId]
+ * @property {(string|undefined)} [storageStrategy]
+ * @property {ErrorDetails} [errorDetails]
+ * @property {RetrievedIdentifier[]} [retrievedIdentifiers]
+ * @property {HashedEmail[]} [hashedEmail]
+ * @property {string} [providedHash]
+ * @property {(IdexConfig|undefined)} [identityResolutionConfig]
+ * @property {(boolean|undefined)} [gdprApplies]
+ * @property {(string|undefined)} [gdprConsent]
+ * @property {(string|undefined)} [contextSelectors]
+ * @property {(string|undefined)} [contextElementsLength]
+ * @property {(string|undefined)} [contextElements]
+ * @property {(boolean|undefined)} [privacyMode]
+ */
+
+/**
+ * @typedef {Object} StateWrapper
+ * @property {State} data
+ * @property {function} asTuples
+ * @property {function} asQueryString
+ * @property {function} combineWith
+ * @property {function} sendsPixel
+ * @property {StorageManager} storageHandler
+ */
+
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, merge, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray } from '../utils/types'
+import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray } from '../utils/types'
 import { toParams } from '../utils/url'
-import { IQuery, IStateWrapper, State } from '../types'
+import { EventBus, State } from '../types'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-const _pArray: [string, (value: any) => ([string, string] | [string, string][])][] = [
+const _pArray: [string, (value: any) => ([string, string][])][] = [
   [
     'appId',
     aid => {
       return asStringParam('aid', aid)
+    }
+  ],
+  [
+    'distributorId',
+    did => {
+      return asStringParam('did', did)
     }
   ],
   [
@@ -132,62 +178,58 @@ const _pArray: [string, (value: any) => ([string, string] | [string, string][])]
   ]
 ]
 
-export function Query (tuples: [string, string][]): IQuery {
-  Query.prependParam = function (tuple) {
-    const _tuples = tuples
-    _tuples.unshift(tuple)
+export class Query {
+  tuples: [string, string][];
+
+  constructor(tuples: [string, string][]) {
+    this.tuples = tuples;
+  }
+
+  prependParams (...params: [string, string][]): Query {
+    const _tuples = this.tuples
+    _tuples.unshift(...params)
     return new Query(_tuples)
   }
 
-  Query.toQueryString = function () {
-    return toParams(tuples)
+
+  toQueryString(): string {
+    return toParams(this.tuples)
   }
-  return Query
 }
 
-export function StateWrapper (state: State): IStateWrapper {
-  let _state: State = {}
-  if (state) {
-    _state = _safeFiddle(state)
+export class StateWrapper {
+  state: State
+  eventBus: EventBus
+
+  constructor (state: State, eventBus: EventBus) {
+    this.state = StateWrapper.safeFiddle(state, eventBus)
+    this.eventBus = eventBus
   }
 
-  function _sendsPixel () {
-    const source = isObject(_state.eventSource) ? _state.eventSource : {}
-    const eventKeys = Object.keys(source)
-      .filter(objKey => objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event')
-    const eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0]
-    const eventName = eventKey && trim(_state.eventSource[eventKey])
-    return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
-  }
-
-  function _safeFiddle (newInfo) {
+  private static safeFiddle (newInfo: State, eventBus: EventBus): State {
     try {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      emitter.error('StateCombineWith', 'Error while extracting event data', e)
-      return _state
+      eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
+      return {}
     }
   }
 
-  /**
-   * @param {State} newInfo
-   * @return {StateWrapper}
-   * @private
-   */
-  function _combineWith (newInfo: State): IStateWrapper {
-    return new StateWrapper(merge(state, newInfo))
+  sendsPixel () {
+    const source = isObject(this.state.eventSource) ? this.state.eventSource : {}
+    const eventKeys = Object.keys(source)
+      .filter(objKey => objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event')
+    const eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0]
+    const eventName = eventKey && trim(this.state.eventSource[eventKey])
+    return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
   }
 
-  /**
-   * @returns {string [][]}
-   * @private
-   */
-  function _asTuples (): [string, string][] {
+  asTuples (): [string, string][] {
     let array = []
     _pArray.forEach((keyWithParamsExtractor) => {
       const key = keyWithParamsExtractor[0]
-      const value = _state[key]
+      const value = this.state[key]
       const params = keyWithParamsExtractor[1](value)
       if (params && params.length) {
         if (params[0] instanceof Array) {
@@ -200,15 +242,8 @@ export function StateWrapper (state: State): IStateWrapper {
     return array
   }
 
-  function _asQuery (): IQuery {
-    return new Query(_asTuples())
+  asQuery (): Query {
+    return new Query(this.asTuples())
   }
 
-  return {
-    data: _state,
-    combineWith: _combineWith,
-    asQuery: _asQuery,
-    asTuples: _asTuples,
-    sendsPixel: _sendsPixel
-  }
 }

@@ -133,8 +133,8 @@ The `enrichers` folder contains code responsible for extracting specific informa
 ### Identifiers enrichment
 `enrichers/identifiers.js` is responsible for reading the `identifiersToResolve` configuration parameter to read any additional identifiers that customers want to share with us.
 
-## Messaging between components via EventBus (`__li__evt_bus`)
-LiveConnect exposes an object on the window level (`window.__li_evt_bus`) which is responsible for communicating various information based on different fields of interests.
+## Messaging between components via EventBus
+LiveConnect exposes an object on the instance level (`window[globalVarName].eventBus`, where `globalVarName` is the value found in the configuration or `liQ` if none is provided) which is responsible for communicating various information based on different fields of interests.
 For example, there are three topics which anyone can hook to, and receive information about:
 - errors, on the `li_errors` topic
 - whenever the pixel is sent successfully, the `lips` topic will emit that information
@@ -143,12 +143,12 @@ For example, there are three topics which anyone can hook to, and receive inform
 The following snippets can be used to hook up to one of the topics and receive events as they happen.
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message, will continue receiving them', message) }
-window.__li_evt_bus.on('lips', logger)
+window[globalVarName].eventBus.on('lips', lipsLogger)
 ```
 or
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message once, i will self destruct now.', message) }
-window.__li_evt_bus.once('lips', logger)
+window[globalVarName].eventBus.once('lips', lipsLogger)
 ```
 
 There are a two ways this can be achieved:
@@ -159,11 +159,11 @@ The bus isn't a pure event listener, as we also want to cover the case where han
 An example how to hook to the topic will be explained in the next section.
 
 ## Error handling
-Vital logic is wrapped in try catch blocks, and where it makes sense, the error message is emitted on the `li_errors` topic in the `window.__li_evt_bus`.
+Vital logic is wrapped in try catch blocks, and where it makes sense, the error message is emitted on the `li_errors` topic in the eventBus.
 To start listening to the topic, one can simply implement their own logic. For example, if logging the messages is of interest, the following snippet can be used:
 ```javascript
-const logger = (message) => {console.error('Error message received on the __li_evt_bus', message)}
-window.__li_evt_bus.on('li_errors', logger)
+const logger = (message) => {console.error('Error message received on the event bus', message)}
+window[globalVarName].eventBus.on('li_errors', logger)
 ```
 ## Receiving errors on the collector
 LiveConnect has a handler called `handlers/error-pixel.js` which is subscribed on the `li_errors` topic, and wraps the exceptions into the following format:

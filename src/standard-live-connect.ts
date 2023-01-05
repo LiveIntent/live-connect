@@ -1,6 +1,4 @@
 import { PixelSender } from './pixel/sender'
-import * as eventBus from './events/bus'
-import * as emitter from './utils/emitter'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import { StateWrapper } from './pixel/state'
@@ -9,19 +7,24 @@ import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
+import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
+<<<<<<< HEAD:src/standard-live-connect.ts
 import { ConfigMatcher, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
+=======
+import { LocalEventBus, getAvailableBus } from './events/event-bus'
+>>>>>>> master:src/standard-live-connect.js
 
 const hemStore = {}
-function _pushSingleEvent (event, pixelClient, enrichedState) {
+function _pushSingleEvent (event, pixelClient, enrichedState, eventBus) {
   if (!event || !isObject(event)) {
-    emitter.error('EventNotAnObject', 'Received event was not an object', new Error(event))
+    eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {
-    emitter.error('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
+    eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
   } else {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
@@ -43,63 +46,77 @@ function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConne
   }
 }
 
-function _processArgs (args, pixelClient, enrichedState) {
+function _processArgs (args, pixelClient, enrichedState, eventBus) {
   try {
     args.forEach(arg => {
       const event = arg
       if (isArray(event)) {
-        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState))
+        event.forEach(e => _pushSingleEvent(e, pixelClient, enrichedState, eventBus))
       } else {
-        _pushSingleEvent(event, pixelClient, enrichedState)
+        _pushSingleEvent(event, pixelClient, enrichedState, eventBus)
       }
     })
   } catch (e) {
     console.error('Error sending events', e)
-    emitter.error('LCPush', 'Failed sending an event', e)
+    eventBus.emitErrorWithMessage('LCPush', 'Failed sending an event', e)
   }
 }
 
 function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiveConnect {
   try {
-    if (window && window.liQ && window.liQ.ready) {
-      const mismatchedConfig = window.liQ.config && _configMatcher(window.liQ.config, liveConnectConfig)
+    if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
+      const mismatchedConfig = window[liveConnectConfig.globalVarName].config && _configMatcher(window[liveConnectConfig.globalVarName].config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
-        emitter.error('LCDuplication', JSON.stringify(mismatchedConfig), error)
+        const eventBus = getAvailableBus(liveConnectConfig.globalVarName)
+        window[liveConnectConfig.globalVarName].eventBus = eventBus
+        eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
-      return window.liQ
+      return window[liveConnectConfig.globalVarName]
     }
   } catch (e) {
     console.error('Could not initialize error bus')
   }
 }
 
+<<<<<<< HEAD:src/standard-live-connect.ts
 function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
+=======
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
+ * @param {EventBus} eventBus
+ * @returns {StandardLiveConnect}
+ * @private
+ */
+function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
+>>>>>>> master:src/standard-live-connect.js
   try {
-    eventBus.init()
-    const callHandler = CallHandler(externalCallHandler)
-    const configWithPrivacy = merge(liveConnectConfig, privacyConfig(liveConnectConfig))
-    errorHandler.register(configWithPrivacy, callHandler)
+    const callHandler = CallHandler(externalCallHandler, eventBus)
+    const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
+    const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
+    errorHandler.register(configWithPrivacy, callHandler, eventBus)
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler)
-    const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler))
+    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler, eventBus)
+    const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler, eventBus))
 
     const enrichers = [pageEnrich, identifiersEnrich]
     const managers = [idResolve, decisionsResolve]
 
-    const enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy))
+    const enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy, eventBus))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
     console.log('LiveConnect.enrichedState', enrichedState)
     console.log('LiveConnect.postManagedState', postManagedState)
     const syncContainerData = merge(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
-    const onPixelLoad = () => emitter.send(C.PIXEL_SENT_PREFIX, syncContainerData)
-    const onPixelPreload = () => emitter.send(C.PRELOAD_PIXEL, '0')
-    const pixelClient = new PixelSender(configWithPrivacy, callHandler, onPixelLoad, onPixelPreload)
-    const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler)
-    const _push = (...args) => _processArgs(args, pixelClient, postManagedState)
+    const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, syncContainerData)
+    const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
+    const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
+    const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler, eventBus)
+    const _push = (...args) => _processArgs(args, pixelClient, postManagedState, eventBus)
     return {
       push: _push,
       fire: () => _push({}),
@@ -107,28 +124,50 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
       ready: true,
       resolve: resolver.resolve,
       resolutionCallUrl: resolver.getUrl,
-      config: liveConnectConfig
+      config: validLiveConnectConfig,
+      eventBus: eventBus
     }
   } catch (x) {
     console.error(x)
-    emitter.error('LCConstruction', 'Failed to build LC', x)
+    eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', x)
   }
 }
 
+<<<<<<< HEAD:src/standard-live-connect.ts
 export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
+=======
+/**
+ * @param {LiveConnectConfiguration} liveConnectConfig
+ * @param {StorageHandler} externalStorageHandler
+ * @param {CallHandler} externalCallHandler
+ * @param {EventBus} externalEventBus
+ * @returns {StandardLiveConnect}
+ * @constructor
+ */
+export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, externalEventBus) {
+>>>>>>> master:src/standard-live-connect.js
   console.log('Initializing LiveConnect')
+  const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
+  configuration.globalVarName = configuration.globalVarName || 'liQ'
+  const eventBus = externalEventBus || LocalEventBus()
   try {
-    const queue = window.liQ || []
-    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    window && (window.liQ = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler) || queue)
+    const queue = window[configuration.globalVarName] || []
+    if (window) {
+      window[configuration.globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue
+    }
     if (isArray(queue)) {
       for (let i = 0; i < queue.length; i++) {
-        window.liQ.push(queue[i])
+        window[configuration.globalVarName].push(queue[i])
       }
+    }
+    window.liQ_instances = window.liQ_instances || []
+
+    if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
+      window.liQ_instances.push(window[configuration.globalVarName])
     }
   } catch (x) {
     console.error(x)
-    emitter.error('LCConstruction', 'Failed to build LC', x)
+    eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', x)
   }
-  return window.liQ
+  return window[configuration.globalVarName]
 }

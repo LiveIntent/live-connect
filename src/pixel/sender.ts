@@ -1,10 +1,10 @@
 import { isArray, isFunction, asStringParam } from '../utils/types'
 import * as emitter from '../utils/emitter'
-import { ICallHandler, IPixelSender, LiveConnectConfig, IStateWrapper } from '../types'
+import { ICallHandler, IPixelSender, LiveConnectConfig, IStateWrapper, EventBus } from '../types'
 
 const DEFAULT_AJAX_TIMEOUT = 0
 
-export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallHandler, onload: () => void, presend: () => void): IPixelSender {
+export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallHandler, eventBus: EventBus, onload: () => void, presend: () => void): IPixelSender {
   const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
 
   function _sendAjax (state: IStateWrapper) {
@@ -17,7 +17,7 @@ export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallH
         },
         (e) => {
           _sendPixel(state)
-          emitter.error('AjaxFailed', e.message, e)
+          eventBus.emitError('AjaxFailed', e)
         },
         DEFAULT_AJAX_TIMEOUT
       )
@@ -31,7 +31,7 @@ export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallH
         for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
-      emitter.error('CallBakers', 'Error while calling bakers', e)
+      eventBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
     }
   }
 
@@ -50,7 +50,7 @@ export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallH
       }
 
       const dtstmpTuple = asStringParam('dtstmp', utcMillis())
-      const query = state.asQuery().prependParam(dtstmpTuple)
+      const query = state.asQuery().prependParams(dtstmpTuple)
       const queryString = query.toQueryString()
       const uri = `${url}/${endpoint}${queryString}`
 

@@ -2,6 +2,8 @@
 
 ### `aid`
 - contains the `appId`
+### `did`
+- contains the `distributorId`
 ### `se`
 - contains the b64 url encoded string of the JSON that was sent via `liveConnect.push` function
 ### `duid`

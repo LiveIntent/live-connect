@@ -13,7 +13,7 @@ export function fromError (name: string, exception: Error) {
 }
 
 export function error (name: string, message: string, e: any = {}) {
-  const wrapped = new Error(message || e.message)
+  const wrapped: any = new Error(message || e.message)
   wrapped.stack = e.stack
   wrapped.name = name || 'unknown error'
   wrapped.lineNumber = e.lineNumber

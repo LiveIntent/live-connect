@@ -5,11 +5,21 @@ This field does not have the default value. If it is not set, the appId calculat
 Example:
 ```javascript
 {
-  appId:"a-00xx"
+  appId: "a-00xx"
+}
+```
+#### `distributorId` [Optional]
+This parameter is an identifier for distributors.
+It does not have a default value and must be set in case of distributors scripts.
+If `distributorId` is provided, the `appId` configuration parameter must not be set.
+Example:
+```javascript
+{
+  distributorId: "did-00xx"
 }
 ```
 #### `wrapperName` [Optional]
-This parametr should be used when this module is required/imported in within another tracker. Often times, we'd like to separate the events received from a specific library encapsulating LiveConnect. If that is the case, it's recommended to set this parameter accordingly.
+This parameter should be used when this module is required/imported in within another tracker. Often times, we'd like to separate the events received from a specific library encapsulating LiveConnect. If that is the case, it's recommended to set this parameter accordingly.
 Example
 ```javascript
 {
@@ -209,5 +219,17 @@ Example:
 ```javascript
 {
   contextElementsLength: 6000
+}
+```
+
+##### `globalVarName` [Optional]
+
+This parameter allows to define the name for the Live Connect instance that is attached to the window object, by default: `liQ`.
+For example `globalVarName: "liQ2"` will make the instance name `window.liQ2` instead of `window.liQ`.
+
+Example:
+```javascript
+{
+  globalVarName: "liQ2"
 }
 ```

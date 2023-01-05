@@ -1,15 +1,31 @@
-export default function E (replaySize: any) {
-  this.size = parseInt(replaySize) || 5
-  this.h = {}
-  this.q = {}
+import * as C from '../utils/consts'
+import { ErrorDetails, EventBus } from '../types'
+
+type Callback<Ctx> = (ctx: Ctx, event: object) => void
+
+interface EventHandler<Ctx> {
+  ctx?: Ctx,
+  fn: Callback<Ctx>
 }
 
-E.prototype = {
-  on: function (name, callback, ctx) {
-    (this.h[name] || (this.h[name] = [])).push({
-      fn: callback,
-      ctx: ctx
-    })
+export class ReplayEmitter implements EventBus {
+  h: Record<string, EventHandler<any>[]>;
+  q: Record<string, object[]>;
+  size: number;
+
+  constructor (replaySize: number) {
+    this.size = replaySize
+    this.h = {}
+    this.q = {}
+  }
+
+  on <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
+    const handler: EventHandler<Ctx> = {
+      ctx: ctx,
+      fn: callback
+    };
+
+    (this.h[name] || (this.h[name] = [])).push(handler)
 
     const eventQueueLen = (this.q[name] || []).length
     for (let i = 0; i < eventQueueLen; i++) {
@@ -17,9 +33,9 @@ E.prototype = {
     }
 
     return this
-  },
+  }
 
-  once: function (name, callback, ctx) {
+  once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
     const self = this
 
     const eventQueue = this.q[name] || []
@@ -36,10 +52,9 @@ E.prototype = {
       listener._ = callback
       return this.on(name, listener, ctx)
     }
-  },
+  }
 
-  emit: function (name) {
-    const data = [].slice.call(arguments, 1)
+  emit (name: string, ...data: object[]): EventBus {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
@@ -55,15 +70,15 @@ E.prototype = {
     eventQueue.push(data)
 
     return this
-  },
+  }
 
-  off: function (name, callback) {
+  off (name: string, callback: Callback<any>): EventBus {
     const handlers = this.h[name]
     const liveEvents = []
 
     if (handlers && callback) {
       for (let i = 0, len = handlers.length; i < len; i++) {
-        if (handlers[i].fn !== callback && handlers[i].fn._ !== callback) {
+        if (handlers[i].fn !== callback) {
           liveEvents.push(handlers[i])
         }
       }
@@ -75,4 +90,22 @@ E.prototype = {
 
     return this
   }
+
+  emitErrorWithMessage (name: string, message: string, e: any = {}): EventBus {
+    const wrappedError = wrapError(name, message, e)
+    return this.emit(C.ERRORS_PREFIX, wrappedError)
+  }
+
+  emitError (name: string, exception: any): EventBus {
+    return this.emitErrorWithMessage(name, exception.message, exception)
+  }
+}
+
+export function wrapError (name: string, message: string, e: any): any {
+  const wrapped: any = new Error(message || e.message)
+  wrapped.stack = e.stack
+  wrapped.name = name || 'unknown error'
+  wrapped.lineNumber = e.lineNumber
+  wrapped.columnNumber = e.columnNumber
+  return wrapped
 }

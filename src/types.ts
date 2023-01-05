@@ -1,3 +1,5 @@
+import { StateWrapper } from "./pixel/state"
+
 export interface Cache {
     get: (key: any) => any
     set: (key: any, value: any, expiration: Date) => void
@@ -54,6 +56,7 @@ export interface IdentityResolutionConfig {
     contextSelectors?: string,
     contextElementsLength?: number
 }
+
 export interface LiveConnectConfig {
     appId?: string,
     wrapperName?: string,
@@ -100,6 +103,7 @@ export interface HashedEmail {
     sha1: string,
     sha256: string
 }
+
 export interface IIdentityResolver {
     resolve: (
         successCallBack: (result: IdentityResultionResult) => void,
@@ -161,27 +165,18 @@ export interface ILiveConnect {
     config?: LiveConnectConfig,
 }
 
-export interface ReplayEmitter {
-    on<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): ReplayEmitter,
-    once<C> (name: string, callback: (ctx: C, event: object) => void, ctx: C): ReplayEmitter,
-    emit (name: string, event: object): ReplayEmitter,
-    off (name: string, callback: (ctx: any, event: object) => void): ReplayEmitter
+export interface EventBus {
+    on<C> (name: string, callback: (ctx: C, event: object) => void, ctx?: C): EventBus,
+    once<C> (name: string, callback: (ctx: C, event: object) => void, ctx?: C): EventBus,
+    emit (name: string, event: object): EventBus,
+    off (name: string, callback: (ctx: any, event: object) => void): EventBus,
+    emitErrorWithMessage (name: string, message: string, e: any): EventBus,
+    emitError (name: string, exception: any): EventBus
 }
-
-export interface IQuery {
-    prependParam (tuple: [string, string]): IQuery,
-    toQueryString (): string
-}
-
-export interface IStateWrapper {
-    data: State,
-    sendsPixel (): boolean,
-    combineWith (newInfo: State): IStateWrapper,
-    asTuples (): [string, string][]
-    asQuery (): IQuery,
-  }
 
 export interface IPixelSender {
-    sendAjax (state: IStateWrapper): void,
-    sendPixel (state: IStateWrapper): void,
+    sendAjax (state: StateWrapper): void,
+    sendPixel (state: StateWrapper): void,
 }
+
+

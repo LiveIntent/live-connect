@@ -1,11 +1,26 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
+<<<<<<< HEAD:src/handlers/read-storage-handler.ts
 import * as emitter from '../utils/emitter'
 import { ExternalMinimalStorageHandler, IMinimalStorageHandler, StorageStrategyMode } from '../types'
+=======
+>>>>>>> master:src/handlers/read-storage-handler.js
 
 const _noOp = () => undefined
 
+<<<<<<< HEAD:src/handlers/read-storage-handler.ts
 export function StorageHandler (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler): IMinimalStorageHandler {
+=======
+/**
+ *
+ * @param {string} storageStrategy
+ * @param {StorageHandler} [externalStorageHandler]
+ * @param {EventBus} eventBus
+ * @return {StorageHandler}
+ * @constructor
+ */
+export function StorageHandler (storageStrategy, externalStorageHandler, eventBus) {
+>>>>>>> master:src/handlers/read-storage-handler.js
   const errors = []
   function _externalOrError (functionName) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
@@ -27,7 +42,7 @@ export function StorageHandler (storageStrategy: StorageStrategyMode, externalSt
     getDataFromLocalStorage: _externalOrError('getDataFromLocalStorage')
   }
   if (errors.length > 0) {
-    emitter.error('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
+    eventBus.emitErrorWithMessage('StorageHandler', `The storage functions '${JSON.stringify(errors)}' are not provided`)
   }
   return handler
 }

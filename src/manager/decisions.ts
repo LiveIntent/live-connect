@@ -1,4 +1,3 @@
-import * as error from '../utils/emitter'
 import { urlParams } from '../utils/url'
 import { trim, isUUID, expiresInDays } from '../utils/types'
 import { IStorageHandler, State } from '../types'
@@ -11,7 +10,16 @@ const _onlyUnique = (value, index, self) => self.indexOf(value) === index
 const _validUuid = (value) => isUUID(value)
 const _nonEmpty = (value) => value && trim(value).length > 0
 
+<<<<<<< HEAD:src/manager/decisions.ts
 export function resolve (state: State, storageHandler: IStorageHandler): State {
+=======
+/**
+ * @param {State} state
+ * @param {StorageHandler} storageHandler
+ * @param {EventBus} eventBus
+ */
+export function resolve (state, storageHandler, eventBus) {
+>>>>>>> master:src/manager/decisions.js
   console.log('decisions.resolve', state)
   let ret = {}
   function _addDecisionId (key, cookieDomain) {
@@ -42,7 +50,7 @@ export function resolve (state: State, storageHandler: IStorageHandler): State {
       .filter(_onlyUnique)
     ret = { decisionIds: allDecisions }
   } catch (e) {
-    error.error('DecisionsResolve', 'Error while managing decision ids', e)
+    eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while managing decision ids', e)
   }
   return ret
 }

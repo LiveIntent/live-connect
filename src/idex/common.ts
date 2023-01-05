@@ -1,11 +1,23 @@
 import { base64UrlEncode } from '../utils/b64'
-import { fromError } from '../utils/emitter'
 import { toParams } from '../utils/url'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams, isFunction } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
 import { IStorageHandler, Cache, IIdentityResolver, ICallHandler, IdentityResolutionConfig, State, ResolutionParams } from '../types'
 
+<<<<<<< HEAD:src/idex/common.ts
 export function storageHandlerBackedCache (defaultExpirationHours: number, domain: string, storageHandler: IStorageHandler): Cache {
+=======
+/**
+ * @typedef {Object} Cache
+ * @property {function} [get]
+ * @property {function} [set]
+ */
+
+/**
+ * @return {Cache}
+ */
+export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler, eventBus) {
+>>>>>>> master:src/idex/common.js
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey: any) {
@@ -35,7 +47,7 @@ export function storageHandlerBackedCache (defaultExpirationHours: number, domai
           domain
         )
       } catch (ex) {
-        fromError('IdentityResolverStorage', ex)
+        eventBus.emitError('IdentityResolverStorage', ex)
       }
     }
   }
@@ -46,7 +58,23 @@ export const noopCache: Cache = {
   set: () => undefined
 }
 
+<<<<<<< HEAD:src/idex/common.ts
 export function makeIdentityResolver (config: State, calls: ICallHandler, cache: Cache): IIdentityResolver {
+=======
+/**
+ * @typedef {Object} IdentityResolver
+ * @property {function} [resolve]
+ */
+
+/**
+ * @param {State} config
+ * @param {CallHandler} calls
+ * @param {EventBus} eventBus
+ * @param {Cache} cache
+ * @return {IdentityResolver}
+ */
+export function makeIdentityResolver (config, calls, cache, eventBus) {
+>>>>>>> master:src/idex/common.js
   try {
     const idexConfig: IdentityResolutionConfig = config.identityResolutionConfig || {}
     const externalIds = config.retrievedIdentifiers || []
@@ -62,6 +90,7 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
     tuples.push(asParamOrEmpty('gdpr', config.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
     tuples.push(asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
     tuples.push(asStringParam('gdpr_consent', config.gdprConsent))
+    tuples.push(asStringParam('did', config.distributorId))
 
     externalIds.forEach(retrievedIdentifier => {
       tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
@@ -96,7 +125,7 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
             responseObj = JSON.parse(responseText)
           } catch (ex) {
             console.error('Error parsing response', ex)
-            fromError('IdentityResolverParser', ex)
+            eventBus.emitError('IdentityResolverParser', ex)
           }
         }
 
@@ -127,22 +156,26 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
         } catch (e) {
           console.error('IdentityResolve', e)
           errorCallback()
-          fromError('IdentityResolve', e)
+          eventBus.emitError('IdentityResolve', e)
         }
       },
       getUrl: (additionalParams) => composeUrl(additionalParams)
     }
   } catch (e) {
     console.error('IdentityResolver', e)
-    fromError('IdentityResolver', e)
+    eventBus.emitError('IdentityResolver', e)
     return {
       resolve: (successCallback, errorCallback) => {
         errorCallback()
-        fromError('IdentityResolver.resolve', e)
+        eventBus.emitError('IdentityResolver.resolve', e)
       },
       getUrl: () => {
+<<<<<<< HEAD:src/idex/common.ts
         fromError('IdentityResolver.getUrl', e)
         return undefined
+=======
+        eventBus.emitError('IdentityResolver.getUrl', e)
+>>>>>>> master:src/idex/common.js
       }
     }
   }
