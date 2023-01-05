@@ -15,7 +15,7 @@ function _decode (s) {
   if (s.indexOf('%') === -1) return s
   else {
     try {
-      decodeURIComponent(s)
+      return decodeURIComponent(s)
     } catch (e) {
       return s
     }

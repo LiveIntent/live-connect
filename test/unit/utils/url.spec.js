@@ -46,4 +46,12 @@ describe('UrlUtils', () => {
   it('should parse array values', () => {
     expect(params.array).to.deep.equal(['a', 'b', 'c'])
   })
+
+  it('should not fail when the url could not be decoded', () => {
+    const params = urlParams('https://www.bluenile.com/hk/zh/diamonds?gclid=CjwKCAiAh9q&click_id=12&utm_source=google&utm_medium=text&utm_campaign=Google_%7C_GC_%7C_HK_%7C_Traditional_Chinese_%7C_Text_%7C_Non-Brand_%7C_ENG_%7C_NA_%7C_Engagement_%7&utm_content=Diamonds%3A_Price&utm_term=%E4%B8%80+%E5%85%8B%E6%')
+    expect(params.gclid).to.eq('CjwKCAiAh9q')
+    expect(params.click_id).to.eq(12)
+    expect(params.utm_source).to.eq('google')
+    expect(params.utm_campaign).to.eq('Google_%7C_GC_%7C_HK_%7C_Traditional_Chinese_%7C_Text_%7C_Non-Brand_%7C_ENG_%7C_NA_%7C_Engagement_%7')
+  })
 })
