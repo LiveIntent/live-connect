@@ -1,20 +1,8 @@
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
-<<<<<<< HEAD:src/enrichers/identifiers.ts
-import * as emitter from '../utils/emitter'
-import { HashedEmail, IMinimalStorageHandler, State } from '../types'
+import { EventBus, HashedEmail, IMinimalStorageHandler, State } from '../types'
 
-export function enrich (state: State, storageHandler: IMinimalStorageHandler) {
-=======
-
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @param {EventBus} eventBus
- * @returns {{hashesFromIdentifiers: HashedEmail[], retrievedIdentifiers: RetrievedIdentifier[]} | {}}
- */
-export function enrich (state, storageHandler, eventBus) {
->>>>>>> master:src/enrichers/identifiers.js
+export function enrich (state: State, storageHandler: IMinimalStorageHandler, eventBus: EventBus) {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {

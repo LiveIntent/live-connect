@@ -2,22 +2,9 @@ import { base64UrlEncode } from '../utils/b64'
 import { toParams } from '../utils/url'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams, isFunction } from '../utils/types'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from '../utils/consts'
-import { IStorageHandler, Cache, IIdentityResolver, ICallHandler, IdentityResolutionConfig, State, ResolutionParams } from '../types'
+import { IStorageHandler, Cache, IIdentityResolver, ICallHandler, IdentityResolutionConfig, State, ResolutionParams, EventBus } from '../types'
 
-<<<<<<< HEAD:src/idex/common.ts
-export function storageHandlerBackedCache (defaultExpirationHours: number, domain: string, storageHandler: IStorageHandler): Cache {
-=======
-/**
- * @typedef {Object} Cache
- * @property {function} [get]
- * @property {function} [set]
- */
-
-/**
- * @return {Cache}
- */
-export function storageHandlerBackedCache (defaultExpirationHours, domain, storageHandler, eventBus) {
->>>>>>> master:src/idex/common.js
+export function storageHandlerBackedCache (defaultExpirationHours: number, domain: string, storageHandler: IStorageHandler, eventBus: EventBus): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey: any) {
@@ -58,23 +45,7 @@ export const noopCache: Cache = {
   set: () => undefined
 }
 
-<<<<<<< HEAD:src/idex/common.ts
-export function makeIdentityResolver (config: State, calls: ICallHandler, cache: Cache): IIdentityResolver {
-=======
-/**
- * @typedef {Object} IdentityResolver
- * @property {function} [resolve]
- */
-
-/**
- * @param {State} config
- * @param {CallHandler} calls
- * @param {EventBus} eventBus
- * @param {Cache} cache
- * @return {IdentityResolver}
- */
-export function makeIdentityResolver (config, calls, cache, eventBus) {
->>>>>>> master:src/idex/common.js
+export function makeIdentityResolver (config: State, calls: ICallHandler, cache: Cache, eventBus: EventBus): IIdentityResolver {
   try {
     const idexConfig: IdentityResolutionConfig = config.identityResolutionConfig || {}
     const externalIds = config.retrievedIdentifiers || []
@@ -84,16 +55,16 @@ export function makeIdentityResolver (config, calls, cache, eventBus) {
     const timeout = idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     const requestedAttributes = idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
 
-    const tuples = []
-    tuples.push(asStringParam('duid', config.peopleVerifiedId))
-    tuples.push(asStringParam('us_privacy', config.usPrivacyString))
-    tuples.push(asParamOrEmpty('gdpr', config.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    tuples.push(asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
-    tuples.push(asStringParam('gdpr_consent', config.gdprConsent))
-    tuples.push(asStringParam('did', config.distributorId))
+    const tuples: [string, string][] = []
+    tuples.push(...asStringParam('duid', config.peopleVerifiedId))
+    tuples.push(...asStringParam('us_privacy', config.usPrivacyString))
+    tuples.push(...asParamOrEmpty('gdpr', config.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
+    tuples.push(...asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
+    tuples.push(...asStringParam('gdpr_consent', config.gdprConsent))
+    tuples.push(...asStringParam('did', config.distributorId))
 
     externalIds.forEach(retrievedIdentifier => {
-      tuples.push(asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
+      tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
 
     const attributeResolutionAllowed = (attribute) => {
@@ -105,10 +76,10 @@ export function makeIdentityResolver (config, calls, cache, eventBus) {
     }
 
     requestedAttributes.filter(attributeResolutionAllowed).forEach(requestedAttribute => {
-      tuples.push(asStringParam('resolve', requestedAttribute))
+      tuples.push(...asStringParam('resolve', requestedAttribute))
     })
 
-    const composeUrl = (additionalParams) => {
+    const composeUrl = (additionalParams: Record<string, string | string[]>) => {
       const originalParams = tuples.slice().concat(mapAsParams(additionalParams))
       const params = toParams(originalParams)
       return `${url}/${source}/${publisherId}${params}`
@@ -170,12 +141,8 @@ export function makeIdentityResolver (config, calls, cache, eventBus) {
         eventBus.emitError('IdentityResolver.resolve', e)
       },
       getUrl: () => {
-<<<<<<< HEAD:src/idex/common.ts
-        fromError('IdentityResolver.getUrl', e)
-        return undefined
-=======
         eventBus.emitError('IdentityResolver.getUrl', e)
->>>>>>> master:src/idex/common.js
+        return undefined
       }
     }
   }

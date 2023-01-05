@@ -1,6 +1,6 @@
 import { expect, spy, use } from 'chai'
 import chaiSpies from 'chai-spies'
-import { E as ReplayEmitter, wrapError } from '../../../src/events/replayemitter'
+import { ReplayEmitter, wrapError } from '../../../src/events/replayemitter'
 import * as C from '../../../src/utils/consts'
 
 use(chaiSpies)
@@ -58,13 +58,13 @@ describe('ReplayEmitter', () => {
     const emitter = new ReplayEmitter(queueSize)
     const callback = spy()
 
-    for (var i = 0; i < totalMessages; i++) {
+    for (let i = 0; i < totalMessages; i++) {
       emitter.emit('test', `event ${i}`)
     }
 
     emitter.on('test', callback)
 
-    for (var j = 0; j < queueSize; j++) {
+    for (let j = 0; j < queueSize; j++) {
       expect(callback).on.nth(j + 1).be.called.with(`event ${totalMessages - queueSize + j}`)
     }
   })

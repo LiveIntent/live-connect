@@ -6,7 +6,7 @@ function _safeBtoa (s: string): string {
   return res || ''
 }
 
-const _base64encodeRegex: RegExp = /[+/]|=+$/g
+const _base64encodeRegex = /[+/]|=+$/g
 
 const _base64ToUrlEncodedChars: Record<string, string> = {
   '+': '-',

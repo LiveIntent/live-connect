@@ -1,29 +1,9 @@
 import { isFunction } from '../utils/types'
-<<<<<<< HEAD:src/handlers/call-handler.ts
-import * as emitter from '../utils/emitter'
-import { ExternalCallHandler, ICallHandler } from '../types'
+import { EventBus, ExternalCallHandler, ICallHandler } from '../types'
 
 const _noOp = () => undefined
 
-export function CallHandler (externalCallHandler: ExternalCallHandler): ICallHandler {
-=======
-
-/**
- * @typedef {Object} CallHandler
- * @property {function} [ajaxGet]
- * @property {function} [pixelGet]
- */
-
-const _noOp = () => undefined
-
-/**
- * @param {CallHandler} externalCallHandler
- * @param {EventBus} eventBus
- * @returns {CallHandler}
- * @constructor
- */
-export function CallHandler (externalCallHandler, eventBus) {
->>>>>>> master:src/handlers/call-handler.js
+export function CallHandler (externalCallHandler: ExternalCallHandler, eventBus: EventBus): ICallHandler {
   const errors = []
 
   function _externalOrError (functionName: string) {

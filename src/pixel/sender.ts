@@ -1,70 +1,73 @@
 import { isArray, isFunction, asStringParam } from '../utils/types'
-import * as emitter from '../utils/emitter'
-import { ICallHandler, IPixelSender, LiveConnectConfig, IStateWrapper, EventBus } from '../types'
+import { ICallHandler, IPixelSender, LiveConnectConfig, EventBus } from '../types'
+import { StateWrapper } from './state'
 
 const DEFAULT_AJAX_TIMEOUT = 0
 
-export function PixelSender (liveConnectConfig: LiveConnectConfig, calls: ICallHandler, eventBus: EventBus, onload: () => void, presend: () => void): IPixelSender {
-  const url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
+export class PixelSender {
+  url: string
+  calls: ICallHandler
+  eventBus: EventBus
+  onload?: () => void
+  presend?: () => void
 
-  function _sendAjax (state: IStateWrapper) {
-    _sendState(state, 'j', uri => {
-      calls.ajaxGet(
+  constructor (liveConnectConfig: LiveConnectConfig, calls: ICallHandler, eventBus: EventBus, onload?: () => void, presend?: () => void) {
+    this.url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
+    this.calls = calls
+    this.eventBus = eventBus
+    this.onload = onload
+    this.presend = presend
+  }
+
+  private callBakers (bakersJson): void {
+    try {
+      const bakers = JSON.parse(bakersJson).bakers
+      if (isArray(bakers)) {
+        for (let i = 0; i < bakers.length; i++) this.calls.pixelGet(`${bakers[i]}?dtstmp=${this.utcMillis()}`)
+      }
+    } catch (e) {
+      this.eventBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
+    }
+  }
+
+  private sendState (state: StateWrapper, endpoint: string, makeCall: (url: string) => void): void {
+    if (state.sendsPixel()) {
+      if (isFunction(this.presend)) {
+        this.presend()
+      }
+
+      const dtstmpTuple = asStringParam('dtstmp', this.utcMillis())
+      const query = state.asQuery().prependParams(...dtstmpTuple)
+      const queryString = query.toQueryString()
+      const uri = `${this.url}/${endpoint}${queryString}`
+
+      makeCall(uri)
+    }
+  }
+
+  private utcMillis () {
+    const now = new Date()
+    return new Date(now.toUTCString()).getTime() + now.getMilliseconds()
+  }
+
+  sendAjax (state: StateWrapper): void {
+    this.sendState(state, 'j', uri => {
+      this.calls.ajaxGet(
         uri,
         bakersJson => {
-          if (isFunction(onload)) onload()
-          _callBakers(bakersJson)
+          if (isFunction(this.onload)) this.onload()
+          this.callBakers(bakersJson)
         },
         (e) => {
-          _sendPixel(state)
-          eventBus.emitError('AjaxFailed', e)
+          this.sendPixel(state)
+          this.eventBus.emitError('AjaxFailed', e)
         },
         DEFAULT_AJAX_TIMEOUT
       )
     })
   }
 
-  function _callBakers (bakersJson) {
-    try {
-      const bakers = JSON.parse(bakersJson).bakers
-      if (isArray(bakers)) {
-        for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
-      }
-    } catch (e) {
-      eventBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
-    }
-  }
-
-  /**
-   * @param {IStateWrapper} state
-   * @private
-   */
-  function _sendPixel (state: IStateWrapper) {
-    _sendState(state, 'p', uri => calls.pixelGet(uri, onload))
-  }
-
-  function _sendState (state: IStateWrapper, endpoint: string, makeCall: (url: string) => void) {
-    if (state.sendsPixel()) {
-      if (isFunction(presend)) {
-        presend()
-      }
-
-      const dtstmpTuple = asStringParam('dtstmp', utcMillis())
-      const query = state.asQuery().prependParams(dtstmpTuple)
-      const queryString = query.toQueryString()
-      const uri = `${url}/${endpoint}${queryString}`
-
-      makeCall(uri)
-    }
-  }
-
-  function utcMillis () {
-    const now = new Date()
-    return new Date(now.toUTCString()).getTime() + now.getMilliseconds()
-  }
-
-  return {
-    sendAjax: _sendAjax,
-    sendPixel: _sendPixel
+  sendPixel (state: StateWrapper): void {
+    this.sendState(state, 'p', uri => this.calls.pixelGet(uri, this.onload))
   }
 }

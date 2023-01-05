@@ -36,17 +36,17 @@ export function getContextElements (privacyMode: boolean, contextSelectors: stri
   if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
-    var collectedElements = _collectElementsText(contextSelectors, contextElementsLength)
+    const collectedElements = _collectElementsText(contextSelectors, contextElementsLength)
     return base64UrlEncode(collectedElements)
   }
 }
 
 function _collectElementsText (contextSelectors: string, contextElementsLength: number) {
   const collectedElements = window.document.querySelectorAll(contextSelectors)
-  var collectedString = ''
+  let collectedString = ''
   for (let i = 0; i < collectedElements.length; i++) {
-    var nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails
-    var maybeCollectedString = collectedString + nextElement
+    const nextElement = replaceEmailsWithHashes(collectedElements[i].outerHTML).stringWithoutRawEmails
+    const maybeCollectedString = collectedString + nextElement
     if (encodedByteCount(maybeCollectedString) <= contextElementsLength) collectedString = maybeCollectedString
     else return collectedString
   }

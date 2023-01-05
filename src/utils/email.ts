@@ -33,7 +33,7 @@ export function listEmailsInString (s: string): string[] {
 export function replaceEmailsWithHashes (originalString: string): { hashesFromOriginalString: HashedEmail[], stringWithoutRawEmails: string } {
   const emailsInString = listEmailsInString(originalString)
   const hashes = []
-  var convertedString = originalString
+  let convertedString = originalString
   for (let i = 0; i < emailsInString.length; i++) {
     const email = emailsInString[i]
     const emailHashes = hashEmail(email)

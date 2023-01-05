@@ -1,8 +1,6 @@
-/**
- * @param {LiveConnectConfiguration} config
- * @return {LiveConnectConfiguration}
- */
-export function removeInvalidPairs (config, eventBus) {
+import { EventBus, LiveConnectConfig } from '../types'
+
+export function removeInvalidPairs (config: LiveConnectConfig, eventBus: EventBus) {
   if (config && config.appId && config.distributorId) {
     const distributorId = config.distributorId
     delete config.distributorId

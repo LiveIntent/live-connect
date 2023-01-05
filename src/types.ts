@@ -1,4 +1,4 @@
-import { StateWrapper } from "./pixel/state"
+import { StateWrapper } from './pixel/state'
 
 export interface Cache {
     get: (key: any) => any
@@ -68,6 +68,8 @@ export interface LiveConnectConfig {
     identifiersToResolve?: string | string[],
     trackerName?: string,
     identityResolutionConfig?: IdentityResolutionConfig,
+    distributorId?: string,
+    globalVarName?: string
 }
 
 export type ResolutionParams = Record<string, string | string[]>
@@ -110,7 +112,7 @@ export interface IIdentityResolver {
         errorCallBack: () => void,
         additionalParams?: ResolutionParams
     ) => void,
-    getUrl: (additionalParams: ResolutionParams) => string
+    getUrl: (additionalParams: ResolutionParams) => string | undefined
 }
 
 export interface RetrievedIdentifier {
@@ -163,20 +165,19 @@ export interface ILiveConnect {
     resolutionCallUrl?: (additionalParams: ResolutionParams) => string,
     peopleVerifiedId?: string,
     config?: LiveConnectConfig,
+    eventBus?: EventBus
 }
 
 export interface EventBus {
-    on<C> (name: string, callback: (ctx: C, event: object) => void, ctx?: C): EventBus,
-    once<C> (name: string, callback: (ctx: C, event: object) => void, ctx?: C): EventBus,
-    emit (name: string, event: object): EventBus,
-    off (name: string, callback: (ctx: any, event: object) => void): EventBus,
-    emitErrorWithMessage (name: string, message: string, e: any): EventBus,
-    emitError (name: string, exception: any): EventBus
+    on<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
+    once<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
+    emit (name: string, event: any): EventBus,
+    off (name: string, callback: (ctx: any, event: any) => void): EventBus,
+    emitErrorWithMessage (name: string, message: string, e?: any): EventBus,
+    emitError (name: string, exception?: any): EventBus
 }
 
 export interface IPixelSender {
     sendAjax (state: StateWrapper): void,
     sendPixel (state: StateWrapper): void,
 }
-
-

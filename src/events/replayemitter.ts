@@ -1,7 +1,7 @@
 import * as C from '../utils/consts'
 import { ErrorDetails, EventBus } from '../types'
 
-type Callback<Ctx> = (ctx: Ctx, event: object) => void
+type Callback<Ctx> = (ctx: Ctx, event: any) => void
 
 interface EventHandler<Ctx> {
   ctx?: Ctx,
@@ -10,11 +10,18 @@ interface EventHandler<Ctx> {
 
 export class ReplayEmitter implements EventBus {
   h: Record<string, EventHandler<any>[]>;
-  q: Record<string, object[]>;
+  q: Record<string, any[]>;
   size: number;
 
-  constructor (replaySize: number) {
-    this.size = replaySize
+  constructor (replaySize: number | string) {
+    this.size = 5
+
+    if (typeof replaySize === 'number') {
+      this.size = replaySize
+    } else if (typeof replaySize === 'string') {
+      this.size = parseInt(replaySize) || this.size
+    }
+
     this.h = {}
     this.q = {}
   }
@@ -54,7 +61,7 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, ...data: object[]): EventBus {
+  emit (name: string, ...data: any[]): EventBus {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length

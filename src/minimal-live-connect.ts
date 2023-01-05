@@ -7,23 +7,10 @@ import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { StorageHandler } from './handlers/read-storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-<<<<<<< HEAD:src/minimal-live-connect.ts
-import { ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
-
-function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
-=======
+import { EventBus, ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @param {EventBus} eventBus
- * @returns {MinimalLiveConnect}
- * @private
- */
-function _minimalInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
->>>>>>> master:src/minimal-live-connect.js
+function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   try {
     const callHandler = CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
@@ -34,8 +21,8 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
     const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
     const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)
     return {
-      push: (arg) => window[validLiveConnectConfig.globalVarName].push(arg),
-      fire: () => window[validLiveConnectConfig.globalVarName].push({}),
+      push: (arg) => (window[validLiveConnectConfig.globalVarName] as unknown as ILiveConnect).push(arg),
+      fire: () => (window[validLiveConnectConfig.globalVarName] as unknown as ILiveConnect).push({}),
       peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
@@ -48,20 +35,7 @@ function _minimalInitialization (liveConnectConfig, externalStorageHandler, exte
   }
 }
 
-<<<<<<< HEAD:src/minimal-live-connect.ts
-export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
-=======
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @param {EventBus} externalEventBus
- * @returns {MinimalLiveConnect}
- * @constructor
- */
-export function MinimalLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, externalEventBus) {
->>>>>>> master:src/minimal-live-connect.js
-  console.log('Initializing LiveConnect')
+export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     configuration.globalVarName = configuration.globalVarName || 'liQ'

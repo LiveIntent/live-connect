@@ -4,7 +4,7 @@ const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 500
 
 export async function getText (selector) {
-  var text
+  let text
   await browser.waitUntil(
     async () => {
       try {
@@ -110,7 +110,7 @@ export async function resolveIdentity (expectedRequests, server) {
 
 export async function fetchResolvedIdentity () {
   console.info('Waiting for identity to resolve')
-  var text = 'None'
+  let text = 'None'
   await browser.waitUntil(
     async () => {
       try {
@@ -138,8 +138,8 @@ export async function fetchResolvedIdentity () {
 export async function probeLS () {
   const result = await browser.execute(function () {
     const key = '__live-connect-localstorage-probe-test'
-    var enabled = false
-    var error = null
+    let enabled = false
+    let error = null
     try {
       if (window && window.localStorage) {
         window.localStorage.setItem(key, key)

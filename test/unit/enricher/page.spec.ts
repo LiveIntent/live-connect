@@ -17,11 +17,11 @@ describe('PageEnricher', () => {
   })
 
   it('should return the url, referrer and the contextElements of the page', function () {
-    var newHeadline = document.createElement('h1')
-    var content = document.createTextNode('Some header')
+    const newHeadline = document.createElement('h1')
+    const content = document.createTextNode('Some header')
     newHeadline.appendChild(content)
-    var newP = document.createElement('p')
-    var newContentEmail = document.createTextNode('mailto:john@test.com, also found: another@test.com !')
+    const newP = document.createElement('p')
+    const newContentEmail = document.createTextNode('mailto:john@test.com, also found: another@test.com !')
     newP.appendChild(newContentEmail)
     document.body.appendChild(newHeadline)
     document.body.appendChild(newP)

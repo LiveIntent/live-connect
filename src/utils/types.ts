@@ -1,4 +1,4 @@
-import { State } from "../types"
+import { State } from '../types'
 
 export const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const uuidRegex = new RegExp(`^${UUID}$`, 'i')
@@ -65,8 +65,8 @@ export function asStringParamTransform <A> (param: string, value: A, transform: 
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
 }
 
-export function asStringParamWhen<A extends string | number | boolean> (param: string, value: A, predicate: (s: A) => boolean): [string, string] | [] {
-  return (isNonEmpty(value) && isFunction(predicate) && predicate(value)) ? [param, encodeURIComponent(value)] : []
+export function asStringParamWhen<A extends string | number | boolean> (param: string, value: A, predicate: (s: A) => boolean): [string, string][] {
+  return (isNonEmpty(value) && isFunction(predicate) && predicate(value)) ? [[param, encodeURIComponent(value)]] : []
 }
 
 export function mapAsParams (paramsMap: Record<string, string | string[]>): [string, string][] {

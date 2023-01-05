@@ -13,13 +13,10 @@ import { IdentityResolver } from './idex/identity-resolver'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
-<<<<<<< HEAD:src/standard-live-connect.ts
-import { ConfigMatcher, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
-=======
+import { ConfigMatcher, EventBus, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
->>>>>>> master:src/standard-live-connect.js
 
-const hemStore = {}
+const hemStore: State = {}
 function _pushSingleEvent (event, pixelClient, enrichedState, eventBus) {
   if (!event || !isObject(event)) {
     eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
@@ -81,19 +78,7 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
   }
 }
 
-<<<<<<< HEAD:src/standard-live-connect.ts
-function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
-=======
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @param {EventBus} eventBus
- * @returns {StandardLiveConnect}
- * @private
- */
-function _standardInitialization (liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) {
->>>>>>> master:src/standard-live-connect.js
+function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   try {
     const callHandler = CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
@@ -109,8 +94,6 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy, eventBus))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
-    console.log('LiveConnect.enrichedState', enrichedState)
-    console.log('LiveConnect.postManagedState', postManagedState)
     const syncContainerData = merge(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
@@ -133,20 +116,7 @@ function _standardInitialization (liveConnectConfig, externalStorageHandler, ext
   }
 }
 
-<<<<<<< HEAD:src/standard-live-connect.ts
-export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler): ILiveConnect {
-=======
-/**
- * @param {LiveConnectConfiguration} liveConnectConfig
- * @param {StorageHandler} externalStorageHandler
- * @param {CallHandler} externalCallHandler
- * @param {EventBus} externalEventBus
- * @returns {StandardLiveConnect}
- * @constructor
- */
-export function StandardLiveConnect (liveConnectConfig, externalStorageHandler, externalCallHandler, externalEventBus) {
->>>>>>> master:src/standard-live-connect.js
-  console.log('Initializing LiveConnect')
+export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus: EventBus): ILiveConnect {
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   configuration.globalVarName = configuration.globalVarName || 'liQ'
   const eventBus = externalEventBus || LocalEventBus()

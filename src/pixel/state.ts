@@ -1,54 +1,13 @@
-import * as emitter from '../utils/emitter'
-
-/**
- * @typedef {Object} State
- * @property {(string|null)} [appId]
- * @property {(object|undefined)} [eventSource]
- * @property {(string|undefined)} [liveConnectId]
- * @property {(string|undefined)} [trackerName]
- * @property {(string|undefined)} [pageUrl]
- * @property {(string|undefined)} [domain]
- * @property {(string|undefined)} [usPrivacyString]
- * @property {(string|undefined)} [expirationDays]
- * @property {(string|undefined)} [wrapperName]
- * @property {(HashedEmail[])} [hashesFromIdentifiers]
- * @property {(string[]|undefined)} [identifiersToResolve]
- * @property {string[]} [decisionIds]
- * @property {string|undefined} [peopleVerifiedId]
- * @property {(string|undefined)} [storageStrategy]
- * @property {ErrorDetails} [errorDetails]
- * @property {RetrievedIdentifier[]} [retrievedIdentifiers]
- * @property {HashedEmail[]} [hashedEmail]
- * @property {string} [providedHash]
- * @property {(IdexConfig|undefined)} [identityResolutionConfig]
- * @property {(boolean|undefined)} [gdprApplies]
- * @property {(string|undefined)} [gdprConsent]
- * @property {(string|undefined)} [contextSelectors]
- * @property {(string|undefined)} [contextElementsLength]
- * @property {(string|undefined)} [contextElements]
- * @property {(boolean|undefined)} [privacyMode]
- */
-
-/**
- * @typedef {Object} StateWrapper
- * @property {State} data
- * @property {function} asTuples
- * @property {function} asQueryString
- * @property {function} combineWith
- * @property {function} sendsPixel
- * @property {StorageManager} storageHandler
- */
-
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray } from '../utils/types'
+import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, merge } from '../utils/types'
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-const _pArray: [string, (value: any) => ([string, string][])][] = [
+const _pArray: [string, (value: any) => [string, string][]][] = [
   [
     'appId',
     aid => {
@@ -96,7 +55,7 @@ const _pArray: [string, (value: any) => ([string, string][])][] = [
     identifiers => {
       const identifierParams = []
       if (isArray(identifiers)) {
-        identifiers.forEach((i) => identifierParams.push(asStringParam(`ext_${i.name}`, i.value)))
+        identifiers.forEach((i) => identifierParams.push(...asStringParam(`ext_${i.name}`, i.value)))
       }
       return identifierParams
     }
@@ -106,7 +65,7 @@ const _pArray: [string, (value: any) => ([string, string][])][] = [
     hashes => {
       const hashParams = []
       if (isArray(hashes)) {
-        hashes.forEach((h) => hashParams.push(asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
+        hashes.forEach((h) => hashParams.push(...asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
       }
       return hashParams
     }
@@ -181,8 +140,8 @@ const _pArray: [string, (value: any) => ([string, string][])][] = [
 export class Query {
   tuples: [string, string][];
 
-  constructor(tuples: [string, string][]) {
-    this.tuples = tuples;
+  constructor (tuples: [string, string][]) {
+    this.tuples = tuples
   }
 
   prependParams (...params: [string, string][]): Query {
@@ -191,18 +150,17 @@ export class Query {
     return new Query(_tuples)
   }
 
-
-  toQueryString(): string {
+  toQueryString (): string {
     return toParams(this.tuples)
   }
 }
 
 export class StateWrapper {
-  state: State
+  data: State
   eventBus: EventBus
 
   constructor (state: State, eventBus: EventBus) {
-    this.state = StateWrapper.safeFiddle(state, eventBus)
+    this.data = StateWrapper.safeFiddle(state, eventBus)
     this.eventBus = eventBus
   }
 
@@ -216,27 +174,27 @@ export class StateWrapper {
     }
   }
 
+  combineWith (newInfo: State): StateWrapper {
+    return new StateWrapper(merge(this.data, newInfo), this.eventBus)
+  }
+
   sendsPixel () {
-    const source = isObject(this.state.eventSource) ? this.state.eventSource : {}
+    const source = isObject(this.data.eventSource) ? this.data.eventSource : {}
     const eventKeys = Object.keys(source)
       .filter(objKey => objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event')
     const eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0]
-    const eventName = eventKey && trim(this.state.eventSource[eventKey])
+    const eventName = eventKey && trim(this.data.eventSource[eventKey])
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
   }
 
   asTuples (): [string, string][] {
-    let array = []
+    let array: [string, string][] = []
     _pArray.forEach((keyWithParamsExtractor) => {
       const key = keyWithParamsExtractor[0]
-      const value = this.state[key]
+      const value = this.data[key]
       const params = keyWithParamsExtractor[1](value)
       if (params && params.length) {
-        if (params[0] instanceof Array) {
-          array = array.concat(params)
-        } else {
-          array.push(params)
-        }
+        array = array.concat(params)
       }
     })
     return array
@@ -245,5 +203,4 @@ export class StateWrapper {
   asQuery (): Query {
     return new Query(this.asTuples())
   }
-
 }

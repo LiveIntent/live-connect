@@ -1,26 +1,11 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
-<<<<<<< HEAD:src/handlers/read-storage-handler.ts
 import * as emitter from '../utils/emitter'
-import { ExternalMinimalStorageHandler, IMinimalStorageHandler, StorageStrategyMode } from '../types'
-=======
->>>>>>> master:src/handlers/read-storage-handler.js
+import { EventBus, ExternalMinimalStorageHandler, IMinimalStorageHandler, StorageStrategyMode } from '../types'
 
 const _noOp = () => undefined
 
-<<<<<<< HEAD:src/handlers/read-storage-handler.ts
-export function StorageHandler (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler): IMinimalStorageHandler {
-=======
-/**
- *
- * @param {string} storageStrategy
- * @param {StorageHandler} [externalStorageHandler]
- * @param {EventBus} eventBus
- * @return {StorageHandler}
- * @constructor
- */
-export function StorageHandler (storageStrategy, externalStorageHandler, eventBus) {
->>>>>>> master:src/handlers/read-storage-handler.js
+export function StorageHandler (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): IMinimalStorageHandler {
   const errors = []
   function _externalOrError (functionName) {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])

@@ -1,6 +1,6 @@
 import { urlParams } from '../utils/url'
 import { trim, isUUID, expiresInDays } from '../utils/types'
-import { IStorageHandler, State } from '../types'
+import { EventBus, IStorageHandler, State } from '../types'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)
 const DECISION_ID_QUERY_PARAM_NAME = 'li_did'
@@ -10,17 +10,7 @@ const _onlyUnique = (value, index, self) => self.indexOf(value) === index
 const _validUuid = (value) => isUUID(value)
 const _nonEmpty = (value) => value && trim(value).length > 0
 
-<<<<<<< HEAD:src/manager/decisions.ts
-export function resolve (state: State, storageHandler: IStorageHandler): State {
-=======
-/**
- * @param {State} state
- * @param {StorageHandler} storageHandler
- * @param {EventBus} eventBus
- */
-export function resolve (state, storageHandler, eventBus) {
->>>>>>> master:src/manager/decisions.js
-  console.log('decisions.resolve', state)
+export function resolve (state: State, storageHandler: IStorageHandler, eventBus: EventBus): State {
   let ret = {}
   function _addDecisionId (key, cookieDomain) {
     if (key) {

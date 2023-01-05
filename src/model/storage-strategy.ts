@@ -1,4 +1,4 @@
-import { StorageStrategyMode } from "../types"
+import { StorageStrategyMode } from '../types'
 
 const StorageStrategy: Record<string, StorageStrategyMode> = {
   cookie: 'cookie',

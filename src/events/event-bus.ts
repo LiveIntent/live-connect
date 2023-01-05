@@ -25,13 +25,12 @@ function extendBusIfNeeded (bus: EventBus) {
   }
 }
 
-export function LocalEventBus (size: number) {
+export function LocalEventBus (size = 5) {
   return initBus(size)
 }
 
 export function GlobalEventBus (name: string, size: number, errorCallback: (error: any) => void) {
   try {
-    console.log('events.bus.init')
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
     }
