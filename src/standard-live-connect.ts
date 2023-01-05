@@ -17,7 +17,7 @@ import { ConfigMatcher, EventBus, ExternalCallHandler, ExternalStorageHandler, I
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
 
 const hemStore: State = {}
-function _pushSingleEvent (event, pixelClient, enrichedState, eventBus) {
+function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
   if (!event || !isObject(event)) {
     eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if (event.config) {

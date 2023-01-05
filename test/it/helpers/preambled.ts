@@ -1,12 +1,16 @@
-import { StandardLiveConnect } from '../../../src/standard-live-connect'
-import * as storage from '../../shared/utils/storage'
+import { LocalEventBus } from '../../../src/events/event-bus'
+import { Storage } from '../../shared/utils/storage'
+import * as liveConnect from '../../../src/standard-live-connect'
 import * as calls from '../../shared/utils/calls'
-import { merge } from '../../../src/utils/types'
+import * as helpers from '../../../src/utils/types'
 
 const customerSpecifics = window.LI || {}
 const queue = window.liQ || []
 
-const lc = StandardLiveConnect(merge(customerSpecifics, { trackerName: 'LC_VERSION', contextSelectors: 'p', contextElementsLength: '100' }), storage, calls)
+const eventBus = LocalEventBus()
+const storage = new Storage(eventBus)
+
+const lc = liveConnect.StandardLiveConnect(helpers.merge(customerSpecifics, { trackerName: 'LC_VERSION', contextSelectors: 'p', contextElementsLength: '100' }), storage, calls, eventBus)
 
 if (Array.isArray(queue)) {
   for (let i = 0; i < queue.length; i++) {

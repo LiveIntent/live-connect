@@ -54,7 +54,7 @@ export function expiresInHours (expires: number): Date {
 }
 
 export function asParamOrEmpty <A> (param: string, value: A, transform: (a: A) => string): [string, string][] {
-  return isNonEmpty(value) ? ([[param, transform(value)]]) : []
+  return isNonEmpty(value) ? [[param, transform(value)]] : []
 }
 
 export function asStringParam (param: string, value: string | number | boolean): [string, string][] {
@@ -88,9 +88,9 @@ export function mapAsParams (paramsMap: Record<string, string | string[]>): [str
   }
 }
 
-export function merge (obj1: State, obj2: State): State {
+export function merge (obj1: object, obj2: object): object {
   const res = {}
-  const clean = (obj) => isObject(obj) ? obj : {}
+  const clean = (obj: object) => isObject(obj) ? obj : {}
   const first = clean(obj1)
   const second = clean(obj2)
   Object.keys(first).forEach(function (key) {
