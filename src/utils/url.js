@@ -1,4 +1,4 @@
-import { isArray, isFunction } from './types'
+import { isArray } from './types'
 
 export const toParams = (tuples) => {
   let acc = ''
@@ -31,13 +31,7 @@ function _convert (v) {
   return _isBoolean(_isNull(_isNum(v)))
 }
 
-function _queryNameValue (query, predicate) {
-  const name = _decode(query[0])
-  const value = (isFunction(predicate) && predicate.length === 1 && predicate(name)) ? _decode(query[1]) : query[1]
-  return [name, value]
-}
-
-export function urlParamsWithPredicate (url, predicate) {
+function _urlParams (url) {
   let questionMarkIndex, queryParams, historyIndex
   const obj = {}
   if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
@@ -48,15 +42,32 @@ export function urlParamsWithPredicate (url, predicate) {
   }
   queryParams.split('&').forEach(function (query) {
     if (query) {
-      query = ((query = query.split('=')) && query.length === 2 ? _queryNameValue(query, predicate) : [query[0], 'true'])
+      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true'])
       if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || []
-      if (!obj[query[0]]) return (obj[query[0]] = _convert(query[1]))
-      isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : (obj[query[0]] = [obj[query[0]], _convert(query[1])])
+      if (!obj[query[0]]) return (obj[query[0]] = query[1])
+      isArray(obj[query[0]]) ? obj[query[0]].push(query[1]) : (obj[query[0]] = [obj[query[0]], query[1]])
     }
   })
   return obj
 }
 
 export function urlParams (url) {
-  return urlParamsWithPredicate(url, (name) => true)
+  const params = _urlParams(url)
+  Object.keys(params).forEach((k) => {
+    if (isArray(params[k])) {
+      params[k] = params[k].map(v => _convert(_decode(`${v}`)))
+    } else {
+      params[k] = _convert(_decode(`${params[k]}`))
+    }
+  })
+  return params
+}
+
+export function getQueryParameter (url, name) {
+  const params = _urlParams(url)
+  if (isArray(params[name])) {
+    return params[name].map(v => _convert(_decode(`${v}`)))
+  } else {
+    return _convert(_decode(`${params[name]}`))
+  }
 }
