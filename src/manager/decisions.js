@@ -1,4 +1,4 @@
-import { urlParams } from '../utils/url'
+import { urlParamsWithPredicate } from '../utils/url'
 import { trim, isUUID, expiresInDays } from '../utils/types'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)
@@ -28,7 +28,7 @@ export function resolve (state, storageHandler, eventBus) {
     }
   }
   try {
-    const params = (state.pageUrl && urlParams(state.pageUrl)) || {}
+    const params = (state.pageUrl && urlParamsWithPredicate(state.pageUrl, (queryName) => queryName === DECISION_ID_QUERY_PARAM_NAME)) || {}
     const freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || [])
     const storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
     freshDecisions

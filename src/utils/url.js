@@ -1,4 +1,4 @@
-import { isArray } from './types'
+import { isArray, isFunction } from './types'
 
 export const toParams = (tuples) => {
   let acc = ''
@@ -12,14 +12,7 @@ export const toParams = (tuples) => {
 }
 
 function _decode (s) {
-  if (s.indexOf('%') === -1) return s
-  else {
-    try {
-      return decodeURIComponent(s)
-    } catch (e) {
-      return s
-    }
-  }
+  return s.indexOf('%') === -1 ? s : decodeURIComponent(s)
 }
 
 function _isNum (v) {
@@ -38,7 +31,13 @@ function _convert (v) {
   return _isBoolean(_isNull(_isNum(v)))
 }
 
-export function urlParams (url) {
+function _queryNameValue (query, predicate) {
+  const name = _decode(query[0])
+  const value = (isFunction(predicate) && predicate.length === 1 && predicate(name)) ? _decode(query[1]) : query[1]
+  return [name, value]
+}
+
+export function urlParamsWithPredicate (url, predicate) {
   let questionMarkIndex, queryParams, historyIndex
   const obj = {}
   if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
@@ -49,11 +48,15 @@ export function urlParams (url) {
   }
   queryParams.split('&').forEach(function (query) {
     if (query) {
-      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true']).map(_decode)
+      query = ((query = query.split('=')) && query.length === 2 ? _queryNameValue(query, predicate) : [query[0], 'true'])
       if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || []
       if (!obj[query[0]]) return (obj[query[0]] = _convert(query[1]))
       isArray(obj[query[0]]) ? obj[query[0]].push(_convert(query[1])) : (obj[query[0]] = [obj[query[0]], _convert(query[1])])
     }
   })
   return obj
+}
+
+export function urlParams (url) {
+  return urlParamsWithPredicate(url, (p) => true)
 }
