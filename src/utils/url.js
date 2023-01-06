@@ -12,7 +12,7 @@ export const toParams = (tuples) => {
 }
 
 function _decode (s) {
-  return s.indexOf('%') === -1 ? s : decodeURIComponent(s)
+  return s.indexOf('%') === -1 ? s : decodeValue(s)
 }
 
 function _isNum (v) {
@@ -58,6 +58,10 @@ function _allParams (url) {
     }
   })
   return obj
+}
+
+export function decodeValue (v) {
+  return v.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent)
 }
 
 export function urlParams (url) {
