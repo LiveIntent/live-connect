@@ -58,5 +58,5 @@ export function urlParamsWithPredicate (url, predicate) {
 }
 
 export function urlParams (url) {
-  return urlParamsWithPredicate(url, (p) => true)
+  return urlParamsWithPredicate(url, (name) => true)
 }

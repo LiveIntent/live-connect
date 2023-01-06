@@ -54,6 +54,7 @@ describe('UrlUtils', () => {
     expect(params.utm_source).to.eq('google')
     expect(params.utm_campaign).to.eq('Google_%7C_GC_%7C_HK_%7C_Traditional_Chinese_%7C_Text_%7C_Non-Brand_%7C_ENG_%7C_NA_%7C_Engagement_%7')
     expect(params.utm_content).to.eq('Diamonds%3A_Price')
+    expect(params.utm_term).to.eq('%E4%B8%80+%E5%85%8B%E6%')
     expect(params.name).to.eq(7)
   })
 })
