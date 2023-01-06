@@ -31,7 +31,16 @@ function _convert (v) {
   return _isBoolean(_isNull(_isNum(v)))
 }
 
-function _urlParams (url) {
+function _parseParam (params, key) {
+  if (isArray(params[key])) {
+    params[key] = params[key].map(v => _convert(_decode(`${v}`)))
+  } else {
+    params[key] = _convert(_decode(`${params[key]}`))
+  }
+  return params[key]
+}
+
+function _allParams (url) {
   let questionMarkIndex, queryParams, historyIndex
   const obj = {}
   if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
@@ -52,22 +61,12 @@ function _urlParams (url) {
 }
 
 export function urlParams (url) {
-  const params = _urlParams(url)
-  Object.keys(params).forEach((k) => {
-    if (isArray(params[k])) {
-      params[k] = params[k].map(v => _convert(_decode(`${v}`)))
-    } else {
-      params[k] = _convert(_decode(`${params[k]}`))
-    }
-  })
+  const params = _allParams(url)
+  Object.keys(params).forEach((k) => _parseParam(params, k))
   return params
 }
 
 export function getQueryParameter (url, name) {
-  const params = _urlParams(url)
-  if (isArray(params[name])) {
-    return params[name].map(v => _convert(_decode(`${v}`)))
-  } else {
-    return _convert(_decode(`${params[name]}`))
-  }
+  const params = _allParams(url)
+  return _parseParam(params, name)
 }
