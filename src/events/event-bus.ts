@@ -45,7 +45,7 @@ export function GlobalEventBus (name: string, size: number, errorCallback: (erro
   }
 }
 
-export function getAvailableBus (name: string) {
+export function getAvailableBus (name: string):  EventBus {
   const eventBus = window[name].eventBus || window[C.EVENT_BUS_NAMESPACE]
   extendBusIfNeeded(eventBus)
   return eventBus
