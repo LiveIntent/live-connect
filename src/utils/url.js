@@ -34,12 +34,12 @@ function _convert (v) {
 function _parseParam (params, key) {
   if (params[key]) {
     if (isArray(params[key])) {
-      params[key] = params[key].map(v => _convert(_decode(`${v}`)))
+      params[key] = params[key].map(v => _convert(_decode(v)))
     } else {
-      params[key] = _convert(_decode(`${params[key]}`))
+      params[key] = _convert(_decode(params[key]))
     }
     return params[key]
-  } else return undefined
+  }
 }
 
 function _allParams (url) {
