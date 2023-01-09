@@ -37,7 +37,7 @@ export function isObject (obj: any): boolean {
   return !!obj && typeof obj === 'object' && !isArray(obj)
 }
 
-export function isFunction (fun: Function): boolean {
+export function isFunction (fun: any): boolean {
   return fun && typeof fun === 'function'
 }
 
@@ -88,7 +88,7 @@ export function mapAsParams (paramsMap: Record<string, string | string[]>): [str
   }
 }
 
-export function merge (obj1: object, obj2: object): object {
+export function merge <A extends object, B extends object> (obj1: A, obj2: B): A & B {
   const res = {}
   const clean = (obj: object) => isObject(obj) ? obj : {}
   const first = clean(obj1)
@@ -99,5 +99,5 @@ export function merge (obj1: object, obj2: object): object {
   Object.keys(second).forEach(function (key) {
     res[key] = second[key]
   })
-  return res
+  return res as A & B
 }

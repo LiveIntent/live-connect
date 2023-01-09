@@ -1,6 +1,5 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategy } from '../model/storage-strategy'
-import * as emitter from '../utils/emitter'
 import { EventBus, ExternalMinimalStorageHandler, IMinimalStorageHandler, StorageStrategyMode } from '../types'
 
 const _noOp = () => undefined

@@ -17,12 +17,12 @@ function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalS
     const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
     const storageHandler = StorageHandler(storageStrategy, externalStorageHandler, eventBus)
-    const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler))
-    const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler))
+    const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
+    const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
     const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)
     return {
-      push: (arg) => (window[validLiveConnectConfig.globalVarName] as unknown as ILiveConnect).push(arg),
-      fire: () => (window[validLiveConnectConfig.globalVarName] as unknown as ILiveConnect).push({}),
+      push: (arg) => (window[validLiveConnectConfig.globalVarName] as ILiveConnect).push(arg),
+      fire: () => (window[validLiveConnectConfig.globalVarName] as ILiveConnect).push({}),
       peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,

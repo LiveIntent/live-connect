@@ -153,6 +153,15 @@ export interface ConfigMatcher {
     collectorUrl: string[]
 }
 
+export interface EventBus {
+    on<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
+    once<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
+    emit (name: string, event: any): EventBus,
+    off (name: string, callback: (ctx: any, event: any) => void): EventBus,
+    emitErrorWithMessage (name: string, message: string, e?: any): EventBus,
+    emitError (name: string, exception?: any): EventBus
+}
+
 export interface ILiveConnect {
     ready?: boolean,
     push?: (event: object) => void,
@@ -166,15 +175,6 @@ export interface ILiveConnect {
     peopleVerifiedId?: string,
     config?: LiveConnectConfig,
     eventBus?: EventBus
-}
-
-export interface EventBus {
-    on<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
-    once<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
-    emit (name: string, event: any): EventBus,
-    off (name: string, callback: (ctx: any, event: any) => void): EventBus,
-    emitErrorWithMessage (name: string, message: string, e?: any): EventBus,
-    emitError (name: string, exception?: any): EventBus
 }
 
 export interface IPixelSender {

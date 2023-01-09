@@ -1,5 +1,5 @@
 import { isArray, isFunction, asStringParam } from '../utils/types'
-import { ICallHandler, IPixelSender, LiveConnectConfig, EventBus } from '../types'
+import { ICallHandler, LiveConnectConfig, EventBus } from '../types'
 import { StateWrapper } from './state'
 
 const DEFAULT_AJAX_TIMEOUT = 0
@@ -19,7 +19,7 @@ export class PixelSender {
     this.presend = presend
   }
 
-  private callBakers (bakersJson): void {
+  private callBakers (bakersJson: string): void {
     try {
       const bakers = JSON.parse(bakersJson).bakers
       if (isArray(bakers)) {

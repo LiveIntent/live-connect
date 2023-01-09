@@ -87,7 +87,7 @@ export function makeIdentityResolver (config: State, calls: ICallHandler, cache:
 
     const responseReceived = (
       additionalParams: ResolutionParams,
-      successCallback: (result: object) => void
+      successCallback: (result: any) => void
     ): ((responseText: string, response: any) => void) => {
       return (responseText, response) => {
         let responseObj = {}
