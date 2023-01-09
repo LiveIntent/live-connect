@@ -9,7 +9,7 @@ module.exports = {
   },
   plugins: [
     'wdio',
-    "@typescript-eslint"
+    '@typescript-eslint'
   ],
   extends: [
     'standard',
