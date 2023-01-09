@@ -11,10 +11,6 @@ export const toParams = (tuples) => {
   return acc
 }
 
-function _decode (s) {
-  return s.indexOf('%') === -1 ? s : decodeValue(s)
-}
-
 function _isNum (v) {
   return isNaN(+v) ? v : +v
 }
@@ -34,9 +30,9 @@ function _convert (v) {
 function _parseParam (params, key) {
   if (params[key]) {
     if (isArray(params[key])) {
-      params[key] = params[key].map(v => _convert(_decode(v)))
+      params[key] = params[key].map(v => _convert(decodeValue(v)))
     } else {
-      params[key] = _convert(_decode(params[key]))
+      params[key] = _convert(decodeValue(params[key]))
     }
     return params[key]
   }
