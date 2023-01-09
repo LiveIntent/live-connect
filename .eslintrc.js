@@ -14,7 +14,7 @@ module.exports = {
   extends: [
     'standard',
     'plugin:wdio/recommended',
-    "plugin:@typescript-eslint/recommended"
+    'plugin:@typescript-eslint/recommended'
   ],
   globals: {},
   rules: {}
