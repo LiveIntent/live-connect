@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { urlParams } from '../../../src/utils/url'
+import { urlParams, getQueryParameter } from '../../../src/utils/url'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)
@@ -45,5 +45,19 @@ describe('UrlUtils', () => {
 
   it('should parse array values', () => {
     expect(params.array).to.deep.equal(['a', 'b', 'c'])
+  })
+
+  it('getQueryParameter should not fail when there are some invalid query values that are not selected', () => {
+    const name = getQueryParameter('https://localhost:80/hk/zh/diamonds?gclid=CjwKCAiAh9q&click_id=12&utm_source=google&utm_campaign=Google_%7C_GC_%7C_HK_%7C_Traditional_Chinese_%7C_Text_%7C_Non-Brand_%7C_ENG_%7C_NA_%7C_Engagement_%7&utm_content=Diamonds%3A_Price&utm_term=%E4%B8%80+%E5%85%8B%E6%&name=%37', 'name')
+    expect(name).to.eq(7)
+  })
+
+  it('getQueryParameter returns undefined for a non defined queryName', () => {
+    const name = getQueryParameter('https://localhost:80?bla=123', 'name')
+    expect(name).to.be.undefined()
+  })
+  it('getQueryParameter returns null for a query with undefined value', () => {
+    const name = getQueryParameter('https://localhost:80?bla=123&name=undefined', 'name')
+    expect(name).to.be.eq(null)
   })
 })

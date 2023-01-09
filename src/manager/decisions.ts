@@ -1,4 +1,4 @@
-import { urlParams } from '../utils/url'
+import { getQueryParameter } from '../utils/url'
 import { trim, isUUID, expiresInDays } from '../utils/types'
 import { EventBus, IStorageHandler, State } from '../types'
 
@@ -23,8 +23,7 @@ export function resolve (state: State, storageHandler: IStorageHandler, eventBus
     }
   }
   try {
-    const params = (state.pageUrl && urlParams(state.pageUrl)) || {}
-    const freshDecisions = [].concat(params[DECISION_ID_QUERY_PARAM_NAME] || [])
+    const freshDecisions = [].concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
     const storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
     freshDecisions
       .map(trim)

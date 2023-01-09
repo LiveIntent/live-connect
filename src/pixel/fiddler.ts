@@ -1,5 +1,6 @@
 import { State } from '../types'
 import { extractEmail } from '../utils/email'
+import { decodeValue } from '../utils/url'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
 import { isArray, isObject, safeToString, trim, merge } from '../utils/types'
 
@@ -17,7 +18,7 @@ function _provided (state: State): State {
       const extractedEmail = extractEmail(value)
       const extractedHash = extractHashValue(value)
       if (extractedEmail) {
-        const hashes = hashEmail(decodeURIComponent(extractedEmail))
+        const hashes = hashEmail(decodeValue(extractedEmail))
         return merge({ hashedEmail: [hashes.md5, hashes.sha1, hashes.sha256] }, state)
       } else if (extractedHash && isHash(extractedHash)) {
         return merge({ hashedEmail: [extractedHash.toLowerCase()] }, state)
