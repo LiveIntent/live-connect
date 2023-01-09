@@ -20,11 +20,7 @@ function _isNum (v) {
 }
 
 function _isNull (v) {
-  return v === 'null' ? null : v
-}
-
-function _isUndefined (v) {
-  return v === 'undefined' ? undefined : v
+  return v === 'null' || v === 'undefined' ? null : v
 }
 
 function _isBoolean (v) {
@@ -32,16 +28,18 @@ function _isBoolean (v) {
 }
 
 function _convert (v) {
-  return _isBoolean(_isNull(_isUndefined(_isNum(v))))
+  return _isBoolean(_isNull(_isNum(v)))
 }
 
 function _parseParam (params, key) {
-  if (isArray(params[key])) {
-    params[key] = params[key].map(v => _convert(_decode(`${v}`)))
-  } else {
-    params[key] = _convert(_decode(`${params[key]}`))
-  }
-  return params[key]
+  if (params[key]) {
+    if (isArray(params[key])) {
+      params[key] = params[key].map(v => _convert(_decode(`${v}`)))
+    } else {
+      params[key] = _convert(_decode(`${params[key]}`))
+    }
+    return params[key]
+  } else return undefined
 }
 
 function _allParams (url) {
