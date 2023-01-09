@@ -12,8 +12,8 @@ const elements = [
   'number=1234',
   'numeric=1234',
   'number=22.55',
-  'null=undefined',
-  'undefined=null',
+  'null=null',
+  'undefined=undefined',
   'novalue',
   'array=c'
 ].join('&')
@@ -26,9 +26,12 @@ describe('UrlUtils', () => {
     expect(params.numeric).to.eq(1234)
   })
 
-  it('should ignore undefined & nulls', () => {
+  it('should ignore nulls', () => {
     expect(params.null).to.eq(null)
-    expect(params.undefined).to.eq(null)
+  })
+
+  it('should ignore undefined', () => {
+    expect(params.undefined).to.eq(undefined)
   })
 
   it('should parse boolean values', () => {

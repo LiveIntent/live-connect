@@ -20,7 +20,11 @@ function _isNum (v) {
 }
 
 function _isNull (v) {
-  return v === 'null' || v === 'undefined' ? null : v
+  return v === 'null' ? null : v
+}
+
+function _isUndefined (v) {
+  return v === 'undefined' ? undefined : v
 }
 
 function _isBoolean (v) {
@@ -28,7 +32,7 @@ function _isBoolean (v) {
 }
 
 function _convert (v) {
-  return _isBoolean(_isNull(_isNum(v)))
+  return _isBoolean(_isNull(_isUndefined(_isNum(v))))
 }
 
 function _parseParam (params, key) {
