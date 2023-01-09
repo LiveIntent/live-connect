@@ -24,9 +24,9 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "./dist/*",
-    "./COLLECTOR_PARAMS.md",
-    "./CONFIGURATION_OPTIONS.md"
+    "dist/*",
+    "COLLECTOR_PARAMS.md",
+    "CONFIGURATION_OPTIONS.md"
   ],
   "scripts": {
     "test:unit": "nyc ts-mocha --config test-config/mocha.unit.json",
