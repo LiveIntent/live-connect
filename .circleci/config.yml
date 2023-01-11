@@ -5,8 +5,8 @@ orbs:
 
 constants:
   releasable_branches: &releasable_branches
-  - master
-  - v3.x
+    - master
+    - v3.x
 
 parameters:
   node_version:
@@ -289,13 +289,28 @@ workflows:
           increment: "major"
           requires:
             - release_major?
-  daily:
+  daily-master:
+    triggers:
+      - schedule:
+          cron: "0 3 * * *"
+          filters:
+            branches:
+              only: master
+    jobs:
+      - simple_test
+
+      - browserstack:
+          requires:
+            - simple_test
+          context: org-global
+
+  daily-v3.x:
     triggers:
       - schedule:
           cron: "0 7 * * *"
           filters:
             branches:
-              only: *releasable_branches
+              only: v3.x
     jobs:
       - simple_test
 
