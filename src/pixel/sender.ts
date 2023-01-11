@@ -26,7 +26,7 @@ export class PixelSender {
         for (let i = 0; i < bakers.length; i++) this.calls.pixelGet(`${bakers[i]}?dtstmp=${this.utcMillis()}`)
       }
     } catch (e) {
-      this.eventBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
+      this.eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson}`, e)
     }
   }
 
