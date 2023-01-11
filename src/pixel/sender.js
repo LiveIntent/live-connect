@@ -42,7 +42,7 @@ export function PixelSender (liveConnectConfig, calls, eventBus, onload, presend
         for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
-      eventBus.emitErrorWithMessage('CallBakers', 'Error while calling bakers', e)
+      eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson}`, e)
     }
   }
 
