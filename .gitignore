@@ -9,3 +9,4 @@ coverage.lcov
 driver-logs
 cjs
 esm
+test-resources
