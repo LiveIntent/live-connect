@@ -6,7 +6,7 @@ orbs:
 constants:
   releasable_branches: &releasable_branches
   - master
-  - v3.x.x
+  - v3.x
 
 parameters:
   node_version:
