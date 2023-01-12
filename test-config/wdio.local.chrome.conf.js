@@ -21,7 +21,7 @@ exports.config = {
   // directory is where your package.json resides, so `wdio` will be called from there.
   //
   specs: [
-    './test/it/**/*.spec.js'
+    './test/it/**/*.spec.ts'
   ],
   // Patterns to exclude.
   exclude: [
@@ -93,7 +93,7 @@ exports.config = {
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
-  connectionRetryTimeout: 10000,
+  connectionRetryTimeout: 30000,
   //
   // Default request retries count
   connectionRetryCount: 3,

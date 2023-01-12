@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "typeRoots": ["./node_modules/@types"],
+    "esModuleInterop": true,
+    "module": "CommonJS",
+    "types": ["webdriverio/async", "mocha"]
+  },
+  "include": ["./src/**/*", "./test/**/*"]
+}
