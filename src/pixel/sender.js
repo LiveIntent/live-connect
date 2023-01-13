@@ -1,6 +1,6 @@
 import { isArray, isFunction, asStringParam } from '../utils/types'
 
-const DEFAULT_AJAX_TIMEOUT = 0
+const DEFAULT_AJAX_TIMEOUT = 3000
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
@@ -42,7 +42,7 @@ export function PixelSender (liveConnectConfig, calls, eventBus, onload, presend
         for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
-      eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson}`, e)
+      eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson} for the url: ${url}`, e)
     }
   }
 
