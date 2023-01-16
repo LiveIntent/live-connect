@@ -1,6 +1,6 @@
 import { isArray, isFunction, asStringParam } from '../utils/types'
 
-const DEFAULT_AJAX_TIMEOUT = 3000
+const DEFAULT_AJAX_TIMEOUT = 0
 
 /**
  * @param {LiveConnectConfiguration} liveConnectConfig
