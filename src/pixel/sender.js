@@ -22,9 +22,9 @@ export function PixelSender (liveConnectConfig, calls, eventBus, onload, presend
     _sendState(state, 'j', uri => {
       calls.ajaxGet(
         uri,
-        bakersJson => {
+        (bakersJson, xhr) => {
           if (isFunction(onload)) onload()
-          _callBakers(bakersJson)
+          _callBakers(bakersJson, xhr)
         },
         (e) => {
           _sendPixel(state)
@@ -35,14 +35,14 @@ export function PixelSender (liveConnectConfig, calls, eventBus, onload, presend
     })
   }
 
-  function _callBakers (bakersJson) {
+  function _callBakers (bakersJson, xhr) {
     try {
       const bakers = JSON.parse(bakersJson).bakers
       if (isArray(bakers)) {
         for (let i = 0; i < bakers.length; i++) calls.pixelGet(`${bakers[i]}?dtstmp=${utcMillis()}`)
       }
     } catch (e) {
-      eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson} for the url: ${url}`, e)
+      eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${JSON.stringify(bakersJson)}. Status: ${xhr.status}`, e)
     }
   }
 
