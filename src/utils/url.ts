@@ -65,8 +65,8 @@ export function decodeValue (v: string): string {
 
 export function urlParams (url: string): Record<string, ParsedParam | ParsedParam[]> {
   const params = _allParams(url)
-  let result = {}
-  Object.keys(params).forEach((k) => result[k] = _parseParam(params, k))
+  const result = {}
+  Object.keys(params).forEach((k) => { result[k] = _parseParam(params, k) })
   return result
 }
 
