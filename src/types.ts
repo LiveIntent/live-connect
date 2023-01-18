@@ -141,8 +141,6 @@ export interface State extends LiveConnectConfig {
     referrer?: string
 }
 
-type ParamOrEmpty = [string, string][] | [string, string] | []
-
 export interface HemStore {
     hashedEmail?: HashedEmail[]
 }

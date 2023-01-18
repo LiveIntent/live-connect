@@ -2,7 +2,7 @@ import { PixelSender } from '../pixel/sender'
 import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
-import { ErrorDetails, EventBus, ICallHandler, IPixelSender, State } from '../types'
+import { EventBus, ICallHandler, IPixelSender, State } from '../types'
 
 let _state = null
 let _pixelSender: IPixelSender = null
@@ -35,7 +35,7 @@ function _truncate (value: string): string {
   }
 }
 
-export function asErrorDetails (e: any): ErrorDetails {
+export function asErrorDetails (e: any): State {
   if (e) {
     return {
       errorDetails: {

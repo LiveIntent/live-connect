@@ -1,5 +1,5 @@
 import * as C from '../utils/consts'
-import { ErrorDetails, EventBus } from '../types'
+import { EventBus } from '../types'
 
 type Callback<Ctx> = (ctx: Ctx, data: any[]) => void
 

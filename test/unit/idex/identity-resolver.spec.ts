@@ -94,7 +94,7 @@ describe('IdentityResolver', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => undefined, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -107,7 +107,7 @@ describe('IdentityResolver', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { qf: '0.1', resolve: ['age', 'gender'] })
+    identityResolver.resolve(successCallback, () => undefined, { qf: '0.1', resolve: ['age', 'gender'] })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -120,7 +120,7 @@ describe('IdentityResolver', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => undefined, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -216,7 +216,7 @@ describe('IdentityResolver', () => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
       done()
     }
-    identityResolver.resolve(() => {}, errorCallback)
+    identityResolver.resolve(() => undefined, errorCallback)
     requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
 
@@ -229,22 +229,22 @@ describe('IdentityResolver', () => {
     const successCallback = (responseAsJson) => {
       jsonResponse = responseAsJson
     }
-    identityResolver.resolve(successCallback, () => {}, { type: 'md5' })
+    identityResolver.resolve(successCallback, () => undefined, { type: 'md5' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(responseMd5))
     expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?type=md5')
     expect(jsonResponse).to.be.eql(responseMd5)
 
-    identityResolver.resolve(successCallback, () => {}, { type: 'sha1' })
+    identityResolver.resolve(successCallback, () => undefined, { type: 'sha1' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(responseSha1))
     expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?type=sha1')
     expect(jsonResponse).to.be.eql(responseSha1)
 
     jsonResponse = null
-    identityResolver.resolve(successCallback, () => {}, { type: 'sha1' })
+    identityResolver.resolve(successCallback, () => undefined, { type: 'sha1' })
     expect(jsonResponse).to.be.eql(responseSha1)
 
     jsonResponse = null
-    identityResolver.resolve(successCallback, () => {}, { type: 'md5' })
+    identityResolver.resolve(successCallback, () => undefined, { type: 'md5' })
     expect(jsonResponse).to.be.eql(responseMd5)
 
     expect(callCount).to.be.eql(2)

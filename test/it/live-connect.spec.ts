@@ -15,10 +15,10 @@ import {
   waitForRequests
 } from './helpers/browser'
 import dirtyChai from 'dirty-chai'
+import packageJson from '../../package.json'
 
 use(dirtyChai)
 
-const packageJson = require('../../package')
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
 describe('LiveConnect', function () {

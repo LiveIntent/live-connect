@@ -29,7 +29,7 @@
     "CONFIGURATION_OPTIONS.md"
   ],
   "scripts": {
-    "test:unit": "nyc ts-mocha --config test-config/mocha.unit.json",
+    "test:unit": "npm run lint && nyc ts-mocha --config test-config/mocha.unit.json",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run build-test-resources && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build-test-resources && wdio test-config/wdio.docker.chrome.conf.js",
@@ -66,6 +66,7 @@
     "@types/chai": "^4.3.4",
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.13",
+    "@types/dirty-chai": "^2.0.2",
     "@types/express": "^4.17.15",
     "@types/mocha": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^5.38.0",

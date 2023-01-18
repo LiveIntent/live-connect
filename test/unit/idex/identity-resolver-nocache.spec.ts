@@ -68,7 +68,7 @@ describe('IdentityResolver without cache', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => undefined, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -81,7 +81,7 @@ describe('IdentityResolver without cache', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { qf: '0.1', resolve: ['age', 'gender'] })
+    identityResolver.resolve(successCallback, () => undefined, { qf: '0.1', resolve: ['age', 'gender'] })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -94,7 +94,7 @@ describe('IdentityResolver without cache', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => undefined, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -177,7 +177,7 @@ describe('IdentityResolver without cache', () => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
       done()
     }
-    identityResolver.resolve(() => {}, errorCallback)
+    identityResolver.resolve(() => undefined, errorCallback)
     requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
 

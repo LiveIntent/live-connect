@@ -6,7 +6,7 @@ import { isFunction } from '../../../src/utils/types'
  * @param fallback
  * @param timeout
  */
-export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 1000) {
+export function ajaxGet (url, responseHandler, fallback = () => undefined, timeout = 1000) {
   function errorCallback (name, message, error, request) {
     console.error('Error while executing ajax call', error, request)
     fallback(error)
@@ -30,7 +30,7 @@ export function ajaxGet (url, responseHandler, fallback = () => {}, timeout = 10
 
   function xdrCall () {
     const xdr = new window.XDomainRequest()
-    xdr.onprogress = () => {}
+    xdr.onprogress = () => undefined
     xdr.onerror = () => {
       const error = new Error(`XDR Error received: ${xdr.responseText}`)
       errorCallback('XDRError', `Error during XDR call: ${xdr.responseText}, url: ${url}`, error, xdr)
