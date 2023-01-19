@@ -45,10 +45,15 @@ ___
 
 ## Main concepts
 ### Initialization
+To initialize LiveConnect you will need to define a StorageHandler (example [here](./test/shared/utils/storage.ts)) and
+a CallHandler (example [here](./test/shared/utils/calls.ts)).
+
 The initialisation part should be straight forward, considering the snippet:
 ```javascript
-import { LiveConnect } from 'live-connect-js/src/live-connect'
-const lc = LiveConnect(configOptions)
+import { LiveConnect } from 'live-connect-js'
+const storageHandler = undefined
+const callHandler = undefined
+const lc = LiveConnect(configOptions, storageHandler, callHandler)
 ```
 
 The object returned after initialisation (`lc` in the snippet above) is exposing the following functions:
@@ -77,32 +82,6 @@ where the `responseHandler` is a `function(body, response)`,
 and the `fallback` is a `function()`
 - `function pixelGet (uri, onload)`
 where the `onload` is a `function()`
-
-If one of the functions is not available in the external handler, LiveConnect will fall back to its own implementation to ensure that the functionality isn't being affected.
-
-One way to achieve that is, for example, to initialize LC like this:
-```javascript
-import { LiveConnect } from 'live-connect-js/src/live-connect'
-const storageHandler = {
-  getCookie: (key) => {
-    let m = window.document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]*)\\s*(;|$)')
-    return m ? decodeURIComponent(m[2]) : null;
-  },
-  setCookie: (key, value, expires, sameSite, domain) => {
-    //
-  },
-  ...
-}
-const callsHandler = {
-  ajaxGet: (url, responseHandler, fallback, timeout) => {
-   //
-  },
-  pixelGet: (url, onload) => {
-   //
-  }
-}
-const lc = LiveConnect(configOptions, storageHandler, ajaxHandler)
-```
 
 ### Configuration options
 Considering the snippet above, LiveConnect accepts a JSON with the config which determines its behaviour.
