@@ -1,19 +1,20 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
-import { Storage } from '../../shared/utils/storage'
-import sinon from 'sinon'
+import { TestStorage } from '../../shared/utils/storage'
+import sinon, { SinonStub } from 'sinon'
 import { expiresInDays } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { EventBus } from '../../../src/types'
 
 use(dirtyChai)
 
 describe('StorageHandler', () => {
   let errors = []
-  let eventBusStub
+  let eventBusStub: SinonStub<[string, string, any?], EventBus>
   const eventBus = LocalEventBus()
-  const storage = new Storage(eventBus)
+  const storage = new TestStorage(eventBus)
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',
@@ -28,6 +29,7 @@ describe('StorageHandler', () => {
         message: message,
         exception: e
       })
+      return eventBus
     })
   })
 
@@ -52,7 +54,7 @@ describe('StorageHandler', () => {
   })
 
   it('should not send an error if an external handler is not provided and the storage strategy is disabled', function () {
-    StorageHandler('disabled')
+    StorageHandler('disabled', {}, eventBus)
     expect(errors.length).to.be.eq(0)
   })
 
@@ -94,7 +96,7 @@ describe('StorageHandler', () => {
 
     storageHandler.set('key_any', 'value_any', expiresInDays(1), 'example.com')
     storageHandler.setDataInLocalStorage('key_ls', 'value_any')
-    storageHandler.setCookie(('key_cookie', 'value_cookie', expiresInDays(1), 'Lax', 'example.com'))
+    storageHandler.setCookie('key_cookie', 'value_cookie', expiresInDays(1), 'Lax', 'example.com')
 
     expect(storageHandler.get('key_any')).to.be.null()
     expect(storageHandler.getDataFromLocalStorage('key_ls')).to.be.undefined()

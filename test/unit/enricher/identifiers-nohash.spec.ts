@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers-nohash'
 import jsdom from 'mocha-jsdom'
-import { Storage } from '../../shared/utils/storage'
+import { TestStorage } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
@@ -9,7 +9,7 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const storage = new Storage(eventBus)
+const storage = new TestStorage(eventBus)
 const COOKIE_NAME = 'sample_cookie'
 const SIMPLE_COOKIE1 = 'sample_value1'
 const SIMPLE_COOKIE2 = 'sample_value2'

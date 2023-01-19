@@ -1,16 +1,18 @@
 import { expect, use } from 'chai'
 import * as decisions from '../../../src/manager/decisions'
-import { Storage } from '../../shared/utils/storage'
+import { TestStorage } from '../../shared/utils/storage'
 import uuid from 'tiny-uuid4'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { StorageHandler } from '../../../src/handlers/storage-handler'
 
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const storage = new Storage(eventBus)
+const externalStorage = new TestStorage(eventBus)
+const storage = StorageHandler('cookie', externalStorage, eventBus)
 
 describe('DecisionsManager for stored decisions', () => {
   const sandbox = sinon.createSandbox()
@@ -21,26 +23,26 @@ describe('DecisionsManager for stored decisions', () => {
   })
 
   it('should return an empty string is nothing is in the cookie jar', function () {
-    const resolutionResult = decisions.resolve({}, storage)
+    const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([])
   })
 
   it('should return an empty string is the cookie jar has invalid uuids', function () {
     storage.setCookie('lidids.', '2134')
-    const resolutionResult = decisions.resolve({}, storage)
+    const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([])
   })
 
   it('should return the stored decision', function () {
     const decisionId = uuid()
     storage.setCookie('lidids.123', decisionId)
-    const resolutionResult = decisions.resolve({}, storage)
+    const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionId])
   })
 
   it('should not return empty values', function () {
     storage.setCookie('lidids.', '')
-    const resolutionResult = decisions.resolve({}, storage)
+    const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds.length).to.eql(0)
   })
 
@@ -48,7 +50,7 @@ describe('DecisionsManager for stored decisions', () => {
     const decisionId = uuid()
     storage.setCookie('lidids.123', decisionId, undefined, undefined, 'something.example.com')
     storage.setCookie('lidids.123', decisionId, undefined, undefined, 'www.something.example.com')
-    const resolutionResult = decisions.resolve({}, storage)
+    const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionId])
   })
 
@@ -68,21 +70,21 @@ describe('DecisionsManager for new decisions', () => {
 
   it('should return the new decision id, and store it', function () {
     const decisionId = uuid()
-    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` }, storage)
+    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` }, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionId])
     expect(storage.getCookie(`lidids.${decisionId}`)).to.eq(decisionId)
   })
 
   it('should return the new decision id, and store it', function () {
     const decisionId = uuid()
-    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` }, storage)
+    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` }, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionId])
     expect(storage.getCookie(`lidids.${decisionId}`)).to.eq(decisionId)
   })
 
   it('should not return the new decision id if its not a uuid', function () {
     const decisionId = `${uuid()}sometghing`
-    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` }, storage)
+    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionId}` }, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([])
   })
 
@@ -90,7 +92,7 @@ describe('DecisionsManager for new decisions', () => {
     const decisionIdOne = uuid()
     const decisionIdTwo = uuid()
     storage.setCookie('lidids.123', decisionIdOne)
-    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=    ${decisionIdTwo}` }, storage)
+    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=    ${decisionIdTwo}` }, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionIdTwo, decisionIdOne])
     expect(storage.getCookie(`lidids.${decisionIdTwo}`)).to.eq(decisionIdTwo)
   })
@@ -100,7 +102,7 @@ describe('DecisionsManager for new decisions', () => {
     const decisionIdTwo = uuid()
     const decisionIdThree = uuid()
     storage.setCookie('lidids.123', decisionIdOne)
-    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionIdTwo}&li_did=${decisionIdThree}` }, storage)
+    const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionIdTwo}&li_did=${decisionIdThree}` }, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionIdTwo, decisionIdThree, decisionIdOne])
     expect(storage.getCookie(`lidids.${decisionIdTwo}`)).to.eq(decisionIdTwo)
     expect(storage.getCookie(`lidids.${decisionIdThree}`)).to.eq(decisionIdThree)
