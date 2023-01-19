@@ -1,15 +1,16 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
-import sinon from 'sinon'
+import sinon, { SinonStub } from 'sinon'
 import { CallHandler } from '../../../src/handlers/call-handler'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { EventBus } from '../../../src/types'
 
 use(dirtyChai)
 
 describe('CallHandler', () => {
   let emitterErrors = []
-  let eventBusStub
+  let eventBusStub: SinonStub<[string, string, any?], EventBus>
   const eventBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({
@@ -25,6 +26,7 @@ describe('CallHandler', () => {
         message: message,
         exception: e
       })
+      return eventBus
     })
   })
 
