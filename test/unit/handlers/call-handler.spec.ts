@@ -33,11 +33,21 @@ describe('CallHandler', () => {
   })
 
   it('should return the get function', function () {
-    const ajaxGet = () => undefined
-    const pixelGet = () => undefined
-    const handler = CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet })
+    const eventBus = LocalEventBus()
+    let ajaxCounter = 0
+    let pixelCounter = 0
 
-    expect(handler).to.be.eql({ ajaxGet: ajaxGet, pixelGet: pixelGet })
+    const ajaxGet = () => { ajaxCounter += 1 }
+    const pixelGet = () => { pixelCounter += 1 }
+    const handler = CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet }, eventBus)
+
+    handler.ajaxGet('foo', () => undefined)
+    expect(ajaxCounter).to.be.eql(1)
+    expect(pixelCounter).to.be.eql(0)
+
+    handler.pixelGet('foo', () => undefined)
+    expect(ajaxCounter).to.be.eql(1)
+    expect(pixelCounter).to.be.eql(1)
   })
 
   it('should send an error if an external handler is not provided', function () {
