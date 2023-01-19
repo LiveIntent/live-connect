@@ -2,7 +2,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver-nocache'
-import * as calls from '../../shared/utils/calls'
+import { TestCallHandler } from '../../shared/utils/calls'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 
@@ -11,6 +11,7 @@ use(dirtyChai)
 describe('IdentityResolver without cache', () => {
   let requestToComplete = null
   const eventBus = LocalEventBus()
+  const calls = TestCallHandler
   let errors = []
   let callCount = 0
   jsdom({

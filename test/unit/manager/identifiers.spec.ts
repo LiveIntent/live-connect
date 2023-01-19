@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import * as identifiers from '../../../src/manager/identifiers'
-import { TestStorage } from '../../shared/utils/storage'
+import { TestStorageHandler } from '../../shared/utils/storage'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
@@ -10,7 +10,7 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const storage = new TestStorage(eventBus)
+const storage = new TestStorageHandler(eventBus)
 const storageHandler = StorageHandler('cookie', storage, eventBus)
 
 describe('IdentifiersManager', () => {

@@ -45,15 +45,10 @@ ___
 
 ## Main concepts
 ### Initialization
-To initialize LiveConnect you will need to define a StorageHandler (example [here](./test/shared/utils/storage.ts)) and
-a CallHandler (example [here](./test/shared/utils/calls.ts)).
-
 The initialisation part should be straight forward, considering the snippet:
 ```javascript
 import { LiveConnect } from 'live-connect-js'
-const storageHandler = undefined
-const callHandler = undefined
-const lc = LiveConnect(configOptions, storageHandler, callHandler)
+const lc = LiveConnect(configOptions)
 ```
 
 The object returned after initialisation (`lc` in the snippet above) is exposing the following functions:
@@ -65,7 +60,7 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 - `resolutionCallUrl` function returns the URL to be called in order to receive the resolution to a stable identifier.
 
 ### Overriding the StorageHandler and CallHandler
-LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on it's own.
+LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on its own.
 
 The StorageHandler is an object with functions that adheres to the signature:
 - `function localStorageIsEnabled ()`
@@ -82,6 +77,32 @@ where the `responseHandler` is a `function(body, response)`,
 and the `fallback` is a `function()`
 - `function pixelGet (uri, onload)`
 where the `onload` is a `function()`
+
+If one of the functions is not available in the external handler, LiveConnect will fall back to stubs to ensure that the overall functionality isn't being affected. It is recommended to provide full implementations of the interfaces. An example for StorageHandler ([here](./test/shared/utils/storage.ts)) and for CallHandler ([here](./test/shared/utils/calls.ts)) are provided.
+
+With custom implementations the initialisation looks like this:
+```javascript
+import { LiveConnect } from 'live-connect-js/src/live-connect'
+const storageHandler = {
+  getCookie: (key) => {
+    let m = window.document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]*)\\s*(;|$)')
+    return m ? decodeURIComponent(m[2]) : null;
+  },
+  setCookie: (key, value, expires, sameSite, domain) => {
+    //
+  },
+  ...
+}
+const callsHandler = {
+  ajaxGet: (url, responseHandler, fallback, timeout) => {
+   //
+  },
+  pixelGet: (url, onload) => {
+   //
+  }
+}
+const lc = LiveConnect(configOptions, storageHandler, ajaxHandler)
+```
 
 ### Configuration options
 Considering the snippet above, LiveConnect accepts a JSON with the config which determines its behaviour.

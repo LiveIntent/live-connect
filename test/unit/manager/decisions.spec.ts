@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import * as decisions from '../../../src/manager/decisions'
-import { TestStorage } from '../../shared/utils/storage'
+import { TestStorageHandler } from '../../shared/utils/storage'
 import uuid from 'tiny-uuid4'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
@@ -11,7 +11,7 @@ import { StorageHandler } from '../../../src/handlers/storage-handler'
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const externalStorage = new TestStorage(eventBus)
+const externalStorage = new TestStorageHandler(eventBus)
 const storage = StorageHandler('cookie', externalStorage, eventBus)
 
 describe('DecisionsManager for stored decisions', () => {

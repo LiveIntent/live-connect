@@ -2,8 +2,8 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver'
-import { TestStorage } from '../../shared/utils/storage'
-import * as calls from '../../shared/utils/calls'
+import { TestStorageHandler } from '../../shared/utils/storage'
+import { TestCallHandler } from '../../shared/utils/calls'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
@@ -13,9 +13,10 @@ use(dirtyChai)
 describe('IdentityResolver', () => {
   let requestToComplete = null
   const eventBus = LocalEventBus()
+  const calls = TestCallHandler
   let errors = []
   let callCount = 0
-  const storage = new TestStorage(eventBus)
+  const storage = new TestStorageHandler(eventBus)
   const storageHandler = StorageHandler('cookie', storage, eventBus)
   jsdom({
     url: 'http://www.something.example.com',

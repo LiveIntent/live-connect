@@ -1,7 +1,7 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
 import { StorageHandler } from '../../../src/handlers/storage-handler'
-import { TestStorage } from '../../shared/utils/storage'
+import { TestStorageHandler } from '../../shared/utils/storage'
 import sinon, { SinonStub } from 'sinon'
 import { expiresInDays } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'
@@ -14,7 +14,7 @@ describe('StorageHandler', () => {
   let errors = []
   let eventBusStub: SinonStub<[string, string, any?], EventBus>
   const eventBus = LocalEventBus()
-  const storage = new TestStorage(eventBus)
+  const storage = new TestStorageHandler(eventBus)
   const sandbox = sinon.createSandbox()
   jsdom({
     url: 'http://www.something.example.com',

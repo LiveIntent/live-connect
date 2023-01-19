@@ -1,33 +1,34 @@
-import Cookies from 'js-cookie'
+import Cookies, { CookiesStatic } from 'js-cookie'
 import { ExternalStorageHandler, EventBus } from '../../../src/types'
 
-const cookies = Cookies.withConverter({
-  read: function (value, name) {
-    try {
-      const result = Cookies.converter.read(value, name)
-      if (result === undefined) {
-        return null
-      } else {
-        return result
-      }
-    } catch (e) {
-      eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
-      return null
-    }
-  }
-})
-
-export class TestStorage implements ExternalStorageHandler {
-  eventBus: EventBus
+export class TestStorageHandler implements ExternalStorageHandler {
+  private eventBus: EventBus
   private _localStorageIsEnabled?: boolean
+  private cookies: CookiesStatic<string>
 
   constructor (eventBus: EventBus) {
     this.eventBus = eventBus
     this._localStorageIsEnabled = null
+
+    this.cookies = Cookies.withConverter({
+      read: function (value, name) {
+        try {
+          const result = Cookies.converter.read(value, name)
+          if (result === undefined) {
+            return null
+          } else {
+            return result
+          }
+        } catch (e) {
+          eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
+          return null
+        }
+      }
+    })
   }
 
   getCookie (key: string): string | null {
-    const result = cookies.get(key)
+    const result = this.cookies.get(key)
     if (result === undefined) {
       return null
     }
@@ -36,7 +37,7 @@ export class TestStorage implements ExternalStorageHandler {
 
   findSimilarCookies (substring: string): string[] {
     try {
-      const allCookies = cookies.get()
+      const allCookies = this.cookies.get()
       return Object.keys(allCookies).filter(key => key.indexOf(substring) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
     } catch (e) {
       this.eventBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
@@ -54,9 +55,9 @@ export class TestStorage implements ExternalStorageHandler {
       } else {
         expiresDate = expires
       }
-      cookies.set(key, value, { domain: domain, expires: expiresDate, samesite: sameSite })
+      this.cookies.set(key, value, { domain: domain, expires: expiresDate, samesite: sameSite })
     } else {
-      cookies.set(key, value, { domain: domain, samesite: sameSite })
+      this.cookies.set(key, value, { domain: domain, samesite: sameSite })
     }
   }
 
