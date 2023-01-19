@@ -9,7 +9,7 @@ export function CallHandler (externalCallHandler: ExternalCallHandler, eventBus:
   function _externalOrError (functionName: string) {
     const hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName])
     if (hasExternal) {
-      return externalCallHandler[functionName]
+      return externalCallHandler[functionName].bind(externalCallHandler)
     } else {
       errors.push(functionName)
       return _noOp

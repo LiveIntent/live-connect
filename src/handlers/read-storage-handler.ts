@@ -11,7 +11,7 @@ export function StorageHandler (storageStrategy: StorageStrategyMode, externalSt
     if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp
     } else if (hasExternal) {
-      return externalStorageHandler[functionName]
+      return externalStorageHandler[functionName].bind(externalStorageHandler)
     } else {
       errors.push(functionName)
       return _noOp
