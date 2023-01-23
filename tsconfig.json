@@ -3,6 +3,7 @@
     "allowJs": false,
     "typeRoots": ["./node_modules/@types"],
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "module": "CommonJS",
     "types": ["webdriverio/async", "mocha"]
   },

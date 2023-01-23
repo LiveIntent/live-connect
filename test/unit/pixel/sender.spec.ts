@@ -3,7 +3,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
 import * as C from '../../../src/utils/consts'
-import * as calls from '../../shared/utils/calls'
+import { TestCallHandler } from '../../shared/utils/calls'
 import { Query } from '../../../src/pixel/state'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
@@ -13,6 +13,7 @@ use(dirtyChai)
 describe('PixelSender', () => {
   let ajaxRequests = []
   let pixelRequests = []
+  const calls = TestCallHandler
   const sandbox = sinon.createSandbox()
   let eventBus
   let pixelStub

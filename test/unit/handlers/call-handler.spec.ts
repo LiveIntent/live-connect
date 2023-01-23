@@ -1,15 +1,16 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
-import sinon from 'sinon'
+import sinon, { SinonStub } from 'sinon'
 import { CallHandler } from '../../../src/handlers/call-handler'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { EventBus } from '../../../src/types'
 
 use(dirtyChai)
 
 describe('CallHandler', () => {
   let emitterErrors = []
-  let eventBusStub
+  let eventBusStub: SinonStub<[string, string, any?], EventBus>
   const eventBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({
@@ -25,6 +26,7 @@ describe('CallHandler', () => {
         message: message,
         exception: e
       })
+      return eventBus
     })
   })
 
@@ -33,11 +35,21 @@ describe('CallHandler', () => {
   })
 
   it('should return the get function', function () {
-    const ajaxGet = () => undefined
-    const pixelGet = () => undefined
-    const handler = CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet })
+    const eventBus = LocalEventBus()
+    let ajaxCounter = 0
+    let pixelCounter = 0
 
-    expect(handler).to.be.eql({ ajaxGet: ajaxGet, pixelGet: pixelGet })
+    const ajaxGet = () => { ajaxCounter += 1 }
+    const pixelGet = () => { pixelCounter += 1 }
+    const handler = CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet }, eventBus)
+
+    handler.ajaxGet('foo', () => undefined)
+    expect(ajaxCounter).to.be.eql(1)
+    expect(pixelCounter).to.be.eql(0)
+
+    handler.pixelGet('foo', () => undefined)
+    expect(ajaxCounter).to.be.eql(1)
+    expect(pixelCounter).to.be.eql(1)
   })
 
   it('should send an error if an external handler is not provided', function () {

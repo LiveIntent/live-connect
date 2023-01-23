@@ -47,7 +47,7 @@ ___
 ### Initialization
 The initialisation part should be straight forward, considering the snippet:
 ```javascript
-import { LiveConnect } from 'live-connect-js/src/live-connect'
+import { LiveConnect } from 'live-connect-js'
 const lc = LiveConnect(configOptions)
 ```
 
@@ -60,7 +60,7 @@ The object returned after initialisation (`lc` in the snippet above) is exposing
 - `resolutionCallUrl` function returns the URL to be called in order to receive the resolution to a stable identifier.
 
 ### Overriding the StorageHandler and CallHandler
-LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on it's own.
+LiveConnect is initialized in a way so that it does not manipulate storage and ajax on the device on its own.
 
 The StorageHandler is an object with functions that adheres to the signature:
 - `function localStorageIsEnabled ()`
@@ -78,9 +78,9 @@ and the `fallback` is a `function()`
 - `function pixelGet (uri, onload)`
 where the `onload` is a `function()`
 
-If one of the functions is not available in the external handler, LiveConnect will fall back to its own implementation to ensure that the functionality isn't being affected.
+If one of the functions is not available in the external handler, LiveConnect will fall back to stubs to ensure that the overall functionality isn't being affected. It is recommended to provide full implementations of the interfaces. An example for StorageHandler ([here](./test/shared/utils/storage.ts)) and for CallHandler ([here](./test/shared/utils/calls.ts)) are provided.
 
-One way to achieve that is, for example, to initialize LC like this:
+With custom implementations the initialisation looks like this:
 ```javascript
 import { LiveConnect } from 'live-connect-js/src/live-connect'
 const storageHandler = {

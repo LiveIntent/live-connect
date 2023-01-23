@@ -2,7 +2,7 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex/identity-resolver-nocache'
-import * as calls from '../../shared/utils/calls'
+import { TestCallHandler } from '../../shared/utils/calls'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 
@@ -11,6 +11,7 @@ use(dirtyChai)
 describe('IdentityResolver without cache', () => {
   let requestToComplete = null
   const eventBus = LocalEventBus()
+  const calls = TestCallHandler
   let errors = []
   let callCount = 0
   jsdom({
@@ -68,7 +69,7 @@ describe('IdentityResolver without cache', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => undefined, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -81,7 +82,7 @@ describe('IdentityResolver without cache', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { qf: '0.1', resolve: ['age', 'gender'] })
+    identityResolver.resolve(successCallback, () => undefined, { qf: '0.1', resolve: ['age', 'gender'] })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -94,7 +95,7 @@ describe('IdentityResolver without cache', () => {
       expect(responseAsJson).to.be.eql(response)
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { key: 'value' })
+    identityResolver.resolve(successCallback, () => undefined, { key: 'value' })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
@@ -177,7 +178,7 @@ describe('IdentityResolver without cache', () => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
       done()
     }
-    identityResolver.resolve(() => {}, errorCallback)
+    identityResolver.resolve(() => undefined, errorCallback)
     requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
 

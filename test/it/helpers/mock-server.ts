@@ -2,16 +2,15 @@ import * as fs from 'fs'
 import * as http from 'http'
 import { assert } from 'chai'
 import { getText, click } from './browser'
+import express from 'express'
+import compression from 'compression'
+import cors from 'cors'
 
-const express = require('express')
-const cors = require('cors')
 const corsOptions = {
   origin: true,
   credentials: true
 }
 const port = 3001
-
-const compression = require('compression')
 
 const bundle = fs.readFileSync('test-resources/bundle.iife.js', 'utf8')
 

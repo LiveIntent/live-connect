@@ -1,7 +1,7 @@
 import * as C from '../utils/consts'
-import { ErrorDetails, EventBus } from '../types'
+import { EventBus } from '../types'
 
-type Callback<Ctx> = (ctx: Ctx, event: any) => void
+type Callback<Ctx> = (ctx: Ctx, data: any[]) => void
 
 interface EventHandler<Ctx> {
   ctx?: Ctx,
@@ -43,17 +43,15 @@ export class ReplayEmitter implements EventBus {
   }
 
   once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
-    const self = this
-
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
       callback.apply(ctx, eventQueue[0])
 
       return this
     } else {
-      const listener = function () {
-        self.off(name, listener)
-        callback.apply(ctx, arguments)
+      const listener = (...args: any[]) => {
+        this.off(name, listener)
+        callback.apply(ctx, args)
       }
 
       listener._ = callback

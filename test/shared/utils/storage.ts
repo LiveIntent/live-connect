@@ -1,48 +1,94 @@
-/**
- * @typedef {Object} StorageOptions
- * @property {(number| Date |undefined)} [expires]
- * @property {(string|undefined)} [domain]
- * @property {(string|undefined)} [path]
- * @property {(boolean|undefined)} [secure]
- * @property {(boolean|undefined)} [httponly]
- * @property {((''|'Strict'|'Lax')|undefined)} [samesite]
- */
-import Cookies from 'js-cookie'
+import Cookies, { CookiesStatic } from 'js-cookie'
+import { ExternalStorageHandler, EventBus } from '../../../src/types'
 
-export function Storage (eventBus) {
-  let _localStorageIsEnabled = null
+export class TestStorageHandler implements ExternalStorageHandler {
+  private eventBus: EventBus
+  private _localStorageIsEnabled?: boolean
+  private cookies: CookiesStatic<string>
 
-  const cookies = Cookies.withConverter({
-    read: function (value, name) {
-      try {
-        const result = Cookies.converter.read(value, name)
-        if (result === undefined) {
+  constructor (eventBus: EventBus) {
+    this.eventBus = eventBus
+    this._localStorageIsEnabled = null
+
+    this.cookies = Cookies.withConverter({
+      read: function (value, name) {
+        try {
+          const result = Cookies.converter.read(value, name)
+          if (result === undefined) {
+            return null
+          } else {
+            return result
+          }
+        } catch (e) {
+          eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
           return null
-        } else {
-          return result
         }
-      } catch (e) {
-        eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
-        return null
       }
-    }
-  })
-
-  /**
- * @returns {boolean}
- */
-  function localStorageIsEnabled () {
-    if (_localStorageIsEnabled == null) {
-      _localStorageIsEnabled = _checkLocalStorage()
-    }
-    return _localStorageIsEnabled
+    })
   }
 
-  /**
- * @returns {boolean}
- * @private
- */
-  function _checkLocalStorage () {
+  getCookie (key: string): string | null {
+    const result = this.cookies.get(key)
+    if (result === undefined) {
+      return null
+    }
+    return result
+  }
+
+  findSimilarCookies (substring: string): string[] {
+    try {
+      const allCookies = this.cookies.get()
+      return Object.keys(allCookies).filter(key => key.indexOf(substring) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
+    } catch (e) {
+      this.eventBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
+      return []
+    }
+  }
+
+  setCookie (key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
+    if (expires) {
+      let expiresDate: Date
+      if (typeof expires === 'string') {
+        expiresDate = new Date(expires)
+      } else if (typeof expires === 'number') {
+        expiresDate = new Date(Date.now() + expires * 864e5)
+      } else {
+        expiresDate = expires
+      }
+      this.cookies.set(key, value, { domain: domain, expires: expiresDate, samesite: sameSite })
+    } else {
+      this.cookies.set(key, value, { domain: domain, samesite: sameSite })
+    }
+  }
+
+  localStorageIsEnabled () {
+    if (this._localStorageIsEnabled == null) {
+      this._localStorageIsEnabled = this.checkLocalStorage()
+    }
+    return this._localStorageIsEnabled
+  }
+
+  getDataFromLocalStorage (key: string): string | null {
+    if (this.localStorageIsEnabled()) {
+      return window.localStorage.getItem(key)
+    } else {
+      return null
+    }
+  }
+
+  setDataInLocalStorage (key: string, value: string): void {
+    if (this.localStorageIsEnabled()) {
+      window.localStorage.setItem(key, value)
+    }
+  }
+
+  removeDataFromLocalStorage (key: string): void {
+    if (this.localStorageIsEnabled()) {
+      window.localStorage.removeItem(key)
+    }
+  }
+
+  private checkLocalStorage () {
     let enabled = false
     try {
       if (window && window.localStorage) {
@@ -52,110 +98,8 @@ export function Storage (eventBus) {
         window.localStorage.removeItem(key)
       }
     } catch (e) {
-      eventBus.emitError('LSCheckError', e)
+      this.eventBus.emitError('LSCheckError', e)
     }
     return enabled
-  }
-
-  /**
- * @param {string} key
- * @returns {string|null}
- */
-  function getCookie (key) {
-    const result = cookies.get(key)
-    if (result === undefined) {
-      return null
-    }
-    return result
-  }
-
-  /**
- * @param key
- * @return {string|null}
- * @private
- */
-  function _unsafeGetFromLs (key) {
-    return window.localStorage.getItem(key)
-  }
-
-  /**
- * @param {string} key
- * @returns {string|null}
- */
-  function getDataFromLocalStorage (key) {
-    let ret = null
-    if (localStorageIsEnabled()) {
-      ret = _unsafeGetFromLs(key)
-    }
-    return ret
-  }
-
-  /**
- * @param keyLike
- * @return {[String]}
- */
-  function findSimilarCookies (keyLike) {
-    try {
-      const allCookies = cookies.get()
-      return Object.keys(allCookies).filter(key => key.indexOf(keyLike) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
-    } catch (e) {
-      eventBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
-      return []
-    }
-  }
-
-  /**
- * @param {string} key
- * @param {string} value
- * @param {string|number|date} expires
- * @param {string} sameSite
- * @param {string} domain
- * @returns void
- */
-  function setCookie (key, value, expires, sameSite, domain) {
-    if (expires) {
-      let expiresDate
-      if (typeof expires === 'string') {
-        expiresDate = new Date(expires)
-      } else if (typeof expires === 'number') {
-        expiresDate = new Date(Date.now() + expires * 864e5)
-      } else {
-        expiresDate = expires
-      }
-      cookies.set(key, value, { domain: domain, expires: expiresDate, samesite: sameSite })
-    } else {
-      cookies.set(key, value, { domain: domain, samesite: sameSite })
-    }
-  }
-
-  /**
- * @param {string} key
- * @returns {string|null}
- */
-  function removeDataFromLocalStorage (key) {
-    if (localStorageIsEnabled()) {
-      window.localStorage.removeItem(key)
-    }
-  }
-
-  /**
- * @param {string} key
- * @param {string} value
- * @returns {string|null}
- */
-  function setDataInLocalStorage (key, value) {
-    if (localStorageIsEnabled()) {
-      window.localStorage.setItem(key, value)
-    }
-  }
-
-  return {
-    localStorageIsEnabled: localStorageIsEnabled,
-    getCookie: getCookie,
-    getDataFromLocalStorage: getDataFromLocalStorage,
-    findSimilarCookies: findSimilarCookies,
-    setCookie: setCookie,
-    removeDataFromLocalStorage: removeDataFromLocalStorage,
-    setDataInLocalStorage: setDataInLocalStorage
   }
 }

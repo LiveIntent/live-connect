@@ -78,7 +78,7 @@ export type IdentityResultionResult = object
 export interface ExternalCallHandler {
     ajaxGet?: (
         url: string,
-        onSuccess: (responseText: string) => void,
+        onSuccess: (responseText: string, response: any) => void,
         onError?: (error: any) => void,
         timeout?: number
     ) => void,
@@ -140,8 +140,6 @@ export interface State extends LiveConnectConfig {
     privacyMode?: boolean,
     referrer?: string
 }
-
-type ParamOrEmpty = [string, string][] | [string, string] | []
 
 export interface HemStore {
     hashedEmail?: HashedEmail[]

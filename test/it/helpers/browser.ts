@@ -4,7 +4,7 @@ const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 500
 
 export async function getText (selector) {
-  let text
+  let text: string
   await browser.waitUntil(
     async () => {
       try {
@@ -79,7 +79,7 @@ export async function waitForBakerRequests (expectedRequests, server) {
 }
 
 export async function resolveIdentity (expectedRequests, server) {
-  const error = await browser.execute(function (done) {
+  const error = await browser.execute(() => {
     try {
       window.liQ = window.liQ || []
       window.liQ.resolve(function (response) {

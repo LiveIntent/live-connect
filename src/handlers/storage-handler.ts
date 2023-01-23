@@ -7,19 +7,19 @@ const _noOp = () => undefined
 export function StorageHandler (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalStorageHandler, eventBus: EventBus): IStorageHandler {
   const errors = []
 
-  function _externalOrError (functionName) {
+  function _externalOrError (functionName: string): CallableFunction {
     const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
     if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
       return _noOp
     } else if (hasExternal) {
-      return externalStorageHandler[functionName]
+      return externalStorageHandler[functionName].bind(externalStorageHandler)
     } else {
       errors.push(functionName)
       return _noOp
     }
   }
 
-  const _orElseNoOp = (fName) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
+  const _orElseNoOp = (fName: string) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
 
   const functions = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
