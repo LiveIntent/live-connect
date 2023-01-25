@@ -63,32 +63,27 @@ function _processArgs (args: unknown[], pixelClient: PixelSender, enrichedState:
 }
 
 function _getInitializedLiveConnect (globalVarName: string, liveConnectConfig: LiveConnectConfig): ILiveConnect | null {
-  try {
-    if (!!window && globalVarName in window) {
-      const candidate = window[globalVarName]
-      if (isObject(candidate) && 'ready' in candidate && candidate.ready && 'config' in candidate && isObject(candidate.config)) {
-        const mismatch = _configMatcher(candidate.config, liveConnectConfig)
-        if (mismatch) {
-          const error = new Error()
-          error.name = 'ConfigSent'
-          error.message = 'Additional configuration received'
-          const eventBus = getAvailableBus(globalVarName)
-          candidate.eventBus = eventBus
+  if (!!window && globalVarName in window) {
+    const candidate = window[globalVarName]
+    if (isObject(candidate) && 'ready' in candidate && candidate.ready && 'config' in candidate && isObject(candidate.config)) {
+      const mismatch = _configMatcher(candidate.config, liveConnectConfig)
+      if (mismatch) {
+        const error = new Error()
+        error.name = 'ConfigSent'
+        error.message = 'Additional configuration received'
+        const eventBus = getAvailableBus(globalVarName)
+        if (eventBus) {
           eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatch), error)
-          return null
-        } else {
-          return candidate as ILiveConnect
         }
+      } else {
+        return candidate as ILiveConnect
       }
     }
-    return null
-  } catch (e) {
-    console.error('Could not initialize error bus')
-    return null
   }
+  return null
 }
 
-function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect | null {
   try {
     const callHandler = new CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
@@ -113,7 +108,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler, eventBus)
-    const _push = (...args: any[]) => _processArgs(args, pixelClient, postManagedState, eventBus)
+    const _push = (...args: unknown[]) => _processArgs(args, pixelClient, postManagedState, eventBus)
     return {
       push: _push,
       fire: () => _push({}),
@@ -127,10 +122,11 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
   } catch (x) {
     console.error(x)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', x)
+    return null
   }
 }
 
-export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
+export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect | null {
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   configuration.globalVarName = configuration.globalVarName || 'liQ'
   const eventBus = externalEventBus || LocalEventBus()
@@ -138,26 +134,35 @@ export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, exter
   const globalVarName = configuration.globalVarName
 
   try {
-    if (untypedWindow) {
-      const queue = untypedWindow[globalVarName] || []
+    if (window) {
+      const existing = _getInitializedLiveConnect(globalVarName, configuration)
 
-      untypedWindow[globalVarName] = _getInitializedLiveConnect(configuration) || _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus) || queue
-
-
-    }
-    if (isArray(queue)) {
-      for (let i = 0; i < queue.length; i++) {
-        window[configuration.globalVarName].push(queue[i])
+      if (existing) {
+        return existing
       }
-    }
-    window.liQ_instances = window.liQ_instances || []
 
-    if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
-      window.liQ_instances.push(window[configuration.globalVarName])
+      const queue = window[globalVarName] || []
+      const newLc = _standardInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus)
+      if (newLc) {
+        window[globalVarName] = newLc
+
+        if (isArray(queue)) {
+          for (let i = 0; i < queue.length; i++) {
+            newLc.push(queue[i])
+          }
+        }
+
+        const instances = window.liQ_instances || (window.liQ_instances = [])
+        if (instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
+          instances.push(newLc)
+        }
+
+      }
     }
   } catch (x) {
     console.error(x)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', x)
   }
-  return window[configuration.globalVarName]
+
+  return null
 }

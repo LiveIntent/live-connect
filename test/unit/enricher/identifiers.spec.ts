@@ -10,7 +10,7 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const storage = StorageHandler('cookie', new TestStorageHandler(eventBus), eventBus)
+const storage = new StorageHandler('cookie', new TestStorageHandler(eventBus), eventBus)
 
 const COOKIE_NAME = 'sample_cookie'
 const SIMPLE_COOKIE1 = 'sample_value1'

@@ -17,7 +17,7 @@ describe('IdentityResolver', () => {
   let errors = []
   let callCount = 0
   const storage = new TestStorageHandler(eventBus)
-  const storageHandler = StorageHandler('cookie', storage, eventBus)
+  const storageHandler = new StorageHandler('cookie', storage, eventBus)
   jsdom({
     url: 'http://www.something.example.com',
     useEach: true

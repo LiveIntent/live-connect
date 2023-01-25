@@ -122,19 +122,22 @@ export interface ConfigMismatch {
     collectorUrl: (string | undefined)[]
 }
 
-export interface EventBus {
-    on<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
-    once<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): EventBus,
-    emit (name: string, event: any): EventBus,
-    off (name: string, callback: (ctx: any, event: any) => void): EventBus,
-    emitErrorWithMessage (name: string, message: string, e?: any): EventBus,
-    emitError (name: string, exception?: any): EventBus
+export interface ErrorBus {
+    emitErrorWithMessage (name: string, message: string, e?: any): this,
+    emitError (name: string, exception?: any): this
+}
+
+export interface EventBus extends ErrorBus {
+    on<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): this,
+    once<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): this,
+    emit (name: string, event: any): this,
+    off (name: string, callback: (ctx: any, event: any) => void): this,
 }
 
 export interface ILiveConnect {
-    ready?: boolean,
-    push?: (event: object) => void,
-    fire?: () => void,
+    ready: boolean,
+    push: (event: any) => void,
+    fire: () => void,
     resolve?: (
         successCallBack: (result: IdentityResultionResult) => void,
         errorCallBack: () => void,
@@ -142,7 +145,7 @@ export interface ILiveConnect {
     ) => void,
     resolutionCallUrl?: (additionalParams: ResolutionParams) => string,
     peopleVerifiedId?: string,
-    config?: LiveConnectConfig,
+    config: LiveConnectConfig,
     eventBus?: EventBus
 }
 

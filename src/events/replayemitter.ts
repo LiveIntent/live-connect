@@ -27,7 +27,7 @@ export class ReplayEmitter implements EventBus {
     this.q = {}
   }
 
-  on <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
+  on <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): this {
     const handler: EventHandler<Ctx> = {
       ctx: ctx,
       fn: callback
@@ -43,7 +43,7 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
+  once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): this {
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
       callback(ctx, eventQueue[0])
@@ -59,7 +59,7 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, ...data: any[]): EventBus {
+  emit (name: string, ...data: any[]): this {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
@@ -77,7 +77,7 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  off (name: string, callback: Callback<any>): EventBus {
+  off (name: string, callback: Callback<any>): this {
     const handlers = this.h[name]
     const liveEvents = []
 
@@ -96,12 +96,12 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  emitErrorWithMessage (name: string, message: string, exception: unknown): EventBus {
+  emitErrorWithMessage (name: string, message: string, exception: unknown): this {
     const wrappedError = wrapError(name, message, exception)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  emitError (name: string, exception: unknown): EventBus {
+  emitError (name: string, exception: unknown): this {
     const wrappedError = wrapError(name, undefined, exception)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }

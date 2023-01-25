@@ -2,7 +2,7 @@ import { PixelSender } from '../pixel/sender'
 import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
-import { ErrorDetails, EventBus, State } from '../types'
+import { EventBus, State } from '../types'
 import { CallHandler } from '../handlers/call-handler'
 
 const MAX_ERROR_FIELD_LENGTH = 120

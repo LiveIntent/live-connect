@@ -1,4 +1,4 @@
-import { isObject, merge } from './utils/types'
+import { isFunction, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex/identity-resolver-nocache'
 import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
@@ -10,7 +10,7 @@ import { StorageStrategy } from './model/storage-strategy'
 import { EventBus, ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 
-function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _minimalInitialization (globalVarName: string, liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect | null {
   try {
     const callHandler = new CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
@@ -20,9 +20,24 @@ function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalS
     const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
     const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
     const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)
+    const _push = (arg: any) => {
+      try {
+        if (window && globalVarName in window) {
+          const lcCandidate = window[globalVarName]
+          if (isObject(lcCandidate) && 'push' in lcCandidate) {
+            const maybeFun = lcCandidate.push
+            if (isFunction(maybeFun)) {
+              maybeFun(arg)
+            }
+          }
+        }
+      } catch {
+        // pass
+      }
+    }
     return {
-      push: (arg) => (window[validLiveConnectConfig.globalVarName] as ILiveConnect).push(arg),
-      fire: () => (window[validLiveConnectConfig.globalVarName] as ILiveConnect).push({}),
+      push: _push,
+      fire: () => _push({}),
       peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve,
@@ -32,25 +47,31 @@ function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalS
     }
   } catch (x) {
     console.error(x)
+    return null
   }
 }
 
-export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
+export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect | null {
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    configuration.globalVarName = configuration.globalVarName || 'liQ'
+    const globalVarName = configuration.globalVarName || (configuration.globalVarName = 'liQ')
+
     if (window) {
       window[configuration.globalVarName] = window[configuration.globalVarName] || []
     }
+
     const eventBus = externalEventBus || LocalEventBus()
-    const lc = _minimalInitialization(configuration, externalStorageHandler, externalCallHandler, eventBus)
-    window.liQ_instances = window.liQ_instances || []
-    if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
-      window.liQ_instances.push(lc)
+    const lc = _minimalInitialization(globalVarName, configuration, externalStorageHandler, externalCallHandler, eventBus)
+
+    if (window && lc) {
+      window.liQ_instances = window.liQ_instances || []
+      if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
+        window.liQ_instances.push(lc)
+      }
     }
     return lc
   } catch (x) {
     console.error(x)
   }
-  return {}
+  return null
 }

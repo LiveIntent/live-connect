@@ -11,7 +11,7 @@ use(dirtyChai)
 
 const eventBus = LocalEventBus()
 const storage = new TestStorageHandler(eventBus)
-const storageHandler = StorageHandler('cookie', storage, eventBus)
+const storageHandler = new StorageHandler('cookie', storage, eventBus)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -37,7 +37,7 @@ describe('IdentifiersManager', () => {
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-    const localStorage = StorageHandler('ls', storage, eventBus)
+    const localStorage = new StorageHandler('ls', storage, eventBus)
     const resolutionResult = identifiers.resolve({}, localStorage, eventBus)
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
@@ -45,7 +45,7 @@ describe('IdentifiersManager', () => {
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
-    const storageNone = StorageHandler('none', storage, eventBus)
+    const storageNone = new StorageHandler('none', storage, eventBus)
     const resolutionResult = identifiers.resolve({}, storageNone, eventBus)
     expect(resolutionResult).to.include({ domain: '.www.example.com', liveConnectId: null })
   })
@@ -65,7 +65,7 @@ describe('IdentifiersManager', () => {
 
   it('should emit an error if identifiers.resolve fails for some reason, return an empty object', function () {
     const stub = sandbox.stub(storage, 'getCookie').throws()
-    const failedStorage = StorageHandler('cookie', storage, eventBus)
+    const failedStorage = new StorageHandler('cookie', storage, eventBus)
     const resolutionResult = identifiers.resolve({}, failedStorage, eventBus)
     expect(resolutionResult).to.eql({})
     stub.restore()

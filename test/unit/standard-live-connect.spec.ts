@@ -16,7 +16,7 @@ import { LiveConnect } from '../../src/initializer'
 
 use(dirtyChai)
 const eventBus = LocalEventBus()
-const storage = StorageHandler('cookie', new TestStorageHandler(eventBus), eventBus)
+const storage = new StorageHandler('cookie', new TestStorageHandler(eventBus), eventBus)
 const calls = TestCallHandler
 
 describe('StandardLiveConnect', () => {

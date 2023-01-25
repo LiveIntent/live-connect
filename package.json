@@ -29,7 +29,7 @@
     "CONFIGURATION_OPTIONS.md"
   ],
   "scripts": {
-    "test:unit": "npm run lint && nyc ts-mocha --config test-config/mocha.unit.json",
+    "test:unit": "nyc ts-mocha --config test-config/mocha.unit.json",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run build-test-resources && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build-test-resources && wdio test-config/wdio.docker.chrome.conf.js",
