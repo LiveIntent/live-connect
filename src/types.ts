@@ -2,15 +2,13 @@ import { StateWrapper } from './pixel/state'
 
 export interface Cache {
     get: (key: any) => any
-    set: (key: any, value: any, expiration: Date) => void
+    set: (key: any, value: any, expiration?: Date) => void
 }
 
-export interface ErrorDetails {
-    message?: string,
-    name?: string,
+export interface ErrorDetails extends Error {
     stackTrace?: string,
     lineNumber?: number,
-    lineColumn?: number,
+    columnNumber?: number
     fileName?: string
 }
 
@@ -21,27 +19,12 @@ export interface ExternalMinimalStorageHandler {
 }
 
 export interface ExternalStorageHandler extends ExternalMinimalStorageHandler {
-    get?: (key: string) => string | null,
-    set?: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
+    // get?: (key: string) => string | null,
+    // set?: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
     setCookie?: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
     setDataInLocalStorage?: (key: string, value: string) => void,
     removeDataFromLocalStorage?: (key: string) => void,
     findSimilarCookies?: (substring: string) => string[]
-}
-
-export interface IMinimalStorageHandler extends ExternalMinimalStorageHandler {
-    getCookie: (key: string) => string | null,
-    getDataFromLocalStorage: (key: string) => string | null,
-    localStorageIsEnabled: () => boolean
-}
-
-export interface IStorageHandler extends IMinimalStorageHandler {
-    get: (key: string) => string | null,
-    set: (key: string, value: string, expires: Date, sameSite?: string, domain?: string) => void,
-    setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
-    setDataInLocalStorage: (key: string, value: string) => void,
-    removeDataFromLocalStorage: (key: string) => void,
-    findSimilarCookies: (substring: string) => string[]
 }
 
 export type StorageStrategyMode = 'cookie' | 'ls' | 'none' | 'disabled'
@@ -78,8 +61,8 @@ export type IdentityResultionResult = object
 export interface ExternalCallHandler {
     ajaxGet?: (
         url: string,
-        onSuccess: (responseText: string, response: any) => void,
-        onError?: (error: any) => void,
+        onSuccess: (responseText: string, response: unknown) => void,
+        onError?: (error: unknown) => void,
         timeout?: number
     ) => void,
     pixelGet?: (
@@ -88,18 +71,6 @@ export interface ExternalCallHandler {
     ) => void
 }
 
-export interface ICallHandler {
-    ajaxGet: (
-        url: string,
-        onSuccess: (responseText: string, response: any) => void,
-        onError?: (error: any) => void,
-        timeout?: number
-    ) => void,
-    pixelGet: (
-        url: string,
-        onLoad?: () => void
-    ) => void
-}
 export interface HashedEmail {
     md5: string,
     sha1: string,
@@ -112,7 +83,7 @@ export interface IIdentityResolver {
         errorCallBack: () => void,
         additionalParams?: ResolutionParams
     ) => void,
-    getUrl: (additionalParams: ResolutionParams) => string | undefined
+    getUrl: (additionalParams: ResolutionParams) => string
 }
 
 export interface RetrievedIdentifier {
@@ -145,10 +116,10 @@ export interface HemStore {
     hashedEmail?: HashedEmail[]
 }
 
-export interface ConfigMatcher {
-    appId: string[],
-    wrapperName: string[],
-    collectorUrl: string[]
+export interface ConfigMismatch {
+    appId: (string | undefined)[],
+    wrapperName: (string | undefined)[],
+    collectorUrl: (string | undefined)[]
 }
 
 export interface EventBus {

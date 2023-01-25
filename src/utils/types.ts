@@ -6,8 +6,12 @@ export function safeToString (value: unknown): string {
   return typeof value === 'object' ? JSON.stringify(value) : ('' + value)
 }
 
-export function isNonEmpty (value: unknown): boolean {
-  return typeof value !== 'undefined' && value !== null && trim(value).length > 0
+export function nonNull <A> (value: A): value is NonNullable<A> {
+  return value != null
+}
+
+export function isNonEmpty <A> (value: A): value is NonNullable<A> {
+  return nonNull(value) && trim(value).length > 0
 }
 
 export function isUUID (value: unknown): value is string {
@@ -52,19 +56,19 @@ export function expiresInHours (expires: number): Date {
   return _expiresIn(expires, 36e5)
 }
 
-export function asParamOrEmpty <A> (param: string, value: A, transform: (a: A) => string): [string, string][] {
+export function asParamOrEmpty <A> (param: string, value: A, transform: (a: NonNullable<A>) => string): [string, string][] {
   return isNonEmpty(value) ? [[param, transform(value)]] : []
 }
 
-export function asStringParam (param: string, value: string | number | boolean): [string, string][] {
+export function asStringParam (param: string, value: string | number | boolean | null | undefined): [string, string][] {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(s))
 }
 
-export function asStringParamTransform <A> (param: string, value: A, transform: (a: A) => string | number | boolean): [string, string][] {
+export function asStringParamTransform <A> (param: string, value: A, transform: (a: NonNullable<A>) => string | number | boolean): [string, string][] {
   return asParamOrEmpty(param, value, (s) => encodeURIComponent(transform(s)))
 }
 
-export function asStringParamWhen<A extends string | number | boolean> (param: string, value: A, predicate: (s: A) => boolean): [string, string][] {
+export function asStringParamWhen<A extends string | number | boolean | null | undefined> (param: string, value: A, predicate: (s: NonNullable<A>) => boolean): [string, string][] {
   return (isNonEmpty(value) && isFunction(predicate) && predicate(value)) ? [[param, encodeURIComponent(value)]] : []
 }
 

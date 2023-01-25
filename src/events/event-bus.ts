@@ -1,6 +1,6 @@
 import { ReplayEmitter, wrapError } from './replayemitter'
 import * as C from '../utils/consts'
-import { isFunction } from '../utils/types'
+import { isFunction, isObject } from '../utils/types'
 import { EventBus } from '../types'
 
 function initBus (size?: number | unknown): EventBus {
@@ -11,7 +11,7 @@ function initBus (size?: number | unknown): EventBus {
   }
 }
 
-function extendBusIfNeeded (bus: EventBus): void {
+function extendBusIfNeeded (bus: unknown): void {
   if (isFunction(bus.emitErrorWithMessage) && isFunction(bus.emitError)) {
     return
   }
@@ -46,7 +46,14 @@ export function GlobalEventBus (name: keyof Window, size: number, errorCallback:
   }
 }
 
-export function getAvailableBus (name: keyof Window): EventBus {
+export function getAvailableBus (name: string): EventBus | null {
+  if (window && name in window) {
+    const obj = window[name]
+    if (isObject(obj) && 'eventBus' in obj) {
+      return extendBusIfNeeded(obj.eventBus)
+    }
+  }
+
   const eventBus = window[name].eventBus || window[C.EVENT_BUS_NAMESPACE]
   extendBusIfNeeded(eventBus)
   return eventBus

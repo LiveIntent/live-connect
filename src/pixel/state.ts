@@ -7,134 +7,50 @@ import { EventBus, State } from '../types'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-const _pArray: [string, (value: any) => [string, string][]][] = [
-  [
-    'appId',
-    aid => {
-      return asStringParam('aid', aid)
+function ifDefined <K extends keyof State> (key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): (state: State) => [string, string][] {
+  return state => {
+    const value = state[key]
+    if (value) {
+      return fun(value)
+    } else {
+      return []
     }
-  ],
-  [
-    'distributorId',
-    did => {
-      return asStringParam('did', did)
+  }
+}
+
+const paramExtractors: ((state: State) => [string, string][])[] = [
+  ifDefined('appId', aid => asStringParam('aid', aid)),
+  ifDefined('distributorId', did => asStringParam('did', did)),
+  ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
+  ifDefined('liveConnectId', fpc => asStringParam('duid', fpc)),
+  ifDefined('trackerName', tn => asStringParam('tna', tn)),
+  ifDefined('pageUrl', purl => asStringParam('pu', purl)),
+  ifDefined('errorDetails', ed => asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))),
+  ifDefined('retrievedIdentifiers', identifiers => {
+    const identifierParams: [string, string][] = []
+    if (isArray(identifiers)) {
+      identifiers.forEach((i) => identifierParams.push(...asStringParam(`ext_${i.name}`, i.value)))
     }
-  ],
-  [
-    'eventSource',
-    source => {
-      return asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))
+    return identifierParams
+  }),
+  ifDefined('hashesFromIdentifiers', hashes => {
+    const hashParams: [string, string][] = []
+    if (isArray(hashes)) {
+      hashes.forEach((h) => hashParams.push(...asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
     }
-  ],
-  [
-    'liveConnectId',
-    fpc => {
-      return asStringParam('duid', fpc)
-    }
-  ],
-  [
-    'trackerName',
-    tn => {
-      return asStringParam('tna', tn)
-    }
-  ],
-  [
-    'pageUrl',
-    purl => {
-      return asStringParam('pu', purl)
-    }
-  ],
-  [
-    'errorDetails',
-    ed => {
-      return asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))
-    }
-  ],
-  [
-    'retrievedIdentifiers',
-    identifiers => {
-      const identifierParams = []
-      if (isArray(identifiers)) {
-        identifiers.forEach((i) => identifierParams.push(...asStringParam(`ext_${i.name}`, i.value)))
-      }
-      return identifierParams
-    }
-  ],
-  [
-    'hashesFromIdentifiers',
-    hashes => {
-      const hashParams = []
-      if (isArray(hashes)) {
-        hashes.forEach((h) => hashParams.push(...asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
-      }
-      return hashParams
-    }
-  ],
-  ['decisionIds',
-    dids => {
-      return asStringParamTransform('li_did', dids, (s) => s.join(','))
-    }
-  ],
-  [
-    'hashedEmail',
-    he => {
-      return asStringParamTransform('e', he, (s) => s.join(','))
-    }
-  ],
-  [
-    'usPrivacyString',
-    usps => {
-      return asStringParam('us_privacy', usps)
-    }
-  ],
-  [
-    'wrapperName',
-    wrapper => {
-      return asStringParam('wpn', wrapper)
-    }
-  ],
-  [
-    'gdprApplies',
-    gdprApplies => {
-      return asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)
-    }
-  ],
-  [
-    'privacyMode',
-    privacyMode => {
-      return asStringParamWhen('n3pc', privacyMode ? 1 : 0, v => v === 1)
-    }
-  ],
-  [
-    'privacyMode',
-    privacyMode => {
-      return asStringParamWhen('n3pct', privacyMode ? 1 : 0, v => v === 1)
-    }
-  ],
-  [
-    'privacyMode',
-    privacyMode => {
-      return asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)
-    }
-  ],
-  [
-    'gdprConsent',
-    gdprConsentString => {
-      return asStringParam('gdpr_consent', gdprConsentString)
-    }
-  ],
-  [
-    'referrer',
-    referrer => {
-      return asStringParam('refr', referrer)
-    }
-  ],
-  [
-    'contextElements',
-    contextElements => {
-      return asStringParam('c', contextElements)
-    }
-  ]
+    return hashParams
+  }),
+  ifDefined('decisionIds', dids => asStringParamTransform('li_did', dids, (s) => s.join(','))),
+  ifDefined('hashedEmail', he => asStringParamTransform('e', he, (s) => s.join(','))),
+  ifDefined('usPrivacyString', usps => asStringParam('us_privacy', usps)),
+  ifDefined('wrapperName', wrapper => asStringParam('wpn', wrapper)),
+  ifDefined('gdprApplies', gdprApplies => asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)),
+  ifDefined('privacyMode', privacyMode => asStringParamWhen('n3pc', privacyMode ? 1 : 0, v => v === 1)),
+  ifDefined('privacyMode', privacyMode => asStringParamWhen('n3pct', privacyMode ? 1 : 0, v => v === 1)),
+  ifDefined('privacyMode', privacyMode => asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)),
+  ifDefined('gdprConsent', gdprConsentString => asStringParam('gdpr_consent', gdprConsentString)),
+  ifDefined('referrer', referrer => asStringParam('refr', referrer)),
+  ifDefined('contextElements', contextElements => asStringParam('c', contextElements))
 ]
 
 export class Query {
@@ -183,21 +99,19 @@ export class StateWrapper {
     const eventKeys = Object.keys(source)
       .filter(objKey => objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event')
     const eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0]
-    const eventName = eventKey && trim(this.data.eventSource[eventKey])
+    const eventName = eventKey && trim(source[eventKey as keyof typeof source])
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
   }
 
   asTuples (): [string, string][] {
-    let array: [string, string][] = []
-    _pArray.forEach((keyWithParamsExtractor) => {
-      const key = keyWithParamsExtractor[0]
-      const value = this.data[key]
-      const params = keyWithParamsExtractor[1](value)
-      if (params && params.length) {
-        array = array.concat(params)
+    let acc: [string, string][] = []
+    paramExtractors.forEach((extractor) => {
+      const params = extractor(this.data)
+      if (params && isArray(params)) {
+        acc.push(...params)
       }
     })
-    return array
+    return acc
   }
 
   asQuery (): Query {

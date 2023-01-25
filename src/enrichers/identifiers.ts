@@ -1,8 +1,9 @@
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from '../utils/types'
-import { EventBus, HashedEmail, IMinimalStorageHandler, State, RetrievedIdentifier } from '../types'
+import { EventBus, HashedEmail, State, RetrievedIdentifier } from '../types'
+import { MinimalStorageHandler } from '../handlers/storage-handler'
 
-export function enrich (state: State, storageHandler: IMinimalStorageHandler, eventBus: EventBus) {
+export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus) {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
@@ -26,7 +27,7 @@ function _parseIdentifiersToResolve (state: State): string[] {
   return cookieNames
 }
 
-function _getIdentifiers (cookieNames: string[], storageHandler: IMinimalStorageHandler): State {
+function _getIdentifiers (cookieNames: string[], storageHandler: MinimalStorageHandler): State {
   const identifiers: RetrievedIdentifier[] = []
   let hashes: HashedEmail[] = []
   for (let i = 0; i < cookieNames.length; i++) {

@@ -1,6 +1,6 @@
 import { isArray } from './types'
 
-type ParsedParam = number | boolean | string | null | undefined
+export type ParsedParam = number | boolean | string | null | undefined
 
 export const toParams = (tuples: ([string, string][])) => {
   let acc = ''
@@ -48,12 +48,29 @@ function _allParams (url: string): Record<string, string | string[]> {
   if ((historyIndex = queryParams.indexOf('#')) !== -1 && !(queryParams = queryParams.slice(0, historyIndex))) {
     return obj
   }
-  queryParams.split('&').forEach(function (query) {
-    if (query) {
-      query = ((query = query.split('=')) && query.length === 2 ? query : [query[0], 'true'])
-      if (query[0].slice(-2) === '[]') obj[query[0] = query[0].slice(0, -2)] = obj[query[0]] || []
-      if (!obj[query[0]]) return (obj[query[0]] = query[1])
-      isArray(obj[query[0]]) ? obj[query[0]].push(query[1]) : (obj[query[0]] = [obj[query[0]], query[1]])
+  queryParams.split('&').forEach(function (raw) {
+    if (raw) {
+      let key: string
+      let value: string
+
+      const split = raw.split('=')
+      key = split[0]
+      value = split.length == 2 ? split[1] : 'true'
+
+      if (key.slice(-2) === '[]') {
+        key = key.slice(0, -2)
+      }
+
+      if (key in obj) {
+        const previous = obj[key]
+        if (isArray(previous)) {
+          previous.push(value)
+        } else {
+          obj[key] = [previous, value]
+        }
+      } else {
+        obj[key] = value
+      }
     }
   })
   return obj

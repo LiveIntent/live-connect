@@ -2,7 +2,8 @@ import { PixelSender } from '../pixel/sender'
 import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
-import { EventBus, ICallHandler, IPixelSender, State } from '../types'
+import { ErrorDetails, EventBus, State } from '../types'
+import { CallHandler } from '../handlers/call-handler'
 
 const MAX_ERROR_FIELD_LENGTH = 120
 
@@ -22,7 +23,7 @@ function _asInt (field: any): number | undefined {
   }
 }
 
-function _truncate (value: string): string | undefined {
+function _truncate (value: string | undefined): string | undefined {
   try {
     if (value && value.length && value.length > MAX_ERROR_FIELD_LENGTH) {
       return `${value.substr(0, MAX_ERROR_FIELD_LENGTH)}...`
@@ -37,11 +38,11 @@ export function asErrorDetails (e: any): State {
   if (e) {
     return {
       errorDetails: {
-        message: _truncate(e.message),
-        name: _truncate(e.name),
+        message: _truncate(e.message) || '',
+        name: _truncate(e.name) || '',
         stackTrace: _truncate(e.stack),
         lineNumber: _asInt(e.lineNumber),
-        lineColumn: _asInt(e.lineColumn),
+        columnNumber: _asInt(e.columnNumber),
         fileName: _truncate(e.fileName)
       }
     }
@@ -50,7 +51,7 @@ export function asErrorDetails (e: any): State {
   }
 }
 
-export function register (state: State, callHandler: ICallHandler, eventBus: EventBus): void {
+export function register (state: State, callHandler: CallHandler, eventBus: EventBus): void {
   try {
     const pixelSender = new PixelSender(state, callHandler, eventBus)
 

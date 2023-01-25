@@ -12,7 +12,7 @@ export function containsEmailField (s: string): boolean {
   return emailRegex().test(s)
 }
 
-export function extractEmail (s: string): string {
+export function extractEmail (s: string): string | null {
   const result = s.match(emailRegex())
   return result && result.map(trim)[0]
 }

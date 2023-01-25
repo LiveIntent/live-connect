@@ -4,7 +4,7 @@ import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
-import { StorageHandler } from './handlers/read-storage-handler'
+import { MinimalStorageHandler, StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 import { StorageStrategy } from './model/storage-strategy'
 import { EventBus, ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
@@ -12,11 +12,11 @@ import { LocalEventBus } from './events/event-bus'
 
 function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   try {
-    const callHandler = CallHandler(externalCallHandler, eventBus)
+    const callHandler = new CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
     const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler, eventBus)
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy || StorageStrategy.cookie
+    const storageHandler = new MinimalStorageHandler(storageStrategy, externalStorageHandler, eventBus)
     const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
     const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
     const resolver = IdentityResolver(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)

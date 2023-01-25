@@ -3,13 +3,14 @@ import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from '../utils/types'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
-import { EventBus, IStorageHandler, State } from '../types'
+import { EventBus, State } from '../types'
+import { StorageHandler } from '../handlers/storage-handler'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
-export function resolve (state: State, storageHandler: IStorageHandler, eventBus: EventBus): State {
+export function resolve (state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
   try {
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
@@ -28,7 +29,7 @@ export function resolve (state: State, storageHandler: IStorageHandler, eventBus
       return `.${domain}`
     }
 
-    const getOrAddWithExpiration = (key, value) => {
+    const getOrAddWithExpiration = (key: string, value: string) => {
       try {
         const oldValue = storageHandler.get(key)
         const expiry = expiresInDays(storageOptions.expires)
@@ -44,12 +45,7 @@ export function resolve (state: State, storageHandler: IStorageHandler, eventBus
       }
     }
 
-    /**
-     * @param {string} apexDomain
-     * @returns {string}
-     * @private
-     */
-    const generateCookie = (apexDomain) => {
+    const generateCookie = (apexDomain: string) => {
       const cookie = `${domainHash(apexDomain)}--${ulid()}`
       return cookie.toLocaleLowerCase()
     }
@@ -63,7 +59,7 @@ export function resolve (state: State, storageHandler: IStorageHandler, eventBus
     const liveConnectIdentifier = getOrAddWithExpiration(
       NEXT_GEN_FP_NAME,
       generateCookie(cookieDomain)
-    )
+    ) || undefined
 
     if (liveConnectIdentifier) {
       storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)

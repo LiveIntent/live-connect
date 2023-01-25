@@ -1,5 +1,6 @@
 import * as C from '../utils/consts'
-import { EventBus } from '../types'
+import { ErrorDetails, EventBus } from '../types'
+import { isObject } from '../utils/types';
 
 type Callback<Ctx> = (ctx: Ctx, data: unknown[]) => void
 
@@ -95,21 +96,39 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  emitErrorWithMessage (name: string, message?: string, e: object = {}): EventBus {
-    const wrappedError = wrapError(name, message, e)
+  emitErrorWithMessage (name: string, message: string, exception: unknown): EventBus {
+    const wrappedError = wrapError(name, message, exception)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  emitError (name: string, exception: object & { message?: string }): EventBus {
-    return this.emitErrorWithMessage(name, exception.message, exception)
+  emitError (name: string, exception: unknown): EventBus {
+    const wrappedError = wrapError(name, undefined, exception)
+    return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 }
 
-export function wrapError (name: string, message: string | undefined, e: object & { message?: string }): any {
-  const wrapped: any = new Error(message || e.message)
-  wrapped.stack = e.stack
-  wrapped.name = name || 'unknown error'
-  wrapped.lineNumber = e.lineNumber
-  wrapped.columnNumber = e.columnNumber
-  return wrapped
+export function wrapError (name: string, message?: string, e?: unknown): ErrorDetails {
+  if (isObject(e)) {
+    let error: ErrorDetails
+    if ('message' in e && typeof e.message === 'string') {
+      error = new Error(message || e.message)
+    } else {
+      error = new Error(message)
+    }
+
+    if ('stack' in e && typeof e.stack === 'string') {
+      error.stack = e.stack
+    }
+    if ('lineNumber' in e && typeof e.lineNumber === 'number') {
+      error.lineNumber = e.lineNumber
+    }
+    if ('columnNumber' in e && typeof e.columnNumber === 'number') {
+      error.columnNumber = e.columnNumber
+    }
+    return error
+  } else {
+    const error = Error(message)
+    error.name = name || 'unknown error'
+    return error
+  }
 }

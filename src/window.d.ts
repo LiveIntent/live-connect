@@ -7,6 +7,7 @@ declare global {
     // eslint-disable-next-line camelcase
     liQ_instances?: ILiveConnect[]
     liQ?: ILiveConnect
-    XDomainRequest?: { new (): XDomainRequest; prototype: XDomainRequest; create(): XDomainRequest; };
+    XDomainRequest?: { new (): XDomainRequest; prototype: XDomainRequest; create(): XDomainRequest; } // for IE compat
+    [k: string]: unknown // allow accessing arbitrary fields
   }
 }
