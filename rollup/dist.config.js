@@ -18,7 +18,7 @@ export default {
   ],
   plugins: [
     cleaner({targets: [OUTPUT_DIR]}),
-    ts({tsconfig: resolvedConfig => ({...resolvedConfig, declaration: true})}),
+    ts(),
     resolve(),
     commonjs(),
     strip(),

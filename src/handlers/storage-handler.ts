@@ -1,6 +1,6 @@
 import { isFunction, strEqualsIgnoreCase } from '../utils/types'
-import { StorageStrategy } from '../model/storage-strategy'
-import { EventBus, ExternalMinimalStorageHandler, ExternalStorageHandler, StorageStrategyMode } from '../types'
+import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
+import { EventBus, ExternalMinimalStorageHandler, ExternalStorageHandler } from '../types'
 import { WrappingContext } from '../utils/wrapping'
 
 interface WrappedExternalMinimalStorageHandler {
@@ -18,18 +18,18 @@ interface WrappedExternalStorageHandler {
 
 const noop = () => undefined
 
-function wrapRead<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategyMode, functionName: K) {
-  return strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) ? noop : wrapper.wrap(functionName)
+function wrapRead<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
+  return strEqualsIgnoreCase(storageStrategy, StorageStrategies.disabled) ? noop : wrapper.wrap(functionName)
 }
 
-function wrapWrite<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategyMode, functionName: K) {
-  return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? noop : wrapRead(wrapper, storageStrategy, functionName)
+function wrapWrite<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
+  return strEqualsIgnoreCase(storageStrategy, StorageStrategies.none) ? noop : wrapRead(wrapper, storageStrategy, functionName)
 }
 
 export class MinimalStorageHandler {
   private minimalFunctions: WrappedExternalMinimalStorageHandler
 
-  protected constructor (storageStrategy: StorageStrategyMode, wrapper: WrappingContext<ExternalMinimalStorageHandler>) {
+  protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<ExternalMinimalStorageHandler>) {
     this.minimalFunctions = {
       getCookie: wrapRead(wrapper, storageStrategy, 'getCookie'),
       getDataFromLocalStorage: wrapRead(wrapper, storageStrategy, 'getDataFromLocalStorage'),
@@ -37,7 +37,7 @@ export class MinimalStorageHandler {
     }
   }
 
-  static make (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): MinimalStorageHandler {
+  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): MinimalStorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'MinimalStorageHandler', eventBus)
     const handler = new MinimalStorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
@@ -59,9 +59,9 @@ export class MinimalStorageHandler {
 
 export class StorageHandler extends MinimalStorageHandler {
   private functions: WrappedExternalStorageHandler
-  storageStrategy: StorageStrategyMode
+  storageStrategy: StorageStrategy
 
-  protected constructor (storageStrategy: StorageStrategyMode, wrapper: WrappingContext<ExternalStorageHandler>) {
+  protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<ExternalStorageHandler>) {
     super(storageStrategy, wrapper)
 
     this.storageStrategy = storageStrategy
@@ -74,7 +74,7 @@ export class StorageHandler extends MinimalStorageHandler {
     }
   }
 
-  static make (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): StorageHandler {
+  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): StorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'StorageHandler', eventBus)
     const handler = new StorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
@@ -82,9 +82,9 @@ export class StorageHandler extends MinimalStorageHandler {
   }
 
   get (key: string): string | null {
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategy.disabled)) {
+    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
       return null
-    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategy.localStorage)) {
+    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
       if (this.localStorageIsEnabled()) {
         const expirationKey = `${key}_exp`
         const oldLsExpirationEntry = this.getDataFromLocalStorage(expirationKey)
@@ -101,9 +101,9 @@ export class StorageHandler extends MinimalStorageHandler {
   }
 
   set (key: string, value: string, expires: Date, domain?: string): void {
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategy.disabled)) {
+    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
       // pass
-    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategy.localStorage)) {
+    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
       if (this.localStorageIsEnabled()) {
         const expirationKey = `${key}_exp`
         this.setDataInLocalStorage(key, value)

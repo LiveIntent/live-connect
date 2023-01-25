@@ -13,7 +13,7 @@ import { isArray, isObject, merge } from './utils/types'
 import { IdentityResolver } from './idex'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
-import { StorageStrategy } from './model/storage-strategy'
+import { StorageStrategies } from './model/storage-strategy'
 import { ConfigMatcher, EventBus, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
 
@@ -85,7 +85,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
     const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler, eventBus)
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
     const storageHandler = StorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler, eventBus))
 

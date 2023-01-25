@@ -19,7 +19,7 @@ export default {
   },
   plugins: [
     cleaner({targets: [OUTPUT_DIR]}),
-    ts(),
+    ts({tsconfig: resolvedConfig => ({...resolvedConfig, declaration: false})}),
     resolve(),
     commonjs(),
     babel(),

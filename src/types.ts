@@ -1,4 +1,4 @@
-import { StateWrapper } from './pixel/state'
+import { StorageStrategy } from "./model/storage-strategy"
 
 export interface ErrorDetails extends Error {
     stackTrace?: string,
@@ -20,8 +20,6 @@ export interface ExternalStorageHandler extends ExternalMinimalStorageHandler {
     findSimilarCookies?: (substring: string) => string[]
 }
 
-export type StorageStrategyMode = 'cookie' | 'ls' | 'none' | 'disabled'
-
 export interface IdentityResolutionConfig {
     url?: string,
     expirationHours?: number,
@@ -36,7 +34,7 @@ export interface IdentityResolutionConfig {
 export interface LiveConnectConfig {
     appId?: string,
     wrapperName?: string,
-    storageStrategy?: StorageStrategyMode,
+    storageStrategy?: StorageStrategy,
     collectorUrl?: string,
     usPrivacyString?: string,
     gdprApplies?: boolean,
@@ -49,6 +47,7 @@ export interface LiveConnectConfig {
 }
 
 export type ResolutionParams = Record<string, string | string[]>
+
 // Object fields will be name and value of requested attributes
 export type IdentityResultionResult = object
 export interface ExternalCallHandler {
@@ -131,9 +130,4 @@ export interface ILiveConnect {
     peopleVerifiedId?: string,
     config: LiveConnectConfig,
     eventBus?: EventBus
-}
-
-export interface IPixelSender {
-    sendAjax (state: StateWrapper): void,
-    sendPixel (state: StateWrapper): void,
 }

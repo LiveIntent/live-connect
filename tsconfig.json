@@ -7,6 +7,7 @@
     "module": "CommonJS",
     "types": ["webdriverio/async", "mocha"],
     "strict": true,
+    "declaration": true
   },
   "include": ["./src/**/*", "./test/**/*"]
 }

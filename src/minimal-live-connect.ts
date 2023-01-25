@@ -7,7 +7,7 @@ import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { MinimalStorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
-import { StorageStrategy } from './model/storage-strategy'
+import { StorageStrategies } from './model/storage-strategy'
 import { EventBus, ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 
@@ -16,7 +16,7 @@ function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalS
     const callHandler = new CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
     const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
     const storageHandler = MinimalStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
     const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
     const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
