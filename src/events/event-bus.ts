@@ -5,10 +5,11 @@ import { isFunction } from '../utils/types'
 import { EventBus } from '../types'
 
 function initBus (size?: number): EventBus {
-  if (typeof size === 'undefined') {
-    size = 5
+  if (typeof size === 'number' && size >= 0) {
+    return new ReplayEmitter(size)
+  } else {
+    return new ReplayEmitter(5)
   }
-  return new ReplayEmitter(size)
 }
 
 function extendBusIfNeeded (bus: EventBus) {
