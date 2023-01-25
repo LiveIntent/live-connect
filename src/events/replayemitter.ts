@@ -6,7 +6,7 @@ type Callback = (data: any[]) => void
 
 interface EventHandler {
   ctx?: any,
-  fn: (data: any[]) => void
+  fn: (data: any) => void
 }
 
 export class ReplayEmitter implements EventBus {
@@ -49,9 +49,9 @@ export class ReplayEmitter implements EventBus {
       callback.apply(ctx, eventQueue[0])
       return this
     } else {
-      const listener = (...arg: any[]) => {
+      const listener = (...args: [data: any]) => {
         this.off(name, listener)
-        callback.apply(ctx, arg)
+        callback.apply(ctx, args)
       }
 
       listener._ = callback
@@ -65,7 +65,7 @@ export class ReplayEmitter implements EventBus {
     const len = evtArr.length
 
     for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data)
+      evtArr[i].fn.apply(evtArr[i].ctx, data as [data: any])
     }
 
     const eventQueue = this.q[name] || (this.q[name] = [])
