@@ -14,9 +14,9 @@ const _defaultReturn: State = {
   }
 }
 
-function _asInt (field: any): number | undefined {
+function _asInt (field: unknown): number | undefined {
   try {
-    const intValue = field * 1
+    const intValue = (field as number) * 1
     return isNaN(intValue) ? undefined : intValue
   } catch {
 

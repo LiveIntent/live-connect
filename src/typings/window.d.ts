@@ -1,4 +1,4 @@
-import { ILiveConnect } from './types'
+import { ILiveConnect } from '../types'
 
 declare global {
   type XDomainRequest = any
