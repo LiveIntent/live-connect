@@ -49,9 +49,9 @@ export class ReplayEmitter implements EventBus {
       callback.apply(ctx, eventQueue[0])
       return this
     } else {
-      const listener = (...args: any[]) => {
+      const listener = (arg: any[]) => {
         this.off(name, listener)
-        callback.apply(ctx, args)
+        callback.apply(ctx, arg)
       }
 
       listener._ = callback
