@@ -94,11 +94,11 @@ export function mapAsParams (paramsMap: Record<string, string | string[]>): [str
 export function merge <A extends object, B extends object> (obj1: A, obj2: B): A & B {
   const res = {} as A & B
 
-  function clean <T> (obj: T): T | {} {
+  function clean <T> (obj: T): T | object {
     return isObject(obj) ? obj : {}
   }
 
-  function keys <T extends object>(obj: T): (keyof T)[] {
+  function keys <T extends object> (obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[]
   }
 

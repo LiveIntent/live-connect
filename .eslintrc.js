@@ -17,5 +17,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended'
   ],
   globals: {},
-  rules: {}
+  rules: {
+    "@typescript-eslint/ban-ts-comment": 0
+  }
 }

@@ -3,11 +3,13 @@ import { safeToString, isString, isArray } from '../utils/types'
 import { EventBus, HashedEmail, State, RetrievedIdentifier } from '../types'
 import { MinimalStorageHandler } from '../handlers/storage-handler'
 
-export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus) {
+export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus?: EventBus): State {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
-    eventBus.emitError('IdentifiersEnricher', e)
+    if (eventBus) {
+      eventBus.emitError('IdentifiersEnricher', e)
+    }
     return {}
   }
 }
@@ -52,7 +54,7 @@ function _deduplicateHashes (hashes: HashedEmail[]): HashedEmail[] {
   const seen = new Set<string>()
   const result: HashedEmail[] = []
   for (let i = 0; i < hashes.length; i++) {
-    if (!(hashes[i].md5 in seen)) {
+    if (!seen.has(hashes[i].md5)) {
       result.push(hashes[i])
       seen.add(hashes[i].md5)
     }

@@ -43,5 +43,4 @@ export class CallHandler {
   ): void {
     this.functions.pixelGet(url, onLoad)
   }
-
 }

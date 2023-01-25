@@ -1,7 +1,7 @@
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
-import { IdentityResolver } from '../../../src/idex/identity-resolver-nocache'
+import { IdentityResolver } from '../../../src/idex'
 import { TestCallHandler } from '../../shared/utils/calls'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
@@ -33,7 +33,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should invoke callback on success', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({}, calls, eventBus)
+    const identityResolver = IdentityResolver.makeNoCache({}, calls, eventBus)
     const successCallback = (responseAsJson) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
@@ -49,7 +49,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach the duid', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
+    const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987')
       expect(errors).to.be.empty()
@@ -62,7 +62,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach additional params', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
+    const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
       expect(errors).to.be.empty()
@@ -75,7 +75,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach additional params with an array that should be serialized as repeated query', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987' }, calls)
+    const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&qf=0.1&resolve=age&resolve=gender')
       expect(errors).to.be.empty()
@@ -88,7 +88,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach publisher id', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, calls)
+    const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/123?duid=987&key=value')
       expect(errors).to.be.empty()
@@ -100,7 +100,7 @@ describe('IdentityResolver without cache', () => {
   })
 
   it('should not attach an empty tuple', function (done) {
-    const identityResolver = IdentityResolver({ peopleVerifiedId: null }, calls)
+    const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: null }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(errors).to.be.empty()
@@ -113,7 +113,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach the duid & multiple retrieved identifiers', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({
+    const identityResolver = IdentityResolver.makeNoCache({
       peopleVerifiedId: '987',
       retrievedIdentifiers: [
         {
@@ -138,7 +138,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach the consent values when gpdr does not apply', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({
+    const identityResolver = IdentityResolver.makeNoCache({
       gdprApplies: false,
       privacyMode: false,
       gdprConsent: 'gdprConsent',
@@ -156,7 +156,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should attach the consent and nc values when gpdr applies', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver({
+    const identityResolver = IdentityResolver.makeNoCache({
       gdprApplies: true,
       privacyMode: true,
       gdprConsent: 'gdprConsent',
@@ -173,7 +173,7 @@ describe('IdentityResolver without cache', () => {
   })
 
   it('should return the default empty response and emit error if response is 500', function (done) {
-    const identityResolver = IdentityResolver({}, calls)
+    const identityResolver = IdentityResolver.makeNoCache({}, calls)
     const errorCallback = (error) => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
       done()
@@ -184,7 +184,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should allow resolving custom attributes', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver(
+    const identityResolver = IdentityResolver.makeNoCache(
       {
         identityResolutionConfig: {
           requestedAttributes: ['uid2', 'md5']
@@ -207,7 +207,7 @@ describe('IdentityResolver without cache', () => {
 
   it('should not resolve uid2 when privacy mode is enabled', function (done) {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver(
+    const identityResolver = IdentityResolver.makeNoCache(
       {
         identityResolutionConfig: {
           requestedAttributes: ['uid2', 'md5']

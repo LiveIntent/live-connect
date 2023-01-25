@@ -18,51 +18,52 @@ interface WrappedExternalStorageHandler {
 
 const noop = () => undefined
 
-function wrapRead<T extends object, K extends keyof T & string>(wrapper: WrappingContext<T>, storageStrategy: StorageStrategyMode, functionName: K) {
+function wrapRead<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategyMode, functionName: K) {
   return strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled) ? noop : wrapper.wrap(functionName)
 }
 
-function wrapWrite<T extends object, K extends keyof T & string>(wrapper: WrappingContext<T>, storageStrategy: StorageStrategyMode, functionName: K) {
-  return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? noop : wrapper.wrap(functionName)
+function wrapWrite<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategyMode, functionName: K) {
+  return strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? noop : wrapRead(wrapper, storageStrategy, functionName)
 }
 
 export class MinimalStorageHandler {
   private minimalFunctions: WrappedExternalMinimalStorageHandler
 
-  constructor (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus) {
-    const wrapper = new WrappingContext(externalStorageHandler, 'ReadStorageHandler', eventBus)
-
+  protected constructor (storageStrategy: StorageStrategyMode, wrapper: WrappingContext<ExternalMinimalStorageHandler>) {
     this.minimalFunctions = {
       getCookie: wrapRead(wrapper, storageStrategy, 'getCookie'),
       getDataFromLocalStorage: wrapRead(wrapper, storageStrategy, 'getDataFromLocalStorage'),
-      localStorageIsEnabled: wrapRead(wrapper, storageStrategy, 'localStorageIsEnabled')
+      localStorageIsEnabled: wrapWrite(wrapper, storageStrategy, 'localStorageIsEnabled')
     }
+  }
 
+  static make (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): MinimalStorageHandler {
+    const wrapper = new WrappingContext(externalStorageHandler, 'MinimalStorageHandler', eventBus)
+    const handler = new MinimalStorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
+    return handler
   }
 
   localStorageIsEnabled (): boolean {
-    return !!this.minimalFunctions['localStorageIsEnabled']()
+    return !!this.minimalFunctions.localStorageIsEnabled()
   }
 
   getCookie (key: string): string | null {
-    return this.minimalFunctions['getCookie'](key) || null
+    return this.minimalFunctions.getCookie(key) || null
   }
 
   getDataFromLocalStorage (key: string): string | null {
-    return this.minimalFunctions['getDataFromLocalStorage'](key) || null
+    return this.minimalFunctions.getDataFromLocalStorage(key) || null
   }
-
 }
 
 export class StorageHandler extends MinimalStorageHandler {
   private functions: WrappedExternalStorageHandler
   storageStrategy: StorageStrategyMode
 
-  constructor (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalStorageHandler, eventBus?: EventBus) {
-    super(storageStrategy, externalStorageHandler, eventBus)
+  protected constructor (storageStrategy: StorageStrategyMode, wrapper: WrappingContext<ExternalStorageHandler>) {
+    super(storageStrategy, wrapper)
 
-    const wrapper = new WrappingContext(externalStorageHandler, 'StorageHandler', eventBus)
     this.storageStrategy = storageStrategy
 
     this.functions = {
@@ -71,8 +72,13 @@ export class StorageHandler extends MinimalStorageHandler {
       setDataInLocalStorage: wrapWrite(wrapper, storageStrategy, 'setDataInLocalStorage'),
       findSimilarCookies: wrapRead(wrapper, storageStrategy, 'findSimilarCookies')
     }
+  }
 
+  static make (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): StorageHandler {
+    const wrapper = new WrappingContext(externalStorageHandler, 'StorageHandler', eventBus)
+    const handler = new StorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
+    return handler
   }
 
   get (key: string): string | null {
@@ -83,7 +89,7 @@ export class StorageHandler extends MinimalStorageHandler {
         const expirationKey = `${key}_exp`
         const oldLsExpirationEntry = this.getDataFromLocalStorage(expirationKey)
         if (oldLsExpirationEntry && Date.parse(oldLsExpirationEntry) <= new Date().getTime()) {
-          this.functions.removeDataFromLocalStorage(key)
+          this.removeDataFromLocalStorage(key)
         }
         return this.getDataFromLocalStorage(key)
       } else {
@@ -109,18 +115,18 @@ export class StorageHandler extends MinimalStorageHandler {
   }
 
   setCookie (key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
-    this.functions['setCookie'](key, value, expires, sameSite, domain)
+    this.functions.setCookie(key, value, expires, sameSite, domain)
   }
 
   setDataInLocalStorage (key: string, value: string): void {
-    this.functions['setDataInLocalStorage'](key, value)
+    this.functions.setDataInLocalStorage(key, value)
   }
 
   removeDataFromLocalStorage (key: string): void {
-    this.functions['removeDataFromLocalStorage'](key)
+    this.functions.removeDataFromLocalStorage(key)
   }
 
   findSimilarCookies (substring: string): string[] {
-    return this.functions['findSimilarCookies'](substring) || []
+    return this.functions.findSimilarCookies(substring) || []
   }
 }

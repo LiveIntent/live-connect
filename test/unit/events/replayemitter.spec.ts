@@ -116,7 +116,7 @@ describe('ReplayEmitter', () => {
   })
 
   it('should use exception message if message has not been sent', () => {
-    const wrappedError = wrapError('some name', null, new Error('the original message'))
+    const wrappedError = wrapError('some name', undefined, new Error('the original message'))
     expect(wrappedError.name).to.eql('some name')
     expect(wrappedError.message).to.eql('the original message')
     expect(wrappedError.stack).to.have.string('the original message')

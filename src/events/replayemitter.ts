@@ -1,17 +1,17 @@
 import * as C from '../utils/consts'
 import { ErrorDetails, EventBus } from '../types'
-import { isObject } from '../utils/types';
+import { isObject } from '../utils/types'
 
-type Callback<Ctx> = (ctx: Ctx, data: unknown[]) => void
+type Callback = (data: any[]) => void
 
-interface EventHandler<Ctx> {
-  ctx?: Ctx,
-  fn: Callback<Ctx>
+interface EventHandler {
+  ctx?: any,
+  fn: (data: any[]) => void
 }
 
 export class ReplayEmitter implements EventBus {
-  h: Record<string, EventHandler<any>[]>;
-  q: Record<string, any[]>;
+  private h: Record<string, EventHandler[]>;
+  private q: Record<string, any[]>;
   size: number;
 
   constructor (replaySize: number | string) {
@@ -27,8 +27,8 @@ export class ReplayEmitter implements EventBus {
     this.q = {}
   }
 
-  on <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): this {
-    const handler: EventHandler<Ctx> = {
+  on (name: string, callback: Callback, ctx?: any): this {
+    const handler: EventHandler = {
       ctx: ctx,
       fn: callback
     };
@@ -43,15 +43,15 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): this {
+  once (name: string, callback: Callback, ctx?: any): this {
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
-      callback(ctx, eventQueue[0])
+      callback.apply(ctx, eventQueue[0])
       return this
     } else {
       const listener = (...args: any[]) => {
         this.off(name, listener)
-        callback(ctx, args)
+        callback.apply(ctx, args)
       }
 
       listener._ = callback
@@ -65,7 +65,7 @@ export class ReplayEmitter implements EventBus {
     const len = evtArr.length
 
     for (i; i < len; i++) {
-      evtArr[i].fn(evtArr[i].ctx, data)
+      evtArr[i].fn.apply(evtArr[i].ctx, data)
     }
 
     const eventQueue = this.q[name] || (this.q[name] = [])
@@ -77,7 +77,7 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  off (name: string, callback: Callback<any>): this {
+  off (name: string, callback: Callback): this {
     const handlers = this.h[name]
     const liveEvents = []
 
@@ -116,6 +116,8 @@ export function wrapError (name: string, message?: string, e?: unknown): ErrorDe
       error = new Error(message)
     }
 
+    error.name = name
+
     if ('stack' in e && typeof e.stack === 'string') {
       error.stack = e.stack
     }
@@ -128,7 +130,7 @@ export function wrapError (name: string, message?: string, e?: unknown): ErrorDe
     return error
   } else {
     const error = Error(message)
-    error.name = name || 'unknown error'
+    error.name = name
     return error
   }
 }

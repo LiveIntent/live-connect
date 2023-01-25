@@ -41,7 +41,7 @@ describe('CallHandler', () => {
 
     const ajaxGet = () => { ajaxCounter += 1 }
     const pixelGet = () => { pixelCounter += 1 }
-    const handler = CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet }, eventBus)
+    const handler = new CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet }, eventBus)
 
     handler.ajaxGet('foo', () => undefined)
     expect(ajaxCounter).to.be.eql(1)
@@ -53,19 +53,19 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler is not provided', function () {
-    CallHandler({}, eventBus)
+    const _ = new CallHandler({}, eventBus)
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
-    expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
+    expect(emitterErrors[0].message).to.be.eq('The functions \'["ajaxGet","pixelGet"]\' were not provided')
     expect(emitterErrors[0].exception).to.be.undefined()
   })
 
   it('should send an error if an external handler does not have a get function', function () {
-    CallHandler({}, eventBus)
+    const _ = new CallHandler({}, eventBus)
 
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
-    expect(emitterErrors[0].message).to.be.eq('The call functions \'["ajaxGet","pixelGet"]\' are not provided')
+    expect(emitterErrors[0].message).to.be.eq('The functions \'["ajaxGet","pixelGet"]\' were not provided')
     expect(emitterErrors[0].exception).to.be.undefined()
   })
 })

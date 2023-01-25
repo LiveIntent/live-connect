@@ -12,7 +12,7 @@ use(dirtyChai)
 
 const eventBus = LocalEventBus()
 const externalStorage = new TestStorageHandler(eventBus)
-const storage = new StorageHandler('cookie', externalStorage, eventBus)
+const storage = StorageHandler.make('cookie', externalStorage, eventBus)
 
 describe('DecisionsManager for stored decisions', () => {
   const sandbox = sinon.createSandbox()

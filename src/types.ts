@@ -1,10 +1,5 @@
 import { StateWrapper } from './pixel/state'
 
-export interface Cache {
-    get: (key: any) => any
-    set: (key: any, value: any, expiration?: Date) => void
-}
-
 export interface ErrorDetails extends Error {
     stackTrace?: string,
     lineNumber?: number,
@@ -19,8 +14,6 @@ export interface ExternalMinimalStorageHandler {
 }
 
 export interface ExternalStorageHandler extends ExternalMinimalStorageHandler {
-    // get?: (key: string) => string | null,
-    // set?: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
     setCookie?: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
     setDataInLocalStorage?: (key: string, value: string) => void,
     removeDataFromLocalStorage?: (key: string) => void,
@@ -77,15 +70,6 @@ export interface HashedEmail {
     sha256: string
 }
 
-export interface IIdentityResolver {
-    resolve: (
-        successCallBack: (result: IdentityResultionResult) => void,
-        errorCallBack: () => void,
-        additionalParams?: ResolutionParams
-    ) => void,
-    getUrl: (additionalParams: ResolutionParams) => string
-}
-
 export interface RetrievedIdentifier {
     name: string,
     value: string
@@ -128,10 +112,10 @@ export interface ErrorBus {
 }
 
 export interface EventBus extends ErrorBus {
-    on<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): this,
-    once<C> (name: string, callback: (ctx: C, event: any) => void, ctx?: C): this,
+    on (name: string, callback: (event: any) => void, ctx?: any): this,
+    once (name: string, callback: (event: any) => void, ctx?: any): this,
     emit (name: string, event: any): this,
-    off (name: string, callback: (ctx: any, event: any) => void): this,
+    off (name: string, callback: (event: any) => void): this,
 }
 
 export interface ILiveConnect {

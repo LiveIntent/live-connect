@@ -51,11 +51,10 @@ function _allParams (url: string): Record<string, string | string[]> {
   queryParams.split('&').forEach(function (raw) {
     if (raw) {
       let key: string
-      let value: string
 
       const split = raw.split('=')
       key = split[0]
-      value = split.length == 2 ? split[1] : 'true'
+      const value = split.length === 2 ? split[1] : 'true'
 
       if (key.slice(-2) === '[]') {
         key = key.slice(0, -2)

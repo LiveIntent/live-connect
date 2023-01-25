@@ -56,8 +56,7 @@ export function register (state: State, callHandler: CallHandler, eventBus: Even
     const pixelSender = new PixelSender(state, callHandler, eventBus)
 
     eventBus.on(C.ERRORS_PREFIX, (error) => {
-      console.log(error, state)
-      pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state).combineWith(page.enrich({})))
+      pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state || {}).combineWith(page.enrich({})))
     })
   } catch (e) {
     console.error('handlers.error.register', e)

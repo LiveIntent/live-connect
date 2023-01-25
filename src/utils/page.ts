@@ -20,7 +20,7 @@ export function getPage (win: Window = window): string | undefined {
   }
   windows.push(currentWindow)
 
-  let detectedPageUrl: string | undefined = undefined
+  let detectedPageUrl: string | undefined
   for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
     detectedPageUrl = _safeGet(() => windows[i].location.href)
     if (i !== 0) {

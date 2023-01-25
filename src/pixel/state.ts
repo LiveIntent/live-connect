@@ -1,7 +1,7 @@
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle } from './fiddler'
-import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, merge } from '../utils/types'
+import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, merge, nonNull } from '../utils/types'
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
 
@@ -10,7 +10,7 @@ const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 function ifDefined <K extends keyof State> (key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): (state: State) => [string, string][] {
   return state => {
     const value = state[key]
-    if (value) {
+    if (nonNull(value)) {
       return fun(value)
     } else {
       return []
@@ -73,19 +73,21 @@ export class Query {
 
 export class StateWrapper {
   data: State
-  eventBus: EventBus
+  eventBus?: EventBus
 
-  constructor (state: State, eventBus: EventBus) {
+  constructor (state: State, eventBus?: EventBus) {
     this.data = StateWrapper.safeFiddle(state, eventBus)
     this.eventBus = eventBus
   }
 
-  private static safeFiddle (newInfo: State, eventBus: EventBus): State {
+  private static safeFiddle (newInfo: State, eventBus?: EventBus): State {
     try {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
+      if (eventBus) {
+        eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
+      }
       return {}
     }
   }
@@ -104,7 +106,7 @@ export class StateWrapper {
   }
 
   asTuples (): [string, string][] {
-    let acc: [string, string][] = []
+    const acc: [string, string][] = []
     paramExtractors.forEach((extractor) => {
       const params = extractor(this.data)
       if (params && isArray(params)) {

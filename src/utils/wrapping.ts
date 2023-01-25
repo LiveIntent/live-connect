@@ -1,5 +1,5 @@
-import { EventBus } from "../types";
-import { isFunction, isObject, nonNull } from "./types";
+import { EventBus } from '../types'
+import { isFunction, isObject, nonNull } from './types'
 
 export type NoopFunction = () => undefined
 
@@ -18,7 +18,7 @@ export class WrappingContext<T extends object> {
     this.eventBus = eventBus
   }
 
-  wrap <K extends keyof T & string>(functionName: K): NonNullable<T[K]> | NoopFunction {
+  wrap <K extends keyof T & string> (functionName: K): NonNullable<T[K]> | NoopFunction {
     if (isObject(this.obj)) {
       const member = this.obj[functionName]
       if (isFunction(member)) {
@@ -29,11 +29,9 @@ export class WrappingContext<T extends object> {
     return noop
   }
 
-  reportErrors(): void {
+  reportErrors (): void {
     if (nonNull(this.eventBus) && this.errors.length > 0) {
       this.eventBus.emitErrorWithMessage(this.name, `The functions '${JSON.stringify(this.errors)}' were not provided`)
     }
   }
-
-
 }
