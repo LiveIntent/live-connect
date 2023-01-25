@@ -9,8 +9,8 @@ interface EventHandler<Ctx> {
 }
 
 export class ReplayEmitter implements EventBus {
-  h: Record<string, EventHandler<unknown>[]>;
-  q: Record<string, unknown[]>;
+  h: Record<string, EventHandler<any>[]>;
+  q: Record<string, any[]>;
   size: number;
 
   constructor (replaySize: number | string) {
@@ -45,13 +45,12 @@ export class ReplayEmitter implements EventBus {
   once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue[0])
-
+      callback(ctx, eventQueue[0])
       return this
     } else {
-      const listener = (...args: unknown[]) => {
+      const listener = (...args: any[]) => {
         this.off(name, listener)
-        callback.apply(ctx, args)
+        callback(ctx, args)
       }
 
       listener._ = callback
@@ -59,13 +58,13 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, ...data: unknown[]): EventBus {
+  emit (name: string, ...data: any[]): EventBus {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
 
     for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data)
+      evtArr[i].fn(evtArr[i].ctx, data)
     }
 
     const eventQueue = this.q[name] || (this.q[name] = [])
@@ -96,17 +95,17 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  emitErrorWithMessage (name: string, message: string, e: unknown = {}): EventBus {
+  emitErrorWithMessage (name: string, message?: string, e: object = {}): EventBus {
     const wrappedError = wrapError(name, message, e)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  emitError (name: string, exception: unknown): EventBus {
+  emitError (name: string, exception: object & { message?: string }): EventBus {
     return this.emitErrorWithMessage(name, exception.message, exception)
   }
 }
 
-export function wrapError (name: string, message: string, e: any): any {
+export function wrapError (name: string, message: string | undefined, e: object & { message?: string }): any {
   const wrapped: any = new Error(message || e.message)
   wrapped.stack = e.stack
   wrapped.name = name || 'unknown error'
