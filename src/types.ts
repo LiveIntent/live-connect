@@ -6,8 +6,8 @@ export interface Cache {
 }
 
 export interface ErrorDetails {
-    message: string,
-    name: string,
+    message?: string,
+    name?: string,
     stackTrace?: string,
     lineNumber?: number,
     lineColumn?: number,
@@ -37,7 +37,7 @@ export interface IMinimalStorageHandler extends ExternalMinimalStorageHandler {
 
 export interface IStorageHandler extends IMinimalStorageHandler {
     get: (key: string) => string | null,
-    set: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
+    set: (key: string, value: string, expires: Date, sameSite?: string, domain?: string) => void,
     setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
     setDataInLocalStorage: (key: string, value: string) => void,
     removeDataFromLocalStorage: (key: string) => void,

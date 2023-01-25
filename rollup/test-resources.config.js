@@ -19,7 +19,7 @@ export default {
   },
   plugins: [
     cleaner({targets: [OUTPUT_DIR]}),
-    ts({transpileOnly: true}),
+    ts(),
     resolve(),
     commonjs(),
     babel(),

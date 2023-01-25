@@ -4,8 +4,6 @@ import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
 import { EventBus, ICallHandler, IPixelSender, State } from '../types'
 
-let _state = null
-let _pixelSender: IPixelSender = null
 const MAX_ERROR_FIELD_LENGTH = 120
 
 const _defaultReturn: State = {
@@ -24,7 +22,7 @@ function _asInt (field: any): number | undefined {
   }
 }
 
-function _truncate (value: string): string {
+function _truncate (value: string): string | undefined {
   try {
     if (value && value.length && value.length > MAX_ERROR_FIELD_LENGTH) {
       return `${value.substr(0, MAX_ERROR_FIELD_LENGTH)}...`
@@ -54,12 +52,11 @@ export function asErrorDetails (e: any): State {
 
 export function register (state: State, callHandler: ICallHandler, eventBus: EventBus): void {
   try {
-    _pixelSender = new PixelSender(state, callHandler, eventBus)
-    _state = state || {}
+    const pixelSender = new PixelSender(state, callHandler, eventBus)
 
     eventBus.on(C.ERRORS_PREFIX, (error) => {
-      console.log(error, _state)
-      _pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(_state || {}).combineWith(page.enrich({})))
+      console.log(error, state)
+      pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state).combineWith(page.enrich({})))
     })
   } catch (e) {
     console.error('handlers.error.register', e)

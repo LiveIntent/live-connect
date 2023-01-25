@@ -5,21 +5,26 @@ import { EventBus, ExternalStorageHandler, IStorageHandler, StorageStrategyMode 
 const _noOp = () => undefined
 
 export function StorageHandler (storageStrategy: StorageStrategyMode, externalStorageHandler: ExternalStorageHandler, eventBus: EventBus): IStorageHandler {
-  const errors = []
+  const errors: string[] = []
 
-  function _externalOrError (functionName: string): CallableFunction {
-    const hasExternal = externalStorageHandler && externalStorageHandler[functionName] && isFunction(externalStorageHandler[functionName])
-    if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
-      return _noOp
-    } else if (hasExternal) {
-      return externalStorageHandler[functionName].bind(externalStorageHandler)
+  function _externalOrError (functionName: keyof ExternalStorageHandler): CallableFunction {
+    let result: CallableFunction = _noOp
+    if (!strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
+      // pass
+    } else if (!!externalStorageHandler) {
+      const member = externalStorageHandler[functionName]
+      if (!!functionName && isFunction(member)) {
+        result = member.bind(externalStorageHandler)
+      } else {
+        errors.push(functionName)
+      }
     } else {
       errors.push(functionName)
-      return _noOp
     }
+    return result
   }
 
-  const _orElseNoOp = (fName: string) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
+  const _orElseNoOp = (fName: keyof ExternalStorageHandler) => strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) ? _noOp : _externalOrError(fName)
 
   const functions = {
     localStorageIsEnabled: _orElseNoOp('localStorageIsEnabled'),
@@ -55,6 +60,7 @@ export function StorageHandler (storageStrategy: StorageStrategyMode, externalSt
     },
     set: (key, value, expirationDate, domain) => {
       if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.none) || strEqualsIgnoreCase(storageStrategy, StorageStrategy.disabled)) {
+        // pass
       } else if (strEqualsIgnoreCase(storageStrategy, StorageStrategy.localStorage)) {
         if (functions.localStorageIsEnabled()) {
           const expirationKey = `${key}_exp`

@@ -41,7 +41,7 @@ function _parseParam (params: Record<string, string | string[]>, key: string): P
 
 function _allParams (url: string): Record<string, string | string[]> {
   let questionMarkIndex, queryParams, historyIndex
-  const obj = {}
+  const obj: Record<string, string | string[]> = {}
   if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
     return obj
   }
@@ -65,7 +65,7 @@ export function decodeValue (v: string): string {
 
 export function urlParams (url: string): Record<string, ParsedParam | ParsedParam[]> {
   const params = _allParams(url)
-  const result = {}
+  const result: Record<string, ParsedParam | ParsedParam[]> = {}
   Object.keys(params).forEach((k) => { result[k] = _parseParam(params, k) })
   return result
 }

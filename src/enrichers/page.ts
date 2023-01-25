@@ -4,7 +4,7 @@ import { getPage, getReferrer, getContextElements } from '../utils/page'
 /**
  * @private
  */
-let _currentPage = null
+let _currentPage: State = {}
 
 export function enrich (state: State): State {
   if (!_currentPage) {

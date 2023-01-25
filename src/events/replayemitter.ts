@@ -1,7 +1,7 @@
 import * as C from '../utils/consts'
 import { EventBus } from '../types'
 
-type Callback<Ctx> = (ctx: Ctx, data: any[]) => void
+type Callback<Ctx> = (ctx: Ctx, data: unknown[]) => void
 
 interface EventHandler<Ctx> {
   ctx?: Ctx,
@@ -9,8 +9,8 @@ interface EventHandler<Ctx> {
 }
 
 export class ReplayEmitter implements EventBus {
-  h: Record<string, EventHandler<any>[]>;
-  q: Record<string, any[]>;
+  h: Record<string, EventHandler<unknown>[]>;
+  q: Record<string, unknown[]>;
   size: number;
 
   constructor (replaySize: number | string) {
@@ -49,7 +49,7 @@ export class ReplayEmitter implements EventBus {
 
       return this
     } else {
-      const listener = (...args: any[]) => {
+      const listener = (...args: unknown[]) => {
         this.off(name, listener)
         callback.apply(ctx, args)
       }
@@ -59,7 +59,7 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, ...data: any[]): EventBus {
+  emit (name: string, ...data: unknown[]): EventBus {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
@@ -96,12 +96,12 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  emitErrorWithMessage (name: string, message: string, e: any = {}): EventBus {
+  emitErrorWithMessage (name: string, message: string, e: unknown = {}): EventBus {
     const wrappedError = wrapError(name, message, e)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  emitError (name: string, exception: any): EventBus {
+  emitError (name: string, exception: unknown): EventBus {
     return this.emitErrorWithMessage(name, exception.message, exception)
   }
 }

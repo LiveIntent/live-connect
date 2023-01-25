@@ -1,6 +1,6 @@
 import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from '../utils/types'
-import { EventBus, IMinimalStorageHandler, State } from '../types'
+import { EventBus, IMinimalStorageHandler, RetrievedIdentifier, State } from '../types'
 
 export function enrich (state: State, storageHandler: IMinimalStorageHandler, eventBus: EventBus): State {
   try {
@@ -14,7 +14,7 @@ export function enrich (state: State, storageHandler: IMinimalStorageHandler, ev
 function _parseIdentifiersToResolve (state: State, storageHandler: IMinimalStorageHandler): State {
   state.identifiersToResolve = state.identifiersToResolve || []
   const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',')
-  const identifiers = []
+  const identifiers: RetrievedIdentifier[] = []
   for (let i = 0; i < cookieNames.length; i++) {
     const identifierName = trim(cookieNames[i])
     const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
