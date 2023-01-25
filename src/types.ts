@@ -1,4 +1,4 @@
-import { StorageStrategy } from "./model/storage-strategy"
+import { StorageStrategy } from './model/storage-strategy'
 
 export interface ErrorDetails extends Error {
     stackTrace?: string,
