@@ -3,7 +3,7 @@ import { safeToString, isString, isArray } from '../utils/types'
 import { EventBus, HashedEmail, State, RetrievedIdentifier } from '../types'
 import { MinimalStorageHandler } from '../handlers/storage-handler'
 
-export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus?: EventBus): State {
+export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus): State {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {

@@ -73,21 +73,19 @@ export class Query {
 
 export class StateWrapper {
   data: State
-  eventBus?: EventBus
+  eventBus: EventBus
 
-  constructor (state: State, eventBus?: EventBus) {
+  constructor (state: State, eventBus: EventBus) {
     this.data = StateWrapper.safeFiddle(state, eventBus)
     this.eventBus = eventBus
   }
 
-  private static safeFiddle (newInfo: State, eventBus?: EventBus): State {
+  private static safeFiddle (newInfo: State, eventBus: EventBus): State {
     try {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
       console.error(e)
-      if (eventBus) {
-        eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
-      }
+      eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
       return {}
     }
   }

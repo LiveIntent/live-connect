@@ -1,5 +1,5 @@
 import { EventBus } from '../types'
-import { isFunction, isObject, nonNull } from './types'
+import { isFunction, isObject } from './types'
 
 export type NoopFunction = () => undefined
 
@@ -9,9 +9,9 @@ export class WrappingContext<T extends object> {
   private obj: T
   private name: string
   private errors: string[]
-  private eventBus?: EventBus
+  private eventBus: EventBus
 
-  constructor (obj: T, name: string, eventBus?: EventBus) {
+  constructor (obj: T, name: string, eventBus: EventBus) {
     this.obj = obj
     this.name = name
     this.errors = []
@@ -30,7 +30,7 @@ export class WrappingContext<T extends object> {
   }
 
   reportErrors (): void {
-    if (nonNull(this.eventBus) && this.errors.length > 0) {
+    if (this.errors.length > 0) {
       this.eventBus.emitErrorWithMessage(this.name, `The functions '${JSON.stringify(this.errors)}' were not provided`)
     }
   }

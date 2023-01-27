@@ -37,7 +37,7 @@ export class MinimalStorageHandler {
     }
   }
 
-  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): MinimalStorageHandler {
+  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): MinimalStorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'MinimalStorageHandler', eventBus)
     const handler = new MinimalStorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
@@ -74,7 +74,7 @@ export class StorageHandler extends MinimalStorageHandler {
     }
   }
 
-  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus?: EventBus): StorageHandler {
+  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): StorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'StorageHandler', eventBus)
     const handler = new StorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()

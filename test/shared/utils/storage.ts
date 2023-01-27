@@ -2,11 +2,11 @@ import Cookies, { CookiesStatic } from 'js-cookie'
 import { ExternalStorageHandler, EventBus } from '../../../src/types'
 
 export class TestStorageHandler implements ExternalStorageHandler {
-  private eventBus?: EventBus
+  private eventBus: EventBus
   private _localStorageIsEnabled?: boolean
   private cookies: CookiesStatic<null>
 
-  constructor (eventBus?: EventBus) {
+  constructor (eventBus: EventBus) {
     this.eventBus = eventBus
     this._localStorageIsEnabled = undefined
 
@@ -20,7 +20,7 @@ export class TestStorageHandler implements ExternalStorageHandler {
             return result
           }
         } catch (e) {
-          if (eventBus) eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
+          eventBus.emitErrorWithMessage('CookieReadError', `Failed reading cookie ${name}`, e)
           return null
         }
       }
@@ -40,7 +40,7 @@ export class TestStorageHandler implements ExternalStorageHandler {
       const allCookies = this.cookies.get()
       return Object.keys(allCookies).filter(key => key.indexOf(substring) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
     } catch (e) {
-      if (this.eventBus) this.eventBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
+      this.eventBus.emitErrorWithMessage('CookieFindSimilarInJar', 'Failed fetching from a cookie jar', e)
       return []
     }
   }
@@ -98,7 +98,7 @@ export class TestStorageHandler implements ExternalStorageHandler {
         window.localStorage.removeItem(key)
       }
     } catch (e) {
-      if (this.eventBus) this.eventBus.emitError('LSCheckError', e)
+      this.eventBus.emitError('LSCheckError', e)
     }
     return enabled
   }

@@ -11,7 +11,7 @@ interface Cache {
   set: (key: any, value: any, expiration?: Date) => void
 }
 
-function storageHandlerBackedCache (defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus?: EventBus): Cache {
+function storageHandlerBackedCache (defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus: EventBus): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey (rawKey: any) {
@@ -41,7 +41,7 @@ function storageHandlerBackedCache (defaultExpirationHours: number, domain: stri
           domain
         )
       } catch (ex) {
-        if (eventBus) eventBus.emitError('IdentityResolverStorage', ex)
+        eventBus.emitError('IdentityResolverStorage', ex)
       }
     }
   }
@@ -53,7 +53,7 @@ const noopCache: Cache = {
 }
 
 export class IdentityResolver {
-  eventBus?: EventBus
+  eventBus: EventBus
   calls: CallHandler
   cache: Cache
   idexConfig: IdentityResolutionConfig
@@ -65,7 +65,7 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
 
-  private constructor (config: State, calls: CallHandler, cache: Cache, eventBus?: EventBus) {
+  private constructor (config: State, calls: CallHandler, cache: Cache, eventBus: EventBus) {
     this.eventBus = eventBus
     this.calls = calls
     this.cache = cache
@@ -102,7 +102,7 @@ export class IdentityResolver {
     })
   }
 
-  static make (config: State, storageHandler: StorageHandler, calls: CallHandler, eventBus?: EventBus): IdentityResolver {
+  static make (config: State, storageHandler: StorageHandler, calls: CallHandler, eventBus: EventBus): IdentityResolver {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
@@ -112,7 +112,7 @@ export class IdentityResolver {
     return new IdentityResolver(nonNullConfig, calls, cache, eventBus)
   }
 
-  static makeNoCache (config: State, calls: CallHandler, eventBus?: EventBus): IdentityResolver {
+  static makeNoCache (config: State, calls: CallHandler, eventBus: EventBus): IdentityResolver {
     return new IdentityResolver(config || {}, calls, noopCache, eventBus)
   }
 
@@ -127,7 +127,7 @@ export class IdentityResolver {
           responseObj = JSON.parse(responseText)
         } catch (ex) {
           console.error('Error parsing response', ex)
-          if (this.eventBus) this.eventBus.emitError('IdentityResolverParser', ex)
+          this.eventBus.emitError('IdentityResolverParser', ex)
         }
       }
 

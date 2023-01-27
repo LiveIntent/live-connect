@@ -17,7 +17,7 @@ interface WrappedExternalCallHandler {
 export class CallHandler {
   private functions: WrappedExternalCallHandler
 
-  constructor (externalCallHandler: ExternalCallHandler, eventBus?: EventBus) {
+  constructor (externalCallHandler: ExternalCallHandler, eventBus: EventBus) {
     const wrapper = new WrappingContext(externalCallHandler, 'CallHandler', eventBus)
 
     this.functions = {

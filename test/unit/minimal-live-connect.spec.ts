@@ -7,12 +7,14 @@ import { LiveConnect } from '../../src/initializer'
 import { TestStorageHandler } from '../shared/utils/storage'
 import { TestCallHandler } from '../shared/utils/calls'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../src/events/event-bus'
 
 use(dirtyChai)
 
 describe('MinimalLiveConnect', () => {
   const sandbox = sinon.createSandbox()
-  const storage = new TestStorageHandler()
+  const bus = LocalEventBus()
+  const storage = new TestStorageHandler(bus)
   const calls = TestCallHandler
 
   let imgStub = null
