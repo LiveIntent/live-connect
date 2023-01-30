@@ -1,4 +1,5 @@
 // @ts-nocheck
+/* eslint-disable */
 import { PixelSender } from './pixel/sender'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'

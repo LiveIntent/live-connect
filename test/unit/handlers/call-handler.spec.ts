@@ -8,9 +8,11 @@ import { EventBus } from '../../../src/types'
 
 use(dirtyChai)
 
+type RecordedError = { 'name': string; 'message': string; 'exception': unknown }
+
 describe('CallHandler', () => {
-  let emitterErrors = []
-  let eventBusStub: SinonStub<[string, string, any?], EventBus>
+  let emitterErrors: RecordedError[] = []
+  let eventBusStub: SinonStub<[string, string, unknown?], EventBus>
   const eventBus = LocalEventBus()
   const sandbox = sinon.createSandbox()
   jsdom({

@@ -22,6 +22,7 @@ export class WrappingContext<T extends object> {
     if (isObject(this.obj)) {
       const member = this.obj[functionName]
       if (isFunction(member)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return member.bind(this.obj as any) as NonNullable<T[K]>
       }
     }

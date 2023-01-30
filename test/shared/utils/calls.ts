@@ -2,8 +2,8 @@ import { ExternalCallHandler } from '../../../src/types'
 import { isFunction } from '../../../src/utils/types'
 
 export const TestCallHandler: ExternalCallHandler = {
-  ajaxGet (url: string, responseHandler: (responseText: string, response: any) => void, fallback?: (error: any) => void, timeout = 1000): void {
-    function errorCallback (name: string, message: string, error: any, request: XMLHttpRequest | XDomainRequest) {
+  ajaxGet (url: string, responseHandler: (responseText: string, response: object) => void, fallback?: (error: unknown) => void, timeout = 1000): void {
+    function errorCallback (name: string, message: string, error: unknown, request: XMLHttpRequest | XDomainRequest) {
       console.error('Error while executing ajax call', message, error, request)
       if (isFunction(fallback)) fallback(error)
     }
@@ -25,7 +25,7 @@ export const TestCallHandler: ExternalCallHandler = {
     }
 
     function xdrCall (): XDomainRequest {
-      const xdr = new (window.XDomainRequest as any)()
+      const xdr = new window.XDomainRequest!()
       xdr.onprogress = () => undefined
       xdr.onerror = () => {
         const error = new Error(`XDR Error received: ${xdr.responseText}`)

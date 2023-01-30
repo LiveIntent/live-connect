@@ -1,4 +1,4 @@
-import { isFunction, strEqualsIgnoreCase } from '../utils/types'
+import { strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
 import { EventBus, ExternalMinimalStorageHandler, ExternalStorageHandler } from '../types'
 import { WrappingContext } from '../utils/wrapping'

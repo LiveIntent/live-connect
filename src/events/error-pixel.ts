@@ -4,6 +4,7 @@ import * as page from '../enrichers/page'
 import * as C from '../utils/consts'
 import { EventBus, State } from '../types'
 import { CallHandler } from '../handlers/call-handler'
+import { isRecord, isString } from '../utils/types'
 
 const MAX_ERROR_FIELD_LENGTH = 120
 
@@ -23,19 +24,19 @@ function _asInt (field: unknown): number | undefined {
   }
 }
 
-function _truncate (value: string | undefined): string | undefined {
+function _truncate (value: unknown): string | undefined {
   try {
-    if (value && value.length && value.length > MAX_ERROR_FIELD_LENGTH) {
+    if (isString(value) && value.length && value.length > MAX_ERROR_FIELD_LENGTH) {
       return `${value.substr(0, MAX_ERROR_FIELD_LENGTH)}...`
     } else {
-      return value
+      return `${value}`
     }
   } catch {
   }
 }
 
-export function asErrorDetails (e: any): State {
-  if (e) {
+export function asErrorDetails (e: unknown): State {
+  if (isRecord(e)) {
     return {
       errorDetails: {
         message: _truncate(e.message) || '',

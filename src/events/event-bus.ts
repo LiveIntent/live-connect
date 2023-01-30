@@ -31,7 +31,7 @@ export function LocalEventBus (size = 5) {
   return initBus(size)
 }
 
-export function GlobalEventBus (name: string, size: number, errorCallback: (error: any) => void): EventBus {
+export function GlobalEventBus (name: string, size: number, errorCallback: (error: unknown) => void): EventBus {
   try {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))

@@ -13,12 +13,12 @@ use(dirtyChai)
 type RecordedError = {
   name: string;
   message: string;
-  exception: any;
+  exception?: unknown;
 }
 
 describe('StorageHandler', () => {
   let errors: RecordedError[] = []
-  let eventBusStub: SinonStub<[string, string, any?], EventBus>
+  let eventBusStub: SinonStub<[string, string, unknown?], EventBus>
   const eventBus = LocalEventBus()
   const storage = new TestStorageHandler(eventBus)
   const sandbox = sinon.createSandbox()

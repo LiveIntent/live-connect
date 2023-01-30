@@ -14,7 +14,7 @@ function createError (message: string): Error & { source: string } {
 
 function detectPrng (): () => number {
   const root = typeof window !== 'undefined' ? window : null
-  const browserCrypto = root && (root.crypto || (root as any).msCrypto)
+  const browserCrypto = root && (root.crypto || root.msCrypto)
   if (browserCrypto) {
     return () => {
       const buffer = new Uint8Array(1)

@@ -7,14 +7,14 @@ import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
 interface Cache {
-  get: (key: any) => any;
-  set: (key: any, value: any, expiration?: Date) => void;
+  get: (key: unknown) => unknown; // null will be used to signal missing value
+  set: (key: unknown, value: unknown, expiration?: Date) => void;
 }
 
 function storageHandlerBackedCache (defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus: EventBus): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-  function _cacheKey (rawKey: any) {
+  function _cacheKey (rawKey: unknown) {
     if (rawKey) {
       const suffix = base64UrlEncode(JSON.stringify(rawKey))
       return `${IDEX_STORAGE_KEY}_${suffix}`
@@ -118,8 +118,8 @@ export class IdentityResolver {
 
   private responseReceived (
     additionalParams: ResolutionParams,
-    successCallback: (result: any) => void
-  ): ((responseText: string, response: any) => void) {
+    successCallback: (result: unknown) => void
+  ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
       let responseObj = {}
       if (responseText) {
@@ -138,7 +138,7 @@ export class IdentityResolver {
     }
   }
 
-  unsafeResolve (successCallback: (result: object) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
+  unsafeResolve (successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
     const cachedValue = this.cache.get(additionalParams)
     if (cachedValue) {
       successCallback(cachedValue)
@@ -158,7 +158,7 @@ export class IdentityResolver {
     return `${this.url}/${this.source}/${this.publisherId}${params}`
   }
 
-  resolve (successCallback: (result: object) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
+  resolve (successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
     try {
       this.unsafeResolve(successCallback, errorCallback, additionalParams || {})
     } catch (e) {

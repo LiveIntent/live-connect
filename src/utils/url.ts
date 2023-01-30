@@ -13,28 +13,29 @@ export const toParams = (tuples: ([string, string][])) => {
   return acc
 }
 
-function _isNum (v: any): number | any {
+function _isNum (v: string): number | string {
   return isNaN(+v) ? v : +v
 }
 
-function _isNull (v: any): null | any {
+function _isNull <A> (v: A): null | A {
   return v === 'null' || v === 'undefined' ? null : v
 }
 
-function _isBoolean (v: any): boolean | any {
+function _isBoolean <A> (v: A): A | boolean {
   return v === 'false' ? false : (v === 'true' ? true : v)
 }
 
-function _convert (v: any): boolean {
+function _convert (v: string): boolean | number | string | null {
   return _isBoolean(_isNull(_isNum(v)))
 }
 
 function _parseParam (params: Record<string, string | string[]>, key: string): ParsedParam | ParsedParam[] {
-  if (params[key]) {
-    if (isArray(params[key])) {
-      return (params[key] as string[]).map(v => _convert(decodeValue(v)))
+  if (key in params) {
+    const value = params[key]
+    if (isArray(value)) {
+      return value.map(v => _convert(decodeValue(v)))
     } else {
-      return _convert(decodeValue(params[key] as string))
+      return _convert(decodeValue(value))
     }
   }
 }

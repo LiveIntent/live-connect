@@ -6,7 +6,7 @@ export function loadedDomain (): string {
 }
 
 export function getReferrer (win: Window = window): string | undefined {
-  return _safeGet(() => win.top!.document.referrer)
+  return _safeGet(() => (win.top as Window).document.referrer)
 }
 
 export function getPage (win: Window = window): string | undefined {

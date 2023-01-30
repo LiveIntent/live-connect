@@ -24,7 +24,7 @@ export function isArray (arr: unknown): arr is unknown[] {
 
 const hasTrim = !!String.prototype.trim
 
-export function trim (value: any): string {
+export function trim (value: unknown): string {
   return hasTrim ? ('' + value).trim() : ('' + value).replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '')
 }
 
@@ -38,6 +38,10 @@ export function strEqualsIgnoreCase (fistStr: string, secondStr: string): boolea
 
 export function isObject (obj: unknown): obj is object {
   return !!obj && typeof obj === 'object' && !isArray(obj)
+}
+
+export function isRecord (obj: unknown): obj is Record<string | symbol | number, unknown> {
+  return isObject(obj)
 }
 
 export function isFunction (fun: unknown): fun is CallableFunction {

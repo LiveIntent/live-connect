@@ -53,7 +53,7 @@ export type IdentityResultionResult = object
 export interface ExternalCallHandler {
     ajaxGet?: (
         url: string,
-        onSuccess: (responseText: string, response: unknown) => void,
+        onSuccess: (responseText: string, response?: unknown) => void,
         onError?: (error: unknown) => void,
         timeout?: number
     ) => void;
@@ -106,20 +106,20 @@ export interface ConfigMismatch {
 }
 
 export interface ErrorBus {
-    emitErrorWithMessage (name: string, message: string, e?: any): this;
-    emitError (name: string, exception?: any): this;
+    emitErrorWithMessage (name: string, message: string, e?: unknown): this;
+    emitError (name: string, exception?: unknown): this;
 }
 
 export interface EventBus extends ErrorBus {
-    on (name: string, callback: (event: any) => void, ctx?: any): this;
-    once (name: string, callback: (event: any) => void, ctx?: any): this;
-    emit (name: string, event: any): this;
-    off (name: string, callback: (event: any) => void): this;
+    on <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this;
+    once <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this;
+    emit (name: string, event: unknown): this;
+    off (name: string, callback: (event: unknown) => void): this;
 }
 
 export interface ILiveConnect {
     ready: boolean;
-    push: (event: any) => void;
+    push: (event: unknown) => void;
     fire: () => void;
     resolve?: (
         successCallBack: (result: IdentityResultionResult) => void,

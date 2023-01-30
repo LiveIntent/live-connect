@@ -2,16 +2,14 @@ import * as C from '../utils/consts'
 import { ErrorDetails, EventBus } from '../types'
 import { isObject } from '../utils/types'
 
-type Callback = (data: any[]) => void
-
 interface EventHandler {
-  ctx?: any;
-  fn: (data: any) => void;
+  callback: (data: unknown) => void;
+  unbound: (data: unknown) => void;
 }
 
 export class ReplayEmitter implements EventBus {
   private h: Record<string, EventHandler[]>;
-  private q: Record<string, any[]>;
+  private q: Record<string, unknown[]>;
   size: number;
 
   constructor (replaySize: number | string) {
@@ -27,31 +25,31 @@ export class ReplayEmitter implements EventBus {
     this.q = {}
   }
 
-  on (name: string, callback: Callback, ctx?: any): this {
+  on <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this {
     const handler: EventHandler = {
-      ctx: ctx,
-      fn: callback
+      callback: callback.bind(ctx),
+      unbound: callback
     };
 
     (this.h[name] || (this.h[name] = [])).push(handler)
 
     const eventQueueLen = (this.q[name] || []).length
     for (let i = 0; i < eventQueueLen; i++) {
-      callback.apply(ctx, this.q[name][i])
+      callback.call(ctx, this.q[name][i])
     }
 
     return this
   }
 
-  once (name: string, callback: Callback, ctx?: any): this {
+  once <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this {
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue[0])
+      callback.call(ctx, eventQueue[0])
       return this
     } else {
-      const listener = (...args: [data: any]) => {
+      const listener = (args: unknown) => {
         this.off(name, listener)
-        callback.apply(ctx, args)
+        callback.call(ctx, args)
       }
 
       listener._ = callback
@@ -59,31 +57,31 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, ...data: any[]): this {
+  emit (name: string, event: unknown): this {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
 
     for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data as [data: any])
+      evtArr[i].callback(event)
     }
 
     const eventQueue = this.q[name] || (this.q[name] = [])
     if (eventQueue.length >= this.size) {
       eventQueue.shift()
     }
-    eventQueue.push(data)
+    eventQueue.push(event)
 
     return this
   }
 
-  off (name: string, callback: Callback): this {
+  off (name: string, callback: (event: unknown) => void): this {
     const handlers = this.h[name]
     const liveEvents = []
 
     if (handlers && callback) {
       for (let i = 0, len = handlers.length; i < len; i++) {
-        if (handlers[i].fn !== callback) {
+        if (handlers[i].unbound !== callback) {
           liveEvents.push(handlers[i])
         }
       }
