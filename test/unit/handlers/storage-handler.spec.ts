@@ -11,9 +11,9 @@ import { EventBus } from '../../../src/types'
 use(dirtyChai)
 
 type RecordedError = {
-  name: string,
-  message: string,
-  exception: any
+  name: string;
+  message: string;
+  exception: any;
 }
 
 describe('StorageHandler', () => {

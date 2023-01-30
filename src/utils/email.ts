@@ -30,7 +30,7 @@ export function listEmailsInString (s: string): string[] {
   return result
 }
 
-export function replaceEmailsWithHashes (originalString: string): { hashesFromOriginalString: HashedEmail[], stringWithoutRawEmails: string } {
+export function replaceEmailsWithHashes (originalString: string): { hashesFromOriginalString: HashedEmail[]; stringWithoutRawEmails: string } {
   const emailsInString = listEmailsInString(originalString)
   const hashes = []
   let convertedString = originalString

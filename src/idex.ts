@@ -7,8 +7,8 @@ import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
 interface Cache {
-  get: (key: any) => any
-  set: (key: any, value: any, expiration?: Date) => void
+  get: (key: any) => any;
+  set: (key: any, value: any, expiration?: Date) => void;
 }
 
 function storageHandlerBackedCache (defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus: EventBus): Cache {

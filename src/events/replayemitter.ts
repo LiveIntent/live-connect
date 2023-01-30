@@ -5,8 +5,8 @@ import { isObject } from '../utils/types'
 type Callback = (data: any[]) => void
 
 interface EventHandler {
-  ctx?: any,
-  fn: (data: any) => void
+  ctx?: any;
+  fn: (data: any) => void;
 }
 
 export class ReplayEmitter implements EventBus {

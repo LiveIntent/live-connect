@@ -7,11 +7,11 @@ interface WrappedExternalCallHandler {
     onSuccess: (responseText: string, response: unknown) => void,
     onError?: (error: unknown) => void,
     timeout?: number
-  ) => void,
+  ) => void;
   pixelGet: (
       url: string,
       onLoad?: () => void
-  ) => void
+  ) => void;
 }
 
 export class CallHandler {

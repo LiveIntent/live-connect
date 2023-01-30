@@ -4,16 +4,16 @@ import { EventBus, ExternalMinimalStorageHandler, ExternalStorageHandler } from 
 import { WrappingContext } from '../utils/wrapping'
 
 interface WrappedExternalMinimalStorageHandler {
-  getCookie: (key: string) => string | null | undefined,
-  getDataFromLocalStorage: (key: string) => string | null | undefined,
-  localStorageIsEnabled: () => boolean | undefined,
+  getCookie: (key: string) => string | null | undefined;
+  getDataFromLocalStorage: (key: string) => string | null | undefined;
+  localStorageIsEnabled: () => boolean | undefined;
 }
 
 interface WrappedExternalStorageHandler {
-  setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void,
-  setDataInLocalStorage: (key: string, value: string) => void,
-  removeDataFromLocalStorage: (key: string) => void,
-  findSimilarCookies: (substring: string) => string[] | undefined
+  setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void;
+  setDataInLocalStorage: (key: string, value: string) => void;
+  removeDataFromLocalStorage: (key: string) => void;
+  findSimilarCookies: (substring: string) => string[] | undefined;
 }
 
 const noop = () => undefined

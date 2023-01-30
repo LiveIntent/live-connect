@@ -18,6 +18,7 @@ module.exports = {
   ],
   globals: {},
   rules: {
-    "@typescript-eslint/ban-ts-comment": 0
+    "@typescript-eslint/ban-ts-comment": 0,
+    "@typescript-eslint/member-delimiter-style": "warn"
   }
 }
