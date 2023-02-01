@@ -9,12 +9,12 @@ const LIMITING_KEYS = ['items', 'itemids']
 const HASH_BEARERS = ['email', 'emailhash', 'hash', 'hashedemail']
 
 function _provided (state: State): State {
-  const eventSource = state.eventSource
+  const eventSource = state.eventSource || {}
   const objectKeys = Object.keys(eventSource)
   for (const key of objectKeys) {
     const lowerCased = key.toLowerCase()
     if (HASH_BEARERS.indexOf(lowerCased) > -1) {
-      const value = trim(safeToString(eventSource[key]))
+      const value = trim(safeToString(eventSource[key as keyof (typeof eventSource)]))
       const extractedEmail = extractEmail(value)
       const extractedHash = extractHashValue(value)
       if (extractedEmail) {
@@ -29,11 +29,12 @@ function _provided (state: State): State {
 }
 
 function _itemsLimiter (state: State): State {
-  const event = state.eventSource
+  const event = state.eventSource || {}
   Object.keys(event).forEach(key => {
     const lowerCased = key.toLowerCase()
-    if (LIMITING_KEYS.indexOf(lowerCased) > -1 && isArray(event[key]) && event[key].length > MAX_ITEMS) {
-      event[key].length = MAX_ITEMS
+    const value = event[key as keyof typeof event] as unknown
+    if (LIMITING_KEYS.indexOf(lowerCased) > -1 && isArray(value) && value.length > MAX_ITEMS) {
+      value.length = MAX_ITEMS
     }
   })
   return {}
@@ -42,7 +43,7 @@ function _itemsLimiter (state: State): State {
 const fiddlers = [_provided, _itemsLimiter]
 
 export function fiddle (state: State): State {
-  const reducer = (accumulator, func) => {
+  const reducer = (accumulator: State, func: (current: State) => State) => {
     return merge(accumulator, func(accumulator))
   }
   if (isObject(state.eventSource)) {

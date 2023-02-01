@@ -1,10 +1,8 @@
-import { StorageStrategyMode } from '../types'
+export type StorageStrategy = 'cookie' | 'ls' | 'none' | 'disabled'
 
-const StorageStrategy: Record<string, StorageStrategyMode> = {
+export const StorageStrategies: Record<string, StorageStrategy> = {
   cookie: 'cookie',
   localStorage: 'ls',
   none: 'none',
   disabled: 'disabled'
 }
-
-export { StorageStrategy }

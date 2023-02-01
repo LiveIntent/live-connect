@@ -4,14 +4,19 @@ import { expect, use } from 'chai'
 import { MinimalLiveConnect } from '../../src/minimal-live-connect'
 import { EVENT_BUS_NAMESPACE } from '../../src/utils/consts'
 import { LiveConnect } from '../../src/initializer'
-import * as storage from '../shared/utils/storage'
-import * as calls from '../shared/utils/calls'
+import { TestStorageHandler } from '../shared/utils/storage'
+import { TestCallHandler } from '../shared/utils/calls'
 import dirtyChai from 'dirty-chai'
+import { LocalEventBus } from '../../src/events/event-bus'
 
 use(dirtyChai)
 
 describe('MinimalLiveConnect', () => {
   const sandbox = sinon.createSandbox()
+  const bus = LocalEventBus()
+  const storage = new TestStorageHandler(bus)
+  const calls = TestCallHandler
+
   let imgStub = null
   let pixelCalls = []
   let errorCalls = []

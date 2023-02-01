@@ -1,13 +1,15 @@
+// @ts-nocheck
 import { ReplayEmitter, wrapError } from './replayemitter'
 import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
 import { EventBus } from '../types'
 
 function initBus (size?: number): EventBus {
-  if (typeof size === 'undefined') {
-    size = 5
+  if (typeof size === 'number' && size >= 0) {
+    return new ReplayEmitter(size)
+  } else {
+    return new ReplayEmitter(5)
   }
-  return new ReplayEmitter(size)
 }
 
 function extendBusIfNeeded (bus: EventBus) {
@@ -29,7 +31,7 @@ export function LocalEventBus (size = 5) {
   return initBus(size)
 }
 
-export function GlobalEventBus (name: string, size: number, errorCallback: (error: any) => void): EventBus {
+export function GlobalEventBus (name: string, size: number, errorCallback: (error: unknown) => void): EventBus {
   try {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))

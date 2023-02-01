@@ -1,18 +1,18 @@
-import { getQueryParameter } from '../utils/url'
+import { getQueryParameter, ParsedParam } from '../utils/url'
 import { trim, isUUID, expiresInDays } from '../utils/types'
-import { EventBus, IStorageHandler, State } from '../types'
+import { EventBus, State } from '../types'
+import { StorageHandler } from '../handlers/storage-handler'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)
 const DECISION_ID_QUERY_PARAM_NAME = 'li_did'
 const DECISION_ID_COOKIE_NAMESPACE = 'lidids.'
 
-const _onlyUnique = (value, index, self) => self.indexOf(value) === index
-const _validUuid = (value) => isUUID(value)
-const _nonEmpty = (value) => value && trim(value).length > 0
+const _onlyUnique = (value: string, index: number, self: string[]) => self.indexOf(value) === index
+const _nonEmpty = (value: string) => value && trim(value).length > 0
 
-export function resolve (state: State, storageHandler: IStorageHandler, eventBus: EventBus): State {
+export function resolve (state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
   let ret = {}
-  function _addDecisionId (key, cookieDomain) {
+  function _addDecisionId (key: string, cookieDomain?: string) {
     if (key) {
       storageHandler.setCookie(
         `${DECISION_ID_COOKIE_NAMESPACE}${key}`,
@@ -23,19 +23,19 @@ export function resolve (state: State, storageHandler: IStorageHandler, eventBus
     }
   }
   try {
-    const freshDecisions = [].concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
+    const freshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
     const storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
     freshDecisions
       .map(trim)
       .filter(_nonEmpty)
-      .filter(_validUuid)
+      .filter(isUUID)
       .filter(_onlyUnique)
       .forEach(decision => _addDecisionId(decision, state.domain))
     const allDecisions = freshDecisions
       .concat(storedDecisions)
       .map(trim)
       .filter(_nonEmpty)
-      .filter(_validUuid)
+      .filter(isUUID)
       .filter(_onlyUnique)
     ret = { decisionIds: allDecisions }
   } catch (e) {

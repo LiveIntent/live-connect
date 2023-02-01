@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     "allowJs": false,
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types", "src/typings"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "module": "CommonJS",
-    "types": ["webdriverio/async", "mocha"]
+    "types": ["webdriverio/async", "mocha"],
+    "strict": true,
+    "declaration": true
   },
   "include": ["./src/**/*", "./test/**/*"]
 }

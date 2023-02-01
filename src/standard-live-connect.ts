@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable */
 import { PixelSender } from './pixel/sender'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
@@ -9,10 +11,10 @@ import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { isArray, isObject, merge } from './utils/types'
-import { IdentityResolver } from './idex/identity-resolver'
+import { IdentityResolver } from './idex'
 import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
-import { StorageStrategy } from './model/storage-strategy'
+import { StorageStrategies } from './model/storage-strategy'
 import { ConfigMatcher, EventBus, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
 
@@ -80,12 +82,12 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
 
 function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   try {
-    const callHandler = CallHandler(externalCallHandler, eventBus)
+    const callHandler = new CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
     const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler, eventBus)
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategy.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = StorageHandler(storageStrategy, externalStorageHandler, eventBus)
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
+    const storageHandler = StorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler, eventBus))
 
     const enrichers = [pageEnrich, identifiersEnrich]
@@ -98,15 +100,15 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
-    const resolver = IdentityResolver(postManagedState.data, storageHandler, callHandler, eventBus)
+    const resolver = IdentityResolver.make(postManagedState.data, storageHandler, callHandler, eventBus)
     const _push = (...args) => _processArgs(args, pixelClient, postManagedState, eventBus)
     return {
       push: _push,
       fire: () => _push({}),
       peopleVerifiedId: postManagedState.data.peopleVerifiedId,
       ready: true,
-      resolve: resolver.resolve,
-      resolutionCallUrl: resolver.getUrl,
+      resolve: resolver.resolve.bind(resolver),
+      resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus: eventBus
     }

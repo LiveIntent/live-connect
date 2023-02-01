@@ -6,11 +6,11 @@ export function loadedDomain (): string {
 }
 
 export function getReferrer (win: Window = window): string | undefined {
-  return _safeGet(() => win.top.document.referrer)
+  return _safeGet(() => (win.top as Window).document.referrer)
 }
 
 export function getPage (win: Window = window): string | undefined {
-  const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || {}
+  const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || []
 
   const windows: Window[] = []
   let currentWindow = win
@@ -20,7 +20,7 @@ export function getPage (win: Window = window): string | undefined {
   }
   windows.push(currentWindow)
 
-  let detectedPageUrl: string
+  let detectedPageUrl: string | undefined
   for (let i = windows.length - 1; i >= 0 && !detectedPageUrl; i--) {
     detectedPageUrl = _safeGet(() => windows[i].location.href)
     if (i !== 0) {
@@ -32,7 +32,7 @@ export function getPage (win: Window = window): string | undefined {
   return detectedPageUrl
 }
 
-export function getContextElements (privacyMode: boolean, contextSelectors: string, contextElementsLength: number): string {
+export function getContextElements (privacyMode?: boolean, contextSelectors?: string, contextElementsLength?: number): string {
   if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {

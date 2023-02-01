@@ -6,13 +6,14 @@ import * as pixelSender from '../../../src/pixel/sender'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import * as C from '../../../src/utils/consts'
 import dirtyChai from 'dirty-chai'
+import { EventBus } from '../../../src/types'
 
 use(dirtyChai)
 
 describe('ErrorPixel', () => {
   const sandbox = sinon.createSandbox()
-  let eventBus = null
-  let errors = []
+  let eventBus: EventBus
+  let errors: string[]
   const stub = sandbox.stub(pixelSender, 'PixelSender').returns({
     sendPixel: (data) => errors.push(data),
     mock: true

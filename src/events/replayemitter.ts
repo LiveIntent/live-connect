@@ -1,16 +1,15 @@
 import * as C from '../utils/consts'
-import { EventBus } from '../types'
+import { ErrorDetails, EventBus } from '../types'
+import { isObject } from '../utils/types'
 
-type Callback<Ctx> = (ctx: Ctx, data: any[]) => void
-
-interface EventHandler<Ctx> {
-  ctx?: Ctx,
-  fn: Callback<Ctx>
+interface EventHandler {
+  callback: (data: unknown) => void;
+  unbound: (data: unknown) => void;
 }
 
 export class ReplayEmitter implements EventBus {
-  h: Record<string, EventHandler<any>[]>;
-  q: Record<string, any[]>;
+  private h: Record<string, EventHandler[]>;
+  private q: Record<string, unknown[]>;
   size: number;
 
   constructor (replaySize: number | string) {
@@ -26,32 +25,31 @@ export class ReplayEmitter implements EventBus {
     this.q = {}
   }
 
-  on <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
-    const handler: EventHandler<Ctx> = {
-      ctx: ctx,
-      fn: callback
+  on <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this {
+    const handler: EventHandler = {
+      callback: callback.bind(ctx),
+      unbound: callback
     };
 
     (this.h[name] || (this.h[name] = [])).push(handler)
 
     const eventQueueLen = (this.q[name] || []).length
     for (let i = 0; i < eventQueueLen; i++) {
-      callback.apply(ctx, this.q[name][i])
+      callback.call(ctx, this.q[name][i])
     }
 
     return this
   }
 
-  once <Ctx> (name: string, callback: Callback<Ctx>, ctx: Ctx): EventBus {
+  once <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this {
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
-      callback.apply(ctx, eventQueue[0])
-
+      callback.call(ctx, eventQueue[0])
       return this
     } else {
-      const listener = (...args: any[]) => {
+      const listener = (args: unknown) => {
         this.off(name, listener)
-        callback.apply(ctx, args)
+        callback.call(ctx, args)
       }
 
       listener._ = callback
@@ -59,31 +57,31 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, ...data: any[]): EventBus {
+  emit (name: string, event: unknown): this {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
 
     for (i; i < len; i++) {
-      evtArr[i].fn.apply(evtArr[i].ctx, data)
+      evtArr[i].callback(event)
     }
 
     const eventQueue = this.q[name] || (this.q[name] = [])
     if (eventQueue.length >= this.size) {
       eventQueue.shift()
     }
-    eventQueue.push(data)
+    eventQueue.push(event)
 
     return this
   }
 
-  off (name: string, callback: Callback<any>): EventBus {
+  off (name: string, callback: (event: unknown) => void): this {
     const handlers = this.h[name]
     const liveEvents = []
 
     if (handlers && callback) {
       for (let i = 0, len = handlers.length; i < len; i++) {
-        if (handlers[i].fn !== callback) {
+        if (handlers[i].unbound !== callback) {
           liveEvents.push(handlers[i])
         }
       }
@@ -96,21 +94,41 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  emitErrorWithMessage (name: string, message: string, e: any = {}): EventBus {
-    const wrappedError = wrapError(name, message, e)
+  emitErrorWithMessage (name: string, message: string, exception: unknown): this {
+    const wrappedError = wrapError(name, message, exception)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  emitError (name: string, exception: any): EventBus {
-    return this.emitErrorWithMessage(name, exception.message, exception)
+  emitError (name: string, exception: unknown): this {
+    const wrappedError = wrapError(name, undefined, exception)
+    return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 }
 
-export function wrapError (name: string, message: string, e: any): any {
-  const wrapped: any = new Error(message || e.message)
-  wrapped.stack = e.stack
-  wrapped.name = name || 'unknown error'
-  wrapped.lineNumber = e.lineNumber
-  wrapped.columnNumber = e.columnNumber
-  return wrapped
+export function wrapError (name: string, message?: string, e?: unknown): ErrorDetails {
+  if (isObject(e)) {
+    let error: ErrorDetails
+    if ('message' in e && typeof e.message === 'string') {
+      error = new Error(message || e.message)
+    } else {
+      error = new Error(message)
+    }
+
+    error.name = name
+
+    if ('stack' in e && typeof e.stack === 'string') {
+      error.stack = e.stack
+    }
+    if ('lineNumber' in e && typeof e.lineNumber === 'number') {
+      error.lineNumber = e.lineNumber
+    }
+    if ('columnNumber' in e && typeof e.columnNumber === 'number') {
+      error.columnNumber = e.columnNumber
+    }
+    return error
+  } else {
+    const error = Error(message)
+    error.name = name
+    return error
+  }
 }

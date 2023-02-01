@@ -4,11 +4,11 @@ import { ExternalStorageHandler, EventBus } from '../../../src/types'
 export class TestStorageHandler implements ExternalStorageHandler {
   private eventBus: EventBus
   private _localStorageIsEnabled?: boolean
-  private cookies: CookiesStatic<string>
+  private cookies: CookiesStatic<null>
 
   constructor (eventBus: EventBus) {
     this.eventBus = eventBus
-    this._localStorageIsEnabled = null
+    this._localStorageIsEnabled = undefined
 
     this.cookies = Cookies.withConverter({
       read: function (value, name) {

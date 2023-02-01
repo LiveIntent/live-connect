@@ -2,10 +2,10 @@ import { ExternalCallHandler } from '../../../src/types'
 import { isFunction } from '../../../src/utils/types'
 
 export const TestCallHandler: ExternalCallHandler = {
-  ajaxGet (url: string, responseHandler: (responseText: string, response: any) => void, fallback: (error: any) => void = undefined, timeout = 1000): void {
-    function errorCallback (name: string, message: string, error: any, request: XMLHttpRequest | XDomainRequest) {
+  ajaxGet (url: string, responseHandler: (responseText: string, response: object) => void, fallback?: (error: unknown) => void, timeout = 1000): void {
+    function errorCallback (name: string, message: string, error: unknown, request: XMLHttpRequest | XDomainRequest) {
       console.error('Error while executing ajax call', message, error, request)
-      fallback(error)
+      if (isFunction(fallback)) fallback(error)
     }
 
     function xhrCall (): XMLHttpRequest {
@@ -25,7 +25,7 @@ export const TestCallHandler: ExternalCallHandler = {
     }
 
     function xdrCall (): XDomainRequest {
-      const xdr = new window.XDomainRequest()
+      const xdr = new window.XDomainRequest!()
       xdr.onprogress = () => undefined
       xdr.onerror = () => {
         const error = new Error(`XDR Error received: ${xdr.responseText}`)
@@ -50,7 +50,7 @@ export const TestCallHandler: ExternalCallHandler = {
     }
   },
 
-  pixelGet (uri: string, onload: () => void): void {
+  pixelGet (uri: string, onload?: () => void): void {
     const img = new window.Image()
     if (isFunction(onload)) {
       img.onload = onload

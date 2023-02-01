@@ -6,17 +6,12 @@ const TIME_LEN = 10
 const RANDOM_LEN = 16
 const prng = detectPrng()
 
-function createError (message: string): Error {
-  const err = new Error(message)
+function createError (message: string): Error & { source: string } {
+  const err = new Error(message) as Error & { source: string }
   err.source = 'Ulid'
   return err
 }
 
-/**
- * detects the pseudorandom number generator and generates the random number
- * @function
- * @returns {function} a random number generator
- */
 function detectPrng (): () => number {
   const root = typeof window !== 'undefined' ? window : null
   const browserCrypto = root && (root.crypto || root.msCrypto)

@@ -1,28 +1,46 @@
-import { isFunction } from '../utils/types'
-import { EventBus, ExternalCallHandler, ICallHandler } from '../types'
+import { EventBus, ExternalCallHandler } from '../types'
+import { WrappingContext } from '../utils/wrapping'
 
-const _noOp = () => undefined
+interface WrappedExternalCallHandler {
+  ajaxGet: (
+    url: string,
+    onSuccess: (responseText: string, response: unknown) => void,
+    onError?: (error: unknown) => void,
+    timeout?: number
+  ) => void;
+  pixelGet: (
+      url: string,
+      onLoad?: () => void
+  ) => void;
+}
 
-export function CallHandler (externalCallHandler: ExternalCallHandler, eventBus: EventBus): ICallHandler {
-  const errors = []
+export class CallHandler {
+  private functions: WrappedExternalCallHandler
 
-  function _externalOrError (functionName: string) {
-    const hasExternal = externalCallHandler && externalCallHandler[functionName] && isFunction(externalCallHandler[functionName])
-    if (hasExternal) {
-      return externalCallHandler[functionName].bind(externalCallHandler)
-    } else {
-      errors.push(functionName)
-      return _noOp
+  constructor (externalCallHandler: ExternalCallHandler, eventBus: EventBus) {
+    const wrapper = new WrappingContext(externalCallHandler, 'CallHandler', eventBus)
+
+    this.functions = {
+      ajaxGet: wrapper.wrap('ajaxGet'),
+      pixelGet: wrapper.wrap('pixelGet')
     }
+
+    wrapper.reportErrors()
   }
 
-  const handler = {
-    ajaxGet: _externalOrError('ajaxGet'),
-    pixelGet: _externalOrError('pixelGet')
-  }
-  if (errors.length > 0) {
-    eventBus.emitErrorWithMessage('CallHandler', `The call functions '${JSON.stringify(errors)}' are not provided`)
+  ajaxGet (
+    url: string,
+    onSuccess: (responseText: string, response: unknown) => void,
+    onError?: (error: unknown) => void,
+    timeout?: number
+  ): void {
+    this.functions.ajaxGet(url, onSuccess, onError, timeout)
   }
 
-  return handler
+  pixelGet (
+    url: string,
+    onLoad?: () => void
+  ): void {
+    this.functions.pixelGet(url, onLoad)
+  }
 }
