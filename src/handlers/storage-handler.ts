@@ -4,25 +4,25 @@ import { EventBus, ExternalMinimalStorageHandler, ExternalStorageHandler } from 
 import { WrappingContext } from '../utils/wrapping'
 
 interface WrappedExternalMinimalStorageHandler {
-  getCookie: (key: string) => string | null | undefined;
-  getDataFromLocalStorage: (key: string) => string | null | undefined;
-  localStorageIsEnabled: () => boolean | undefined;
+  getCookie: (key: string) => string | null | undefined
+  getDataFromLocalStorage: (key: string) => string | null | undefined
+  localStorageIsEnabled: () => boolean | undefined
 }
 
 interface WrappedExternalStorageHandler {
-  setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void;
-  setDataInLocalStorage: (key: string, value: string) => void;
-  removeDataFromLocalStorage: (key: string) => void;
-  findSimilarCookies: (substring: string) => string[] | undefined;
+  setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void
+  setDataInLocalStorage: (key: string, value: string) => void
+  removeDataFromLocalStorage: (key: string) => void
+  findSimilarCookies: (substring: string) => string[] | undefined
 }
 
 const noop = () => undefined
 
-function wrapRead<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
+function wrapRead<T extends object, K extends keyof T & string>(wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
   return strEqualsIgnoreCase(storageStrategy, StorageStrategies.disabled) ? noop : wrapper.wrap(functionName)
 }
 
-function wrapWrite<T extends object, K extends keyof T & string> (wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
+function wrapWrite<T extends object, K extends keyof T & string>(wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
   return strEqualsIgnoreCase(storageStrategy, StorageStrategies.none) ? noop : wrapRead(wrapper, storageStrategy, functionName)
 }
 
@@ -37,22 +37,22 @@ export class MinimalStorageHandler {
     }
   }
 
-  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): MinimalStorageHandler {
+  static make(storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): MinimalStorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'MinimalStorageHandler', eventBus)
     const handler = new MinimalStorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
     return handler
   }
 
-  localStorageIsEnabled (): boolean {
+  localStorageIsEnabled(): boolean {
     return !!this.minimalFunctions.localStorageIsEnabled()
   }
 
-  getCookie (key: string): string | null {
+  getCookie(key: string): string | null {
     return this.minimalFunctions.getCookie(key) || null
   }
 
-  getDataFromLocalStorage (key: string): string | null {
+  getDataFromLocalStorage(key: string): string | null {
     return this.minimalFunctions.getDataFromLocalStorage(key) || null
   }
 }
@@ -74,14 +74,14 @@ export class StorageHandler extends MinimalStorageHandler {
     }
   }
 
-  static make (storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): StorageHandler {
+  static make(storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): StorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'StorageHandler', eventBus)
     const handler = new StorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
     return handler
   }
 
-  get (key: string): string | null {
+  get(key: string): string | null {
     if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
       return null
     } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
@@ -100,7 +100,7 @@ export class StorageHandler extends MinimalStorageHandler {
     }
   }
 
-  set (key: string, value: string, expires: Date, domain?: string): void {
+  set(key: string, value: string, expires: Date, domain?: string): void {
     if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
       // pass
     } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
@@ -114,19 +114,19 @@ export class StorageHandler extends MinimalStorageHandler {
     }
   }
 
-  setCookie (key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
+  setCookie(key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
     this.functions.setCookie(key, value, expires, sameSite, domain)
   }
 
-  setDataInLocalStorage (key: string, value: string): void {
+  setDataInLocalStorage(key: string, value: string): void {
     this.functions.setDataInLocalStorage(key, value)
   }
 
-  removeDataFromLocalStorage (key: string): void {
+  removeDataFromLocalStorage(key: string): void {
     this.functions.removeDataFromLocalStorage(key)
   }
 
-  findSimilarCookies (substring: string): string[] {
+  findSimilarCookies(substring: string): string[] {
     return this.functions.findSimilarCookies(substring) || []
   }
 }

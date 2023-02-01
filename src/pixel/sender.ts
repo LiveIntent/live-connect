@@ -20,7 +20,7 @@ export class PixelSender {
     this.presend = presend
   }
 
-  private callBakers (bakersJson: string): void {
+  private callBakers(bakersJson: string): void {
     try {
       const bakers = JSON.parse(bakersJson).bakers
       if (isArray(bakers)) {
@@ -31,7 +31,7 @@ export class PixelSender {
     }
   }
 
-  private sendState (state: StateWrapper, endpoint: string, makeCall: (url: string) => void): void {
+  private sendState(state: StateWrapper, endpoint: string, makeCall: (url: string) => void): void {
     if (state.sendsPixel()) {
       if (isFunction(this.presend)) {
         this.presend()
@@ -46,12 +46,12 @@ export class PixelSender {
     }
   }
 
-  private utcMillis () {
+  private utcMillis() {
     const now = new Date()
     return new Date(now.toUTCString()).getTime() + now.getMilliseconds()
   }
 
-  sendAjax (state: StateWrapper): void {
+  sendAjax(state: StateWrapper): void {
     this.sendState(state, 'j', uri => {
       this.calls.ajaxGet(
         uri,
@@ -68,7 +68,7 @@ export class PixelSender {
     })
   }
 
-  sendPixel (state: StateWrapper): void {
+  sendPixel(state: StateWrapper): void {
     this.sendState(state, 'p', uri => this.calls.pixelGet(uri, this.onload))
   }
 }

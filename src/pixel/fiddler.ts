@@ -8,7 +8,7 @@ const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
 const HASH_BEARERS = ['email', 'emailhash', 'hash', 'hashedemail']
 
-function _provided (state: State): State {
+function _provided(state: State): State {
   const eventSource = state.eventSource || {}
   const objectKeys = Object.keys(eventSource)
   for (const key of objectKeys) {
@@ -28,7 +28,7 @@ function _provided (state: State): State {
   return state
 }
 
-function _itemsLimiter (state: State): State {
+function _itemsLimiter(state: State): State {
   const event = state.eventSource || {}
   Object.keys(event).forEach(key => {
     const lowerCased = key.toLowerCase()
@@ -42,7 +42,7 @@ function _itemsLimiter (state: State): State {
 
 const fiddlers = [_provided, _itemsLimiter]
 
-export function fiddle (state: State): State {
+export function fiddle(state: State): State {
   const reducer = (accumulator: State, func: (current: State) => State) => {
     return merge(accumulator, func(accumulator))
   }

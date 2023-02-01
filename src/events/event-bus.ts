@@ -4,7 +4,7 @@ import * as C from '../utils/consts'
 import { isFunction } from '../utils/types'
 import { EventBus } from '../types'
 
-function initBus (size?: number): EventBus {
+function initBus(size?: number): EventBus {
   if (typeof size === 'number' && size >= 0) {
     return new ReplayEmitter(size)
   } else {
@@ -12,7 +12,7 @@ function initBus (size?: number): EventBus {
   }
 }
 
-function extendBusIfNeeded (bus: EventBus) {
+function extendBusIfNeeded(bus: EventBus) {
   if (isFunction(bus.emitErrorWithMessage) && isFunction(bus.emitError)) {
     return
   }
@@ -27,11 +27,11 @@ function extendBusIfNeeded (bus: EventBus) {
   }
 }
 
-export function LocalEventBus (size = 5) {
+export function LocalEventBus(size = 5) {
   return initBus(size)
 }
 
-export function GlobalEventBus (name: string, size: number, errorCallback: (error: unknown) => void): EventBus {
+export function GlobalEventBus(name: string, size: number, errorCallback: (error: unknown) => void): EventBus {
   try {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
@@ -47,7 +47,7 @@ export function GlobalEventBus (name: string, size: number, errorCallback: (erro
   }
 }
 
-export function getAvailableBus (name: string): EventBus {
+export function getAvailableBus(name: string): EventBus {
   const eventBus = window[name].eventBus || window[C.EVENT_BUS_NAMESPACE]
   extendBusIfNeeded(eventBus)
   return eventBus

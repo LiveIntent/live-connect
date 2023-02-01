@@ -318,7 +318,7 @@ describe('IdentityResolver', () => {
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 12)
 
-    function epochSeconds (date) {
+    function epochSeconds(date) {
       Math.floor(date.getTime() / 1000)
     }
 

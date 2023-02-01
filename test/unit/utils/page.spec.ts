@@ -149,14 +149,14 @@ describe('Page Utils', () => {
   })
 })
 
-function createElement (tag, text, document) {
+function createElement(tag, text, document) {
   const newElement = document.createElement(tag)
   const newContent = document.createTextNode(text)
   newElement.appendChild(newContent)
   document.documentElement.appendChild(newElement)
 }
 
-function definedProperty (object, name, getter) {
+function definedProperty(object, name, getter) {
   Object.defineProperty(object, name, {
     get: getter
   })

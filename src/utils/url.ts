@@ -13,23 +13,23 @@ export const toParams = (tuples: ([string, string][])) => {
   return acc
 }
 
-function _isNum (v: string): number | string {
+function _isNum(v: string): number | string {
   return isNaN(+v) ? v : +v
 }
 
-function _isNull <A> (v: A): null | A {
+function _isNull<A>(v: A): null | A {
   return v === 'null' || v === 'undefined' ? null : v
 }
 
-function _isBoolean <A> (v: A): A | boolean {
+function _isBoolean<A>(v: A): A | boolean {
   return v === 'false' ? false : (v === 'true' ? true : v)
 }
 
-function _convert (v: string): boolean | number | string | null {
+function _convert(v: string): boolean | number | string | null {
   return _isBoolean(_isNull(_isNum(v)))
 }
 
-function _parseParam (params: Record<string, string | string[]>, key: string): ParsedParam | ParsedParam[] {
+function _parseParam(params: Record<string, string | string[]>, key: string): ParsedParam | ParsedParam[] {
   if (key in params) {
     const value = params[key]
     if (isArray(value)) {
@@ -40,7 +40,7 @@ function _parseParam (params: Record<string, string | string[]>, key: string): P
   }
 }
 
-function _allParams (url: string): Record<string, string | string[]> {
+function _allParams(url: string): Record<string, string | string[]> {
   let questionMarkIndex, queryParams, historyIndex
   const obj: Record<string, string | string[]> = {}
   if (!url || (questionMarkIndex = url.indexOf('?')) === -1 || !(queryParams = url.slice(questionMarkIndex + 1))) {
@@ -76,18 +76,18 @@ function _allParams (url: string): Record<string, string | string[]> {
   return obj
 }
 
-export function decodeValue (v: string): string {
+export function decodeValue(v: string): string {
   return v.replace(/(%[\dA-F]{2})+/gi, decodeURIComponent)
 }
 
-export function urlParams (url: string): Record<string, ParsedParam | ParsedParam[]> {
+export function urlParams(url: string): Record<string, ParsedParam | ParsedParam[]> {
   const params = _allParams(url)
   const result: Record<string, ParsedParam | ParsedParam[]> = {}
   Object.keys(params).forEach((k) => { result[k] = _parseParam(params, k) })
   return result
 }
 
-export function getQueryParameter (url: string, name: string): ParsedParam | ParsedParam[] {
+export function getQueryParameter(url: string, name: string): ParsedParam | ParsedParam[] {
   const params = _allParams(url)
   return _parseParam(params, name)
 }

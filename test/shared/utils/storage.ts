@@ -27,7 +27,7 @@ export class TestStorageHandler implements ExternalStorageHandler {
     })
   }
 
-  getCookie (key: string): string | null {
+  getCookie(key: string): string | null {
     const result = this.cookies.get(key)
     if (result === undefined) {
       return null
@@ -35,7 +35,7 @@ export class TestStorageHandler implements ExternalStorageHandler {
     return result
   }
 
-  findSimilarCookies (substring: string): string[] {
+  findSimilarCookies(substring: string): string[] {
     try {
       const allCookies = this.cookies.get()
       return Object.keys(allCookies).filter(key => key.indexOf(substring) >= 0 && allCookies[key] !== null).map(key => allCookies[key])
@@ -45,7 +45,7 @@ export class TestStorageHandler implements ExternalStorageHandler {
     }
   }
 
-  setCookie (key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
+  setCookie(key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
     if (expires) {
       let expiresDate: Date
       if (typeof expires === 'string') {
@@ -61,14 +61,14 @@ export class TestStorageHandler implements ExternalStorageHandler {
     }
   }
 
-  localStorageIsEnabled () {
+  localStorageIsEnabled() {
     if (this._localStorageIsEnabled == null) {
       this._localStorageIsEnabled = this.checkLocalStorage()
     }
     return this._localStorageIsEnabled
   }
 
-  getDataFromLocalStorage (key: string): string | null {
+  getDataFromLocalStorage(key: string): string | null {
     if (this.localStorageIsEnabled()) {
       return window.localStorage.getItem(key)
     } else {
@@ -76,19 +76,19 @@ export class TestStorageHandler implements ExternalStorageHandler {
     }
   }
 
-  setDataInLocalStorage (key: string, value: string): void {
+  setDataInLocalStorage(key: string, value: string): void {
     if (this.localStorageIsEnabled()) {
       window.localStorage.setItem(key, value)
     }
   }
 
-  removeDataFromLocalStorage (key: string): void {
+  removeDataFromLocalStorage(key: string): void {
     if (this.localStorageIsEnabled()) {
       window.localStorage.removeItem(key)
     }
   }
 
-  private checkLocalStorage () {
+  private checkLocalStorage() {
     let enabled = false
     try {
       if (window && window.localStorage) {

@@ -15,7 +15,7 @@ const _defaultReturn: State = {
   }
 }
 
-function _asInt (field: unknown): number | undefined {
+function _asInt(field: unknown): number | undefined {
   try {
     const intValue = (field as number) * 1
     return isNaN(intValue) ? undefined : intValue
@@ -24,7 +24,7 @@ function _asInt (field: unknown): number | undefined {
   }
 }
 
-function _truncate (value: unknown): string | undefined {
+function _truncate(value: unknown): string | undefined {
   try {
     if (isString(value) && value.length && value.length > MAX_ERROR_FIELD_LENGTH) {
       return `${value.substr(0, MAX_ERROR_FIELD_LENGTH)}...`
@@ -35,7 +35,7 @@ function _truncate (value: unknown): string | undefined {
   }
 }
 
-export function asErrorDetails (e: unknown): State {
+export function asErrorDetails(e: unknown): State {
   if (isRecord(e)) {
     return {
       errorDetails: {
@@ -52,7 +52,7 @@ export function asErrorDetails (e: unknown): State {
   }
 }
 
-export function register (state: State, callHandler: CallHandler, eventBus: EventBus): void {
+export function register(state: State, callHandler: CallHandler, eventBus: EventBus): void {
   try {
     const pixelSender = new PixelSender(state, callHandler, eventBus)
 

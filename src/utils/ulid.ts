@@ -6,13 +6,13 @@ const TIME_LEN = 10
 const RANDOM_LEN = 16
 const prng = detectPrng()
 
-function createError (message: string): Error & { source: string } {
+function createError(message: string): Error & { source: string } {
   const err = new Error(message) as Error & { source: string }
   err.source = 'Ulid'
   return err
 }
 
-function detectPrng (): () => number {
+function detectPrng(): () => number {
   const root = typeof window !== 'undefined' ? window : null
   const browserCrypto = root && (root.crypto || root.msCrypto)
   if (browserCrypto) {
@@ -25,13 +25,7 @@ function detectPrng (): () => number {
   return () => Math.random()
 }
 
-/**
- * encodes the time based on the length
- * @param now
- * @param len
- * @returns {string} encoded time.
- */
-function encodeTime (now: number, len: number): string {
+function encodeTime(now: number, len: number): string {
   if (now > TIME_MAX) {
     throw createError('cannot encode time greater than ' + TIME_MAX)
   }
@@ -45,12 +39,7 @@ function encodeTime (now: number, len: number): string {
   return str
 }
 
-/**
- * encodes random character
- * @param len
- * @returns {string}
- */
-function encodeRandom (len: number): string {
+function encodeRandom(len: number): string {
   let str = ''
   for (; len > 0; len--) {
     str = randomChar() + str
@@ -58,11 +47,7 @@ function encodeRandom (len: number): string {
   return str
 }
 
-/**
- * gets a a random charcter from generated pseudorandom number
- * @returns {string}
- */
-function randomChar (): string {
+function randomChar(): string {
   let rand = Math.floor(prng() * ENCODING_LEN)
   if (rand === ENCODING_LEN) {
     rand = ENCODING_LEN - 1
@@ -70,9 +55,6 @@ function randomChar (): string {
   return ENCODING.charAt(rand)
 }
 
-/**
- * the factory to generate unique identifier based on time and current pseudorandom number
- */
-export function ulid (): string {
+export function ulid(): string {
   return encodeTime(Date.now(), TIME_LEN) + encodeRandom(RANDOM_LEN)
 }

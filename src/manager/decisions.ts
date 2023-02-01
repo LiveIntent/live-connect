@@ -10,9 +10,9 @@ const DECISION_ID_COOKIE_NAMESPACE = 'lidids.'
 const _onlyUnique = (value: string, index: number, self: string[]) => self.indexOf(value) === index
 const _nonEmpty = (value: string) => value && trim(value).length > 0
 
-export function resolve (state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
+export function resolve(state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
   let ret = {}
-  function _addDecisionId (key: string, cookieDomain?: string) {
+  function _addDecisionId(key: string, cookieDomain?: string) {
     if (key) {
       storageHandler.setCookie(
         `${DECISION_ID_COOKIE_NAMESPACE}${key}`,

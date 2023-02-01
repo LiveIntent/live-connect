@@ -3,7 +3,7 @@ import { safeToString, isString, isArray } from '../utils/types'
 import { EventBus, HashedEmail, State, RetrievedIdentifier } from '../types'
 import { MinimalStorageHandler } from '../handlers/storage-handler'
 
-export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus): State {
+export function enrich(state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus): State {
   try {
     return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
   } catch (e) {
@@ -14,7 +14,7 @@ export function enrich (state: State, storageHandler: MinimalStorageHandler, eve
   }
 }
 
-function _parseIdentifiersToResolve (state: State): string[] {
+function _parseIdentifiersToResolve(state: State): string[] {
   let cookieNames: string[] = []
   if (state.identifiersToResolve) {
     if (isArray(state.identifiersToResolve)) {
@@ -29,7 +29,7 @@ function _parseIdentifiersToResolve (state: State): string[] {
   return cookieNames
 }
 
-function _getIdentifiers (cookieNames: string[], storageHandler: MinimalStorageHandler): State {
+function _getIdentifiers(cookieNames: string[], storageHandler: MinimalStorageHandler): State {
   const identifiers: RetrievedIdentifier[] = []
   let hashes: HashedEmail[] = []
   for (let i = 0; i < cookieNames.length; i++) {
@@ -50,7 +50,7 @@ function _getIdentifiers (cookieNames: string[], storageHandler: MinimalStorageH
   }
 }
 
-function _deduplicateHashes (hashes: HashedEmail[]): HashedEmail[] {
+function _deduplicateHashes(hashes: HashedEmail[]): HashedEmail[] {
   const seen = new Set<string>()
   const result: HashedEmail[] = []
   for (let i = 0; i < hashes.length; i++) {

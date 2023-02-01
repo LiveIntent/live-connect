@@ -6,7 +6,7 @@ import { EventBus, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, Li
 import { EVENT_BUS_NAMESPACE } from './utils/consts'
 import { GlobalEventBus } from './events/event-bus'
 
-export function LiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, mode: string, externalEventBus?: EventBus): ILiveConnect | null {
+export function LiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, mode: string, externalEventBus?: EventBus): ILiveConnect | null {
   const minimalMode = mode === 'minimal' || process.env.LiveConnectMode === 'minimal'
   const bus = externalEventBus || GlobalEventBus(EVENT_BUS_NAMESPACE, 5, err => console.error(err))
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}

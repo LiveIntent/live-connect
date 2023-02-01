@@ -11,7 +11,7 @@ import { StorageStrategies } from './model/storage-strategy'
 import { EventBus, ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 
-function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   try {
     const callHandler = new CallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
@@ -36,7 +36,7 @@ function _minimalInitialization (liveConnectConfig: LiveConnectConfig, externalS
   }
 }
 
-export function MinimalLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
+export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     configuration.globalVarName = configuration.globalVarName || 'liQ'

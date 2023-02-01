@@ -3,7 +3,7 @@ import { assert } from 'chai'
 const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
 const WAIT_UNTIL_INTERVAL = 500
 
-export async function getText (selector) {
+export async function getText(selector) {
   let text: string
   await browser.waitUntil(
     async () => {
@@ -28,11 +28,11 @@ export async function getText (selector) {
   return text
 }
 
-export async function click (selector) {
+export async function click(selector) {
   return $(selector).then(e => e.click())
 }
 
-export async function sendEvent (event, expectedRequests, server) {
+export async function sendEvent(event, expectedRequests, server) {
   const error = await browser.execute(function (event) {
     try {
       window.liQ = window.liQ || []
@@ -48,7 +48,7 @@ export async function sendEvent (event, expectedRequests, server) {
   await waitForRequests(expectedRequests, server)
 }
 
-export async function waitForRequests (expectedRequests, server) {
+export async function waitForRequests(expectedRequests, server) {
   console.info(`Waiting for ${expectedRequests} requests`)
   await browser.waitUntil(
     () => {
@@ -63,7 +63,7 @@ export async function waitForRequests (expectedRequests, server) {
   console.info('Done waiting for requests')
 }
 
-export async function waitForBakerRequests (expectedRequests, server) {
+export async function waitForBakerRequests(expectedRequests, server) {
   console.info(`Waiting for ${expectedRequests} baker requests`)
   await browser.waitUntil(
     () => {
@@ -78,7 +78,7 @@ export async function waitForBakerRequests (expectedRequests, server) {
   console.info('Done waiting for baker requests')
 }
 
-export async function resolveIdentity (expectedRequests, server) {
+export async function resolveIdentity(expectedRequests, server) {
   const error = await browser.execute(() => {
     try {
       window.liQ = window.liQ || []
@@ -108,7 +108,7 @@ export async function resolveIdentity (expectedRequests, server) {
   }
 }
 
-export async function fetchResolvedIdentity () {
+export async function fetchResolvedIdentity() {
   console.info('Waiting for identity to resolve')
   let text = 'None'
   await browser.waitUntil(
@@ -135,7 +135,7 @@ export async function fetchResolvedIdentity () {
   return text
 }
 
-export async function probeLS () {
+export async function probeLS() {
   const result = await browser.execute(function () {
     const key = '__live-connect-localstorage-probe-test'
     let enabled = false
@@ -162,7 +162,7 @@ export async function probeLS () {
   return enabled
 }
 
-export async function deleteAllCookies () {
+export async function deleteAllCookies() {
   const error = await browser.execute(function () {
     try {
       const cookies = document.cookie.split('; ')
@@ -189,12 +189,12 @@ export async function deleteAllCookies () {
   }
 }
 
-export function isMobileSafari () {
+export function isMobileSafari() {
   return browser.capabilities.browserName === 'safari' &&
     (browser.capabilities.realMobile || browser.capabilities.real_mobile)
 }
 
-export function isMobileSafari14OrNewer () {
+export function isMobileSafari14OrNewer() {
   return browser.capabilities.browserName === 'safari' &&
     (
       (browser.capabilities.browserVersion && parseInt(browser.capabilities.browserVersion.substring(0, 2)) >= 14) ||
@@ -203,15 +203,15 @@ export function isMobileSafari14OrNewer () {
     (browser.capabilities.realMobile || browser.capabilities.real_mobile)
 }
 
-export function isIE () {
+export function isIE() {
   return browser.capabilities.browserName === 'internet explorer'
 }
 
-export function isFirefox () {
+export function isFirefox() {
   return browser.capabilities.browserName === 'firefox'
 }
 
-export function isFirefoxAfter86 () {
+export function isFirefoxAfter86() {
   return browser.capabilities.browserName === 'firefox' &&
     (
       (browser.capabilities.browserVersion && parseInt(browser.capabilities.browserVersion.split('.')[0]) > 86) ||
