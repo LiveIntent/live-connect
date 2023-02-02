@@ -55,6 +55,7 @@ function randomChar(): string {
   return ENCODING.charAt(rand)
 }
 
+// the factory to generate unique identifier based on time and current pseudorandom number
 export function ulid(): string {
   return encodeTime(Date.now(), TIME_LEN) + encodeRandom(RANDOM_LEN)
 }
