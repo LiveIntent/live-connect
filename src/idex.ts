@@ -7,14 +7,14 @@ import { StorageHandler } from './handlers/storage-handler'
 import { CallHandler } from './handlers/call-handler'
 
 interface Cache {
-  get: (key: unknown) => unknown; // null will be used to signal missing value
-  set: (key: unknown, value: unknown, expiration?: Date) => void;
+  get: (key: unknown) => unknown // null will be used to signal missing value
+  set: (key: unknown, value: unknown, expiration?: Date) => void
 }
 
-function storageHandlerBackedCache (defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus: EventBus): Cache {
+function storageHandlerBackedCache(defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus: EventBus): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-  function _cacheKey (rawKey: unknown) {
+  function _cacheKey(rawKey: unknown) {
     if (rawKey) {
       const suffix = base64UrlEncode(JSON.stringify(rawKey))
       return `${IDEX_STORAGE_KEY}_${suffix}`
@@ -102,7 +102,7 @@ export class IdentityResolver {
     })
   }
 
-  static make (config: State, storageHandler: StorageHandler, calls: CallHandler, eventBus: EventBus): IdentityResolver {
+  static make(config: State, storageHandler: StorageHandler, calls: CallHandler, eventBus: EventBus): IdentityResolver {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
@@ -112,11 +112,11 @@ export class IdentityResolver {
     return new IdentityResolver(nonNullConfig, calls, cache, eventBus)
   }
 
-  static makeNoCache (config: State, calls: CallHandler, eventBus: EventBus): IdentityResolver {
+  static makeNoCache(config: State, calls: CallHandler, eventBus: EventBus): IdentityResolver {
     return new IdentityResolver(config || {}, calls, noopCache, eventBus)
   }
 
-  private responseReceived (
+  private responseReceived(
     additionalParams: ResolutionParams,
     successCallback: (result: unknown) => void
   ): ((responseText: string, response: unknown) => void) {
@@ -138,7 +138,7 @@ export class IdentityResolver {
     }
   }
 
-  unsafeResolve (successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
+  unsafeResolve(successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
     const cachedValue = this.cache.get(additionalParams)
     if (cachedValue) {
       successCallback(cachedValue)
@@ -152,13 +152,13 @@ export class IdentityResolver {
     }
   }
 
-  getUrl (additionalParams: Record<string, string | string[]>): string {
+  getUrl(additionalParams: Record<string, string | string[]>): string {
     const originalParams = this.tuples.slice().concat(mapAsParams(additionalParams))
     const params = toParams(originalParams)
     return `${this.url}/${this.source}/${this.publisherId}${params}`
   }
 
-  resolve (successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
+  resolve(successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
     try {
       this.unsafeResolve(successCallback, errorCallback, additionalParams || {})
     } catch (e) {
@@ -171,7 +171,7 @@ export class IdentityResolver {
   }
 }
 
-function responseExpires (response: unknown) {
+function responseExpires(response: unknown) {
   if (isObject(response) && 'getResponseHeader' in response && isFunction(response.getResponseHeader)) {
     const expiresHeader = response.getResponseHeader('expires')
     if (expiresHeader) {

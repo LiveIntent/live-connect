@@ -1,7 +1,7 @@
 import { btoa as btoaFromLib } from './btoa'
 import { isFunction } from './types'
 
-function _safeBtoa (s: string): string {
+function _safeBtoa(s: string): string {
   const res = btoaFromLib(s)
   return res || ''
 }
@@ -13,11 +13,11 @@ const _base64ToUrlEncodedChars: Record<string, string> = {
   '/': '_'
 }
 
-function _replaceBase64Chars (x: string): string {
+function _replaceBase64Chars(x: string): string {
   return _base64ToUrlEncodedChars[x] || ''
 }
 
-export function base64UrlEncode (s: string): string {
+export function base64UrlEncode(s: string): string {
   let btoa = null
   // First we escape the string using encodeURIComponent to get the UTF-8 encoding of the characters,
   // then we convert the percent encodings into raw bytes, and finally feed it to btoa() function.

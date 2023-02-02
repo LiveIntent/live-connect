@@ -1,8 +1,5 @@
-/**
- * btoa() as defined by the HTML and Infra specs, which mostly just references
- * RFC 4648.
- */
-export function btoa (s: string): string | null {
+// btoa() as defined by the HTML and Infra specs, which mostly just references RFC 4648.
+export function btoa(s: string): string | null {
   // String conversion as required by Web IDL.
   s = `${s}`
   // "The btoa() method must throw an "InvalidCharacterError" DOMException if
@@ -38,12 +35,9 @@ export function btoa (s: string): string | null {
   return out
 }
 
-/**
- * Lookup table for btoa(), which converts a six-bit number into the
- * corresponding ASCII character.
- */
+// Lookup table for btoa(), which converts a six-bit number into the corresponding ASCII character.
 const keystr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-function btoaLookup (index: number): string | undefined {
+function btoaLookup(index: number): string | undefined {
   return (index >= 0 && index < 64) ? keystr[index] : undefined
 }

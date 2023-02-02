@@ -1,0 +1,59 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "node": true,
+    "mocha": true
+  },
+  "plugins": [
+    "wdio",
+    "@typescript-eslint",
+    "typescript-formatter"
+  ],
+  "extends": [
+    "standard",
+    "plugin:wdio/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "globals": {},
+  "rules": {
+    "semi": "off", // handled by typescript-formatter/format
+    "space-before-function-paren": "off", // handled by typescript-formatter/format
+    "indent": ["error", 2],
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-explicit-any": "error",
+    "typescript-formatter/format": [
+      "error",
+      {
+        "baseIndentSize": 0,
+        "indentSize": 2,
+        "tabSize": 2,
+        "newLineCharacter": "\n",
+        "convertTabsToSpaces": true,
+        "indentStyle": 2,
+        "trimTrailingWhitespace": true,
+        "insertSpaceAfterCommaDelimiter": true,
+        "insertSpaceAfterSemicolonInForStatements": true,
+        "insertSpaceBeforeAndAfterBinaryOperators": true,
+        "insertSpaceAfterConstructor": true,
+        "insertSpaceAfterKeywordsInControlFlowStatements": true,
+        "insertSpaceAfterFunctionKeywordForAnonymousFunctions": true,
+        "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": false,
+        "insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": false,
+        "insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces": true,
+        "insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+        "insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces": false,
+        "insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": false,
+        "insertSpaceAfterTypeAssertion": false,
+        "insertSpaceBeforeFunctionParenthesis": false,
+        "placeOpenBraceOnNewLineForFunctions": false,
+        "placeOpenBraceOnNewLineForControlBlocks": false,
+        "insertSpaceBeforeTypeAnnotation": false,
+        "indentMultiLineObjectLiteralBeginningOnBlankLine": false,
+        "semicolons": "remove"
+      }
+    ]
+  }
+}

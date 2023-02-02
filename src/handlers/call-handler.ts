@@ -7,11 +7,11 @@ interface WrappedExternalCallHandler {
     onSuccess: (responseText: string, response: unknown) => void,
     onError?: (error: unknown) => void,
     timeout?: number
-  ) => void;
+  ) => void
   pixelGet: (
-      url: string,
-      onLoad?: () => void
-  ) => void;
+    url: string,
+    onLoad?: () => void
+  ) => void
 }
 
 export class CallHandler {
@@ -28,7 +28,7 @@ export class CallHandler {
     wrapper.reportErrors()
   }
 
-  ajaxGet (
+  ajaxGet(
     url: string,
     onSuccess: (responseText: string, response: unknown) => void,
     onError?: (error: unknown) => void,
@@ -37,7 +37,7 @@ export class CallHandler {
     this.functions.ajaxGet(url, onSuccess, onError, timeout)
   }
 
-  pixelGet (
+  pixelGet(
     url: string,
     onLoad?: () => void
   ): void {

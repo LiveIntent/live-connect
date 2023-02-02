@@ -10,7 +10,7 @@ const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
-export function resolve (state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
+export function resolve(state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
   try {
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)

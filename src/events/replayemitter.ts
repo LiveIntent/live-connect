@@ -3,14 +3,14 @@ import { ErrorDetails, EventBus } from '../types'
 import { isObject } from '../utils/types'
 
 interface EventHandler {
-  callback: (data: unknown) => void;
-  unbound: (data: unknown) => void;
+  callback: (data: unknown) => void
+  unbound: (data: unknown) => void
 }
 
 export class ReplayEmitter implements EventBus {
-  private h: Record<string, EventHandler[]>;
-  private q: Record<string, unknown[]>;
-  size: number;
+  private h: Record<string, EventHandler[]>
+  private q: Record<string, unknown[]>
+  size: number
 
   constructor (replaySize: number | string) {
     this.size = 5
@@ -25,7 +25,7 @@ export class ReplayEmitter implements EventBus {
     this.q = {}
   }
 
-  on <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this {
+  on<F extends ((event: unknown) => void)>(name: string, callback: F, ctx?: ThisParameterType<F>): this {
     const handler: EventHandler = {
       callback: callback.bind(ctx),
       unbound: callback
@@ -41,7 +41,7 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  once <F extends ((event: unknown) => void)> (name: string, callback: F, ctx?: ThisParameterType<F>): this {
+  once<F extends ((event: unknown) => void)>(name: string, callback: F, ctx?: ThisParameterType<F>): this {
     const eventQueue = this.q[name] || []
     if (eventQueue.length > 0) {
       callback.call(ctx, eventQueue[0])
@@ -57,7 +57,7 @@ export class ReplayEmitter implements EventBus {
     }
   }
 
-  emit (name: string, event: unknown): this {
+  emit(name: string, event: unknown): this {
     const evtArr = (this.h[name] || []).slice()
     let i = 0
     const len = evtArr.length
@@ -75,7 +75,7 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  off (name: string, callback: (event: unknown) => void): this {
+  off(name: string, callback: (event: unknown) => void): this {
     const handlers = this.h[name]
     const liveEvents = []
 
@@ -94,18 +94,18 @@ export class ReplayEmitter implements EventBus {
     return this
   }
 
-  emitErrorWithMessage (name: string, message: string, exception: unknown): this {
+  emitErrorWithMessage(name: string, message: string, exception: unknown): this {
     const wrappedError = wrapError(name, message, exception)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 
-  emitError (name: string, exception: unknown): this {
+  emitError(name: string, exception: unknown): this {
     const wrappedError = wrapError(name, undefined, exception)
     return this.emit(C.ERRORS_PREFIX, wrappedError)
   }
 }
 
-export function wrapError (name: string, message?: string, e?: unknown): ErrorDetails {
+export function wrapError(name: string, message?: string, e?: unknown): ErrorDetails {
   if (isObject(e)) {
     let error: ErrorDetails
     if ('message' in e && typeof e.message === 'string') {

@@ -3,7 +3,7 @@ import { safeToString, isArray, trim } from '../utils/types'
 import { EventBus, RetrievedIdentifier, State } from '../types'
 import { MinimalStorageHandler } from '../handlers/storage-handler'
 
-export function enrich (state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus): State {
+export function enrich(state: State, storageHandler: MinimalStorageHandler, eventBus: EventBus): State {
   try {
     return _parseIdentifiersToResolve(state, storageHandler)
   } catch (e) {
@@ -12,7 +12,7 @@ export function enrich (state: State, storageHandler: MinimalStorageHandler, eve
   }
 }
 
-function _parseIdentifiersToResolve (state: State, storageHandler: MinimalStorageHandler): State {
+function _parseIdentifiersToResolve(state: State, storageHandler: MinimalStorageHandler): State {
   state.identifiersToResolve = state.identifiersToResolve || []
   const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',')
   const identifiers: RetrievedIdentifier[] = []

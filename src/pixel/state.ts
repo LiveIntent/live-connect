@@ -7,7 +7,7 @@ import { EventBus, State } from '../types'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-function ifDefined <K extends keyof State> (key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): (state: State) => [string, string][] {
+function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): (state: State) => [string, string][] {
   return state => {
     const value = state[key]
     if (nonNull(value)) {
@@ -54,19 +54,19 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
 ]
 
 export class Query {
-  tuples: [string, string][];
+  tuples: [string, string][]
 
   constructor (tuples: [string, string][]) {
     this.tuples = tuples
   }
 
-  prependParams (...params: [string, string][]): Query {
+  prependParams(...params: [string, string][]): Query {
     const _tuples = this.tuples
     _tuples.unshift(...params)
     return new Query(_tuples)
   }
 
-  toQueryString (): string {
+  toQueryString(): string {
     return toParams(this.tuples)
   }
 }
@@ -80,7 +80,7 @@ export class StateWrapper {
     this.eventBus = eventBus
   }
 
-  private static safeFiddle (newInfo: State, eventBus: EventBus): State {
+  private static safeFiddle(newInfo: State, eventBus: EventBus): State {
     try {
       return fiddle(JSON.parse(JSON.stringify(newInfo)))
     } catch (e) {
@@ -90,11 +90,11 @@ export class StateWrapper {
     }
   }
 
-  combineWith (newInfo: State): StateWrapper {
+  combineWith(newInfo: State): StateWrapper {
     return new StateWrapper(merge(this.data, newInfo), this.eventBus)
   }
 
-  sendsPixel () {
+  sendsPixel() {
     const source = isObject(this.data.eventSource) ? this.data.eventSource : {}
     const eventKeys = Object.keys(source)
       .filter(objKey => objKey.toLowerCase() === 'eventname' || objKey.toLowerCase() === 'event')
@@ -103,7 +103,7 @@ export class StateWrapper {
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
   }
 
-  asTuples (): [string, string][] {
+  asTuples(): [string, string][] {
     const acc: [string, string][] = []
     paramExtractors.forEach((extractor) => {
       const params = extractor(this.data)
@@ -114,7 +114,7 @@ export class StateWrapper {
     return acc
   }
 
-  asQuery (): Query {
+  asQuery(): Query {
     return new Query(this.asTuples())
   }
 }

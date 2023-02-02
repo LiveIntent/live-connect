@@ -1,15 +1,15 @@
 import { base64UrlEncode } from '../utils/b64'
 import { replaceEmailsWithHashes } from '../utils/email'
 
-export function loadedDomain (): string {
+export function loadedDomain(): string {
   return (document.domain || (document.location && document.location.host)) || (window && window.location && window.location.host) || 'localhost'
 }
 
-export function getReferrer (win: Window = window): string | undefined {
+export function getReferrer(win: Window = window): string | undefined {
   return _safeGet(() => (win.top as Window).document.referrer)
 }
 
-export function getPage (win: Window = window): string | undefined {
+export function getPage(win: Window = window): string | undefined {
   const ancestorOrigins = _safeGet(() => win.location.ancestorOrigins) || []
 
   const windows: Window[] = []
@@ -32,7 +32,7 @@ export function getPage (win: Window = window): string | undefined {
   return detectedPageUrl
 }
 
-export function getContextElements (privacyMode?: boolean, contextSelectors?: string, contextElementsLength?: number): string {
+export function getContextElements(privacyMode?: boolean, contextSelectors?: string, contextElementsLength?: number): string {
   if (privacyMode || !contextSelectors || contextSelectors === '' || !contextElementsLength) {
     return ''
   } else {
@@ -41,7 +41,7 @@ export function getContextElements (privacyMode?: boolean, contextSelectors?: st
   }
 }
 
-function _collectElementsText (contextSelectors: string, contextElementsLength: number) {
+function _collectElementsText(contextSelectors: string, contextElementsLength: number) {
   const collectedElements = window.document.querySelectorAll(contextSelectors)
   let collectedString = ''
   for (let i = 0; i < collectedElements.length; i++) {
@@ -53,14 +53,14 @@ function _collectElementsText (contextSelectors: string, contextElementsLength: 
   return collectedString
 }
 
-function encodedByteCount (s: string): number {
+function encodedByteCount(s: string): number {
   // From: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string
   const utf8Bytelength = encodeURI(s).split(/%..|./).length - 1
   const base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0)
   return base64EncodedLength
 }
 
-function _safeGet <A> (getter: () => A): A | undefined {
+function _safeGet<A>(getter: () => A): A | undefined {
   try {
     return getter()
   } catch (e) {
