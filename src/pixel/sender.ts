@@ -46,9 +46,8 @@ export class PixelSender {
     }
   }
 
-  private utcMillis() {
-    const now = new Date()
-    return new Date(now.toUTCString()).getTime() + now.getMilliseconds()
+  private utcMillis(): number {
+    return (new Date()).getTime()
   }
 
   sendAjax(state: StateWrapper): void {
