@@ -24,7 +24,7 @@ export class PixelSender {
     try {
       const bakers = JSON.parse(bakersJson).bakers
       if (isArray(bakers)) {
-        for (let i = 0; i < bakers.length; i++) this.calls.pixelGet(`${bakers[i]}?dtstmp=${this.utcMillis()}`)
+        for (let i = 0; i < bakers.length; i++) this.calls.pixelGet(`${bakers[i]}?dtstmp=${Date.now()}`)
       }
     } catch (e) {
       this.eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson}`, e)
@@ -37,17 +37,13 @@ export class PixelSender {
         this.presend()
       }
 
-      const dtstmpTuple = asStringParam('dtstmp', this.utcMillis())
+      const dtstmpTuple = asStringParam('dtstmp', Date.now())
       const query = state.asQuery().prependParams(...dtstmpTuple)
       const queryString = query.toQueryString()
       const uri = `${this.url}/${endpoint}${queryString}`
 
       makeCall(uri)
     }
-  }
-
-  private utcMillis(): number {
-    return (new Date()).getTime()
   }
 
   sendAjax(state: StateWrapper): void {
