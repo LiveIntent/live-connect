@@ -4,6 +4,7 @@ import { fiddle } from './fiddler'
 import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, merge, nonNull } from '../utils/types'
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
+import { collectUrl, blockedQueryParams, isPageRemoved } from './url-collector'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
@@ -24,7 +25,7 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
   ifDefined('liveConnectId', fpc => asStringParam('duid', fpc)),
   ifDefined('trackerName', tn => asStringParam('tna', tn)),
-  ifDefined('pageUrl', purl => asStringParam('pu', purl)),
+  state => ifDefined('pageUrl', purl => asStringParam('pu', collectUrl(purl, state)))(state),
   ifDefined('errorDetails', ed => asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))),
   ifDefined('retrievedIdentifiers', identifiers => {
     const identifierParams: [string, string][] = []
@@ -50,7 +51,12 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('privacyMode', privacyMode => asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)),
   ifDefined('gdprConsent', gdprConsentString => asStringParam('gdpr_consent', gdprConsentString)),
   ifDefined('referrer', referrer => asStringParam('refr', referrer)),
-  ifDefined('contextElements', contextElements => asStringParam('c', contextElements))
+  ifDefined('contextElements', contextElements => asStringParam('c', contextElements)),
+  state => asStringParamWhen('pu_rp', isPageRemoved(state.pageUrl, state) ? 1 : 0, v => v === 1),
+  state => {
+    const blockedParams = blockedQueryParams(state.pageUrl, state)
+    return asStringParamTransform('pu_rqp', blockedParams, (s) => s.join(','))
+  }
 ]
 
 export class Query {
