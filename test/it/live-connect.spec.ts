@@ -235,7 +235,7 @@ describe('LiveConnect', function () {
     } else if (isIE() || isFirefox()) {
       expect('http://framed.test.liveintent.com:3001/framed').to.eq(firstTrackingRequest.query.pu)
     } else {
-      expect('http://double-framed.test.liveintent.com:3001').to.eq(firstTrackingRequest.query.pu)
+      expect('http://double-framed.test.liveintent.com:3001/').to.eq(firstTrackingRequest.query.pu)
     }
   })
 
