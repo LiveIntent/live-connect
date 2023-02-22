@@ -5,6 +5,7 @@ import { enrich as privacyConfig } from '../../../src/enrichers/privacy-config'
 import { merge } from '../../../src/utils/types'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { UrlCollectionModes } from '../../../src/model/url-collection-mode'
 
 use(dirtyChai)
 
@@ -41,7 +42,7 @@ describe('EventComposition', () => {
       eventSource: { eventName: 'viewContent' },
       liveConnectId: '213245',
       trackerName: 'test tracker',
-      pageUrl: 'https://wwww.example.com?sss',
+      pageUrl: 'https://wwww.example.com/?sss',
       errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
         name: 'sample_cookie',
@@ -67,7 +68,7 @@ describe('EventComposition', () => {
       'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
       'duid=213245', // liveConnectId
       'tna=test%20tracker', // trackerName
-      'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
+      'pu=https%3A%2F%2Fwwww.example.com%2F%3Fsss', // pageUrl
       'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
       'scre=75524519292e51ad6f761baa82d07d76%2Cec3685d99c376b4ee14a5b985a05fc23e21235cb%2Ce168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72', // comma-separated hashesFromIdentifiers
@@ -93,7 +94,7 @@ describe('EventComposition', () => {
       eventSource: { eventName: 'viewContent' },
       liveConnectId: '213245',
       trackerName: 'test tracker',
-      pageUrl: 'https://wwww.example.com?sss',
+      pageUrl: 'https://wwww.example.com/?sss',
       errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
         name: 'sample_cookie',
@@ -119,7 +120,7 @@ describe('EventComposition', () => {
       'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
       'duid=213245', // liveConnectId
       'tna=test%20tracker', // trackerName
-      'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
+      'pu=https%3A%2F%2Fwwww.example.com%2F%3Fsss', // pageUrl
       'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
       'scre=75524519292e51ad6f761baa82d07d76%2Cec3685d99c376b4ee14a5b985a05fc23e21235cb%2Ce168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72', // comma-separated hashesFromIdentifiers
@@ -217,13 +218,42 @@ describe('EventComposition', () => {
   })
 
   it('should send the page url', function () {
-    const pageUrl = 'https://wwww.example.com?sss'
+    const pageUrl = 'https://wwww.example.com/?sss'
     const pixelData = {
       pageUrl: pageUrl
     }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
     assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
+  })
+
+  it('should send the removed parts of the page url', function () {
+    const pageUrl = 'https://www.example.com/page?query=v1&foo=v2&bar=v3&id=v4'
+    const pixelData = {
+      pageUrl: pageUrl,
+      urlCollectionMode: UrlCollectionModes.noPageUrl,
+      queryParametersFilter: '^(foo|bar)$'
+    }
+    const event = new StateWrapper(pixelData)
+    const expectedUrl = 'https://www.example.com/?query=v1&id=v4'
+    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(expectedUrl)]])
+    assert.includeDeepMembers(event.asTuples(), [['pu_rp', '1']])
+    assert.includeDeepMembers(event.asTuples(), [['pu_rqp', `foo${COMMA}bar`]])
+    expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(expectedUrl)}&pu_rp=1&pu_rqp=foo${COMMA}bar`)
+  })
+
+  it('should not send the removed parts of the page url when nothing was removed', function () {
+    const pageUrl = 'https://www.example.com/?query=v1&id=v2'
+    const pixelData = {
+      pageUrl: pageUrl,
+      urlCollectionMode: UrlCollectionModes.noPageUrl,
+      queryParametersFilter: '^(foo|bar)$'
+    }
+    const event = new StateWrapper(pixelData)
+    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
+    assert.notIncludeMembers(event.asTuples(), [['pu_rp', '0']])
+    assert.notIncludeMembers(event.asTuples(), [['pu_rqp', '']])
+    expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
   })
 
   it('should send the application error', function () {
