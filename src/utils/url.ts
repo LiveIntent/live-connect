@@ -87,7 +87,45 @@ export function urlParams(url: string): Record<string, ParsedParam | ParsedParam
   return result
 }
 
+export function urlParamsArray(url: string): [string, ParsedParam | ParsedParam[]][] {
+  const params = _allParams(url)
+  const result: [string, ParsedParam | ParsedParam[]][] = []
+  Object.keys(params).forEach((k) => { result.push([k, _parseParam(params, k)]) })
+  return result
+}
+
 export function getQueryParameter(url: string, name: string): ParsedParam | ParsedParam[] {
   const params = _allParams(url)
   return _parseParam(params, name)
+}
+
+export class ParsedUrl {
+  hash: string
+  host: string
+  hostname: string
+  pathname: string
+  port: string
+  protocol: string
+  search: string
+
+  constructor (url: string) {
+    // eslint-disable-next-line
+    const urlRegExp = /^(https?\:\/\/)?(([^:\/?#]*)(?:\:([0-9]+))?)([\/]{0,1}[^?#]*)(\?[^#]*|)(#.*|)$/
+    const match = url.match(urlRegExp)
+    if (match === null) {
+      throw new TypeError(`Failed to parse URL: ${url}`)
+    } else {
+      this.protocol = match[1] || ''
+      this.host = match[2] || ''
+      this.hostname = match[3] || ''
+      this.port = match[4] || ''
+      this.pathname = match[5] || ''
+      this.search = match[6] || ''
+      this.hash = match[7] || ''
+    }
+  }
+
+  public toString(): string {
+    return `${this.protocol}${this.host}${this.pathname}${this.search}${this.hash}`
+  }
 }

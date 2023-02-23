@@ -113,8 +113,8 @@ describe('URLCollector', () => {
       urlCollectionMode: UrlCollectionModes.noPageUrl,
       queryParametersFilter: '^(foo|bar)$'
     }
-    const url = 'https://www.example.com/page?foo=v1&bar=v2'
-    const expectedUrl = 'https://www.example.com/'
+    const url = 'www.example.com/page?foo=v1&bar=v2'
+    const expectedUrl = 'www.example.com/'
     expect(collectUrl(url, config)).to.eql(expectedUrl)
     expect(blockedQueryParams(url, config)).to.eql(['foo', 'bar'])
     expect(isPageRemoved(url, config)).to.eql(true)
