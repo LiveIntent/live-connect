@@ -1,51 +1,53 @@
 import { UrlCollectionModes } from '../model/url-collection-mode'
-import { LiveConnectConfig } from '../types'
-import { ParsedUrl, urlParamsArray } from '../utils/url'
+import { LiveConnectConfig, State } from '../types'
+import { ParsedParam, ParsedUrl, urlParamsArray } from '../utils/url'
 
-export function collectUrl(urlString: string, conf: LiveConnectConfig): string {
-  const url = new ParsedUrl(urlString)
-  if (conf.urlCollectionMode === UrlCollectionModes.noPageUrl) {
+type UrlParam = ParsedParam | ParsedParam[]
+
+export function collectUrl(state: State): [string, boolean, string[]] {
+  if (state.pageUrl === undefined || state.pageUrl.length === 0) {
+    return ['', false, []]
+  }
+  if (isDefaultBehavior(state)) {
+    return [state.pageUrl, false, []]
+  }
+  const url = new ParsedUrl(state.pageUrl)
+  const urlQueryParameters = urlParamsArray(url.search)
+  const pageRemoved = isPageRemoved(url, state)
+  const blockedParams = paramsToDelete(urlQueryParameters, state)
+  if (pageRemoved) {
     url.pathname = '/'
   }
-  url.search = paramsToKeep(url, conf)
-  return url.toString()
-}
-
-export function blockedQueryParams(urlString: string | undefined, conf: LiveConnectConfig): string[] {
-  if (!urlString) {
-    return []
+  if (blockedParams.length > 0) {
+    url.search = queryStringToKeep(urlQueryParameters, blockedParams)
   }
-  const url = new ParsedUrl(urlString)
-  return paramsToDelete(url, conf)
+  return [url.toString(), pageRemoved, blockedParams]
 }
 
-export function isPageRemoved(urlString: string | undefined, conf: LiveConnectConfig): boolean {
-  if (!urlString || conf.urlCollectionMode !== UrlCollectionModes.noPageUrl) {
-    return false
-  }
-  const url = new ParsedUrl(urlString)
-  return url.pathname.length > 1
+function isPageRemoved(url: ParsedUrl, conf: LiveConnectConfig): boolean {
+  return conf.urlCollectionMode === UrlCollectionModes.noPage && url.pathname.length > 1
 }
 
-function paramsToDelete(url: ParsedUrl, conf: LiveConnectConfig): string[] {
+function paramsToDelete(urlQueryParameters: [string, UrlParam][], conf: LiveConnectConfig): string[] {
   if (conf.queryParametersFilter === undefined || conf.queryParametersFilter === '') {
     return []
   }
-  const urlQueryParameters = urlParamsArray(url.search)
   const filterRegExp = new RegExp(conf.queryParametersFilter)
   return urlQueryParameters.map(keyValuePair => keyValuePair[0]).filter(param => filterRegExp.test(param))
 }
 
-function paramsToKeep(url: ParsedUrl, conf: LiveConnectConfig): string {
-  if (conf.queryParametersFilter === undefined || conf.queryParametersFilter === '') {
-    return url.search
-  }
-  const urlQueryParameters = urlParamsArray(url.search)
-  const filterRegExp = new RegExp(conf.queryParametersFilter)
-  const params = urlQueryParameters.filter(param => !filterRegExp.test(param[0])).map(keyValue => `${keyValue[0]}=${keyValue[1]}`)
+function queryStringToKeep(urlQueryParameters: [string, UrlParam][], paramsToDelete: string[]): string {
+  const params = urlQueryParameters
+    .filter(param => !paramsToDelete.includes(param[0]))
+    .map(keyValue => `${keyValue[0]}=${keyValue[1]}`)
   if (params.length > 0) {
     return `?${params.join('&')}`
   } else {
     return ''
   }
+}
+
+function isDefaultBehavior(state: State): boolean {
+  return (state.urlCollectionMode === undefined || state.urlCollectionMode === UrlCollectionModes.full) &&
+    (state.queryParametersFilter === undefined || state.queryParametersFilter === '')
 }

@@ -42,7 +42,7 @@ describe('EventComposition', () => {
       eventSource: { eventName: 'viewContent' },
       liveConnectId: '213245',
       trackerName: 'test tracker',
-      pageUrl: 'https://wwww.example.com/?sss',
+      pageUrl: 'https://wwww.example.com?sss',
       errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
         name: 'sample_cookie',
@@ -68,7 +68,7 @@ describe('EventComposition', () => {
       'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
       'duid=213245', // liveConnectId
       'tna=test%20tracker', // trackerName
-      'pu=https%3A%2F%2Fwwww.example.com%2F%3Fsss', // pageUrl
+      'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
       'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
       'scre=75524519292e51ad6f761baa82d07d76%2Cec3685d99c376b4ee14a5b985a05fc23e21235cb%2Ce168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72', // comma-separated hashesFromIdentifiers
@@ -94,7 +94,7 @@ describe('EventComposition', () => {
       eventSource: { eventName: 'viewContent' },
       liveConnectId: '213245',
       trackerName: 'test tracker',
-      pageUrl: 'https://wwww.example.com/?sss',
+      pageUrl: 'https://wwww.example.com?sss',
       errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
         name: 'sample_cookie',
@@ -120,7 +120,7 @@ describe('EventComposition', () => {
       'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
       'duid=213245', // liveConnectId
       'tna=test%20tracker', // trackerName
-      'pu=https%3A%2F%2Fwwww.example.com%2F%3Fsss', // pageUrl
+      'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
       'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
       'scre=75524519292e51ad6f761baa82d07d76%2Cec3685d99c376b4ee14a5b985a05fc23e21235cb%2Ce168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72', // comma-separated hashesFromIdentifiers
@@ -218,7 +218,7 @@ describe('EventComposition', () => {
   })
 
   it('should send the page url', function () {
-    const pageUrl = 'https://wwww.example.com/?sss'
+    const pageUrl = 'https://wwww.example.com?sss'
     const pixelData = {
       pageUrl: pageUrl
     }
@@ -231,7 +231,7 @@ describe('EventComposition', () => {
     const pageUrl = 'https://www.example.com/page?query=v1&foo=v2&bar=v3&id=v4'
     const pixelData = {
       pageUrl: pageUrl,
-      urlCollectionMode: UrlCollectionModes.noPageUrl,
+      urlCollectionMode: UrlCollectionModes.noPage,
       queryParametersFilter: '^(foo|bar)$'
     }
     const event = new StateWrapper(pixelData)
@@ -246,7 +246,7 @@ describe('EventComposition', () => {
     const pageUrl = 'https://www.example.com/?query=v1&id=v2'
     const pixelData = {
       pageUrl: pageUrl,
-      urlCollectionMode: UrlCollectionModes.noPageUrl,
+      urlCollectionMode: UrlCollectionModes.noPage,
       queryParametersFilter: '^(foo|bar)$'
     }
     const event = new StateWrapper(pixelData)
