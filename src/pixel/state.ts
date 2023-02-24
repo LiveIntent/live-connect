@@ -28,11 +28,12 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   state => {
     if (nonNull(state.pageUrl)) {
       const [url, isPageRemoved, blockedParams] = collectUrl(state)
-      return [
+      const nestedPageUrlParams = [
         asStringParam('pu', url),
         asStringParamWhen('pu_rp', isPageRemoved ? 1 : 0, v => v === 1),
         asStringParamTransform('pu_rqp', blockedParams, (s) => s.join(','))
-      ].flat()
+      ]
+      return Array.prototype.concat.apply([], nestedPageUrlParams)
     } else {
       return []
     }
