@@ -2,23 +2,22 @@ import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex'
-import { TestStorageHandler } from '../../shared/utils/storage'
-import { TestCallHandler } from '../../shared/utils/calls'
+import { DefaultStorageHandler, DefaultCallHandler } from 'live-connect-handlers'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
-import { CallHandler } from '../../../src/handlers/call-handler'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
+import { WrappedCallHandler } from '../../../src/handlers/call-handler'
 
 use(dirtyChai)
 
 describe('IdentityResolver', () => {
   let requestToComplete = null
   const eventBus = LocalEventBus()
-  const calls = new CallHandler(TestCallHandler)
+  const calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
+  const storage = new DefaultStorageHandler(eventBus)
   let errors = []
   let callCount = 0
-  const storage = new TestStorageHandler(eventBus)
-  const storageHandler = StorageHandler.make('cookie', storage, eventBus)
+  const storageHandler = WrappedStorageHandler.make('cookie', new DefaultStorageHandler(eventBus), eventBus)
   jsdom({
     url: 'http://www.something.example.com',
     useEach: true
@@ -55,7 +54,7 @@ describe('IdentityResolver', () => {
 
   it('should invoke callback on success, if storing the result in a cookie fails', function () {
     const setCookieStub = sinon.createSandbox().stub(storage, 'setCookie').throws()
-    const failedStorage = StorageHandler.make('cookie', storage, eventBus)
+    const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
     const identityResolver = IdentityResolver.make({}, failedStorage, calls, eventBus)
     let jsonResponse = null
     const successCallback = (responseAsJson) => {
@@ -307,7 +306,7 @@ describe('IdentityResolver', () => {
     const response = { id: 112233 }
     let recordedExpiresAt: Date
 
-    const customStorage = StorageHandler.make('cookie', storage, eventBus)
+    const customStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
     customStorage.set = (key, value, expiresAt, sameSite, domain) => {
       recordedExpiresAt = expiresAt
       storageHandler.set(key, value, expiresAt, sameSite, domain)

@@ -1,25 +1,27 @@
 // @ts-nocheck
-import { isObject, merge } from './utils/types'
+/* eslint-disable */
+import { mergeObjects } from './pixel/fiddler'
 import { IdentityResolver } from './idex'
 import { enrich as peopleVerified } from './enrichers/people-verified'
 import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
-import { MinimalStorageHandler } from './handlers/storage-handler'
-import { CallHandler } from './handlers/call-handler'
+import { WrappedReadOnlyStorageHandler } from './handlers/storage-handler'
+import { WrappedCallHandler } from './handlers/call-handler'
 import { StorageStrategies } from './model/storage-strategy'
-import { EventBus, ExternalCallHandler, ExternalMinimalStorageHandler, ILiveConnect, LiveConnectConfig } from './types'
+import { EventBus, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
+import { ReadOnlyStorageHandler, CallHandler, isObject } from 'live-connect-common'
 
-function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   try {
-    const callHandler = new CallHandler(externalCallHandler, eventBus)
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
-    const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
+    const configWithPrivacy = mergeObjects(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = MinimalStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
-    const peopleVerifiedData = merge(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
-    const peopleVerifiedDataWithAdditionalIds = merge(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
+    const storageHandler = WrappedReadOnlyStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
+    const peopleVerifiedData = mergeObjects(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
+    const peopleVerifiedDataWithAdditionalIds = mergeObjects(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
     const resolver = IdentityResolver.makeNoCache(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)
     return {
       push: (arg) => (window[validLiveConnectConfig.globalVarName] as ILiveConnect).push(arg),
@@ -36,7 +38,7 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
   }
 }
 
-export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalMinimalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
+export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
     configuration.globalVarName = configuration.globalVarName || 'liQ'

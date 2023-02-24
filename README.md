@@ -78,11 +78,13 @@ and the `fallback` is a `function()`
 - `function pixelGet (uri, onload)`
 where the `onload` is a `function()`
 
-If one of the functions is not available in the external handler, LiveConnect will fall back to stubs to ensure that the overall functionality isn't being affected. It is recommended to provide full implementations of the interfaces. An example for StorageHandler ([here](./test/shared/utils/storage.ts)) and for CallHandler ([here](./test/shared/utils/calls.ts)) are provided.
+If one of the functions is not available in the external handler, LiveConnect will fall back to stubs to ensure that the overall functionality isn't being affected. It is recommended to provide full implementations of the interfaces. Default
+implementations of the handlers can be found in the `live-connect-handlers` project.
 
-With custom implementations the initialisation looks like this:
+With custom implementations the initialization can look like this:
 ```javascript
-import { LiveConnect } from 'live-connect-js/src/live-connect'
+import { LiveConnect } from 'live-connect-js'
+
 const storageHandler = {
   getCookie: (key) => {
     let m = window.document.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]*)\\s*(;|$)')

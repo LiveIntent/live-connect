@@ -1,23 +1,10 @@
-import { EventBus, ExternalCallHandler } from '../types'
+import { EventBus, CallHandler } from 'live-connect-common'
 import { WrappingContext } from '../utils/wrapping'
 
-interface WrappedExternalCallHandler {
-  ajaxGet: (
-    url: string,
-    onSuccess: (responseText: string, response: unknown) => void,
-    onError?: (error: unknown) => void,
-    timeout?: number
-  ) => void
-  pixelGet: (
-    url: string,
-    onLoad?: () => void
-  ) => void
-}
+export class WrappedCallHandler implements CallHandler {
+  private functions
 
-export class CallHandler {
-  private functions: WrappedExternalCallHandler
-
-  constructor (externalCallHandler: ExternalCallHandler, eventBus: EventBus) {
+  constructor (externalCallHandler: CallHandler, eventBus: EventBus) {
     const wrapper = new WrappingContext(externalCallHandler, 'CallHandler', eventBus)
 
     this.functions = {

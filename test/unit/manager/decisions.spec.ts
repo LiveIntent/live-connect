@@ -1,18 +1,18 @@
 import { expect, use } from 'chai'
 import * as decisions from '../../../src/manager/decisions'
-import { TestStorageHandler } from '../../shared/utils/storage'
+import { DefaultStorageHandler } from 'live-connect-handlers'
 import uuid from 'tiny-uuid4'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const externalStorage = new TestStorageHandler(eventBus)
-const storage = StorageHandler.make('cookie', externalStorage, eventBus)
+const externalStorage = new DefaultStorageHandler(eventBus)
+const storage = WrappedStorageHandler.make('cookie', externalStorage, eventBus)
 
 describe('DecisionsManager for stored decisions', () => {
   const sandbox = sinon.createSandbox()

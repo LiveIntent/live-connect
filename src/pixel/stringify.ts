@@ -1,5 +1,5 @@
 import { isEmail } from '../utils/email'
-import { trim } from '../utils/types'
+import { trim } from 'live-connect-common'
 
 export const MASK = '*********'
 

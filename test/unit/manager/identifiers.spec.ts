@@ -1,17 +1,17 @@
 import { expect, use } from 'chai'
 import * as identifiers from '../../../src/manager/identifiers'
-import { TestStorageHandler } from '../../shared/utils/storage'
+import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon from 'sinon'
 import jsdom from 'mocha-jsdom'
 import dirtyChai from 'dirty-chai'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const storage = new TestStorageHandler(eventBus)
-const storageHandler = StorageHandler.make('cookie', storage, eventBus)
+const storage = new DefaultStorageHandler(eventBus)
+const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
 
 describe('IdentifiersManager', () => {
   const sandbox = sinon.createSandbox()
@@ -37,7 +37,7 @@ describe('IdentifiersManager', () => {
 
   it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', function () {
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-    const localStorage = StorageHandler.make('ls', storage, eventBus)
+    const localStorage = WrappedStorageHandler.make('ls', storage, eventBus)
     const resolutionResult = identifiers.resolve({}, localStorage, eventBus)
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
@@ -45,7 +45,7 @@ describe('IdentifiersManager', () => {
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', function () {
-    const storageNone = StorageHandler.make('none', storage, eventBus)
+    const storageNone = WrappedStorageHandler.make('none', storage, eventBus)
     const resolutionResult = identifiers.resolve({}, storageNone, eventBus)
     expect(resolutionResult).to.include({ domain: '.www.example.com' })
   })
@@ -65,7 +65,7 @@ describe('IdentifiersManager', () => {
 
   it('should emit an error if identifiers.resolve fails for some reason, return an empty object', function () {
     const stub = sandbox.stub(storage, 'getCookie').throws()
-    const failedStorage = StorageHandler.make('cookie', storage, eventBus)
+    const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
     const resolutionResult = identifiers.resolve({}, failedStorage, eventBus)
     expect(resolutionResult).to.eql({})
     stub.restore()

@@ -2,21 +2,22 @@ import { expect, use } from 'chai'
 import jsdom from 'mocha-jsdom'
 import sinon from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
-import * as C from '../../../src/utils/consts'
-import { TestCallHandler } from '../../shared/utils/calls'
+import { ERRORS_CHANNEL } from 'live-connect-common'
+import { DefaultCallHandler } from 'live-connect-handlers'
 import { Query } from '../../../src/pixel/state'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { WrappedCallHandler } from '../../../src/handlers/call-handler'
 
 use(dirtyChai)
 
 describe('PixelSender', () => {
   let ajaxRequests = []
   let pixelRequests = []
-  const calls = TestCallHandler
   const sandbox = sinon.createSandbox()
   let eventBus
   let pixelStub
+  let calls: CallHandler
 
   jsdom({
     url: 'http://www.example.com',
@@ -25,6 +26,7 @@ describe('PixelSender', () => {
 
   beforeEach(() => {
     eventBus = LocalEventBus()
+    calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
     ajaxRequests = []
     pixelRequests = []
     global.XDomainRequest = null
@@ -102,7 +104,7 @@ describe('PixelSender', () => {
   })
 
   it('calls emit an error when the pixel response is not a json when sendAjax', function (done) {
-    eventBus.on(C.ERRORS_PREFIX, (e) => {
+    eventBus.on(ERRORS_CHANNEL, (e) => {
       expect(e.name).to.eq('CallBakers')
       done()
     })
@@ -114,7 +116,7 @@ describe('PixelSender', () => {
 
   it('sends the event via pixel as fallback if ajax fails', function (done) {
     const onload = () => 1
-    eventBus.on(C.ERRORS_PREFIX, (e) => {
+    eventBus.on(ERRORS_CHANNEL, (e) => {
       expect(e.name).to.eq('AjaxFailed')
       expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
       expect(pixelRequests[0].onload).to.eql(onload)

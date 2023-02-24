@@ -2,7 +2,7 @@ import md5 from 'tiny-hashes/md5'
 import sha1 from 'tiny-hashes/sha1'
 import sha256 from 'tiny-hashes/sha256'
 import { HashedEmail } from '../types'
-import { trim } from './types'
+import { trim } from 'live-connect-common'
 
 const hashLikeRegex = () => /(\s+)?[a-f0-9]{32,64}(\s+)?/gi
 

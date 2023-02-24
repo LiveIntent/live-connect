@@ -5,19 +5,19 @@ import { expect, use } from 'chai'
 import { StandardLiveConnect } from '../../src/standard-live-connect'
 import { base64UrlEncode } from '../../src/utils/b64'
 import * as C from '../../src/utils/consts'
-import { TestStorageHandler } from '../shared/utils/storage'
-import { TestCallHandler } from '../shared/utils/calls'
+import { ERRORS_CHANNEL } from 'live-connect-common'
+import { DefaultStorageHandler, DefaultCallHandler } from 'live-connect-handlers'
 import { hashEmail } from '../../src/utils/hash'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../src/events/event-bus'
-import { StorageHandler } from '../../src/handlers/storage-handler'
+import { WrappedStorageHandler } from '../../src/handlers/storage-handler'
 import { EVENT_BUS_NAMESPACE } from '../../src/utils/consts'
 import { LiveConnect } from '../../src/initializer'
 
 use(dirtyChai)
 const eventBus = LocalEventBus()
-const storage = StorageHandler.make('cookie', new TestStorageHandler(eventBus), eventBus)
-const calls = TestCallHandler
+const storage = WrappedStorageHandler.make('cookie', new DefaultStorageHandler(eventBus), eventBus)
+const calls = new DefaultCallHandler()
 
 describe('StandardLiveConnect', () => {
   const sandbox = sinon.createSandbox()
@@ -55,8 +55,8 @@ describe('StandardLiveConnect', () => {
     StandardLiveConnect({})
     const eventBus = window.liQ.eventBus
     const errorHandler = eventBus.h
-    expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
-    expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
+    expect(errorHandler).to.have.key(ERRORS_CHANNEL)
+    expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
     expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
@@ -64,8 +64,8 @@ describe('StandardLiveConnect', () => {
     LiveConnect({})
     const eventBus = window.liQ.eventBus
     const errorHandler = eventBus.h
-    expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
-    expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
+    expect(errorHandler).to.have.key(ERRORS_CHANNEL)
+    expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
     expect(window.liQ_instances).to.have.members([window.liQ])
     expect(window[EVENT_BUS_NAMESPACE]).to.be.eq(eventBus)
   })

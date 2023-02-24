@@ -1,20 +1,6 @@
-import { strEqualsIgnoreCase } from '../utils/types'
 import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
-import { EventBus, ExternalMinimalStorageHandler, ExternalStorageHandler } from '../types'
+import { EventBus, ReadOnlyStorageHandler, StorageHandler, strEqualsIgnoreCase } from 'live-connect-common'
 import { WrappingContext } from '../utils/wrapping'
-
-interface WrappedExternalMinimalStorageHandler {
-  getCookie: (key: string) => string | null | undefined
-  getDataFromLocalStorage: (key: string) => string | null | undefined
-  localStorageIsEnabled: () => boolean | undefined
-}
-
-interface WrappedExternalStorageHandler {
-  setCookie: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void
-  setDataInLocalStorage: (key: string, value: string) => void
-  removeDataFromLocalStorage: (key: string) => void
-  findSimilarCookies: (substring: string) => string[] | undefined
-}
 
 const noop = () => undefined
 
@@ -26,10 +12,10 @@ function wrapWrite<T extends object, K extends keyof T & string>(wrapper: Wrappi
   return strEqualsIgnoreCase(storageStrategy, StorageStrategies.none) ? noop : wrapRead(wrapper, storageStrategy, functionName)
 }
 
-export class MinimalStorageHandler {
-  private minimalFunctions: WrappedExternalMinimalStorageHandler
+export class WrappedReadOnlyStorageHandler implements ReadOnlyStorageHandler {
+  private minimalFunctions
 
-  protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<ExternalMinimalStorageHandler>) {
+  protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<ReadOnlyStorageHandler>) {
     this.minimalFunctions = {
       getCookie: wrapRead(wrapper, storageStrategy, 'getCookie'),
       getDataFromLocalStorage: wrapRead(wrapper, storageStrategy, 'getDataFromLocalStorage'),
@@ -37,9 +23,9 @@ export class MinimalStorageHandler {
     }
   }
 
-  static make(storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): MinimalStorageHandler {
-    const wrapper = new WrappingContext(externalStorageHandler, 'MinimalStorageHandler', eventBus)
-    const handler = new MinimalStorageHandler(storageStrategy, wrapper)
+  static make(storageStrategy: StorageStrategy, externalStorageHandler: ReadOnlyStorageHandler, eventBus: EventBus): WrappedReadOnlyStorageHandler {
+    const wrapper = new WrappingContext(externalStorageHandler, 'ReadOnlyStorageHandler', eventBus)
+    const handler = new WrappedReadOnlyStorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
     return handler
   }
@@ -57,11 +43,11 @@ export class MinimalStorageHandler {
   }
 }
 
-export class StorageHandler extends MinimalStorageHandler {
-  private functions: WrappedExternalStorageHandler
+export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler implements StorageHandler {
   storageStrategy: StorageStrategy
+  private functions
 
-  protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<ExternalStorageHandler>) {
+  protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<StorageHandler>) {
     super(storageStrategy, wrapper)
 
     this.storageStrategy = storageStrategy
@@ -74,9 +60,9 @@ export class StorageHandler extends MinimalStorageHandler {
     }
   }
 
-  static make(storageStrategy: StorageStrategy, externalStorageHandler: ExternalMinimalStorageHandler, eventBus: EventBus): StorageHandler {
+  static make(storageStrategy: StorageStrategy, externalStorageHandler: StorageHandler, eventBus: EventBus): WrappedStorageHandler {
     const wrapper = new WrappingContext(externalStorageHandler, 'StorageHandler', eventBus)
-    const handler = new StorageHandler(storageStrategy, wrapper)
+    const handler = new WrappedStorageHandler(storageStrategy, wrapper)
     wrapper.reportErrors()
     return handler
   }

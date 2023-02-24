@@ -1,7 +1,7 @@
 import jsdom from 'mocha-jsdom'
 import { expect, use } from 'chai'
 import sinon, { SinonStub } from 'sinon'
-import { CallHandler } from '../../../src/handlers/call-handler'
+import { WrappedCallHandler } from '../../../src/handlers/call-handler'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { EventBus } from '../../../src/types'
@@ -43,7 +43,7 @@ describe('CallHandler', () => {
 
     const ajaxGet = () => { ajaxCounter += 1 }
     const pixelGet = () => { pixelCounter += 1 }
-    const handler = new CallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet }, eventBus)
+    const handler = new WrappedCallHandler({ ajaxGet: ajaxGet, pixelGet: pixelGet }, eventBus)
 
     handler.ajaxGet('foo', () => undefined)
     expect(ajaxCounter).to.be.eql(1)
@@ -55,7 +55,7 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler is not provided', function () {
-    const _ = new CallHandler({}, eventBus)
+    const _ = new WrappedCallHandler({}, eventBus)
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')
     expect(emitterErrors[0].message).to.be.eq('The functions \'["ajaxGet","pixelGet"]\' were not provided')
@@ -63,7 +63,7 @@ describe('CallHandler', () => {
   })
 
   it('should send an error if an external handler does not have a get function', function () {
-    const _ = new CallHandler({}, eventBus)
+    const _ = new WrappedCallHandler({}, eventBus)
 
     expect(emitterErrors.length).to.be.eq(1)
     expect(emitterErrors[0].name).to.be.eq('CallHandler')

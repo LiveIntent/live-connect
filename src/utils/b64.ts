@@ -1,5 +1,5 @@
 import { btoa as btoaFromLib } from './btoa'
-import { isFunction } from './types'
+import { isFunction } from 'live-connect-common'
 
 function _safeBtoa(s: string): string {
   const res = btoaFromLib(s)
