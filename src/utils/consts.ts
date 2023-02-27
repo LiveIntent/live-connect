@@ -1,4 +1,4 @@
-import { ERRORS_CHANNEL } from "live-connect-common"
+import { ERRORS_CHANNEL } from 'live-connect-common'
 
 export const EVENT_BUS_NAMESPACE = '__li__evt_bus'
 // reexport for backwards compat
