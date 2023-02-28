@@ -1,5 +1,8 @@
+import { ERRORS_CHANNEL } from 'live-connect-common'
+
 export const EVENT_BUS_NAMESPACE = '__li__evt_bus'
-export const ERRORS_PREFIX = 'li_errors'
+// reexport for backwards compat
+export const ERRORS_PREFIX = ERRORS_CHANNEL
 export const PIXEL_SENT_PREFIX = 'lips'
 export const PRELOAD_PIXEL = 'pre_lips'
 

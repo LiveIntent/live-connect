@@ -1,4 +1,4 @@
-import { trim } from './types'
+import { trim } from 'live-connect-common'
 import { hashEmail } from '../utils/hash'
 import { HashedEmail } from '../types'
 

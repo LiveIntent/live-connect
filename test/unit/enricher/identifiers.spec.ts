@@ -1,16 +1,16 @@
 import { expect, use } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers'
 import jsdom from 'mocha-jsdom'
-import { TestStorageHandler } from '../../shared/utils/storage'
+import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
-import { StorageHandler } from '../../../src/handlers/storage-handler'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 import { LocalEventBus } from '../../../src/events/event-bus'
 
 use(dirtyChai)
 
 const eventBus = LocalEventBus()
-const storage = StorageHandler.make('cookie', new TestStorageHandler(eventBus), eventBus)
+const storage = WrappedStorageHandler.make('cookie', new DefaultStorageHandler(eventBus), eventBus)
 
 const COOKIE_NAME = 'sample_cookie'
 const SIMPLE_COOKIE1 = 'sample_value1'

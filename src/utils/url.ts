@@ -1,4 +1,4 @@
-import { isArray } from './types'
+import { isArray } from 'live-connect-common'
 
 export type ParsedParam = number | boolean | string | null | undefined
 

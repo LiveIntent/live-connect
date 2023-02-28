@@ -1,16 +1,16 @@
 import { ulid } from '../utils/ulid'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
-import { expiresInDays } from '../utils/types'
+import { expiresInDays } from 'live-connect-common'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 import { EventBus, State } from '../types'
-import { StorageHandler } from '../handlers/storage-handler'
+import { WrappedStorageHandler } from '../handlers/storage-handler'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
-export function resolve(state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
+export function resolve(state: State, storageHandler: WrappedStorageHandler, eventBus: EventBus): State {
   try {
     const determineTld = () => {
       const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)

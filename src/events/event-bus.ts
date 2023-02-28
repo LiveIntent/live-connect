@@ -1,8 +1,7 @@
 // @ts-nocheck
-import { ReplayEmitter, wrapError } from './replayemitter'
-import * as C from '../utils/consts'
-import { isFunction } from '../utils/types'
+import { ReplayEmitter, wrapError, isFunction, ERRORS_CHANNEL } from 'live-connect-common'
 import { EventBus } from '../types'
+import * as C from '../utils/consts'
 
 function initBus(size?: number): EventBus {
   if (typeof size === 'number' && size >= 0) {
@@ -19,7 +18,7 @@ function extendBusIfNeeded(bus: EventBus) {
 
   bus.emitErrorWithMessage = function (name, message, e = {}) {
     const wrappedError = wrapError(name, message, e)
-    return bus.emit(C.ERRORS_PREFIX, wrappedError)
+    return bus.emit(ERRORS_CHANNEL, wrappedError)
   }
 
   bus.emitError = function (name, exception) {

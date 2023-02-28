@@ -1,7 +1,8 @@
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
-import { fiddle } from './fiddler'
-import { isObject, trim, asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, isArray, merge, nonNull } from '../utils/types'
+import { fiddle, mergeObjects } from './fiddler'
+import { isObject, trim, isArray, nonNull } from 'live-connect-common'
+import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform } from '../utils/params'
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
 
@@ -91,7 +92,7 @@ export class StateWrapper {
   }
 
   combineWith(newInfo: State): StateWrapper {
-    return new StateWrapper(merge(this.data, newInfo), this.eventBus)
+    return new StateWrapper(mergeObjects(this.data, newInfo), this.eventBus)
   }
 
   sendsPixel() {

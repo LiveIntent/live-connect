@@ -4,35 +4,36 @@ import { PixelSender } from './pixel/sender'
 import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import { StateWrapper } from './pixel/state'
+import { mergeObjects } from './pixel/fiddler'
 import { resolve as idResolve } from './manager/identifiers'
 import { resolve as decisionsResolve } from './manager/decisions'
 import { enrich as pageEnrich } from './enrichers/page'
 import { enrich as identifiersEnrich } from './enrichers/identifiers'
 import { enrich as privacyConfig } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
-import { isArray, isObject, merge } from './utils/types'
+import { isArray, isObject, CallHandler, StorageHandler } from 'live-connect-common'
 import { IdentityResolver } from './idex'
-import { StorageHandler } from './handlers/storage-handler'
-import { CallHandler } from './handlers/call-handler'
+import { WrappedStorageHandler } from './handlers/storage-handler'
+import { WrappedCallHandler } from './handlers/call-handler'
 import { StorageStrategies } from './model/storage-strategy'
-import { ConfigMatcher, EventBus, ExternalCallHandler, ExternalStorageHandler, ILiveConnect, LiveConnectConfig, State } from './types'
+import { ConfigMismatch, EventBus, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
 
 const hemStore: State = {}
 function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
   if (!event || !isObject(event)) {
     eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
-  } else if (event.config) {
-    eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(event))
+  } else if ('config' in event) {
+    eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(JSON.stringify(event)))
   } else {
     const combined = enrichedState.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
-    const withHemStore = merge({ eventSource: event }, hemStore)
+    const withHemStore = mergeObjects({ eventSource: event }, hemStore)
     pixelClient.sendAjax(enrichedState.combineWith(withHemStore))
   }
 }
 
-function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMatcher {
+function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMismatch | undefined {
   const equalConfigs = previousConfig.appId === newConfig.appId &&
     previousConfig.wrapperName === newConfig.wrapperName &&
     previousConfig.collectorUrl === newConfig.collectorUrl
@@ -45,7 +46,7 @@ function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConne
   }
 }
 
-function _processArgs (args, pixelClient, enrichedState, eventBus) {
+function _processArgs (args: any[], pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
   try {
     args.forEach(arg => {
       const event = arg
@@ -61,7 +62,7 @@ function _processArgs (args, pixelClient, enrichedState, eventBus) {
   }
 }
 
-function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiveConnect {
+function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiveConnect | undefined {
   try {
     if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
       const mismatchedConfig = window[liveConnectConfig.globalVarName].config && _configMatcher(window[liveConnectConfig.globalVarName].config, liveConnectConfig)
@@ -80,14 +81,14 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
   }
 }
 
-function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   try {
-    const callHandler = new CallHandler(externalCallHandler, eventBus)
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
-    const configWithPrivacy = merge(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
+    const configWithPrivacy = mergeObjects(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
     errorHandler.register(configWithPrivacy, callHandler, eventBus)
     const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = StorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
+    const storageHandler = WrappedStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler, eventBus))
 
     const enrichers = [pageEnrich, identifiersEnrich]
@@ -96,12 +97,12 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy, eventBus))
     const postManagedState = managers.reduce(reducer, enrichedState)
 
-    const syncContainerData = merge(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
+    const syncContainerData = mergeObjects(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
     const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, syncContainerData)
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver.make(postManagedState.data, storageHandler, callHandler, eventBus)
-    const _push = (...args) => _processArgs(args, pixelClient, postManagedState, eventBus)
+    const _push = (...args: any[]) => _processArgs(args, pixelClient, postManagedState, eventBus)
     return {
       push: _push,
       fire: () => _push({}),

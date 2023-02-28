@@ -1,17 +1,17 @@
 import { LocalEventBus } from '../../../src/events/event-bus'
-import { TestStorageHandler } from '../../shared/utils/storage'
+import { DefaultCallHandler, DefaultStorageHandler } from 'live-connect-handlers'
 import { StandardLiveConnect } from '../../../src/standard-live-connect'
-import { TestCallHandler } from '../../shared/utils/calls'
-import * as helpers from '../../../src/utils/types'
+import { mergeObjects } from '../../../src/pixel/fiddler'
 import { LiveConnectConfig } from '../../../src/types'
 
 const customerSpecifics = (window as unknown as { LI: LiveConnectConfig }).LI || {}
 const queue = window.liQ || []
 
 const eventBus = LocalEventBus()
-const storage = new TestStorageHandler(eventBus)
+const storage = new DefaultStorageHandler(eventBus)
+const calls = new DefaultCallHandler()
 
-const lc = StandardLiveConnect(helpers.merge(customerSpecifics, { trackerName: 'LC_VERSION', contextSelectors: 'p', contextElementsLength: '100' }), storage, TestCallHandler, eventBus)
+const lc = StandardLiveConnect(mergeObjects(customerSpecifics, { trackerName: 'LC_VERSION', contextSelectors: 'p', contextElementsLength: '100' }), storage, calls, eventBus)
 
 if (Array.isArray(queue)) {
   for (let i = 0; i < queue.length; i++) {

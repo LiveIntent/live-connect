@@ -1,4 +1,4 @@
-import { isFunction } from './types'
+import { isFunction } from 'live-connect-common'
 
 export function sendPixel(uri: string, onload: () => void): void {
   const img = new window.Image()

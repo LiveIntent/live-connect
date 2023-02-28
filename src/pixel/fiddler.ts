@@ -2,7 +2,7 @@ import { State } from '../types'
 import { extractEmail } from '../utils/email'
 import { decodeValue } from '../utils/url'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
-import { isArray, isObject, safeToString, trim, merge } from '../utils/types'
+import { isArray, isObject, safeToString, trim } from 'live-connect-common'
 
 const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
@@ -19,9 +19,9 @@ function _provided(state: State): State {
       const extractedHash = extractHashValue(value)
       if (extractedEmail) {
         const hashes = hashEmail(decodeValue(extractedEmail))
-        return merge({ hashedEmail: [hashes.md5, hashes.sha1, hashes.sha256] }, state)
+        return mergeObjects({ hashedEmail: [hashes.md5, hashes.sha1, hashes.sha256] }, state)
       } else if (extractedHash && isHash(extractedHash)) {
-        return merge({ hashedEmail: [extractedHash.toLowerCase()] }, state)
+        return mergeObjects({ hashedEmail: [extractedHash.toLowerCase()] }, state)
       }
     }
   }
@@ -44,11 +44,34 @@ const fiddlers = [_provided, _itemsLimiter]
 
 export function fiddle(state: State): State {
   const reducer = (accumulator: State, func: (current: State) => State) => {
-    return merge(accumulator, func(accumulator))
+    return mergeObjects(accumulator, func(accumulator))
   }
   if (isObject(state.eventSource)) {
     return fiddlers.reduce(reducer, state)
   } else {
     return state
   }
+}
+
+export function mergeObjects<A extends object, B extends object>(obj1: A, obj2: B): A & B {
+  const res = {} as A & B
+
+  function clean<T>(obj: T): T | object {
+    return isObject(obj) ? obj : {}
+  }
+
+  function keys<T extends object>(obj: T): (keyof T)[] {
+    return Object.keys(obj) as (keyof T)[]
+  }
+
+  const first = clean(obj1)
+  const second = clean(obj2)
+
+  keys(first).forEach(key => {
+    res[key] = first[key]
+  })
+  keys(second).forEach(key => {
+    res[key] = second[key]
+  })
+  return res
 }
