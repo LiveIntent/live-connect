@@ -1,25 +1,6 @@
 import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
-
-export interface ErrorDetails extends Error {
-  stackTrace?: string
-  lineNumber?: number
-  columnNumber?: number
-  fileName?: string
-}
-
-export interface ExternalMinimalStorageHandler {
-  getCookie?: (key: string) => string | null
-  getDataFromLocalStorage?: (key: string) => string | null
-  localStorageIsEnabled?: () => boolean
-}
-
-export interface ExternalStorageHandler extends ExternalMinimalStorageHandler {
-  setCookie?: (key: string, value: string, expires?: Date, sameSite?: string, domain?: string) => void
-  setDataInLocalStorage?: (key: string, value: string) => void
-  removeDataFromLocalStorage?: (key: string) => void
-  findSimilarCookies?: (substring: string) => string[]
-}
+import { ErrorDetails } from 'live-connect-common'
 
 export interface IdentityResolutionConfig {
   url?: string
@@ -53,18 +34,6 @@ export type ResolutionParams = Record<string, string | string[]>
 
 // Object fields will be name and value of requested attributes
 export type IdentityResultionResult = object
-export interface ExternalCallHandler {
-  ajaxGet?: (
-    url: string,
-    onSuccess: (responseText: string, response?: unknown) => void,
-    onError?: (error: unknown) => void,
-    timeout?: number
-  ) => void
-  pixelGet?: (
-    url: string,
-    onLoad?: () => void
-  ) => void
-}
 
 export interface HashedEmail {
   md5: string

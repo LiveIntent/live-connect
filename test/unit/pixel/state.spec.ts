@@ -1,8 +1,8 @@
 import { assert, expect, use } from 'chai'
-import { StateWrapper } from '../../../src/pixel/state'
 import { hashEmail } from '../../../src/utils/hash'
 import { enrich as privacyConfig } from '../../../src/enrichers/privacy-config'
-import { merge } from '../../../src/utils/types'
+import { StateWrapper } from '../../../src/pixel/state'
+import { mergeObjects } from '../../../src/pixel/fiddler'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { UrlCollectionModes } from '../../../src/model/url-collection-mode'
@@ -61,7 +61,7 @@ describe('EventComposition', () => {
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
+    const event = new StateWrapper(mergeObjects(pixelData, privacyConfig(pixelData)))
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -113,7 +113,7 @@ describe('EventComposition', () => {
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
+    const event = new StateWrapper(mergeObjects(pixelData, privacyConfig(pixelData)))
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -175,7 +175,7 @@ describe('EventComposition', () => {
       gdprApplies: true,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
+    const event = new StateWrapper(mergeObjects(pixelData, privacyConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&n3pc=1&n3pct=1&nb=1&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
@@ -187,7 +187,7 @@ describe('EventComposition', () => {
       gdprApplies: false,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
+    const event = new StateWrapper(mergeObjects(pixelData, privacyConfig(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&gdpr_consent=some-string`)
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0'], ['gdpr_consent', 'some-string']])
@@ -212,7 +212,7 @@ describe('EventComposition', () => {
       gdprConsent: undefined,
       wrapperName: undefined
     }
-    const event = new StateWrapper(merge(pixelData, privacyConfig(pixelData)))
+    const event = new StateWrapper(mergeObjects(pixelData, privacyConfig(pixelData)))
     expect(event.asQuery().toQueryString()).to.eql(`?tna=${trackerName}`)
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })

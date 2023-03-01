@@ -1,7 +1,7 @@
 import { getQueryParameter, ParsedParam } from '../utils/url'
-import { trim, isUUID, expiresInDays } from '../utils/types'
+import { trim, isUUID, expiresInDays } from 'live-connect-common'
 import { EventBus, State } from '../types'
-import { StorageHandler } from '../handlers/storage-handler'
+import { WrappedStorageHandler } from '../handlers/storage-handler'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)
 const DECISION_ID_QUERY_PARAM_NAME = 'li_did'
@@ -10,7 +10,7 @@ const DECISION_ID_COOKIE_NAMESPACE = 'lidids.'
 const _onlyUnique = (value: string, index: number, self: string[]) => self.indexOf(value) === index
 const _nonEmpty = (value: string) => value && trim(value).length > 0
 
-export function resolve(state: State, storageHandler: StorageHandler, eventBus: EventBus): State {
+export function resolve(state: State, storageHandler: WrappedStorageHandler, eventBus: EventBus): State {
   let ret = {}
   function _addDecisionId(key: string, cookieDomain?: string) {
     if (key) {

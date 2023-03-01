@@ -1,18 +1,19 @@
-import { isArray, isFunction, asStringParam } from '../utils/types'
+import { isArray, isFunction } from 'live-connect-common'
+import { asStringParam } from '../utils/params'
 import { LiveConnectConfig, EventBus } from '../types'
 import { StateWrapper } from './state'
-import { CallHandler } from '../handlers/call-handler'
+import { WrappedCallHandler } from '../handlers/call-handler'
 
 const DEFAULT_AJAX_TIMEOUT = 0
 
 export class PixelSender {
   url: string
-  calls: CallHandler
+  calls: WrappedCallHandler
   eventBus: EventBus
   onload?: () => void
   presend?: () => void
 
-  constructor (liveConnectConfig: LiveConnectConfig, calls: CallHandler, eventBus: EventBus, onload?: () => void, presend?: () => void) {
+  constructor (liveConnectConfig: LiveConnectConfig, calls: WrappedCallHandler, eventBus: EventBus, onload?: () => void, presend?: () => void) {
     this.url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
     this.calls = calls
     this.eventBus = eventBus

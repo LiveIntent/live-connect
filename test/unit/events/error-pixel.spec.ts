@@ -4,7 +4,7 @@ import sinon from 'sinon'
 import * as errorPixel from '../../../src/events/error-pixel'
 import * as pixelSender from '../../../src/pixel/sender'
 import { LocalEventBus } from '../../../src/events/event-bus'
-import * as C from '../../../src/utils/consts'
+import { ERRORS_CHANNEL } from 'live-connect-common'
 import dirtyChai from 'dirty-chai'
 import { EventBus } from '../../../src/types'
 
@@ -35,8 +35,8 @@ describe('ErrorPixel', () => {
   it('should register itself on the global bus', function () {
     errorPixel.register({ collectorUrl: 'http://localhost' }, {}, eventBus)
     const errorHandler = eventBus.h
-    expect(errorHandler).to.have.key(C.ERRORS_PREFIX)
-    expect(errorHandler[C.ERRORS_PREFIX].length).to.be.eql(1)
+    expect(errorHandler).to.have.key(ERRORS_CHANNEL)
+    expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
   })
 
   it('should call the pixel once registered', function () {

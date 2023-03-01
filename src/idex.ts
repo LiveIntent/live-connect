@@ -1,17 +1,18 @@
 import { base64UrlEncode } from './utils/b64'
 import { toParams } from './utils/url'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, expiresInHours, mapAsParams, isFunction, isObject } from './utils/types'
+import { expiresInHours, isFunction, isObject } from 'live-connect-common'
+import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from './utils/params'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
-import { StorageHandler } from './handlers/storage-handler'
-import { CallHandler } from './handlers/call-handler'
+import { WrappedStorageHandler } from './handlers/storage-handler'
+import { WrappedCallHandler } from './handlers/call-handler'
 
 interface Cache {
   get: (key: unknown) => unknown // null will be used to signal missing value
   set: (key: unknown, value: unknown, expiration?: Date) => void
 }
 
-function storageHandlerBackedCache(defaultExpirationHours: number, domain: string | undefined, storageHandler: StorageHandler, eventBus: EventBus): Cache {
+function storageHandlerBackedCache(defaultExpirationHours: number, domain: string | undefined, storageHandler: WrappedStorageHandler, eventBus: EventBus): Cache {
   const IDEX_STORAGE_KEY = '__li_idex_cache'
 
   function _cacheKey(rawKey: unknown) {
@@ -54,7 +55,7 @@ const noopCache: Cache = {
 
 export class IdentityResolver {
   eventBus: EventBus
-  calls: CallHandler
+  calls: WrappedCallHandler
   cache: Cache
   idexConfig: IdentityResolutionConfig
   externalIds: RetrievedIdentifier[]
@@ -65,7 +66,7 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
 
-  private constructor (config: State, calls: CallHandler, cache: Cache, eventBus: EventBus) {
+  private constructor (config: State, calls: WrappedCallHandler, cache: Cache, eventBus: EventBus) {
     this.eventBus = eventBus
     this.calls = calls
     this.cache = cache
@@ -102,7 +103,7 @@ export class IdentityResolver {
     })
   }
 
-  static make(config: State, storageHandler: StorageHandler, calls: CallHandler, eventBus: EventBus): IdentityResolver {
+  static make(config: State, storageHandler: WrappedStorageHandler, calls: WrappedCallHandler, eventBus: EventBus): IdentityResolver {
     const nonNullConfig = config || {}
     const idexConfig = nonNullConfig.identityResolutionConfig || {}
     const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
@@ -112,7 +113,7 @@ export class IdentityResolver {
     return new IdentityResolver(nonNullConfig, calls, cache, eventBus)
   }
 
-  static makeNoCache(config: State, calls: CallHandler, eventBus: EventBus): IdentityResolver {
+  static makeNoCache(config: State, calls: WrappedCallHandler, eventBus: EventBus): IdentityResolver {
     return new IdentityResolver(config || {}, calls, noopCache, eventBus)
   }
 

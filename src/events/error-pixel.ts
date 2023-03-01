@@ -1,10 +1,9 @@
 import { PixelSender } from '../pixel/sender'
 import { StateWrapper } from '../pixel/state'
 import * as page from '../enrichers/page'
-import * as C from '../utils/consts'
+import { ERRORS_CHANNEL, isRecord, isString } from 'live-connect-common'
 import { EventBus, State } from '../types'
-import { CallHandler } from '../handlers/call-handler'
-import { isRecord, isString } from '../utils/types'
+import { WrappedCallHandler } from '../handlers/call-handler'
 
 const MAX_ERROR_FIELD_LENGTH = 120
 
@@ -52,11 +51,11 @@ export function asErrorDetails(e: unknown): State {
   }
 }
 
-export function register(state: State, callHandler: CallHandler, eventBus: EventBus): void {
+export function register(state: State, callHandler: WrappedCallHandler, eventBus: EventBus): void {
   try {
     const pixelSender = new PixelSender(state, callHandler, eventBus)
 
-    eventBus.on(C.ERRORS_PREFIX, (error) => {
+    eventBus.on(ERRORS_CHANNEL, (error) => {
       pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state || {}).combineWith(page.enrich({})))
     })
   } catch (e) {
