@@ -27,13 +27,13 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('trackerName', tn => asStringParam('tna', tn)),
   state => {
     if (nonNull(state.pageUrl)) {
-      const [url, isPageRemoved, blockedParams] = collectUrl(state)
-      const nestedPageUrlParams = [
+      const [url, isPathRemoved, blockedParams] = collectUrl(state)
+      const nestedUrlParams = [
         asStringParam('pu', url),
-        asStringParamWhen('pu_rp', isPageRemoved ? 1 : 0, v => v === 1),
+        asStringParamWhen('pu_rp', isPathRemoved ? 1 : 0, v => v === 1),
         asStringParamTransform('pu_rqp', blockedParams, (s) => s.join(','))
       ]
-      return Array.prototype.concat.apply([], nestedPageUrlParams)
+      return Array.prototype.concat.apply([], nestedUrlParams)
     } else {
       return []
     }

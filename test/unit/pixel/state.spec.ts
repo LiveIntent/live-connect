@@ -231,7 +231,7 @@ describe('EventComposition', () => {
     const pageUrl = 'https://www.example.com/page?query=v1&foo=v2&bar=v3&id=v4'
     const pixelData = {
       pageUrl: pageUrl,
-      urlCollectionMode: UrlCollectionModes.noPage,
+      urlCollectionMode: UrlCollectionModes.noPath,
       queryParametersFilter: '^(foo|bar)$'
     }
     const event = new StateWrapper(pixelData)
@@ -246,7 +246,7 @@ describe('EventComposition', () => {
     const pageUrl = 'https://www.example.com/?query=v1&id=v2'
     const pixelData = {
       pageUrl: pageUrl,
-      urlCollectionMode: UrlCollectionModes.noPage,
+      urlCollectionMode: UrlCollectionModes.noPath,
       queryParametersFilter: '^(foo|bar)$'
     }
     const event = new StateWrapper(pixelData)

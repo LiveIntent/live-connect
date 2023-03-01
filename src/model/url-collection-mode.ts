@@ -1,6 +1,6 @@
-export type UrlCollectionMode = 'full' | 'no_page'
+export type UrlCollectionMode = 'full' | 'no_path'
 
 export const UrlCollectionModes: Record<string, UrlCollectionMode> = {
   full: 'full',
-  noPage: 'no_page'
+  noPath: 'no_path'
 }

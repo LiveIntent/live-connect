@@ -13,19 +13,19 @@ export function collectUrl(state: State): [string, boolean, string[]] {
   }
   const url = new ParsedUrl(state.pageUrl)
   const urlQueryParameters = urlParamsArray(url.search)
-  const pageRemoved = isPageRemoved(url, state)
+  const pathRemoved = isPathRemoved(url, state)
   const blockedParams = paramsToDelete(urlQueryParameters, state)
-  if (pageRemoved) {
+  if (pathRemoved) {
     url.pathname = '/'
   }
   if (blockedParams.length > 0) {
     url.search = queryStringToKeep(urlQueryParameters, blockedParams)
   }
-  return [url.toString(), pageRemoved, blockedParams]
+  return [url.toString(), pathRemoved, blockedParams]
 }
 
-function isPageRemoved(url: ParsedUrl, conf: LiveConnectConfig): boolean {
-  return conf.urlCollectionMode === UrlCollectionModes.noPage && url.pathname.length > 1
+function isPathRemoved(url: ParsedUrl, conf: LiveConnectConfig): boolean {
+  return conf.urlCollectionMode === UrlCollectionModes.noPath && url.pathname.length > 1
 }
 
 function paramsToDelete(urlQueryParameters: [string, UrlParam][], conf: LiveConnectConfig): string[] {
