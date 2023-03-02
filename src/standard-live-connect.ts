@@ -132,9 +132,8 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
       lc.push(queue[i])
     }
   }
-
-  window[liveConnectConfig.globalVarName] = lc
   
+  window[liveConnectConfig.globalVarName] = lc
   return lc
 }
 
