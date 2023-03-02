@@ -133,7 +133,7 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
     }
   }
 
-  window[configuration.globalVarName] = lc
+  window[liveConnectConfig.globalVarName] = lc
   
   return lc
 }
