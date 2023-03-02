@@ -50,13 +50,17 @@ describe('StandardLiveConnect', () => {
     })
   })
 
+  it('should initialise liQ_instances and add the new instance', function () {
+    const lc = StandardLiveConnect()
+    expect(window.liQ_instances).to.have.members([lc])
+  })
+
   it('should initialise the event bus, and hook the error handler', function () {
     StandardLiveConnect({ globalVarName: 'liQ' })
     const eventBus = window.liQ.eventBus
     const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(ERRORS_CHANNEL)
     expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
-    expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
   it('should initialise the event bus, and hook the error handler via the initializer', function () {
@@ -66,12 +70,20 @@ describe('StandardLiveConnect', () => {
     expect(errorHandler).to.have.key(ERRORS_CHANNEL)
     expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
     expect(window.liQ_instances).to.have.members([window.liQ])
-    expect(window[EVENT_BUS_NAMESPACE]).to.be.eq(eventBus)
   })
+
   it('should expose liQ', function () {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     expect(window.liQ.ready).to.be.true()
+  })
+
+  it('should only add liQ_intances to the window object', function () {
+    const exisitingKeys = Object.keys(window)
+    StandardLiveConnect({}, storage, calls)
+    const keysAfterInit = Object.keys(window)
+    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
+    expect(constNewKeys).to.be.eql(['liQ_instances'])
   })
 
   it('should expose liQ, emit error for any subsequent initialization with different config', function () {
@@ -107,7 +119,7 @@ describe('StandardLiveConnect', () => {
     let liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
-    StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ', appId: 'a-00xx' }, storage, calls)
     liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'config' })
@@ -142,7 +154,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should set the cookie', function () {
-    StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    StandardLiveConnect({}, storage, calls)
     expect(storage.getCookie('_lc2_fpi')).to.not.eql(null)
   })
 
@@ -157,7 +169,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should accept a single event and send it', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.push({ event: 'some' })
     expect(pixelCalls.length).to.eql(1)
     const params = urlParams(pixelCalls[0].url)
@@ -166,7 +178,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should accept an emailHash, not send an event, and then include the HEM in the next call', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.push({ event: 'setEmail', email: '    steve@liveIntent.com   ' })
     lc.push({ event: 'pageView' })
     expect(pixelCalls.length).to.eql(1)
@@ -178,7 +190,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('send an empty event when fired', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.fire()
     expect(pixelCalls.length).to.eql(1)
     const params = urlParams(pixelCalls[0].url)
@@ -187,7 +199,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should accept multiple events and send them', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.push({ event: 'some' }, { event: 'another' })
     expect(pixelCalls.length).to.eql(2)
     pixelCalls.forEach(call => {
@@ -197,7 +209,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should accept multiple events in an array and send them', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.push([{ event: 'some' }, { event: 'another' }])
     expect(pixelCalls.length).to.eql(2)
     pixelCalls.forEach(call => {
@@ -207,18 +219,18 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should return the resolution Url', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--.*/)
   })
 
   it('should expose the config', function () {
-    const config = { globalVarName: 'liQ', appId: 'a-00xx' }
+    const config = { appId: 'a-00xx' }
     const lc = StandardLiveConnect(config, storage, calls)
     expect(lc.config).to.eql(config)
   })
 
   it('should emit an error if the pushed value is not an object', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.push([[[[[':)']]]]])
     expect(errorCalls.length).to.eql(1)
     const params = urlParams(errorCalls[0].src)
@@ -227,7 +239,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should emit an error if the pushed value is a config', function () {
-    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
+    const lc = StandardLiveConnect({}, storage, calls)
     lc.push({ config: {} })
     expect(errorCalls.length).to.eql(1)
     const params = urlParams(errorCalls[0].src)
@@ -236,7 +248,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should emit an error if the storage and ajax are not provided', function () {
-    StandardLiveConnect({ globalVarName: 'liQ' }, undefined, { pixelGet: calls.pixelGet })
+    StandardLiveConnect({}, undefined, { pixelGet: calls.pixelGet })
     expect(errorCalls.length).to.eql(2)
     expect(urlParams(errorCalls[0].src).ae).to.not.be.undefined()
     expect(urlParams(errorCalls[1].src).ae).to.not.be.undefined()
@@ -247,6 +259,7 @@ describe('StandardLiveConnect', () => {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
     expect(window.liQTest.ready).to.be.true()
+    expect(window.liQy).to.be.undefined()
     expect(window.liQ_instances).to.have.members([window.liQTest])
   })
 
