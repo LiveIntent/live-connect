@@ -159,7 +159,7 @@ export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, exter
 
     return lc
   } catch (e) {
-    console.errore(e)
+    console.error(e)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', e)
   }
   return configuration.globalVarName ? window[configuration.globalVarName] : undefined
