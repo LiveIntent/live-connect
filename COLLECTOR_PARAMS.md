@@ -12,6 +12,10 @@
 - contains the `config.trackerName`
 ### `pu`
 - the url on which the event happened, which is populated by the `page` enricher
+### `pu_rp`
+- a flag that signals when the path of the event url was not collected, it can happen when the `config.urlCollectionMode` config parameter is set to `no_path`.
+### `pu_rqp`
+- a list of the query parameters that were removed from the event url, based on the `config.queryParametersFilter` config parameter.
 ### `refr`
 - the url of the referrer, which is populated by the `page` enricher
 ### `ae`
