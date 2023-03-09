@@ -223,9 +223,9 @@ Example:
 ```
 
 ##### `globalVarName` [Optional]
+**Usage of this parameter is discouraged and it will be deprecated in a future version of this library.** This parameter allows to define the name for the LiveConnect instance that is attached to the window object. If none is provided, Liveconnect will not be attached to the window object. 
 
-This parameter allows to define the name for the Live Connect instance that is attached to the window object, by default: `liQ`.
-For example `globalVarName: "liQ2"` will make the instance name `window.liQ2` instead of `window.liQ`.
+For example `globalVarName: "liQ2"` will make the instance name `window.liQ2`. 
 
 Example:
 ```javascript

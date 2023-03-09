@@ -136,21 +136,21 @@ The `enrichers` folder contains code responsible for extracting specific informa
 `enrichers/identifiers.js` is responsible for reading the `identifiersToResolve` configuration parameter to read any additional identifiers that customers want to share with us.
 
 ## Messaging between components via EventBus
-LiveConnect exposes an object on the instance level (`window[globalVarName].eventBus`, where `globalVarName` is the value found in the configuration or `liQ` if none is provided) which is responsible for communicating various information based on different fields of interests.
+LiveConnect exposes an object via the field `eventBus` on the LiveConnect instance which is responsible for communicating various information based on different fields of interests.
 For example, there are three topics which anyone can hook to, and receive information about:
 - errors, on the `li_errors` topic
 - whenever the pixel is sent successfully, the `lips` topic will emit that information
 - just before the pixel is sent, `pre_lips` topic will contain the information about it.
 
-The following snippets can be used to hook up to one of the topics and receive events as they happen.
+The following snippets can be used to hook up to one of the topics and receive events as they happen. Hre, `lc` is a reference to a LiveConnect instance.
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message, will continue receiving them', message) }
-window[globalVarName].eventBus.on('lips', lipsLogger)
+lc.eventBus.on('lips', lipsLogger)
 ```
 or
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message once, i will self destruct now.', message) }
-window[globalVarName].eventBus.once('lips', lipsLogger)
+lc.eventBus.once('lips', lipsLogger)
 ```
 
 There are a two ways this can be achieved:
@@ -165,7 +165,7 @@ Vital logic is wrapped in try catch blocks, and where it makes sense, the error 
 To start listening to the topic, one can simply implement their own logic. For example, if logging the messages is of interest, the following snippet can be used:
 ```javascript
 const logger = (message) => {console.error('Error message received on the event bus', message)}
-window[globalVarName].eventBus.on('li_errors', logger)
+lc.eventBus.on('li_errors', logger)
 ```
 ## Receiving errors on the collector
 LiveConnect has a handler called `handlers/error-pixel.js` which is subscribed on the `li_errors` topic, and wraps the exceptions into the following format:
