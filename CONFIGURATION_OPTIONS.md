@@ -258,6 +258,6 @@ Any parameter name that matches the regular expression will not be collected. Fo
 Example:
 ```javascript
 {
-  globalVarName: "^(foo|bar)$"
+  queryParametersFilter: "^(foo|bar)$"
 }
 ```
