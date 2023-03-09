@@ -39,41 +39,34 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
 }
 
 function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus) {
-  return _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, (event: unknown) => {})
+  const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, (event: unknown) => {})
+  window.liQ_instances = window.liQ_instances || []
+  window.liQ_instances.push(lc)
+  return lc
 }
 
 function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus) {
   const queue = window[liveConnectConfig.globalVarName] = window[liveConnectConfig.globalVarName] || []
   const push = queue.push.bind(queue)
-  return _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, push)
-}
-
-function _appendToLiQInstances(lc: ILiveConnect): void {
+  const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, push)
+  
   window.liQ_instances = window.liQ_instances || []
-
-  const globalVarName = lc.config.globalVarName
-  if (globalVarName) {
-    if (window.liQ_instances.filter(i => i.config.globalVarName === globalVarName).length === 0) {
-      window.liQ_instances.push(lc)
-    }
-  } else {
+  if (window.liQ_instances.filter(i => i.config.globalVarName === lc.config.globalVarName).length === 0) {
     window.liQ_instances.push(lc)
   }
+  return lc
 }
 
 export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
+  const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
+  const eventBus = externalEventBus || LocalEventBus()
+  let lc
   try {
-    const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
-    const eventBus = externalEventBus || LocalEventBus()
-
-    const lc = configuration.globalVarName ?
+    lc = configuration.globalVarName ?
       _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
       _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
-    
-    _appendToLiQInstances(lc)
-    return lc
   } catch (x) {
     console.error(x)
   }
-  return {}
+  return lc
 }

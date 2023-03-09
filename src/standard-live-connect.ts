@@ -120,7 +120,10 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
 }
 
 function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
-  return _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus)
+  const lc = _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus)
+  window.liQ_instances = window.liQ_instances || []
+  window.liQ_instances.push(lc)
+  return lc
 }
 
 function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
@@ -133,36 +136,27 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
     }
   }
   
-  window[liveConnectConfig.globalVarName] = lc
-  return lc
-}
+  window[lc.config.globalVarName] = lc
 
-function _appendToLiQInstances(lc: ILiveConnect): void {
   window.liQ_instances = window.liQ_instances || []
-  const globalVarName = lc.config.globalVarName
-  if (globalVarName) {
-    if (window.liQ_instances.filter(i => i.config.globalVarName === globalVarName).length === 0) {
-      window.liQ_instances.push(lc)
-    }
-  } else {
+  if (window.liQ_instances.filter(i => i.config.globalVarName === lc.config.globalVarName).length === 0) {
     window.liQ_instances.push(lc)
   }
+  return lc
 }
 
 export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   const eventBus = externalEventBus || LocalEventBus()
 
+  let lc
   try {
-    const lc = configuration.globalVarName ? 
+    lc = configuration.globalVarName ? 
           _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
           _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) 
-
-    _appendToLiQInstances(lc)
-    return lc
   } catch (e) {
     console.error(e)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', e)
   }
-  return configuration.globalVarName ? window[configuration.globalVarName] : undefined
+  return lc
 }
