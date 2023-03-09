@@ -48,6 +48,19 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
   return _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, push)
 }
 
+function _appendToLiQInstances(lc: ILiveConnect): void {
+  window.liQ_instances = window.liQ_instances || []
+
+  const globalVarName = lc.config.globalVarName
+  if (globalVarName) {
+    if (window.liQ_instances.filter(i => i.config.globalVarName === globalVarName).length === 0) {
+      window.liQ_instances.push(lc)
+    }
+  } else {
+    window.liQ_instances.push(lc)
+  }
+}
+
 export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
   try {
     const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
@@ -57,15 +70,7 @@ export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externa
       _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
       _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
     
-    window.liQ_instances = window.liQ_instances || []
-    if (configuration.globalVarName) {
-      if (window.liQ_instances.filter(i => i.config.globalVarName === configuration.globalVarName).length === 0) {
-        window.liQ_instances.push(lc)
-      }
-    } else {
-      window.liQ_instances.push(lc)
-    }
-
+    _appendToLiQInstances(lc)
     return lc
   } catch (x) {
     console.error(x)
