@@ -5,6 +5,7 @@ import { isObject, trim, isArray, nonNull } from 'live-connect-common'
 import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform } from '../utils/params'
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
+import { collectUrl } from './url-collector'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
@@ -25,7 +26,19 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
   ifDefined('liveConnectId', fpc => asStringParam('duid', fpc)),
   ifDefined('trackerName', tn => asStringParam('tna', tn)),
-  ifDefined('pageUrl', purl => asStringParam('pu', purl)),
+  state => {
+    if (nonNull(state.pageUrl)) {
+      const [url, isPathRemoved, blockedParams] = collectUrl(state)
+      const nestedUrlParams = [
+        asStringParam('pu', url),
+        asStringParamWhen('pu_rp', isPathRemoved ? 1 : 0, v => v === 1),
+        asStringParamTransform('pu_rqp', blockedParams, (s) => s.join(','))
+      ]
+      return Array.prototype.concat.apply([], nestedUrlParams)
+    } else {
+      return []
+    }
+  },
   ifDefined('errorDetails', ed => asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))),
   ifDefined('retrievedIdentifiers', identifiers => {
     const identifierParams: [string, string][] = []

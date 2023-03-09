@@ -5,6 +5,7 @@ import { StateWrapper } from '../../../src/pixel/state'
 import { mergeObjects } from '../../../src/pixel/fiddler'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
+import { UrlCollectionModes } from '../../../src/model/url-collection-mode'
 
 use(dirtyChai)
 
@@ -224,6 +225,35 @@ describe('EventComposition', () => {
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
     assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
+  })
+
+  it('should send the removed parts of the page url', function () {
+    const pageUrl = 'https://www.example.com/page?query=v1&foo=v2&bar=v3&id=v4'
+    const pixelData = {
+      pageUrl: pageUrl,
+      urlCollectionMode: UrlCollectionModes.noPath,
+      queryParametersFilter: '^(foo|bar)$'
+    }
+    const event = new StateWrapper(pixelData)
+    const expectedUrl = 'https://www.example.com/?query=v1&id=v4'
+    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(expectedUrl)]])
+    assert.includeDeepMembers(event.asTuples(), [['pu_rp', '1']])
+    assert.includeDeepMembers(event.asTuples(), [['pu_rqp', `foo${COMMA}bar`]])
+    expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(expectedUrl)}&pu_rp=1&pu_rqp=foo${COMMA}bar`)
+  })
+
+  it('should not send the removed parts of the page url when nothing was removed', function () {
+    const pageUrl = 'https://www.example.com/?query=v1&id=v2'
+    const pixelData = {
+      pageUrl: pageUrl,
+      urlCollectionMode: UrlCollectionModes.noPath,
+      queryParametersFilter: '^(foo|bar)$'
+    }
+    const event = new StateWrapper(pixelData)
+    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
+    assert.notIncludeMembers(event.asTuples(), [['pu_rp', '0']])
+    assert.notIncludeMembers(event.asTuples(), [['pu_rqp', '']])
+    expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
   })
 
   it('should send the application error', function () {

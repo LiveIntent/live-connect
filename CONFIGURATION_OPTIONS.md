@@ -233,3 +233,31 @@ Example:
   globalVarName: "liQ2"
 }
 ```
+
+##### `urlCollectionMode` [Optional]
+
+This parameter defines the way LiveConnect collects the event url. It has 2 possible values:
+
+- `full`: the full url is collected with no changes.
+- `no_path`: the path part of the url is ignored. Only the domain part will be collected.
+
+The default mode, in case a valid value is not provided, is `full`
+
+Example:
+```javascript
+{
+  urlCollectionMode: "no_path"
+}
+```
+
+##### `queryParametersFilter` [Optional]
+
+This parameter allows to define a regular expression which can be used to restrict the collected query parameters.
+Any parameter name that matches the regular expression will not be collected. For example `queryParametersFilter: "^(foo|bar)$"` will block any query parameters named `foo` or `bar`, and only collect the remaining ones.
+
+Example:
+```javascript
+{
+  queryParametersFilter: "^(foo|bar)$"
+}
+```

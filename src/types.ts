@@ -1,4 +1,5 @@
 import { StorageStrategy } from './model/storage-strategy'
+import { UrlCollectionMode } from './model/url-collection-mode'
 import { ErrorDetails } from 'live-connect-common'
 
 export interface IdentityResolutionConfig {
@@ -25,6 +26,8 @@ export interface LiveConnectConfig {
   identityResolutionConfig?: IdentityResolutionConfig
   distributorId?: string
   globalVarName?: string
+  urlCollectionMode?: UrlCollectionMode
+  queryParametersFilter?: string
 }
 
 export type ResolutionParams = Record<string, string | string[]>
