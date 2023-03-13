@@ -60,13 +60,12 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
 export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   const eventBus = externalEventBus || LocalEventBus()
-  let lc
   try {
-    lc = configuration.globalVarName ?
+    return configuration.globalVarName ?
       _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
       _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
   } catch (x) {
     console.error(x)
   }
-  return lc
+  return {}
 }
