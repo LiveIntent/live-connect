@@ -142,7 +142,7 @@ For example, there are three topics which anyone can hook to, and receive inform
 - whenever the pixel is sent successfully, the `lips` topic will emit that information
 - just before the pixel is sent, `pre_lips` topic will contain the information about it.
 
-The following snippets can be used to hook up to one of the topics and receive events as they happen. Hre, `lc` is a reference to a LiveConnect instance.
+The following snippets can be used to hook up to one of the topics and receive events as they happen. Here, `lc` is a reference to a LiveConnect instance.
 ```javascript
 const lipsLogger = (message) => { console.info('Received a lips message, will continue receiving them', message) }
 lc.eventBus.on('lips', lipsLogger)
