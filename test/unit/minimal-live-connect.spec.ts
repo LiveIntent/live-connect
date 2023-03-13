@@ -46,7 +46,7 @@ describe('MinimalLiveConnect', () => {
     })
   })
 
-  it('should expose liQ', function () {
+  it('should expose liQ and liQ_instances', function () {
     expect(window.liQ).to.be.undefined()
     expect(window.liQ_instances).to.be.undefined()
     MinimalLiveConnect({ globalVarName: 'liQ' }, storage, calls)
@@ -96,7 +96,6 @@ describe('MinimalLiveConnect', () => {
   it('should accept a single event and put it in the queue via the initializer', function () {
     const lc = LiveConnect({ globalVarName: 'liQ' }, storage, calls, 'minimal')
     lc.push({ event: 'some' })
-    console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
   })
 
@@ -108,7 +107,6 @@ describe('MinimalLiveConnect', () => {
   it('should accept firing an event and put it in the queue', function () {
     const lc = MinimalLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     lc.fire()
-    console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
   })
 
