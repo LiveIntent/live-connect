@@ -109,7 +109,8 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
-      eventBus: eventBus
+      syncContainerData: syncContainerData,
+      eventBus: eventBus,
     }
   } catch (x) {
     console.error(x)
