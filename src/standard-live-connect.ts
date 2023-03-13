@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { PixelSender } from './pixel/sender'
 import * as errorHandler from './events/error-pixel'
-import * as C from './utils/consts'
+import { getGlobalBus, LI_TOPICS } from 'live-connect-common'
 import { StateWrapper } from './pixel/state'
 import { mergeObjects } from './pixel/fiddler'
 import { resolve as idResolve } from './manager/identifiers'
@@ -17,7 +17,7 @@ import { WrappedStorageHandler } from './handlers/storage-handler'
 import { WrappedCallHandler } from './handlers/call-handler'
 import { StorageStrategies } from './model/storage-strategy'
 import { ConfigMismatch, EventBus, ILiveConnect, LiveConnectConfig, State } from './types'
-import { LocalEventBus, getAvailableBus } from './events/event-bus'
+import { LocalEventBus } from './events/event-bus'
 
 const hemStore: State = {}
 function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
@@ -70,9 +70,7 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
-        const eventBus = getAvailableBus(liveConnectConfig.globalVarName)
-        window[liveConnectConfig.globalVarName].eventBus = eventBus
-        eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatchedConfig), error)
+        window[liveConnectConfig.globalVarName].eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
       return window[liveConnectConfig.globalVarName]
     }
@@ -98,8 +96,8 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const postManagedState = managers.reduce(reducer, enrichedState)
 
     const syncContainerData = mergeObjects(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
-    const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, syncContainerData)
-    const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
+    const onPixelLoad = () => getGlobalBus().emit(LI_TOPICS.PIXEL_SENT, syncContainerData)
+    const onPixelPreload = () => getGlobalBus().emit(LI_TOPICS.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver.make(postManagedState.data, storageHandler, callHandler, eventBus)
     const _push = (...args: any[]) => _processArgs(args, pixelClient, postManagedState, eventBus)
@@ -129,13 +127,13 @@ function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, exte
 function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   const queue = window[liveConnectConfig.globalVarName] || []
   const lc = _getInitializedLiveConnect(liveConnectConfig) || _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) || queue
-  
+
   if (isArray(queue)) {
     for (let i = 0; i < queue.length; i++) {
       lc.push(queue[i])
     }
   }
-  
+
   window[lc.config.globalVarName] = lc
 
   window.liQ_instances = window.liQ_instances || []
@@ -151,9 +149,9 @@ export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, exter
 
   let lc
   try {
-    lc = configuration.globalVarName ? 
+    lc = configuration.globalVarName ?
           _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
-          _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) 
+          _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
   } catch (e) {
     console.error(e)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', e)
