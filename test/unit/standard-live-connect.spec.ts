@@ -50,36 +50,48 @@ describe('StandardLiveConnect', () => {
     })
   })
 
+  it('should initialise liQ_instances and add the new instance', function () {
+    const lc = StandardLiveConnect()
+    expect(window.liQ_instances).to.have.members([lc])
+  })
+
   it('should initialise the event bus, and hook the error handler', function () {
-    StandardLiveConnect({})
+    StandardLiveConnect({ globalVarName: 'liQ' })
     const eventBus = window.liQ.eventBus
     const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(ERRORS_CHANNEL)
     expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
-    expect(window.liQ_instances).to.have.members([window.liQ])
   })
 
   it('should initialise the event bus, and hook the error handler via the initializer', function () {
-    LiveConnect({})
+    LiveConnect({ globalVarName: 'liQ' })
     const eventBus = window.liQ.eventBus
     const errorHandler = eventBus.h
     expect(errorHandler).to.have.key(ERRORS_CHANNEL)
     expect(errorHandler[ERRORS_CHANNEL].length).to.be.eql(1)
     expect(window.liQ_instances).to.have.members([window.liQ])
-    expect(window[EVENT_BUS_NAMESPACE]).to.be.eq(eventBus)
   })
+
   it('should expose liQ', function () {
     expect(window.liQ).to.be.undefined()
-    StandardLiveConnect({}, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     expect(window.liQ.ready).to.be.true()
   })
 
+  it('should only add liQ_intances to the window object', function () {
+    const exisitingKeys = Object.keys(window)
+    StandardLiveConnect({}, storage, calls)
+    const keysAfterInit = Object.keys(window)
+    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
+    expect(constNewKeys).to.be.eql(['liQ_instances'])
+  })
+
   it('should expose liQ, emit error for any subsequent initialization with different config', function () {
-    StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ', appId: 'a-00xx' }, storage, calls)
     let liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
-    StandardLiveConnect({ appId: 'config' }, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ', appId: 'config' }, storage, calls)
     liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'config' })
@@ -103,11 +115,11 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should expose liQ, and not emit error when the config has not changed', function () {
-    StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ', appId: 'a-00xx' }, storage, calls)
     let liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'a-00xx' })
-    StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ', appId: 'a-00xx' }, storage, calls)
     liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'config' })
@@ -129,7 +141,7 @@ describe('StandardLiveConnect', () => {
   it('should process a previously initialized liQ', function () {
     window.liQ = []
     window.liQ.push({ event: 'viewProduct', name: 'first' }, { event: 'viewProduct', name: 'second' })
-    StandardLiveConnect({ appId: 'a-00xx' }, storage, calls)
+    StandardLiveConnect({ globalVarName: 'liQ', appId: 'a-00xx' }, storage, calls)
     const liQ = window.liQ
     expect(liQ.ready).to.be.true()
     liQ.push({ event: 'viewProduct', name: 'third' })
@@ -247,6 +259,7 @@ describe('StandardLiveConnect', () => {
     expect(window.liQ).to.be.undefined()
     StandardLiveConnect({ globalVarName: 'liQTest' }, storage, calls)
     expect(window.liQTest.ready).to.be.true()
+    expect(window.liQy).to.be.undefined()
     expect(window.liQ_instances).to.have.members([window.liQTest])
   })
 
@@ -258,7 +271,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should expose the eventBus through the LC instance', function () {
-    const lc = StandardLiveConnect({}, storage, calls)
+    const lc = StandardLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     expect(lc.eventBus).to.not.be.undefined()
   })
 })

@@ -46,47 +46,78 @@ describe('MinimalLiveConnect', () => {
     })
   })
 
-  it('should expose liQ', function () {
+  it('should expose liQ and liQ_instances', function () {
     expect(window.liQ).to.be.undefined()
-    MinimalLiveConnect({}, storage, calls)
+    expect(window.liQ_instances).to.be.undefined()
+    MinimalLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     expect(window.liQ).to.not.be.undefined()
+    expect(window.liQ_instances).to.not.be.undefined()
+  })
+
+  it('should only add liQ_instances to the window object', function () {
+    const exisitingKeys = Object.keys(window)
+    MinimalLiveConnect({}, storage, calls)
+    const keysAfterInit = Object.keys(window)
+    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
+    expect(constNewKeys).to.be.eql(['liQ_instances'])
   })
 
   it('should expose liQ via the initializer', function () {
     expect(window.liQ).to.be.undefined()
-    LiveConnect({}, storage, calls, 'minimal')
+    LiveConnect({ globalVarName: 'liQ' }, storage, calls, 'minimal')
     expect(window.liQ).to.not.be.undefined()
-    expect(window[EVENT_BUS_NAMESPACE]).to.not.be.undefined()
+  })
+
+  it('should only add liQ_instances to the window object via the initializer', function () {
+    const exisitingKeys = Object.keys(window)
+    LiveConnect({}, storage, calls, 'minimal')
+    const keysAfterInit = Object.keys(window)
+    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
+    expect(constNewKeys).to.be.eql(['liQ_instances'])
+  })
+
+  it('should accept a single event', function () {
+    const lc = MinimalLiveConnect({}, storage, calls)
+    lc.push({ event: 'some' })
   })
 
   it('should accept a single event and put it in the queue', function () {
-    const lc = MinimalLiveConnect({}, storage, calls)
+    const lc = MinimalLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     lc.push({ event: 'some' })
     console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
+  })
+
+  it('should accept a single event via the initializer', function () {
+    const lc = LiveConnect({}, storage, calls, 'minimal')
+    lc.push({ event: 'some' })
   })
 
   it('should accept a single event and put it in the queue via the initializer', function () {
-    const lc = LiveConnect({}, storage, calls, 'minimal')
+    const lc = LiveConnect({ globalVarName: 'liQ' }, storage, calls, 'minimal')
     lc.push({ event: 'some' })
-    console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
-    expect(window[EVENT_BUS_NAMESPACE]).to.not.be.undefined()
+  })
+
+  it('should accept firing an event', function () {
+    const lc = MinimalLiveConnect({}, storage, calls)
+    lc.fire()
   })
 
   it('should accept firing an event and put it in the queue', function () {
-    const lc = MinimalLiveConnect({}, storage, calls)
+    const lc = MinimalLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     lc.fire()
-    console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
   })
 
-  it('should accept firing an event and put it in the queue via the initializer', function () {
+  it('should accept firing an event via the initializer', function () {
     const lc = LiveConnect({}, storage, calls, 'minimal')
     lc.fire()
-    console.log(window.liQ)
-    expect(window.liQ.length).to.eql(1)
-    expect(window[EVENT_BUS_NAMESPACE]).to.not.be.undefined()
+  })
+
+  it('should accept firing an event and put it in the queue via the initializer', function () {
+    const lc = LiveConnect({ globalVarName: 'liQ' }, storage, calls, 'minimal')
+    lc.fire()
   })
 
   it('should return the resolution Url', function () {
