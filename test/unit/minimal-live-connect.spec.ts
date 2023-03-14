@@ -54,7 +54,7 @@ describe('MinimalLiveConnect', () => {
     expect(window.liQ_instances).to.not.be.undefined()
   })
 
-  it('should only add liQ_intances to the window object', function () {
+  it('should only add liQ_instances to the window object', function () {
     const exisitingKeys = Object.keys(window)
     MinimalLiveConnect({}, storage, calls)
     const keysAfterInit = Object.keys(window)
