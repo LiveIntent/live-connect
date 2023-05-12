@@ -1,9 +1,9 @@
 import { ulid } from '../utils/ulid'
 import { loadedDomain } from '../utils/page'
 import { domainHash } from '../utils/hash'
-import { expiresInDays } from 'live-connect-common'
+import { EventBus, expiresInDays } from 'live-connect-common'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
-import { EventBus, State } from '../types'
+import { State } from '../types'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'

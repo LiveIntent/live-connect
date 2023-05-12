@@ -1,6 +1,6 @@
 import { replaceEmailsWithHashes } from '../utils/email'
-import { safeToString, isString, isArray } from 'live-connect-common'
-import { EventBus, HashedEmail, State, RetrievedIdentifier } from '../types'
+import { EventBus, safeToString, isString, isArray } from 'live-connect-common'
+import { HashedEmail, State, RetrievedIdentifier } from '../types'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
 export function enrich(state: State, storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus): State {
@@ -23,27 +23,35 @@ function _parseIdentifiersToResolve(state: State): string[] {
       cookieNames = (state.identifiersToResolve as string).split(',')
     }
   }
-  for (let i = 0; i < cookieNames.length; i++) {
-    cookieNames[i] = cookieNames[i].trim()
-  }
-  return cookieNames
+  return cookieNames.map(x => x.trim())
 }
 
 function _getIdentifiers(cookieNames: string[], storageHandler: WrappedReadOnlyStorageHandler): State {
-  const identifiers: RetrievedIdentifier[] = []
-  let hashes: HashedEmail[] = []
-  for (let i = 0; i < cookieNames.length; i++) {
-    const identifierName = cookieNames[i]
-    const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
-    if (identifierValue) {
-      const cookieAndHashes = replaceEmailsWithHashes(safeToString(identifierValue))
-      identifiers.push({
-        name: identifierName,
-        value: cookieAndHashes.stringWithoutRawEmails
-      })
-      hashes = hashes.concat(cookieAndHashes.hashesFromOriginalString)
-    }
-  }
+  const { identifiers, hashes } = cookieNames
+    .reduce(({ identifiers, hashes }, identifierName) => {
+      const identifierValue = storageHandler.getCookie(identifierName) || storageHandler.getDataFromLocalStorage(identifierName)
+      if (identifierValue) {
+        const cookieAndHashes = replaceEmailsWithHashes(safeToString(identifierValue))
+        return {
+          identifiers: [
+            ...identifiers,
+            {
+              name: identifierName,
+              value: cookieAndHashes.stringWithoutRawEmails
+            }
+          ],
+          hashes: [
+            ...hashes,
+            ...cookieAndHashes.hashesFromOriginalString
+          ]
+        }
+      }
+      return { identifiers, hashes }
+    }, {
+      identifiers: [] as RetrievedIdentifier[],
+      hashes: [] as HashedEmail[]
+    })
+
   return {
     retrievedIdentifiers: identifiers,
     hashesFromIdentifiers: _deduplicateHashes(hashes)
@@ -52,12 +60,11 @@ function _getIdentifiers(cookieNames: string[], storageHandler: WrappedReadOnlyS
 
 function _deduplicateHashes(hashes: HashedEmail[]): HashedEmail[] {
   const seen = new Set<string>()
-  const result: HashedEmail[] = []
-  for (let i = 0; i < hashes.length; i++) {
-    if (!seen.has(hashes[i].md5)) {
-      result.push(hashes[i])
-      seen.add(hashes[i].md5)
+  return hashes.reduce((r, h) => {
+    if (!seen.has(h.md5)) {
+      seen.add(h.md5)
+      return [...r, h]
     }
-  }
-  return result
+    return r
+  }, [] as HashedEmail[])
 }

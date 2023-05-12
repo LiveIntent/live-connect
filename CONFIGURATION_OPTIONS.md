@@ -1,6 +1,6 @@
 
 #### `appId` [Optional]
-This parameter is a legacy one, and describes the relation between a website, and LiveIntent's media business entities.
+This parameter describes the relation between a website, and LiveIntent's media business entities.
 This field does not have the default value. If it is not set, the appId calculation can be done server side, on the collector.
 Example:
 ```javascript

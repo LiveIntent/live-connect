@@ -1,9 +1,9 @@
 import { base64UrlEncode } from './utils/b64'
 import { toParams } from './utils/url'
-import { expiresInHours, isFunction, isObject } from 'live-connect-common'
+import { EventBus, expiresInHours, isFunction, isObject } from 'live-connect-common'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from './utils/params'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
-import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
+import { IdentityResolutionConfig, State, ResolutionParams, RetrievedIdentifier } from './types'
 import { WrappedStorageHandler } from './handlers/storage-handler'
 import { WrappedCallHandler } from './handlers/call-handler'
 

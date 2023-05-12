@@ -8,3 +8,4 @@ local.log
 coverage.lcov
 driver-logs
 test-resources
+.idea

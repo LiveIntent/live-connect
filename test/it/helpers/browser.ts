@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { assert } from 'chai'
 
 const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
@@ -33,7 +35,7 @@ export async function click(selector) {
 }
 
 export async function sendEvent(event, expectedRequests, server) {
-  const error = await browser.execute(function (event) {
+  const error = await browser.execute((event) => {
     try {
       window.liQ = window.liQ || []
       window.liQ.push(event)
@@ -82,7 +84,7 @@ export async function resolveIdentity(expectedRequests, server) {
   const error = await browser.execute(() => {
     try {
       window.liQ = window.liQ || []
-      window.liQ.resolve(function (response) {
+      window.liQ.resolve(response => {
         document.getElementById('idex').innerHTML = JSON.stringify(response)
       })
       return null
@@ -91,13 +93,11 @@ export async function resolveIdentity(expectedRequests, server) {
     }
   })
   if (error) {
-    assert.fail(`Failed resolving identity: ${error}`)
+    assert.fail(`Failed resolving identity: ${JSON.stringify(error)}`)
   } else {
     console.info(`Waiting for ${expectedRequests} idex requests`)
     await browser.waitUntil(
-      () => {
-        return server.getIdexHistory().length >= expectedRequests
-      },
+      () => server.getIdexHistory().length >= expectedRequests,
       {
         timeout: WAIT_UNTIL_TIMEOUT_MILLIS,
         timeoutMsg: 'resolveIdentity timed out',
@@ -136,7 +136,7 @@ export async function fetchResolvedIdentity() {
 }
 
 export async function probeLS() {
-  const result = await browser.execute(function () {
+  const result = await browser.execute(() => {
     const key = '__live-connect-localstorage-probe-test'
     let enabled = false
     let error = null
@@ -163,7 +163,7 @@ export async function probeLS() {
 }
 
 export async function deleteAllCookies() {
-  const error = await browser.execute(function () {
+  const error = await browser.execute(() => {
     try {
       const cookies = document.cookie.split('; ')
       for (let c = 0; c < cookies.length; c++) {

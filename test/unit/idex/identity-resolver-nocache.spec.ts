@@ -1,4 +1,6 @@
-import jsdom from 'mocha-jsdom'
+// @ts-nocheck
+
+import jsdom from 'global-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex'
@@ -14,16 +16,15 @@ describe('IdentityResolver without cache', () => {
   const calls = new DefaultCallHandler()
   let errors = []
   let callCount = 0
-  jsdom({
-    url: 'http://www.something.example.com',
-    useEach: true
-  })
 
   beforeEach(() => {
-    eventBus.on('li_errors', (error) => { errors.push(error) })
+    jsdom('', {
+      url: 'http://www.something.example.com'
+    })
+    eventBus.on('li_errors', error => errors.push(error))
     global.XDomainRequest = null
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
-    global.XMLHttpRequest.onCreate = function (request) {
+    global.XMLHttpRequest.onCreate = request => {
       requestToComplete = request
       callCount += 1
     }
@@ -31,7 +32,7 @@ describe('IdentityResolver without cache', () => {
     errors = []
   })
 
-  it('should invoke callback on success', function (done) {
+  it('should invoke callback on success', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({}, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -47,7 +48,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the duid', function (done) {
+  it('should attach the duid', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
@@ -60,7 +61,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach additional params', function (done) {
+  it('should attach additional params', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
@@ -73,7 +74,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach additional params with an array that should be serialized as repeated query', function (done) {
+  it('should attach additional params with an array that should be serialized as repeated query', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987' }, calls)
     const successCallback = (responseAsJson) => {
@@ -86,7 +87,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach publisher id', function (done) {
+  it('should attach publisher id', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, calls)
     const successCallback = (responseAsJson) => {
@@ -99,7 +100,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should not attach an empty tuple', function (done) {
+  it('should not attach an empty tuple', (done) => {
     const identityResolver = IdentityResolver.makeNoCache({ peopleVerifiedId: null }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
@@ -111,7 +112,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
   })
 
-  it('should attach the duid & multiple retrieved identifiers', function (done) {
+  it('should attach the duid & multiple retrieved identifiers', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({
       peopleVerifiedId: '987',
@@ -136,7 +137,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent values when gpdr does not apply', function (done) {
+  it('should attach the consent values when gpdr does not apply', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({
       gdprApplies: false,
@@ -154,7 +155,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent and nc values when gpdr applies', function (done) {
+  it('should attach the consent and nc values when gpdr applies', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({
       gdprApplies: true,
@@ -172,7 +173,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should return the default empty response and emit error if response is 500', function (done) {
+  it('should return the default empty response and emit error if response is 500', (done) => {
     const identityResolver = IdentityResolver.makeNoCache({}, calls)
     const errorCallback = (error) => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
@@ -182,7 +183,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
 
-  it('should allow resolving custom attributes', function (done) {
+  it('should allow resolving custom attributes', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache(
       {
@@ -205,7 +206,7 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should not resolve uid2 when privacy mode is enabled', function (done) {
+  it('should not resolve uid2 when privacy mode is enabled', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache(
       {

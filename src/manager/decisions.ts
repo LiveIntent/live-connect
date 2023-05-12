@@ -1,6 +1,6 @@
 import { getQueryParameter, ParsedParam } from '../utils/url'
-import { trim, isUUID, expiresInDays } from 'live-connect-common'
-import { EventBus, State } from '../types'
+import { EventBus, trim, isUUID, expiresInDays } from 'live-connect-common'
+import { State } from '../types'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)

@@ -1,5 +1,5 @@
 import { trim } from 'live-connect-common'
-import { hashEmail } from '../utils/hash'
+import { hashEmail } from './hash'
 import { HashedEmail } from '../types'
 
 const emailRegex = () => /\S+(@|%40)\S+\.\S+/
@@ -31,17 +31,15 @@ export function listEmailsInString(s: string): string[] {
 }
 
 export function replaceEmailsWithHashes(originalString: string): { hashesFromOriginalString: HashedEmail[]; stringWithoutRawEmails: string } {
-  const emailsInString = listEmailsInString(originalString)
-  const hashes = []
-  let convertedString = originalString
-  for (let i = 0; i < emailsInString.length; i++) {
-    const email = emailsInString[i]
-    const emailHashes = hashEmail(email)
-    convertedString = convertedString.replace(email, emailHashes.md5)
-    hashes.push(emailHashes)
-  }
-  return {
-    stringWithoutRawEmails: convertedString,
-    hashesFromOriginalString: hashes
-  }
+  return listEmailsInString(originalString)
+    .reduce(({ stringWithoutRawEmails, hashesFromOriginalString }, email) => {
+      const hashes = hashEmail(email)
+      return {
+        stringWithoutRawEmails: stringWithoutRawEmails.replace(email, hashes.md5),
+        hashesFromOriginalString: [...hashesFromOriginalString, hashes]
+      }
+    }, {
+      stringWithoutRawEmails: originalString,
+      hashesFromOriginalString: [] as HashedEmail[]
+    })
 }

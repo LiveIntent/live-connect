@@ -7,14 +7,14 @@ use(dirtyChai)
 
 describe('RemoveInvalidPairsTransformer', () => {
   const eventBus = LocalEventBus()
-  let errors = []
+  let errors: Error[] = []
 
   beforeEach(() => {
-    eventBus.on('li_errors', (error) => { errors.push(error) })
+    eventBus.on('li_errors', (error) => { errors.push(error as Error) })
     errors = []
   })
 
-  it('should send event and remove distributorId when both appId and distributorId are present', function () {
+  it('should send event and remove distributorId when both appId and distributorId are present', () => {
     const config = {
       appId: 'a-0100',
       distributorId: 'did-9898',
@@ -30,7 +30,7 @@ describe('RemoveInvalidPairsTransformer', () => {
     expect(errors).to.not.be.empty()
   })
 
-  it('should not modify config if appId and distributorId are not present', function () {
+  it('should not modify config if appId and distributorId are not present', () => {
     const config = {
       appId: 'a-0100',
       liveConnectId: '213245',

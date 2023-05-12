@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { assert, expect, use } from 'chai'
 import * as serverUtil from './helpers/mock-server'
 import {
@@ -22,7 +24,6 @@ use(dirtyChai)
 const COOKIE_TO_SCRAPE_NAME = 'cookie_to_scrape'
 
 describe('LiveConnect', function () {
-  this.retries(5)
   let server
   let supportsLS
 
@@ -90,7 +91,7 @@ describe('LiveConnect', function () {
     assert.strictEqual(trackingRequests.length, 1)
     expect(tldCookie).to.eql('.liveintent.com')
     expect(fpcCookie).to.eql(trackingRequests[0].query.duid)
-    expect(`${packageJson.versionPrefix}${packageJson.version}`).to.eq(trackingRequests[0].query.tna)
+    expect(trackingRequests[0].query.tna).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
 
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
@@ -255,6 +256,6 @@ describe('LiveConnect', function () {
 
     // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    expect('PHA-VG8gY29sbGVjdDwvcD4').to.eq(firstTrackingRequest.query.c)
+    expect(firstTrackingRequest.query.c).to.eq('PHA-VG8gY29sbGVjdDwvcD4')
   })
 })

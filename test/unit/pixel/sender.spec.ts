@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { expect, use } from 'chai'
-import jsdom from 'mocha-jsdom'
+import jsdom from 'global-jsdom'
 import sinon from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
 import { ERRORS_CHANNEL } from 'live-connect-common'
@@ -19,26 +21,22 @@ describe('PixelSender', () => {
   let pixelStub
   let calls: CallHandler
 
-  jsdom({
-    url: 'http://www.example.com',
-    useEach: true
-  })
-
   beforeEach(() => {
+    jsdom('', {
+      url: 'http://www.example.com'
+    })
     eventBus = LocalEventBus()
     calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
     ajaxRequests = []
     pixelRequests = []
     global.XDomainRequest = null
     global.XMLHttpRequest = sandbox.useFakeXMLHttpRequest()
-    global.XMLHttpRequest.onCreate = function (xhr) {
-      ajaxRequests.push(xhr)
-    }
+    global.XMLHttpRequest.onCreate = xhr => ajaxRequests.push(xhr)
     pixelStub = sandbox.stub(calls, 'pixelGet').callsFake(
       (uri, onload) => {
         pixelRequests.push({
-          uri: uri,
-          onload: onload
+          uri,
+          onload
         })
       }
     )
@@ -48,13 +46,13 @@ describe('PixelSender', () => {
     pixelStub.restore()
   })
 
-  it('exposes the send and sendPixel functions', function () {
+  it('exposes the send and sendPixel functions', () => {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, null)
     expect(typeof sender.sendAjax).to.eql('function')
     expect(typeof sender.sendPixel).to.eql('function')
   })
 
-  it('defaults to production if none set when sendAjax', function (done) {
+  it('defaults to production if none set when sendAjax', (done) => {
     const successCallback = () => {
       expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?dtstmp=\d+&xxx=yyy/)
       done()
@@ -64,7 +62,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('sends a request to a custom collector url when sendAjax', function (done) {
+  it('sends a request to a custom collector url when sendAjax', (done) => {
     const successCallback = () => {
       expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy/)
       done()
@@ -74,7 +72,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('sends a request with n3pc, n3pct and nb values when gdprApplies is true when sendAjax', function (done) {
+  it('sends a request with n3pc, n3pct and nb values when gdprApplies is true when sendAjax', (done) => {
     const successCallback = () => {
       expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1&n3pc=1&n3pct=1&nb=1/)
       done()
@@ -84,7 +82,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('calls bakers when sendAjax', function (done) {
+  it('calls bakers when sendAjax', (done) => {
     pixelStub.restore()
     let bakersCount = 0
     pixelStub = sandbox.stub(calls, 'pixelGet').callsFake((uri) => {
@@ -103,7 +101,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
   })
 
-  it('calls emit an error when the pixel response is not a json when sendAjax', function (done) {
+  it('calls emit an error when the pixel response is not a json when sendAjax', (done) => {
     eventBus.on(ERRORS_CHANNEL, (e) => {
       expect(e.name).to.eq('CallBakers')
       done()
@@ -114,7 +112,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
-  it('sends the event via pixel as fallback if ajax fails', function (done) {
+  it('sends the event via pixel as fallback if ajax fails', (done) => {
     const onload = () => 1
     eventBus.on(ERRORS_CHANNEL, (e) => {
       expect(e.name).to.eq('AjaxFailed')
@@ -128,7 +126,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
-  it('defaults to production if none set when sendAjax', function (done) {
+  it('defaults to production if none set when sendAjax', (done) => {
     const successCallback = () => {
       expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?dtstmp=\d+&xxx=yyy/)
       done()
@@ -138,7 +136,7 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('calls a presend function when sendAjax', function (done) {
+  it('calls a presend function when sendAjax', (done) => {
     const presend = () => {
       expect(ajaxRequests).to.be.empty()
       done()
@@ -147,14 +145,14 @@ describe('PixelSender', () => {
     sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
   })
 
-  it('defaults to production if none set when sendPixel', function () {
+  it('defaults to production if none set when sendPixel', () => {
     const sender = new PixelSender({}, calls, eventBus)
     sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
     expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.be.undefined()
   })
 
-  it('sends an image pixel and call onload if request succeeds when sendPixel', function () {
+  it('sends an image pixel and call onload if request succeeds when sendPixel', () => {
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, eventBus, onload)
     sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
@@ -162,7 +160,7 @@ describe('PixelSender', () => {
     expect(pixelRequests[0].onload).to.eql(onload)
   })
 
-  it('does not send an image pixel if sendsPixel resolves to false when sendPixel', function () {
+  it('does not send an image pixel if sendsPixel resolves to false when sendPixel', () => {
     const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, eventBus, null)
     sender.sendPixel({ asQuery: () => new Query([['zzz', 'ccc']]), sendsPixel: () => false })
     expect(pixelRequests).to.be.empty()

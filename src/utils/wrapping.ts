@@ -1,5 +1,4 @@
-import { EventBus } from '../types'
-import { isFunction, isObject } from 'live-connect-common'
+import { EventBus, isFunction, isObject } from 'live-connect-common'
 
 export type NoopFunction = () => undefined
 

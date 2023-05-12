@@ -1,6 +1,4 @@
-// @ts-nocheck
-import { ReplayEmitter, wrapError, isFunction, ERRORS_CHANNEL } from 'live-connect-common'
-import { EventBus } from '../types'
+import { ReplayEmitter, wrapError, isFunction, ERRORS_CHANNEL, EventBus } from 'live-connect-common'
 import * as C from '../utils/consts'
 
 function initBus(size?: number): EventBus {
@@ -16,12 +14,12 @@ function extendBusIfNeeded(bus: EventBus) {
     return
   }
 
-  bus.emitErrorWithMessage = function (name, message, e = {}) {
-    const wrappedError = wrapError(name, message, e)
+  bus.emitErrorWithMessage = function (name, message, e: Error) {
+    const wrappedError = wrapError(name, e, message)
     return bus.emit(ERRORS_CHANNEL, wrappedError)
   }
 
-  bus.emitError = function (name, exception) {
+  bus.emitError = function (name, exception: Error) {
     return bus.emitErrorWithMessage(name, exception.message, exception)
   }
 }
@@ -30,16 +28,17 @@ export function LocalEventBus(size = 5) {
   return initBus(size)
 }
 
+// @ts-expect-error
 export function GlobalEventBus(name: string, size: number, errorCallback: (error: unknown) => void): EventBus {
   try {
     if (!window) {
       errorCallback(new Error('Bus can only be attached to the window, which is not present'))
+    } else {
+      if (!window[name]) window[name] = initBus(size)
+
+      extendBusIfNeeded(window[name] as EventBus)
+      return window[name] as EventBus
     }
-    if (window && !window[name]) {
-      window[name] = initBus(size)
-    }
-    extendBusIfNeeded(window[name])
-    return window[name]
   } catch (e) {
     console.error('events.bus.init', e)
     errorCallback(e)
@@ -47,7 +46,8 @@ export function GlobalEventBus(name: string, size: number, errorCallback: (error
 }
 
 export function getAvailableBus(name: string): EventBus {
-  const eventBus = window[name].eventBus || window[C.EVENT_BUS_NAMESPACE]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const eventBus: EventBus = ((window[name] || {} as any).eventBus || window[C.EVENT_BUS_NAMESPACE]) as EventBus
   extendBusIfNeeded(eventBus)
   return eventBus
 }

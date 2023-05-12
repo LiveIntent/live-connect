@@ -1,6 +1,6 @@
-import { isArray, isFunction } from 'live-connect-common'
+import { EventBus, isArray, isFunction } from 'live-connect-common'
 import { asStringParam } from '../utils/params'
-import { LiveConnectConfig, EventBus } from '../types'
+import { LiveConnectConfig } from '../types'
 import { StateWrapper } from './state'
 import { WrappedCallHandler } from '../handlers/call-handler'
 
@@ -24,9 +24,7 @@ export class PixelSender {
   private callBakers(bakersJson: string): void {
     try {
       const bakers = JSON.parse(bakersJson).bakers
-      if (isArray(bakers)) {
-        for (let i = 0; i < bakers.length; i++) this.calls.pixelGet(`${bakers[i]}?dtstmp=${Date.now()}`)
-      }
+      isArray(bakers) && bakers.forEach(b => this.calls.pixelGet(`${b}?dtstmp=${Date.now()}`))
     } catch (e) {
       this.eventBus.emitErrorWithMessage('CallBakers', `Error while calling bakers with ${bakersJson}`, e)
     }

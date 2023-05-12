@@ -1,5 +1,6 @@
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
-import { EventBus, State } from '../types'
+import { State } from '../types'
+import { EventBus } from 'live-connect-common'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
 export function enrich(state: State, storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus): State {

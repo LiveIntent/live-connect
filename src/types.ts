@@ -1,6 +1,6 @@
 import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
-import { ErrorDetails } from 'live-connect-common'
+import { ErrorDetails, EventBus } from 'live-connect-common'
 
 export interface IdentityResolutionConfig {
   url?: string
@@ -33,7 +33,7 @@ export interface LiveConnectConfig {
 export type ResolutionParams = Record<string, string | string[]>
 
 // Object fields will be name and value of requested attributes
-export type IdentityResultionResult = object
+export type IdentityResolutionResult = object
 
 export interface HashedEmail {
   md5: string
@@ -77,24 +77,12 @@ export interface ConfigMismatch {
   collectorUrl: (string | undefined)[]
 }
 
-export interface ErrorBus {
-  emitErrorWithMessage(name: string, message: string, e?: unknown): this
-  emitError(name: string, exception?: unknown): this
-}
-
-export interface EventBus extends ErrorBus {
-  on<F extends ((event: unknown) => void)>(name: string, callback: F, ctx?: ThisParameterType<F>): this
-  once<F extends ((event: unknown) => void)>(name: string, callback: F, ctx?: ThisParameterType<F>): this
-  emit(name: string, event: unknown): this
-  off(name: string, callback: (event: unknown) => void): this
-}
-
 export interface ILiveConnect {
   ready: boolean
   push: (event: unknown) => void
   fire: () => void
   resolve?: (
-    successCallBack: (result: IdentityResultionResult) => void,
+    successCallBack: (result: IdentityResolutionResult) => void,
     errorCallBack: () => void,
     additionalParams?: ResolutionParams
   ) => void

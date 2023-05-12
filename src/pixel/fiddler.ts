@@ -54,24 +54,10 @@ export function fiddle(state: State): State {
 }
 
 export function mergeObjects<A extends object, B extends object>(obj1: A, obj2: B): A & B {
-  const res = {} as A & B
-
   function clean<T>(obj: T): T | object {
     return isObject(obj) ? obj : {}
   }
-
-  function keys<T extends object>(obj: T): (keyof T)[] {
-    return Object.keys(obj) as (keyof T)[]
-  }
-
   const first = clean(obj1)
   const second = clean(obj2)
-
-  keys(first).forEach(key => {
-    res[key] = first[key]
-  })
-  keys(second).forEach(key => {
-    res[key] = second[key]
-  })
-  return res
+  return { ...first, ...second } as A & B
 }

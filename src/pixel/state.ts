@@ -1,13 +1,15 @@
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle, mergeObjects } from './fiddler'
-import { isObject, trim, isArray, nonNull } from 'live-connect-common'
-import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform } from '../utils/params'
+import { EventBus, isArray, isObject, nonNull, trim } from 'live-connect-common'
+import { asParamOrEmpty, asStringParam, asStringParamTransform, asStringParamWhen } from '../utils/params'
 import { toParams } from '../utils/url'
-import { EventBus, State } from '../types'
+import { State } from '../types'
 import { collectUrl } from './url-collector'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
+
+type ParamExtractor = (s: State) => [string, string][]
 
 function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): (state: State) => [string, string][] {
   return state => {
@@ -20,7 +22,7 @@ function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State
   }
 }
 
-const paramExtractors: ((state: State) => [string, string][])[] = [
+const paramExtractors: ParamExtractor[] = [
   ifDefined('appId', aid => asStringParam('aid', aid)),
   ifDefined('distributorId', did => asStringParam('did', did)),
   ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
@@ -118,14 +120,12 @@ export class StateWrapper {
   }
 
   asTuples(): [string, string][] {
-    const acc: [string, string][] = []
-    paramExtractors.forEach((extractor) => {
+    return paramExtractors.map((extractor) => {
       const params = extractor(this.data)
-      if (params && isArray(params)) {
-        acc.push(...params)
-      }
+
+      return !!params && isArray(params) && params
     })
-    return acc
+      .flatMap(x => !x ? [] : x as [string, string][])
   }
 
   asQuery(): Query {

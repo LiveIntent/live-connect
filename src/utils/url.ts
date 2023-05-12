@@ -2,16 +2,13 @@ import { isArray } from 'live-connect-common'
 
 export type ParsedParam = number | boolean | string | null | undefined
 
-export const toParams = (tuples: ([string, string][])) => {
-  let acc = ''
-  tuples.forEach((tuple) => {
-    const operator = acc.length === 0 ? '?' : '&'
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
-      acc = `${acc}${operator}${tuple[0]}=${tuple[1]}`
-    }
-  })
+export const toParams = (tuples: ([string, string][])) => tuples.reduce((acc, tuple) => {
+  const operator = acc.length === 0 ? '?' : '&'
+  if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+    return `${acc}${operator}${tuple[0]}=${tuple[1]}`
+  }
   return acc
-}
+}, '')
 
 function _isNum(v: string): number | string {
   return isNaN(+v) ? v : +v
@@ -49,7 +46,7 @@ function _allParams(url: string): Record<string, string | string[]> {
   if ((historyIndex = queryParams.indexOf('#')) !== -1 && !(queryParams = queryParams.slice(0, historyIndex))) {
     return obj
   }
-  queryParams.split('&').forEach(function (raw) {
+  return queryParams.split('&').reduce((obj, raw) => {
     if (raw) {
       let key: string
 
@@ -62,18 +59,19 @@ function _allParams(url: string): Record<string, string | string[]> {
       }
 
       if (key in obj) {
-        const previous = obj[key]
+        // @ts-ignore
+        const { [key]: previous, ...rest } = obj
         if (isArray(previous)) {
-          previous.push(value)
+          return { ...rest, [key]: [...previous, value] }
         } else {
-          obj[key] = [previous, value]
+          return { ...rest, [key]: [previous, value] }
         }
       } else {
-        obj[key] = value
+        return { ...obj, [key]: value }
       }
     }
-  })
-  return obj
+    return obj
+  }, {})
 }
 
 export function decodeValue(v: string): string {
