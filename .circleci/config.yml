@@ -82,8 +82,9 @@ jobs:
       - store_artifacts:
           path: ./test-results
           destination: test-results
-      - code_coverage:
-          run: |
+      - run:
+          name: Code Coverage
+          command: |
             curl -Os https://uploader.codecov.io/latest/linux/codecov
             chmod +x codecov
             ./codecov -t ${CODECOV_TOKEN}
