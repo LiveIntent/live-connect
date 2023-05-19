@@ -35,7 +35,7 @@ export async function click(selector) {
 }
 
 export async function sendEvent(event, expectedRequests, server) {
-  const error = await browser.execute((event) => {
+  const error = await browser.execute(event => {
     try {
       window.liQ = window.liQ || []
       window.liQ.push(event)
@@ -45,7 +45,7 @@ export async function sendEvent(event, expectedRequests, server) {
     }
   }, event)
   if (error) {
-    assert.fail(`Failed sending event: ${error}`)
+    assert.fail(`Failed sending event: ${JSON.stringify(error)}`)
   }
   await waitForRequests(expectedRequests, server)
 }

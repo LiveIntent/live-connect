@@ -5,10 +5,13 @@
     "types": ["mocha"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    "importHelpers": false,
     "sourceMap": true,
     "strict": true,
     "declaration": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "module": "NodeNext"
   },
   "include": ["./src/**/*", "./test/**/*"],
   "exclude": ["./dist"]

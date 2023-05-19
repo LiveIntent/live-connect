@@ -34,7 +34,7 @@ exports.config = {
   connectionRetryTimeout: 10000,
   services: ['docker'],
   dockerOptions: {
-    image: 'selenium/standalone-chrome:3.141.59',
+    image: 'selenium/standalone-chrome:4.9.1-20230508',
     healthCheck: 'http://bln.test.liveintent.com:9091',
     options: {
       p: ['9091:4444'],

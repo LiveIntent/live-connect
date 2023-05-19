@@ -9,6 +9,7 @@
   "versionPrefix": "live-connect-v",
   "license": "Apache-2.0",
   "private": false,
+  "sideEffect": false,
   "name": "live-connect-js",
   "engines": {
     "node": ">=18"
@@ -31,7 +32,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "test:unit": "npm run lint && nyc ts-mocha -p ./tsconfig-test.json --config test-config/mocha.unit.json",
+    "test:unit": "npm run lint && nyc ts-mocha --config test-config/mocha.unit.json",
     "test:it:browserstack": "npm run build-test-resources && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build-test-resources && wdio test-config/wdio.docker.chrome.conf.js",
     "test:it:local:chrome": "npm run build-test-resources && wdio test-config/wdio.local.chrome.conf.js",
@@ -50,11 +51,20 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
+    "@babel/preset-typescript": "^7.21.5",
+    "js-cookie": "^3.0.5",
     "live-connect-common": "file:../live-connect-common/live-connect-common-3.0.0.tgz",
     "live-connect-handlers": "file:../live-connect-handlers/live-connect-handlers-3.0.0.tgz",
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.21.8",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
+    "@babel/plugin-transform-arrow-functions": "^7.21.5",
+    "@babel/plugin-transform-destructuring": "^7.21.3",
+    "@babel/plugin-transform-shorthand-properties": "^7.18.6",
+    "@babel/preset-env": "^7.21.5",
     "@kiosked/ulid": "^3.0.0",
     "@types/chai": "^4.3.5",
     "@types/compression": "^1.7.2",
@@ -64,9 +74,9 @@
     "@types/js-cookie": "^3.0.3",
     "@types/jsdom-global": "^3.0.4",
     "@types/mocha": "^10.0.1",
-    "@types/sinon": "^10.0.14",
-    "@typescript-eslint/eslint-plugin": "^5.59.5",
-    "@typescript-eslint/parser": "^5.59.5",
+    "@types/sinon": "^10.0.15",
+    "@typescript-eslint/eslint-plugin": "^5.59.6",
+    "@typescript-eslint/parser": "^5.59.6",
     "@wdio/browserstack-service": "^8.10.2",
     "@wdio/cli": "^8.10.2",
     "@wdio/junit-reporter": "^8.10.2",
@@ -77,6 +87,7 @@
     "abab": "^2.0.6",
     "acorn": "^8.8.2",
     "autoprefixer": "^10.4.14",
+    "babel-loader": "^9.1.2",
     "chai": "^4.3.7",
     "chai-spies": "^1.0.0",
     "compression": "^1.7.4",
@@ -96,7 +107,6 @@
     "fork-ts-checker-webpack-plugin": "^8.0.0",
     "fs-extra": "^11.1.1",
     "global-jsdom": "9.0.1",
-    "js-cookie": "^3.0.5",
     "jsdom": "22.0.0",
     "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.2.0",
@@ -114,7 +124,8 @@
     "typescript": "^5.0.4",
     "wdio-chromedriver-service": "8.1.1",
     "wdio-docker-service": "3.2.1",
-    "webpack": "^5.82.1",
+    "webpack": "^5.83.0",
+    "webpack-bundle-analyzer": "^4.8.0",
     "webpack-cli": "^5.1.1"
   }
 }
