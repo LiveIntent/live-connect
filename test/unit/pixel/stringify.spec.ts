@@ -5,7 +5,7 @@ import dirtyChai from 'dirty-chai'
 use(dirtyChai)
 
 describe('Stringify', () => {
-  it('should replace email like string with a mask using plain  @ symbol', function () {
+  it('should replace email like string with a mask using plain  @ symbol', () => {
     const pixelData = { anyField: 'me@liveintent.com' }
     const result = JSON.stringify(pixelData, replacer)
     expect(JSON.parse(result)).to.eql({
@@ -13,7 +13,7 @@ describe('Stringify', () => {
     })
   })
 
-  it('should replace email like string with a mask using url encoded @ symbol', function () {
+  it('should replace email like string with a mask using url encoded @ symbol', () => {
     const pixelData = { anyField: 'me%40liveintent.com' }
     const result = JSON.stringify(pixelData, replacer)
     expect(JSON.parse(result)).to.eql({
@@ -21,7 +21,7 @@ describe('Stringify', () => {
     })
   })
 
-  it('should not replace string with an @ symbol if it is not an email', function () {
+  it('should not replace string with an @ symbol if it is not an email', () => {
     const pixelData = { anyField: 'me@you' }
     const result = JSON.stringify(pixelData, replacer)
     expect(JSON.parse(result)).to.eql({
@@ -29,7 +29,7 @@ describe('Stringify', () => {
     })
   })
 
-  it('should replace email like string with a mask, with padding before', function () {
+  it('should replace email like string with a mask, with padding before', () => {
     const pixelData = { anyField: '     me%40liveintent.com' }
     const result = JSON.stringify(pixelData, replacer)
     expect(JSON.parse(result)).to.eql({
@@ -37,7 +37,7 @@ describe('Stringify', () => {
     })
   })
 
-  it('should replace email like string with a mask, with padding after', function () {
+  it('should replace email like string with a mask, with padding after', () => {
     const pixelData = { anyField: 'me%40liveintent.com      ' }
     const result = JSON.stringify(pixelData, replacer)
     expect(JSON.parse(result)).to.eql({
@@ -45,7 +45,7 @@ describe('Stringify', () => {
     })
   })
 
-  it('should replace email like string with a mask, when the value contains random chars', function () {
+  it('should replace email like string with a mask, when the value contains random chars', () => {
     const pixelData = { anyField: '"me%40liveintent.com      "' }
     const result = JSON.stringify(pixelData, replacer)
     expect(JSON.parse(result)).to.eql({

@@ -119,23 +119,23 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
   }
 }
 
-function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   const lc = _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus)
   window.liQ_instances = window.liQ_instances || []
   window.liQ_instances.push(lc)
   return lc
 }
 
-function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
   const queue = window[liveConnectConfig.globalVarName] || []
   const lc = _getInitializedLiveConnect(liveConnectConfig) || _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) || queue
-  
+
   if (isArray(queue)) {
     for (let i = 0; i < queue.length; i++) {
       lc.push(queue[i])
     }
   }
-  
+
   window[lc.config.globalVarName] = lc
 
   window.liQ_instances = window.liQ_instances || []
@@ -145,15 +145,15 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
   return lc
 }
 
-export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: ExternalStorageHandler, externalCallHandler: ExternalCallHandler, externalEventBus?: EventBus): ILiveConnect {
+export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   const eventBus = externalEventBus || LocalEventBus()
 
   let lc
   try {
-    lc = configuration.globalVarName ? 
+    lc = configuration.globalVarName ?
           _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
-          _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) 
+          _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
   } catch (e) {
     console.error(e)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', e)

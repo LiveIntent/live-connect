@@ -1,4 +1,4 @@
-exports.config = {
+export default reportDir => ({
   //
   // ====================
   // Runner Configuration
@@ -7,10 +7,6 @@ exports.config = {
   // WebdriverIO allows it to run your tests in arbitrary locations (e.g. locally or
   // on a remote machine).
   runner: 'local',
-
-  hostname: 'localhost',
-  port: 4444,
-  path: '/wd/hub',
 
   // ==================
   // Specify Test Files
@@ -21,7 +17,7 @@ exports.config = {
   // directory is where your package.json resides, so `wdio` will be called from there.
   //
   specs: [
-    './test/it/**/*.spec.ts'
+    '../test/it/live-connect.spec.ts'
   ],
   // Patterns to exclude.
   exclude: [
@@ -44,25 +40,7 @@ exports.config = {
   // from the same test should run tests.
   //
   maxInstances: 1,
-  //
-  // If you have trouble getting all important capabilities together, check out the
-  // Sauce Labs platform configurator - a great tool to configure your capabilities:
-  // https://docs.saucelabs.com/reference/platforms-configurator
-  //
-  capabilities: [{
-    browserName: 'chrome',
-    'goog:chromeOptions': {
-      args: ['--disable-gpu']
-    }
-  }],
-  //
-  // ===================
-  // Test Configurations
-  // ===================
-  // Define all options that are relevant for the WebdriverIO instance here
-  //
-  // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: 'info',
+
   //
   // Set specific log levels per logger
   // loggers:
@@ -81,32 +59,18 @@ exports.config = {
   // If you only want to run your tests until a specific amount of tests have failed use
   // bail (default is 0 - don't bail, run all tests).
   bail: 0,
-  //
-  // Set a base URL in order to shorten url command calls. If your `url` parameter starts
-  // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
-  // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
-  // gets prepended directly.
-  baseUrl: 'http://bln.test.liveintent.com',
+
   //
   // Default timeout for all waitFor* commands.
   waitforTimeout: 10000,
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
-  connectionRetryTimeout: 10000,
+  connectionRetryTimeout: 30000,
   //
   // Default request retries count
   connectionRetryCount: 3,
-  services: ['docker'],
-  dockerOptions: {
-    image: 'selenium/standalone-chrome:3.141.59',
-    healthCheck: 'http://bln.test.liveintent.com:4444',
-    options: {
-      p: ['4444:4444'],
-      shmSize: '1g',
-      network: 'host'
-    }
-  },
+
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
   // see also: https://webdriver.io/docs/frameworks.html
@@ -116,7 +80,7 @@ exports.config = {
   framework: 'mocha',
   //
   // The number of times to retry the entire specfile when it fails as a whole
-  // specFileRetries: 1,
+  // specFileRetries: 5,
   //
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
@@ -124,19 +88,26 @@ exports.config = {
   reporters: [
     'spec',
     ['junit', {
-      outputDir: './test-results/docker',
+      outputDir: `./test-results/${reportDir}`,
       outputFileFormat: function (options) {
         return `${options.capabilities.browserName}_${options.capabilities.version}_${options.capabilities.platform}_${options.cid}.xml`
       }
     }]
   ],
-
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 60000,
-    require: ['@babel/polyfill']
+    timeout: 60000
+  },
+  autoCompileOpts: {
+    autoCompile: true,
+    // see https://github.com/TypeStrong/ts-node#cli-and-programmatic-options
+    // for all available options
+    tsNodeOpts: {
+      transpileOnly: true,
+      project: './tsconfig.json'
+    }
   }
-}
+})

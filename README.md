@@ -40,7 +40,7 @@ key: process.env.BS_KEY,
 or, to run Browserstack tests locally, run:
 ```BS_USER=${User} BS_KEY=${Key} npm run test:it:browserstack```
 
-The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
+The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.mjs` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
 ___
 
 ## Main concepts

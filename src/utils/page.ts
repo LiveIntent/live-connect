@@ -1,5 +1,5 @@
-import { base64UrlEncode } from '../utils/b64'
-import { replaceEmailsWithHashes } from '../utils/email'
+import { base64UrlEncode } from './b64'
+import { replaceEmailsWithHashes } from './email'
 
 export function loadedDomain(): string {
   return (document.domain || (document.location && document.location.host)) || (window && window.location && window.location.host) || 'localhost'
@@ -55,9 +55,7 @@ function _collectElementsText(contextSelectors: string, contextElementsLength: n
 
 function encodedByteCount(s: string): number {
   // From: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string
-  const utf8Bytelength = encodeURI(s).split(/%..|./).length - 1
-  const base64EncodedLength = 4 * Math.ceil(utf8Bytelength / 3.0)
-  return base64EncodedLength
+  return new Blob([s]).size
 }
 
 function _safeGet<A>(getter: () => A): A | undefined {

@@ -11,7 +11,7 @@ constants:
 parameters:
   node_version:
     type: string
-    default: "12.22.11"
+    default: "18.16.0"
 
 references:
   restore_cache: &restore_cache
@@ -83,8 +83,11 @@ jobs:
           path: ./test-results
           destination: test-results
       - run:
-          name: Code coverage
-          command: npm run coverage
+          name: Code Coverage
+          command: |
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -t ${CODECOV_TOKEN}
 
   browserstack:
     parallelism: 1

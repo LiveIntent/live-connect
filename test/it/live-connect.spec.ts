@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { assert, expect, use } from 'chai'
-import * as serverUtil from './helpers/mock-server'
+import * as serverUtil from './helpers/mock-server.ts'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
@@ -13,9 +15,14 @@ import {
   sendEvent,
   waitForBakerRequests,
   waitForRequests
-} from './helpers/browser'
+} from './helpers/browser.ts'
 import dirtyChai from 'dirty-chai'
-import packageJson from '../../package.json'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const packageJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '..', 'package.json'), { encoding: 'utf-8' }))
 
 use(dirtyChai)
 
@@ -90,7 +97,7 @@ describe('LiveConnect', function () {
     assert.strictEqual(trackingRequests.length, 1)
     expect(tldCookie).to.eql('.liveintent.com')
     expect(fpcCookie).to.eql(trackingRequests[0].query.duid)
-    expect(`${packageJson.versionPrefix}${packageJson.version}`).to.eq(trackingRequests[0].query.tna)
+    expect(trackingRequests[0].query.tna).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
 
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
@@ -255,6 +262,6 @@ describe('LiveConnect', function () {
 
     // Base64('<p>To collect</p>') -> 'PHA-VG8gY29sbGVjdDwvcD4'
     const firstTrackingRequest = server.getTrackingRequests()[0]
-    expect('PHA-VG8gY29sbGVjdDwvcD4').to.eq(firstTrackingRequest.query.c)
+    expect(firstTrackingRequest.query.c).to.eq('PHA-VG8gY29sbGVjdDwvcD4')
   })
 })
