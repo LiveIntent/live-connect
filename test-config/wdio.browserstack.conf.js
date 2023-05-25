@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const commonConfig = require('./wdio.common.conf.js')
+import commonConfig from './wdio.common.conf.js'
 const currentTime = Date.now()
 const commonBStackCapabilities = {
   projectName: 'LiveConnect',
@@ -34,7 +33,7 @@ const allCapabilities = [
   { browserName: 'Chrome', browserVersion: '67', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S8', osVersion: '7.0', realMobile: true } }
 ]
 
-exports.config = {
+export const config = {
   ...commonConfig('browserstack'),
   //
   // If you have trouble getting all important capabilities together, check out the
