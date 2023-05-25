@@ -1,4 +1,4 @@
-module.exports = reportDir => ({
+export default reportDir => ({
   //
   // ====================
   // Runner Configuration

@@ -1,7 +1,7 @@
 import replace from '@rollup/plugin-replace'
 import fs from 'fs'
 import path from 'path'
-import config from './dist.config.mjs'
+import config from './dist.config.js'
 
 const packageJson = JSON.parse(fs.readFileSync(path.resolve('package.json'), { encoding: 'utf-8' }))
 
