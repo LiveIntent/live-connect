@@ -30,7 +30,15 @@ Check [Quick start](#quick-start) how to run them.
 
 ### Running Browserstack tests
 Tests are setting the cookies on eTLD+1 domain. For that, execute this command once:
-```echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 me.idex.com"  | sudo tee -a /etc/hosts```
+```shell
+echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 me.idex.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 schmoogle.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 framed.test.liveintent.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 double-framed.test.liveintent.com" | sudo tee -a /etc/hosts
+echo "127.0.0.1 baked.liveintent.com" | sudo tee -a /etc/hosts
+```
 
 Add Browserstack keys to your env, where the setup would be as follows:
 ```
@@ -40,7 +48,7 @@ key: process.env.BS_KEY,
 or, to run Browserstack tests locally, run:
 ```BS_USER=${User} BS_KEY=${Key} npm run test:it:browserstack```
 
-The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.mjs` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
+The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
 ___
 
 ## Main concepts

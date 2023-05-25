@@ -1,6 +1,7 @@
-import common from './wdio.common.conf.mjs'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const common = require('./wdio.common.conf.js')
 
-export const config = {
+exports.config = {
   ...common('local'),
   hostname: 'localhost',
   port: 9090,
