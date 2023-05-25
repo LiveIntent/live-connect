@@ -16,7 +16,6 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/src/index.d.ts",
-  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
@@ -36,8 +35,8 @@
     "test:it:browserstack": "npm run build-test-resources && wdio test-config/wdio.browserstack.conf.js",
     "test:it:docker:chrome": "npm run build-test-resources && wdio test-config/wdio.docker.chrome.conf.js",
     "test:it:local:chrome": "npm run build-test-resources && wdio test-config/wdio.local.chrome.conf.js",
-    "build": "rollup -c rollup/dist.config.js",
-    "build-test-resources": "rollup -c rollup/test-resources.config.js",
+    "build": "rollup -c rollup/dist.config.mjs",
+    "build-test-resources": "rollup -c rollup/test-resources.config.mjs",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "fix-js": "eslint --fix 'src/**/*.ts' 'test/**/*.ts' || exit 0",
     "release:ci:prepatch": "release-it patch --preRelease=alpha-$(git rev-parse --short HEAD) --ci",
