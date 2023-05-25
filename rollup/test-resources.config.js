@@ -11,8 +11,7 @@ export default {
   input: './test/it/helpers/preambled.ts',
   output: {
     file: `${OUTPUT_DIR}/bundle.iife.js`,
-    format: 'iife',
-    sourcemap: true
+    format: 'iife'
   },
   plugins: [
     ...config.plugins,

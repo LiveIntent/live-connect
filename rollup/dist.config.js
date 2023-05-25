@@ -12,14 +12,14 @@ const OUTPUT_DIR = './dist'
 
 export default {
   ...config,
-  output: {
-    ...config.output,
+  output: [{
+    ...config.output[0],
     sourcemap: false
-  },
+  }],
   external: [/@babel\/runtime/],
   plugins: [
     cleaner({ targets: [OUTPUT_DIR] }),
-    ts(),
+    ts({ compilerOptions: { sourceMap: false } }),
     commonjs(),
     babel({ babelHelpers: 'runtime' }),
     resolve(),
