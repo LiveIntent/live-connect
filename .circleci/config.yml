@@ -154,9 +154,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: *releasable_branches
 
       - release:
           context: live-connect
@@ -170,9 +167,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: *releasable_branches
 
       - release:
           context: live-connect
@@ -186,9 +180,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: master
 
       - release:
           context: live-connect
@@ -202,9 +193,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: *releasable_branches
 
       - release:
           context: live-connect

@@ -50,8 +50,8 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
-    "live-connect-common": "file:../live-connect-common/live-connect-common-3.0.0.tgz",
-    "live-connect-handlers": "file:../live-connect-handlers/live-connect-handlers-3.0.0.tgz",
+    "live-connect-common": "^2.0.0-alpha-e2ef6b1.0",
+    "live-connect-handlers": "^2.0.0-alpha-b23ff16.0",
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
