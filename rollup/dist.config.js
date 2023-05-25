@@ -13,8 +13,13 @@ export default {
   ...config,
   output: [
     {
-      file: `${OUTPUT_DIR}/index.js`,
+      file: `${OUTPUT_DIR}/index.cjs`,
       format: 'cjs',
+      sourcemap: false
+    },
+    {
+      file: `${OUTPUT_DIR}/index.mjs`,
+      format: 'es',
       sourcemap: false
     }
   ],
@@ -22,11 +27,10 @@ export default {
   plugins: [
     cleaner({ targets: [OUTPUT_DIR] }),
     ts({ compilerOptions: { sourceMap: false } }),
-    commonjs(),
+    commonjs({ defaultIsModuleExports: true }),
     babel({ babelHelpers: 'runtime' }),
     resolve({ preferBuiltins: true }),
     strip(),
-    mjsEntry({ includeDefault: true }), // https://nodejs.org/api/packages.html#packages_dual_commonjs_es_module_packages
     terser()
   ]
 }

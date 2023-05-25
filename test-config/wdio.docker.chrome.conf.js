@@ -1,6 +1,6 @@
-const common = require('./wdio.common.conf.js')
+import common from './wdio.common.conf.js'
 
-exports.config = {
+export const config = {
   ...common('docker'),
 
   hostname: 'localhost',

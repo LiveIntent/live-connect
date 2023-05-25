@@ -1,4 +1,4 @@
-module.exports = reportDir => ({
+export default reportDir => ({
   //
   // ====================
   // Runner Configuration
@@ -106,8 +106,7 @@ module.exports = reportDir => ({
     // see https://github.com/TypeStrong/ts-node#cli-and-programmatic-options
     // for all available options
     tsNodeOpts: {
-      transpileOnly: true,
-      project: './tsconfig.json'
+      transpileOnly: true
     }
   }
 })
