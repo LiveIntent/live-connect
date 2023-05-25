@@ -1,6 +1,6 @@
-import common from './wdio.common.conf.js'
+const common = require('./wdio.common.conf.js')
 
-export const config = {
+exports.config = {
   ...common('local'),
   hostname: 'localhost',
   port: 4444,

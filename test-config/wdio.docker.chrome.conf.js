@@ -1,7 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-import common from './wdio.common.conf.js'
+const common = require('./wdio.common.conf.js')
 
-export const config = {
+exports.config = {
   ...common('docker'),
 
   hostname: 'localhost',

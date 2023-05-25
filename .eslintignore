@@ -1,3 +1,4 @@
 dist
 docs
 *.md
+test-config/*
