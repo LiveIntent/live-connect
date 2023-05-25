@@ -22,24 +22,45 @@ export function resolve(state: State, storageHandler: WrappedStorageHandler, eve
         cookieDomain)
     }
   }
+
+  let freshDecisions = [] as string[]
   try {
-    const freshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
-    const storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
-    freshDecisions
+    const extractedFreshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
+    freshDecisions = extractedFreshDecisions
       .map(trim)
       .filter(_nonEmpty)
       .filter(isUUID)
       .filter(_onlyUnique)
-      .forEach(decision => _addDecisionId(decision, state.domain))
+  } catch (e) {
+    eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while extracting new decision ids', e)
+  }
+
+  try {
+    freshDecisions.forEach(decision => _addDecisionId(decision, state.domain))
+  } catch (e) {
+    eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while storing new decision ids', e)
+  }
+
+  let storedDecisions = [] as string[]
+  try {
+    const extractedStoredDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
+    storedDecisions = extractedStoredDecisions.map(trim)
+      .filter(_nonEmpty)
+      .filter(isUUID)
+      .filter(_onlyUnique)
+  } catch (e) {
+    eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while retrieving stored decision ids', e)
+  }
+
+  try {
     const allDecisions = freshDecisions
       .concat(storedDecisions)
-      .map(trim)
-      .filter(_nonEmpty)
-      .filter(isUUID)
       .filter(_onlyUnique)
+
     ret = { decisionIds: allDecisions }
   } catch (e) {
     eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while managing decision ids', e)
   }
+
   return ret
 }
