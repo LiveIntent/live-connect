@@ -44,7 +44,6 @@ describe('ErrorPixel', () => {
     eventBus.emitErrorWithMessage('Error', 'some other message')
     expect(errors.length).to.eql(1)
     const errorDetails = errors[0].data.errorDetails
-    console.log(errors[0].data)
     expect(errorDetails.message).to.eql('some other message')
     expect(errorDetails.name).to.eql('Error')
     expect(errors[0].data.pageUrl).to.equal('http://www.example.com/?sad=0&dsad=iou')
