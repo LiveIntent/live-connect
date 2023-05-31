@@ -5,13 +5,8 @@
 [![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript)
-
-
-
 [//]: # "[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)"
 [//]: # "[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)"
-
-
 
 ## Main concepts
 The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences. It enables you to send this information to a designated endpoint, where it can be efficiently processed and analyzed. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
@@ -48,7 +43,6 @@ or, to run Browserstack tests locally, run:
 
 The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
 ___
-
 
 ## Initialization
 The initialisation part should be straight forward, considering the snippet:
@@ -173,6 +167,7 @@ To start listening to the topic, one can simply implement their own logic. For e
 const logger = (message) => {console.error('Error message received on the event bus', message)}
 lc.eventBus.on('li_errors', logger)
 ```
+
 ## Receiving errors on the collector
 LiveConnect has a handler called `handlers/error-pixel.js` which is subscribed on the `li_errors` topic, and wraps the exceptions into the following format:
 ```javascript
