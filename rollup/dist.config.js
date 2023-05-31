@@ -15,22 +15,18 @@ export default {
     {
       file: `${OUTPUT_DIR}/index.cjs`,
       format: 'cjs',
-      sourcemap: false
-    },
-    {
-      file: `${OUTPUT_DIR}/index.mjs`,
-      format: 'es',
-      sourcemap: false
+      sourcemap: true
     }
   ],
   external: [/@babel\/runtime/],
   plugins: [
     cleaner({ targets: [OUTPUT_DIR] }),
-    ts({ compilerOptions: { sourceMap: false } }),
+    ts(),
     commonjs({ defaultIsModuleExports: true }),
     babel({ babelHelpers: 'runtime' }),
     resolve({ preferBuiltins: true }),
     strip(),
-    terser()
+    terser(),
+    mjsEntry({ includeDefault: true })
   ]
 }

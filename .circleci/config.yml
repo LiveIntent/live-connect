@@ -114,7 +114,7 @@ jobs:
     parameters:
       increment:
         description: |
-          "Increment of release. Allowed values `prepatch`, `preminor`, `premajor`, `bump-prerelease`,
+          "Increment of release. Allowed values `prepatch`, `preminor`, `premajor`,
           `alpha->beta`, `beta->rc`, `patch`, `minor`, `major`"
         default: "patch"
         type: string
@@ -187,19 +187,6 @@ workflows:
           increment: "premajor"
           requires:
             - release_premajor?
-
-      - release_bump-prerelease?:
-          context: live-connect
-          type: approval
-          requires:
-            - browserstack
-
-      - release:
-          context: live-connect
-          name: release_bump-prerelease
-          increment: "bump-prerelease"
-          requires:
-            - release_bump-prerelease?
 
       - release_alpha->beta?:
           context: live-connect

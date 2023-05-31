@@ -14,14 +14,14 @@
     "node": ">=18"
   },
   "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.cjs.mjs",
   "types": "./dist/src/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs"
+      "import": "./dist/index.cjs.mjs"
     },
     "./package.json": "./package.json"
   },
@@ -51,8 +51,8 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
-    "live-connect-common": "^2.0.0-alpha-e2ef6b1.0",
-    "live-connect-handlers": "^2.0.0-alpha-b23ff16.0",
+    "live-connect-common": "^2.0.0-alpha-c159b0c.0",
+    "live-connect-handlers": "^2.0.0-alpha-ab6920f.0",
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
