@@ -18,12 +18,13 @@ The LiveConnect module offers a convenient solution for generating and collectin
 If you're interested in reviewing the type of data being sent, please check [what is being sent](#what-is-being-sent) section of this documentation.
 
 ## Quick start
+To quickly get started with the LiveConnect module, perform the following steps via the command line interface.
 
-- With [npm](https://www.npmjs.com/): `npm install`
-- Format the code according to the eslint file: `npm run fix-js`
-- Run unit tests: `npm run test:unit`
-- Run integration tests against a dockerized chrome: `npm run test:it:docker:chrome`
-- Run full integration tests on multiple browsers (requires properly set Browserstack credentials) : `npm run test:it:browserstack`
+- Installation: Begin by installing the module using npm. Run the following command: `npm install`.
+- Code Formatting: Ensure your code adheres to the provided eslint file for consistent formatting. Use the command `npm run fix-js` to automatically format your code.
+- Unit Testing: Validate the functionality of your code by running the unit tests. Execute the command `npm run test:unit` to initiate the tests.
+- Integration Testing: Verify the integration of LiveConnect by running the integration tests against a dockerized Chrome browser. Use the command `npm run test:it:docker:chrome` to perform these tests.
+- Cross-Browser Testing: For a comprehensive evaluation, conduct full integration tests on multiple browsers. Please ensure you have valid Browserstack credentials configured. Run the command `npm run test:it:browserstack` to execute the tests across various browsers.
 
 ## Contribute
 We're open to ideas, fixes and improvements. Find out how to contribute [here](./CONTRIBUTING.md).
