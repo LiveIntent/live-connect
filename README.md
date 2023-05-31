@@ -5,15 +5,20 @@
 [![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript)
-[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)
-[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)
+
+
+
+[//]: # "[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)"
+[//]: # "[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)"
+
+
 
 # Main concepts
-LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sending that information to a defined endpoint which is responsible for gathering and processing that data.
-What LiveConnect provides is a simple interface to collect the identifiers from a page, and collect user interactions along with those identifiers.
-To see what kind of data is being sent, check [what is being sent](#what-is-being-sent).
+The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences. It enables you to send this information to a designated endpoint, where it can be efficiently processed and analyzed. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
+If you're interested in reviewing the type of data being sent, please check [what is being sent](#what-is-being-sent) section of this documentation.
 
 ## Quick start
+
 - With [npm](https://www.npmjs.com/): `npm install`
 - Format the code according to the eslint file: `npm run fix-js`
 - Run unit tests: `npm run test:unit`
