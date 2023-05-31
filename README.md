@@ -13,7 +13,7 @@
 
 
 
-# Main concepts
+## Main concepts
 The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences. It enables you to send this information to a designated endpoint, where it can be efficiently processed and analyzed. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
 If you're interested in reviewing the type of data being sent, please check [what is being sent](#what-is-being-sent) section of this documentation.
 
@@ -49,8 +49,8 @@ or, to run Browserstack tests locally, run:
 The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
 ___
 
-## Main concepts
-### Initialization
+
+## Initialization
 The initialisation part should be straight forward, considering the snippet:
 ```javascript
 import { LiveConnect } from 'live-connect-js'
