@@ -27,7 +27,7 @@ To quickly get started with the LiveConnect module, perform the following steps 
 - Cross-Browser Testing: For a comprehensive evaluation, conduct full integration tests on multiple browsers. Please ensure you have valid Browserstack credentials configured. Run the command `npm run test:it:browserstack` to execute the tests across various browsers.
 
 ## Contribute
-We're open to ideas, fixes and improvements. Find out how to contribute [here](./CONTRIBUTING.md).
+We welcome ideas, fixes, and improvements from the community. Discover how you can contribute by visiting our [contribution guidelines](./CONTRIBUTING.md).
 
 ## Testing
 ### Running Unit tests
