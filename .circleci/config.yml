@@ -3,11 +3,6 @@ version: 2.1
 orbs:
   node: circleci/node@5.0.3
 
-constants:
-  releasable_branches: &releasable_branches
-    - master
-    - v3.x
-
 parameters:
   node_version:
     type: string
@@ -153,7 +148,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -169,7 +164,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -201,7 +196,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -217,7 +212,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -233,7 +228,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -249,7 +244,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -265,7 +260,7 @@ workflows:
             - browserstack
           filters:
             branches:
-              only: *releasable_branches
+              only: master
 
       - release:
           context: live-connect
@@ -296,21 +291,6 @@ workflows:
           filters:
             branches:
               only: master
-    jobs:
-      - simple_test
-
-      - browserstack:
-          requires:
-            - simple_test
-          context: org-global
-
-  daily-v3.x:
-    triggers:
-      - schedule:
-          cron: "0 7 * * *"
-          filters:
-            branches:
-              only: v3.x
     jobs:
       - simple_test
 
