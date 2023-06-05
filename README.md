@@ -5,8 +5,8 @@
 [![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/)
 [![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript)
-[//]: # "[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)"
-[//]: # "[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)"
+[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)
+[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)
 
 ## Main concepts
 The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences, and sending this information to a designated endpoint. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
