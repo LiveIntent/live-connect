@@ -9,7 +9,7 @@
 [//]: # "[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)"
 
 ## Main concepts
-The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences. It enables you to send this information to a designated endpoint, where it can be efficiently processed and analyzed. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
+The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences, and sending this information to a designated endpoint. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
 If you're interested in reviewing the type of data being sent, please check [what is being sent](#what-is-being-sent) section of this documentation.
 
 ## Quick start
