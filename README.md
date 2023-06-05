@@ -15,7 +15,7 @@ If you're interested in reviewing the type of data being sent, please check [wha
 ## Quick start
 To quickly get started with the LiveConnect module, perform the following steps via the command line interface.
 
-- Installation: Begin by installing the module using npm. Run the following command: `npm install`.
+- Installation: Begin by installing the dependencies using npm. Run the following command: `npm install`.
 - Code Formatting: Ensure your code adheres to the provided eslint file for consistent formatting. Use the command `npm run fix-js` to automatically format your code.
 - Unit Testing: Validate the functionality of your code by running the unit tests. Execute the command `npm run test:unit` to initiate the tests.
 - Integration Testing: Verify the integration of LiveConnect by running the integration tests against a dockerized Chrome browser. Use the command `npm run test:it:docker:chrome` to perform these tests.
