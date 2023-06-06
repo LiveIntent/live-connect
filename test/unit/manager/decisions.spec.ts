@@ -8,10 +8,11 @@ import jsdom from 'global-jsdom'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
+import { withResource } from '../test-utils/with-resources'
 
 use(dirtyChai)
 
-const eventBus = LocalEventBus()
+let eventBus = LocalEventBus()
 const externalStorage = new DefaultStorageHandler(eventBus)
 const storage = WrappedStorageHandler.make('cookie', externalStorage, eventBus)
 
@@ -24,12 +25,12 @@ describe('DecisionsManager for stored decisions', () => {
     })
   })
 
-  it('should return an empty string is nothing is in the cookie jar', () => {
+  it('should return an empty string if nothing is in the cookie jar', () => {
     const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([])
   })
 
-  it('should return an empty string is the cookie jar has invalid uuids', () => {
+  it('should return an empty string if the cookie jar has invalid uuids', () => {
     storage.setCookie('lidids.', '2134')
     const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([])
@@ -55,13 +56,6 @@ describe('DecisionsManager for stored decisions', () => {
     storage.setCookie('lidids.123', decisionId, undefined, undefined, 'www.something.example.com')
     const resolutionResult = decisions.resolve({}, storage, eventBus)
     expect(resolutionResult.decisionIds).to.eql([decisionId])
-  })
-
-  it('should emit an error if decisions.resolve fails for some reason, return an empty object', () => {
-    const stub = sandbox.stub(storage, 'findSimilarCookies').throws()
-    const resolutionResult = decisions.resolve({}, storage, eventBus)
-    expect(resolutionResult).to.eql({})
-    stub.restore()
   })
 })
 
@@ -110,5 +104,49 @@ describe('DecisionsManager for new decisions', () => {
     expect(resolutionResult.decisionIds).to.eql([decisionIdTwo, decisionIdThree, decisionIdOne])
     expect(storage.getCookie(`lidids.${decisionIdTwo}`)).to.eq(decisionIdTwo)
     expect(storage.getCookie(`lidids.${decisionIdThree}`)).to.eq(decisionIdThree)
+  })
+
+  it('should return the new decision id if look up of stored decision ids fails', function () {
+    const decisionIdOne = uuid()
+    const decisionIdTwo = uuid()
+    const decisionIdThree = uuid()
+    storage.setCookie('lidids.123', decisionIdOne)
+    const stub = sandbox.stub(storage, 'findSimilarCookies').throws()
+
+    let errorEmitted = false
+    eventBus.once('li_errors', () => { errorEmitted = true })
+
+    withResource(
+      stub,
+      stub => stub.restore(),
+      () => {
+        expect(errorEmitted).to.eq(false)
+        const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionIdTwo}&li_did=${decisionIdThree}` }, storage, eventBus)
+        expect(resolutionResult.decisionIds).to.eql([decisionIdTwo, decisionIdThree])
+        expect(storage.getCookie(`lidids.${decisionIdTwo}`)).to.eq(decisionIdTwo)
+        expect(storage.getCookie(`lidids.${decisionIdThree}`)).to.eq(decisionIdThree)
+        expect(errorEmitted).to.eq(true)
+      })
+  })
+
+  it('should return the new decision id and stored decision id if storing new decision id fails', function () {
+    const decisionIdOne = uuid()
+    const decisionIdTwo = uuid()
+    const decisionIdThree = uuid()
+    storage.setCookie('lidids.123', decisionIdOne)
+    const stub = sandbox.stub(storage, 'setCookie').throws()
+
+    let errorEmitted = false
+    eventBus.once('li_errors', () => { errorEmitted = true })
+
+    withResource(
+      stub,
+      stub => stub.restore(),
+      () => {
+        expect(errorEmitted).to.eq(false)
+        const resolutionResult = decisions.resolve({ pageUrl: `http://subdomain.tests.example.com/cake?li_did=${decisionIdTwo}&li_did=${decisionIdThree}` }, storage, eventBus)
+        expect(resolutionResult.decisionIds).to.eql([decisionIdTwo, decisionIdThree, decisionIdOne])
+        expect(errorEmitted).to.eq(true)
+      })
   })
 })

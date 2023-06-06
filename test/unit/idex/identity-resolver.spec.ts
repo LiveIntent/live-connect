@@ -324,7 +324,6 @@ describe('IdentityResolver', () => {
     }
 
     const successCallback = (responseAsJson) => {
-      console.log(responseAsJson)
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
