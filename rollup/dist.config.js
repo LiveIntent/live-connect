@@ -1,4 +1,3 @@
-import config from 'live-connect-common/rollup.common'
 import cleaner from 'rollup-plugin-cleaner'
 import ts from '@rollup/plugin-typescript'
 import resolve from '@rollup/plugin-node-resolve'
@@ -7,10 +6,11 @@ import strip from '@rollup/plugin-strip'
 import babel from '@rollup/plugin-babel'
 import terser from '@rollup/plugin-terser'
 import mjsEntry from 'rollup-plugin-mjs-entry'
+
 const OUTPUT_DIR = './dist'
 
 export default {
-  ...config,
+  input: './src/index.ts',
   output: [
     {
       file: `${OUTPUT_DIR}/index.cjs`,
@@ -22,11 +22,11 @@ export default {
   plugins: [
     cleaner({ targets: [OUTPUT_DIR] }),
     ts(),
-    commonjs({ defaultIsModuleExports: true }),
-    babel({ babelHelpers: 'runtime' }),
     resolve({ preferBuiltins: true }),
+    commonjs({ defaultIsModuleExports: true }),
     strip(),
+    babel({ babelHelpers: 'runtime' }),
     terser(),
-    mjsEntry({ includeDefault: true })
+    mjsEntry() // https://nodejs.org/api/packages.html#packages_dual_commonjs_es_module_packages
   ]
 }

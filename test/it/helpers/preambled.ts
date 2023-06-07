@@ -1,4 +1,3 @@
-
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { DefaultCallHandler, DefaultStorageHandler } from 'live-connect-handlers'
 import { StandardLiveConnect } from '../../../src'

@@ -3,23 +3,26 @@ import * as decisions from '../../../src/manager/decisions'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 // @ts-expect-error
 import uuid from 'tiny-uuid4'
-import sinon from 'sinon'
+import sinon, { SinonSandbox } from 'sinon'
 import jsdom from 'global-jsdom'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 import { withResource } from '../test-utils/with-resources'
+import { EventBus } from 'live-connect-common'
 
 use(dirtyChai)
 
-let eventBus = LocalEventBus()
-const externalStorage = new DefaultStorageHandler(eventBus)
-const storage = WrappedStorageHandler.make('cookie', externalStorage, eventBus)
-
 describe('DecisionsManager for stored decisions', () => {
-  const sandbox = sinon.createSandbox()
+  let eventBus: EventBus
+  let externalStorage: DefaultStorageHandler
+  let storage: WrappedStorageHandler
 
   beforeEach(() => {
+    eventBus = LocalEventBus()
+    externalStorage = new DefaultStorageHandler(eventBus)
+    storage = WrappedStorageHandler.make('cookie', externalStorage, eventBus)
+
     jsdom('', {
       url: 'http://www.something.example.com'
     })
@@ -60,7 +63,17 @@ describe('DecisionsManager for stored decisions', () => {
 })
 
 describe('DecisionsManager for new decisions', () => {
+  let sandbox: SinonSandbox
+  let eventBus: EventBus
+  let externalStorage: DefaultStorageHandler
+  let storage: WrappedStorageHandler
+
   beforeEach(() => {
+    sandbox = sinon.createSandbox()
+    eventBus = LocalEventBus()
+    externalStorage = new DefaultStorageHandler(eventBus)
+    storage = WrappedStorageHandler.make('cookie', externalStorage, eventBus)
+
     jsdom('', {
       url: 'http://subdomain.tests.example.com'
     })
