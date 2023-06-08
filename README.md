@@ -16,10 +16,10 @@ If you're interested in reviewing the type of data being sent, please check [wha
 To quickly get started with the LiveConnect module, perform the following steps via the command line interface.
 
 - Dependency installation: Begin by installing the dependencies using npm. Run the following command: `npm install`.
-- Code Formatting: Ensure your code adheres to the provided eslint file for consistent formatting. Use the command `npm run fix-js` to automatically format your code.
-- Unit Testing: Validate the functionality of your code by running the unit tests. Execute the command `npm run test:unit` to initiate the tests.
-- Integration Testing: Verify the integration of LiveConnect by running the integration tests against a dockerized Chrome browser. Use the command `npm run test:it:docker:chrome` to perform these tests.
-- Cross-Browser Testing: For a comprehensive evaluation, conduct full integration tests on multiple browsers. Please ensure you have valid Browserstack credentials configured. Run the command `npm run test:it:browserstack` to execute the tests across various browsers.
+- Code formatting: Ensure your code adheres to the provided ESLint file for consistent formatting. Use the command `npm run fix-js` to automatically format your code.
+- Unit testing: Validate the functionality of your code by running the unit tests. Execute the command `npm run test:unit` to initiate the tests.
+- Integration testing: Verify the integration of LiveConnect by running the integration tests against a dockerized Chrome browser. Use the command `npm run test:it:docker:chrome` to perform these tests.
+- Cross-browser testing: For a comprehensive evaluation, conduct full integration tests on multiple browsers. Please ensure you have valid Browserstack credentials configured. Run the command `npm run test:it:browserstack` to execute the tests across various browsers.
 
 ## Contribute
 We welcome ideas, fixes, and improvements from the community. Discover how you can contribute by visiting our [contribution guidelines](./CONTRIBUTING.md).
@@ -123,7 +123,7 @@ Where the LiveConnect identifiers are stored (Cookie vs LocalStorage) depends on
 How long those identifiers will live is configured in the `config.expirationDays` parameter. In case the `storageStrategy` is set to Cookie, the browser will ensure that the cookie expires.
 In case of localStorage, Identifiers Manager and it's underlying `utils/storage.js` helper will ensure that on the next load, the entry is removed from localstorage in case it's obsolete.
 
-### People Verified manager
+### People-verified manager
 `managers/people-verified.js` makes sure that either of the selected identifiers is stored as the `_li_duid` key in local storage, as some integrations are using the information stored there.
 
 ## Enrichments
