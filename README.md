@@ -1,12 +1,9 @@
 # LiveConnect
 
-[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)
+[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=YzloV1dIQUNFOHFkOXlJRUxLNXZxSEFvTVVOSHVIVGFHS05tdnNicTRpTT0tLVVVOUpGWUE2SEJNTlZpT2xnSVBjYmc9PQ==--cfc32e5172c470536344a9c6b751a20019aab049)](https://automate.browserstack.com/public-build/YzloV1dIQUNFOHFkOXlJRUxLNXZxSEFvTVVOSHVIVGFHS05tdnNicTRpTT0tLVVVOUpGWUE2SEJNTlZpT2xnSVBjYmc9PQ==--cfc32e5172c470536344a9c6b751a20019aab049)
 [![CircleCI](https://circleci.com/gh/LiveIntent/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/LiveIntent/live-connect/tree/master)
-[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/)
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript)
-[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)
-[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)
+[![codecov](https://app.codecov.io/gh/LiveIntent/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/LiveIntent/live-connect)
+[![dependencies Status](https://img.shields.io/librariesio/release/npm/live-connect)](https://github.com/LiveIntent/live-connect/tree/master)
 
 ## Main concepts
 The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences, and sending this information to a designated endpoint. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
