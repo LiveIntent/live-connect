@@ -2,7 +2,7 @@
 
 [![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=YzloV1dIQUNFOHFkOXlJRUxLNXZxSEFvTVVOSHVIVGFHS05tdnNicTRpTT0tLVVVOUpGWUE2SEJNTlZpT2xnSVBjYmc9PQ==--cfc32e5172c470536344a9c6b751a20019aab049)](https://automate.browserstack.com/public-build/YzloV1dIQUNFOHFkOXlJRUxLNXZxSEFvTVVOSHVIVGFHS05tdnNicTRpTT0tLVVVOUpGWUE2SEJNTlZpT2xnSVBjYmc9PQ==--cfc32e5172c470536344a9c6b751a20019aab049)
 [![CircleCI](https://circleci.com/gh/LiveIntent/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/LiveIntent/live-connect/tree/master)
-[![codecov](https://app.codecov.io/gh/LiveIntent/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/LiveIntent/live-connect)
+[![codecov](https://codecov.io/gh/LiveIntent/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/LiveIntent/live-connect)
 [![dependencies Status](https://img.shields.io/librariesio/release/npm/live-connect)](https://github.com/LiveIntent/live-connect/tree/master)
 
 ## Main concepts
