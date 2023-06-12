@@ -11,7 +11,6 @@ const _onlyUnique = (value: string, index: number, self: string[]) => self.index
 const _nonEmpty = (value: string) => value && trim(value).length > 0
 
 export function resolve(state: State, storageHandler: WrappedStorageHandler, eventBus: EventBus): State {
-  let ret = {}
   function _addDecisionId(key: string, cookieDomain?: string) {
     if (key) {
       storageHandler.setCookie(
@@ -22,24 +21,46 @@ export function resolve(state: State, storageHandler: WrappedStorageHandler, eve
         cookieDomain)
     }
   }
-  try {
-    const freshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
-    const storedDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
-    freshDecisions
-      .map(trim)
-      .filter(_nonEmpty)
-      .filter(isUUID)
-      .filter(_onlyUnique)
-      .forEach(decision => _addDecisionId(decision, state.domain))
-    const allDecisions = freshDecisions
-      .concat(storedDecisions)
-      .map(trim)
-      .filter(_nonEmpty)
-      .filter(isUUID)
-      .filter(_onlyUnique)
-    ret = { decisionIds: allDecisions }
-  } catch (e) {
-    eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while managing decision ids', e)
+
+  function _orElseEmtpy<A>(errorDescription: string, f: () => A[]): A[] {
+    try {
+      return f()
+    } catch (e) {
+      eventBus.emitErrorWithMessage('DecisionsResolve', errorDescription, e)
+      return []
+    }
   }
-  return ret
+
+  const freshDecisions = _orElseEmtpy(
+    'Error while extracting new decision ids',
+    () => {
+      const extractedFreshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
+      return extractedFreshDecisions
+        .map(trim)
+        .filter(_nonEmpty)
+        .filter(isUUID)
+        .filter(_onlyUnique)
+    }
+  )
+
+  const storedDecisions = _orElseEmtpy(
+    'Error while retrieving stored decision ids',
+    () => {
+      const extractedStoredDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
+      return extractedStoredDecisions.map(trim)
+        .filter(_nonEmpty)
+        .filter(isUUID)
+        .filter(_onlyUnique)
+    }
+  )
+
+  freshDecisions.forEach(decision => {
+    try {
+      _addDecisionId(decision, state.domain)
+    } catch (e) {
+      eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while storing new decision id', e)
+    }
+  })
+
+  return { decisionIds: freshDecisions.concat(storedDecisions).filter(_onlyUnique) }
 }
