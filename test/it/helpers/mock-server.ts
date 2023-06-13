@@ -28,6 +28,7 @@ export function MockServerFactory(config) {
             <html lang="en">
             <head><title></title>
             </head>
+
             <body>
             <div id="before">Before</div>
             <div id="after">After</div>
