@@ -119,14 +119,14 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
   }
 }
 
-function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   const lc = _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus)
   window.liQ_instances = window.liQ_instances || []
   window.liQ_instances.push(lc)
   return lc
 }
 
-function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: ExternalCallHandler, eventBus: EventBus): ILiveConnect {
+function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   const queue = window[liveConnectConfig.globalVarName] || []
   const lc = _getInitializedLiveConnect(liveConnectConfig) || _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) || queue
 

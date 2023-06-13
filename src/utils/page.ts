@@ -55,7 +55,7 @@ function _collectElementsText(contextSelectors: string, contextElementsLength: n
 
 function encodedByteCount(s: string): number {
   // From: https://stackoverflow.com/questions/2219526/how-many-bytes-in-a-javascript-string
-  return new Blob([s]).size
+  return Math.ceil(new Blob([s]).size * 4 / 3.0)
 }
 
 function _safeGet<A>(getter: () => A): A | undefined {
