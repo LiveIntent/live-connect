@@ -13,7 +13,7 @@ const corsOptions = {
 const port = 3001
 
 const bundle = fs.readFileSync('test-resources/bundle.iife.js', 'utf8')
-
+const c = 14
 export function MockServerFactory(config) {
   const preamble = `window.LI=${JSON.stringify(config)};\n`
   const fullContent = preamble + bundle
@@ -28,7 +28,6 @@ export function MockServerFactory(config) {
             <html lang="en">
             <head><title></title>
             </head>
-
             <body>
             <div id="before">Before</div>
             <div id="after">After</div>
