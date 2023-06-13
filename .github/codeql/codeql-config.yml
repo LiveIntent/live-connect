@@ -1,0 +1,6 @@
+paths:
+  - src
+  - test
+#        paths-ignore:
+#          - src/node_modules
+#          - '**/*.spec.js'
