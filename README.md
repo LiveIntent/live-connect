@@ -27,8 +27,8 @@ Unit tests are written using [Mocha](http://mochajs.org/) and [Chai](http://chai
 Check [Quick start](#quick-start) how to run them.
 
 ### Running Browserstack tests
-Tests are setting the cookies on eTLD+1 domain. For that, execute this command once:
-```echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 me.idex.com"  | sudo tee -a /etc/hosts```
+Tests sets the cookies on eTLD+1 domain. For that, execute the following command:
+```echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 me.idex.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 schmoogle.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 framed.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 double-framed.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 baked.liveintent.com" | sudo tee -a /etc/hosts```
 
 Add Browserstack keys to your env, where the setup would be as follows:
 ```
