@@ -220,7 +220,7 @@ describe('StandardLiveConnect', () => {
 
   it('should return the resolution Url', function () {
     const lc = StandardLiveConnect({}, storage, calls)
-    expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--(.*)/)
+    expect(lc.resolutionCallUrl()).to.match(/https:\/\/idx.liadm.com\/idex\/unknown\/any\?duid=0caaf24ab1a0--.*/)
   })
 
   it('should expose the config', function () {
