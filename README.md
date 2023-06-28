@@ -1,27 +1,26 @@
 # LiveConnect
 
-[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)](https://automate.browserstack.com/public-build/a1dpTXF4aXcwcERUbjNTMlB3L2xxRmlFbk1PaUVTMUx1OFU0UkJRUlpXaz0tLVB5V0dkNXpmZzF5ZDNaZ2ZsQnNzR3c9PQ==--19c73b84bcddaa14fb090cf5743e41b451d2c646)
+[![BrowserStack Status](https://automate.browserstack.com/badge.svg?badge_key=YzloV1dIQUNFOHFkOXlJRUxLNXZxSEFvTVVOSHVIVGFHS05tdnNicTRpTT0tLVVVOUpGWUE2SEJNTlZpT2xnSVBjYmc9PQ==--cfc32e5172c470536344a9c6b751a20019aab049)](https://automate.browserstack.com/public-build/YzloV1dIQUNFOHFkOXlJRUxLNXZxSEFvTVVOSHVIVGFHS05tdnNicTRpTT0tLVVVOUpGWUE2SEJNTlZpT2xnSVBjYmc9PQ==--cfc32e5172c470536344a9c6b751a20019aab049)
 [![CircleCI](https://circleci.com/gh/LiveIntent/live-connect/tree/master.svg?style=svg)](https://circleci.com/gh/LiveIntent/live-connect/tree/master)
-[![codecov](https://codecov.io/gh/liveintent-berlin/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/liveintent-berlin/live-connect)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/alerts/)
-[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/LiveIntent/live-connect.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/LiveIntent/live-connect/context:javascript)
-[![devDependencies Status](https://david-dm.org/LiveIntent/live-connect/dev-status.svg)](https://david-dm.org/LiveIntent/live-connect?type=dev)
-[![dependencies Status](https://david-dm.org/LiveIntent/live-connect/status.svg)](https://david-dm.org/LiveIntent/live-connect)
+[![codecov](https://codecov.io/gh/LiveIntent/live-connect/branch/master/graph/badge.svg?token=P5sRpM4U6k)](https://codecov.io/gh/LiveIntent/live-connect)
+[![CodeQL](https://github.com/LiveIntent/live-connect/actions/workflows/codeql.yml/badge.svg?branch=master&event=push)](https://github.com/LiveIntent/live-connect/actions/workflows/github-code-scanning/codeql)
+[![dependencies Status](https://img.shields.io/librariesio/release/npm/live-connect)](https://github.com/LiveIntent/live-connect/tree/master)
 
-# Main concepts
-LiveConnect module is used to create, and or gather first party identifiers of your choosing, and sending that information to a defined endpoint which is responsible for gathering and processing that data.
-What LiveConnect provides is a simple interface to collect the identifiers from a page, and collect user interactions along with those identifiers.
-To see what kind of data is being sent, check [what is being sent](#what-is-being-sent).
+## Main concepts
+The LiveConnect module offers a convenient solution for generating and collecting first-party identifiers based on your preferences, and sending this information to a designated endpoint. With LiveConnect, you gain a straightforward interface that facilitates the collection of identifiers from web pages, as well as capturing user interactions alongside these identifiers.
+If you're interested in reviewing the type of data being sent, please check [what is being sent](#what-is-being-sent) section of this documentation.
 
 ## Quick start
-- With [npm](https://www.npmjs.com/): `npm install`
-- Format the code according to the eslint file: `npm run fix-js`
-- Run unit tests: `npm run test:unit`
-- Run integration tests against a dockerized chrome: `npm run test:it:docker:chrome`
-- Run full integration tests on multiple browsers (requires properly set Browserstack credentials) : `npm run test:it:browserstack`
+To quickly get started with the LiveConnect module, perform the following steps via the command line interface.
+
+- Dependency installation: Begin by installing the dependencies using npm. Run the following command: `npm install`.
+- Code formatting: Ensure your code adheres to the provided ESLint file for consistent formatting. Use the command `npm run fix-js` to automatically format your code.
+- Unit testing: Validate the functionality of your code by running the unit tests. Execute the command `npm run test:unit` to initiate the tests.
+- Integration testing: Verify the integration of LiveConnect by running the integration tests against a dockerized Chrome browser. Use the command `npm run test:it:docker:chrome` to perform these tests.
+- Cross-browser testing: For a comprehensive evaluation, conduct full integration tests on multiple browsers. Please ensure you have valid Browserstack credentials configured. Run the command `npm run test:it:browserstack` to execute the tests across various browsers.
 
 ## Contribute
-We're open to ideas, fixes and improvements. Find out how to contribute [here](./CONTRIBUTING.md).
+We welcome ideas, fixes, and improvements from the community. Discover how you can contribute by visiting our [contribution guidelines](./CONTRIBUTING.md).
 
 ## Testing
 ### Running Unit tests
@@ -29,16 +28,8 @@ Unit tests are written using [Mocha](http://mochajs.org/) and [Chai](http://chai
 Check [Quick start](#quick-start) how to run them.
 
 ### Running Browserstack tests
-Tests are setting the cookies on eTLD+1 domain. For that, execute this command once:
-```shell
-echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts
-echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts
-echo "127.0.0.1 me.idex.com" | sudo tee -a /etc/hosts
-echo "127.0.0.1 schmoogle.com" | sudo tee -a /etc/hosts
-echo "127.0.0.1 framed.test.liveintent.com" | sudo tee -a /etc/hosts
-echo "127.0.0.1 double-framed.test.liveintent.com" | sudo tee -a /etc/hosts
-echo "127.0.0.1 baked.liveintent.com" | sudo tee -a /etc/hosts
-```
+Tests sets the cookies on eTLD+1 domain. For that, execute the following command:
+```echo "127.0.0.1 bln.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 me.idex.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 schmoogle.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 framed.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 double-framed.test.liveintent.com" | sudo tee -a /etc/hosts && echo "127.0.0.1 baked.liveintent.com" | sudo tee -a /etc/hosts```
 
 Add Browserstack keys to your env, where the setup would be as follows:
 ```
@@ -51,8 +42,7 @@ or, to run Browserstack tests locally, run:
 The browsers used in these tests are defined in `test-config/wdio.browserstack.conf.js` and should correlate to the transpiled code for supported browsers, listed in `.browserslistrc`.
 ___
 
-## Main concepts
-### Initialization
+## Initialization
 The initialisation part should be straight forward, considering the snippet:
 ```javascript
 import { LiveConnect } from 'live-connect-js'
@@ -131,7 +121,7 @@ Where the LiveConnect identifiers are stored (Cookie vs LocalStorage) depends on
 How long those identifiers will live is configured in the `config.expirationDays` parameter. In case the `storageStrategy` is set to Cookie, the browser will ensure that the cookie expires.
 In case of localStorage, Identifiers Manager and it's underlying `utils/storage.js` helper will ensure that on the next load, the entry is removed from localstorage in case it's obsolete.
 
-### People Verified manager
+### People-verified manager
 `managers/people-verified.js` makes sure that either of the selected identifiers is stored as the `_li_duid` key in local storage, as some integrations are using the information stored there.
 
 ## Enrichments
@@ -175,6 +165,7 @@ To start listening to the topic, one can simply implement their own logic. For e
 const logger = (message) => {console.error('Error message received on the event bus', message)}
 lc.eventBus.on('li_errors', logger)
 ```
+
 ## Receiving errors on the collector
 LiveConnect has a handler called `handlers/error-pixel.js` which is subscribed on the `li_errors` topic, and wraps the exceptions into the following format:
 ```javascript
