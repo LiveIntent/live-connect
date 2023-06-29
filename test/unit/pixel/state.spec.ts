@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { assert, expect, use } from 'chai'
 import { hashEmail } from '../../../src/utils/hash'
 import { enrich as privacyConfig } from '../../../src/enrichers/privacy-config'
@@ -11,31 +12,31 @@ use(dirtyChai)
 
 const COMMA = encodeURIComponent(',')
 describe('EventComposition', () => {
-  it('should construct an event out of anything', function () {
+  it('should construct an event out of anything', () => {
     const pixelData = { appId: '9898' }
     const event = new StateWrapper(pixelData)
     expect(event.data).to.eql(pixelData)
   })
 
-  it('should construct valid tuples for valid members', function () {
+  it('should construct valid tuples for valid members', () => {
     const pixelData = { appId: '9898' }
     const event = new StateWrapper(pixelData)
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898']])
   })
 
-  it('should construct valid params for valid members', function () {
+  it('should construct valid params for valid members', () => {
     const pixelData = { appId: '9898' }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898')
   })
 
-  it('should ignore empty fields', function () {
+  it('should ignore empty fields', () => {
     const pixelData = { appId: '9898', contextElements: '' }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898')
   })
 
-  it('should append c parameter last', function () {
+  it('should append c parameter last', () => {
     const pixelData = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
@@ -87,7 +88,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
   })
 
-  it('should set n3pc, n3pct and nb to 1, and gdpr to 1 when the gdprApplies is defined but has a non boolean value', function () {
+  it('should set n3pc, n3pct and nb to 1, and gdpr to 1 when the gdprApplies is defined but has a non boolean value', () => {
     const pixelData = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
@@ -139,7 +140,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
   })
 
-  it('should ignore unknown fields', function () {
+  it('should ignore unknown fields', () => {
     const pixelData = {
       appId: '9898',
       randomField: 2135523
@@ -149,7 +150,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898']])
   })
 
-  it('should base64 the source', function () {
+  it('should base64 the source', () => {
     const pixelData = {
       appId: '9898',
       eventSource: { eventName: 'viewContent' }
@@ -160,7 +161,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]])
   })
 
-  it('should send the usPrivacyString', function () {
+  it('should send the usPrivacyString', () => {
     const pixelData = {
       usPrivacyString: '1---'
     }
@@ -169,7 +170,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
-  it('should send the gdpr, n3pc, n3pct, nb as 1 & gdprConsent', function () {
+  it('should send the gdpr, n3pc, n3pct, nb as 1 & gdprConsent', () => {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,
@@ -181,7 +182,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
   })
 
-  it('should send the gdprApplies as 0 if false', function () {
+  it('should send the gdprApplies as 0 if false', () => {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: false,
@@ -193,20 +194,18 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0'], ['gdpr_consent', 'some-string']])
   })
 
-  it('should send the tracker name', function () {
+  it('should send the tracker name', () => {
     const trackerName = 'some-name'
-    const pixelData = {
-      trackerName: trackerName
-    }
+    const pixelData = { trackerName }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?tna=${trackerName}`)
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })
 
-  it('should ignore nullable fields for consent', function () {
+  it('should ignore nullable fields for consent', () => {
     const trackerName = 'some-name'
     const pixelData = {
-      trackerName: trackerName,
+      trackerName,
       usPrivacyString: null,
       gdprApplies: null,
       gdprConsent: undefined,
@@ -217,20 +216,18 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })
 
-  it('should send the page url', function () {
+  it('should send the page url', () => {
     const pageUrl = 'https://wwww.example.com?sss'
-    const pixelData = {
-      pageUrl: pageUrl
-    }
+    const pixelData = { pageUrl }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
     assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
   })
 
-  it('should send the removed parts of the page url', function () {
+  it('should send the removed parts of the page url', () => {
     const pageUrl = 'https://www.example.com/page?query=v1&foo=v2&bar=v3&id=v4'
     const pixelData = {
-      pageUrl: pageUrl,
+      pageUrl,
       urlCollectionMode: UrlCollectionModes.noPath,
       queryParametersFilter: '^(foo|bar)$'
     }
@@ -242,10 +239,10 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(expectedUrl)}&pu_rp=1&pu_rqp=foo${COMMA}bar`)
   })
 
-  it('should not send the removed parts of the page url when nothing was removed', function () {
+  it('should not send the removed parts of the page url when nothing was removed', () => {
     const pageUrl = 'https://www.example.com/?query=v1&id=v2'
     const pixelData = {
-      pageUrl: pageUrl,
+      pageUrl,
       urlCollectionMode: UrlCollectionModes.noPath,
       queryParametersFilter: '^(foo|bar)$'
     }
@@ -256,7 +253,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
   })
 
-  it('should send the application error', function () {
+  it('should send the application error', () => {
     const applicationError = { someKey: 'value' }
     const pixelData = {
       errorDetails: applicationError
@@ -267,7 +264,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['ae', b64EncodedEventSource]])
   })
 
-  it('should update the data', function () {
+  it('should update the data', () => {
     const pixelData = {
       appId: '9898',
       eventSource: { eventName: 'viewContent' }
@@ -291,7 +288,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]])
   })
 
-  it('should send the provided email hash', function () {
+  it('should send the provided email hash', () => {
     const pixelData = {
       appId: '9898',
       eventSource: {
@@ -306,7 +303,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource], ['e', 'e168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72']])
   })
 
-  it('should never send emails as plain text, and hash the email that is set in the source', function () {
+  it('should never send emails as plain text, and hash the email that is set in the source', () => {
     const pixelData = {
       appId: '9898',
       eventSource: {
@@ -322,7 +319,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]], ['e', [`${hashes.md5},${hashes.sha1},${hashes.sha256}`]])
   })
 
-  it('should send the retrieved identifiers', function () {
+  it('should send the retrieved identifiers', () => {
     const cookie1 = {
       name: 'sample_cookie',
       value: 'sample_value'
@@ -343,7 +340,7 @@ describe('EventComposition', () => {
     ])
   })
 
-  it('should send the hashes found in retrieved identifiers', function () {
+  it('should send the hashes found in retrieved identifiers', () => {
     const hashes1 = {
       md5: 'eb2684ead8e942b6c4dc7465de66460c',
       sha1: '51d8351892cf317ba9924e8548339039bd28bc73',
@@ -367,7 +364,7 @@ describe('EventComposition', () => {
     ])
   })
 
-  it('should send decisionIds ', function () {
+  it('should send decisionIds ', () => {
     const pixelData = {
       decisionIds: ['1', '2']
     }
@@ -376,7 +373,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['li_did', `1${COMMA}2`]])
   })
 
-  it('should not send decisionIds if array is empty', function () {
+  it('should not send decisionIds if array is empty', () => {
     const pixelData = {
       decisionIds: []
     }
@@ -385,7 +382,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [])
   })
 
-  it('should not send an event if the event is just setting a HEM', function () {
+  it('should not send an event if the event is just setting a HEM', () => {
     expect(new StateWrapper({
       eventSource: {
         eventName: 'setEmail',
@@ -415,7 +412,7 @@ describe('EventComposition', () => {
     }).sendsPixel()).to.be.true()
   })
 
-  it('should limit the number of items', function () {
+  it('should limit the number of items', () => {
     const pixelData = {
       decisionIds: []
     }
@@ -429,7 +426,7 @@ describe('EventComposition', () => {
     expect(event.data).to.eql(pixelData)
   })
 
-  it('should send distributorId using the short name: did', function () {
+  it('should send distributorId using the short name: did', () => {
     const eventBus = LocalEventBus()
     const pixelData = {
       distributorId: 'did-9898',

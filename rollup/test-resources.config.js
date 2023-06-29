@@ -1,13 +1,9 @@
-// rollup-iife.config.js
-import resolve from 'rollup-plugin-node-resolve'
-import babel from 'rollup-plugin-babel'
-import commonjs from 'rollup-plugin-commonjs'
-import { terser } from 'rollup-plugin-terser'
 import replace from '@rollup/plugin-replace'
-import packageJson from '../package.json'
-import cleaner from 'rollup-plugin-cleaner'
-import strip from '@rollup/plugin-strip'
-import ts from "rollup-plugin-ts";
+import fs from 'fs'
+import path from 'path'
+import config from './dist.config.js'
+
+const packageJson = JSON.parse(fs.readFileSync(path.resolve('package.json'), { encoding: 'utf-8' }))
 
 const OUTPUT_DIR = './test-resources'
 
@@ -18,13 +14,10 @@ export default {
     format: 'iife'
   },
   plugins: [
-    cleaner({targets: [OUTPUT_DIR]}),
-    ts({tsconfig: resolvedConfig => ({...resolvedConfig, declaration: false})}),
-    resolve(),
-    commonjs(),
-    babel(),
-    strip(),
-    terser(),
-    replace({ LC_VERSION: `${packageJson.versionPrefix}${packageJson.version}` })
+    ...config.plugins,
+    replace({
+      preventAssignment: true,
+      LC_VERSION: JSON.stringify(`${packageJson.versionPrefix}${packageJson.version}`)
+    })
   ]
 }

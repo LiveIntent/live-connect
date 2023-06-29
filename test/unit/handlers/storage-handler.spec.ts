@@ -1,12 +1,11 @@
-import jsdom from 'mocha-jsdom'
+import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
 import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon, { SinonStub } from 'sinon'
-import { expiresInDays } from 'live-connect-common'
+import { EventBus, expiresInDays } from 'live-connect-common'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
-import { EventBus } from '../../../src/types'
 
 use(dirtyChai)
 
@@ -22,17 +21,17 @@ describe('StorageHandler', () => {
   const eventBus = LocalEventBus()
   const storage = new DefaultStorageHandler(eventBus)
   const sandbox = sinon.createSandbox()
-  jsdom({
-    url: 'http://www.something.example.com',
-    useEach: true
-  })
 
   beforeEach(() => {
     errors = []
+    jsdom('', {
+      url: 'http://www.something.example.com'
+    })
+
     eventBusStub = sandbox.stub(eventBus, 'emitErrorWithMessage').callsFake((name, message, e) => {
       errors.push({
-        name: name,
-        message: message,
+        name,
+        message,
         exception: e
       })
       return eventBus
@@ -43,7 +42,7 @@ describe('StorageHandler', () => {
     eventBusStub.restore()
   })
 
-  it('should send an error if an external handler is not provided', function () {
+  it('should send an error if an external handler is not provided', () => {
     WrappedStorageHandler.make('cookie', {}, eventBus)
     expect(errors.length).to.be.eq(1)
     expect(errors[0].name).to.be.eq('StorageHandler')
@@ -51,7 +50,7 @@ describe('StorageHandler', () => {
     expect(errors[0].exception).to.be.undefined()
   })
 
-  it('should send an error if an external handler is not provided and the storage strategy is none', function () {
+  it('should send an error if an external handler is not provided and the storage strategy is none', () => {
     WrappedStorageHandler.make('none', {}, eventBus)
     expect(errors.length).to.be.eq(1)
     expect(errors[0].name).to.be.eq('StorageHandler')
@@ -59,12 +58,12 @@ describe('StorageHandler', () => {
     expect(errors[0].exception).to.be.undefined()
   })
 
-  it('should not send an error if an external handler is not provided and the storage strategy is disabled', function () {
+  it('should not send an error if an external handler is not provided and the storage strategy is disabled', () => {
     WrappedStorageHandler.make('disabled', {}, eventBus)
     expect(errors.length).to.be.eq(0)
   })
 
-  it('should use local storage', function () {
+  it('should use local storage', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
@@ -72,7 +71,7 @@ describe('StorageHandler', () => {
     expect(storageHandler.get('unknownKey')).to.be.null()
   })
 
-  it('should use cookies', function () {
+  it('should use cookies', () => {
     const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
@@ -80,7 +79,8 @@ describe('StorageHandler', () => {
     expect(storageHandler.get('unknownKey')).to.be.null()
   })
 
-  it('should use cookies when the strategy is not defined', function () {
+  it('should use cookies when the strategy is not defined', () => {
+    // @ts-expect-error
     const storageHandler = WrappedStorageHandler.make(null, storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.eq('value')
@@ -88,7 +88,7 @@ describe('StorageHandler', () => {
     expect(storageHandler.get('unknownKey')).to.be.null()
   })
 
-  it('should return nothing when the strategy is none', function () {
+  it('should return nothing when the strategy is none', () => {
     const storageHandler = WrappedStorageHandler.make('none', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
@@ -97,7 +97,7 @@ describe('StorageHandler', () => {
     expect(errors.length).to.be.eq(0)
   })
 
-  it('should return nothing when the strategy is disabled', function () {
+  it('should return nothing when the strategy is disabled', () => {
     const storageHandler = WrappedStorageHandler.make('disabled', storage, eventBus)
 
     storageHandler.set('key_any', 'value_any', expiresInDays(1), 'example.com')
@@ -115,21 +115,22 @@ describe('StorageHandler', () => {
     expect(errors.length).to.be.eq(0)
   })
 
-  it('should return nothing when the strategy is ls and the time is in the past', function () {
+  it('should return nothing when the strategy is ls and the time is in the past', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(-1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getDataFromLocalStorage('key')).to.be.null()
   })
 
-  it('should return nothing when the strategy is cookie and the time is in the past', function () {
+  it('should return nothing when the strategy is cookie and the time is in the past', () => {
     const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(-1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
   })
 
-  it('should return nothing when the strategy is undefined and the time is in the past', function () {
+  it('should return nothing when the strategy is undefined and the time is in the past', () => {
+    // @ts-expect-error
     const storageHandler = WrappedStorageHandler.make(null, storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(-1), 'example.com')
     expect(storageHandler.get('key')).to.be.null()

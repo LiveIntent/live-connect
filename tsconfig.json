@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
     "allowJs": false,
-    "typeRoots": ["./node_modules/@types", "src/typings"],
+    "typeRoots": ["./node_modules/@types"],
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "module": "CommonJS",
-    "types": ["webdriverio/async", "mocha"],
+    "types": ["mocha"],
     "strict": true,
-    "declaration": true
+    "declaration": true,
+    "sourceMap": true,
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "module": "ESNext",
+    "target": "es5"
   },
   "include": ["./src/**/*", "./test/**/*"]
 }

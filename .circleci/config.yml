@@ -6,7 +6,7 @@ orbs:
 parameters:
   node_version:
     type: string
-    default: "12.22.11"
+    default: "18.16.0"
 
 references:
   restore_cache: &restore_cache
@@ -78,8 +78,11 @@ jobs:
           path: ./test-results
           destination: test-results
       - run:
-          name: Code coverage
-          command: npm run coverage
+          name: Code Coverage
+          command: |
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov -t ${CODECOV_TOKEN}
 
   browserstack:
     parallelism: 1
@@ -106,7 +109,7 @@ jobs:
     parameters:
       increment:
         description: |
-          "Increment of release. Allowed values `prepatch`, `preminor`, `premajor`, `bump-prerelease`,
+          "Increment of release. Allowed values `prepatch`, `preminor`, `premajor`,
           `alpha->beta`, `beta->rc`, `patch`, `minor`, `major`"
         default: "patch"
         type: string
@@ -146,9 +149,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: master
 
       - release:
           context: live-connect
@@ -162,9 +162,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: master
 
       - release:
           context: live-connect
@@ -178,9 +175,6 @@ workflows:
           type: approval
           requires:
             - browserstack
-          filters:
-            branches:
-              only: master
 
       - release:
           context: live-connect
@@ -188,22 +182,6 @@ workflows:
           increment: "premajor"
           requires:
             - release_premajor?
-
-      - release_bump-prerelease?:
-          context: live-connect
-          type: approval
-          requires:
-            - browserstack
-          filters:
-            branches:
-              only: master
-
-      - release:
-          context: live-connect
-          name: release_bump-prerelease
-          increment: "bump-prerelease"
-          requires:
-            - release_bump-prerelease?
 
       - release_alpha->beta?:
           context: live-connect

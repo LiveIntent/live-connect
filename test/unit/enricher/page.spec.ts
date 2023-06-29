@@ -1,4 +1,4 @@
-import jsdom from 'mocha-jsdom'
+import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
 import * as pageEnricher from '../../../src/enrichers/page'
 import dirtyChai from 'dirty-chai'
@@ -6,17 +6,16 @@ import dirtyChai from 'dirty-chai'
 use(dirtyChai)
 
 describe('PageEnricher', () => {
-  const url = 'http://www.example.com/?sad=0&dsad=iou'
-  const referrer = 'https://first.example.com?key=value'
-  jsdom({
-    url: url,
-    referrer: referrer,
+  const url = 'https://www.example.com/?sad=0&dsad=iou'
+  const referrer = 'https://first.example.com/?key=value'
+  beforeEach(() => jsdom('', {
+    url,
+    referrer,
     resources: 'usable',
-    runScripts: 'dangerously',
-    useEach: true
-  })
+    runScripts: 'dangerously'
+  }))
 
-  it('should return the url, referrer and the contextElements of the page', function () {
+  it('should return the url, referrer and the contextElements of the page', () => {
     const newHeadline = document.createElement('h1')
     const content = document.createTextNode('Some header')
     newHeadline.appendChild(content)
@@ -34,7 +33,7 @@ describe('PageEnricher', () => {
     const result = pageEnricher.enrich(state)
     expect(result).to.eql({
       pageUrl: url,
-      referrer: referrer,
+      referrer,
       contextElements: encodedContextElements
     })
   })

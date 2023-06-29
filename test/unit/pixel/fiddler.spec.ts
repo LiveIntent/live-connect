@@ -6,7 +6,7 @@ import dirtyChai from 'dirty-chai'
 use(dirtyChai)
 
 describe('Fiddler', () => {
-  it('should use the providedHash if present', function () {
+  it('should use the providedHash if present', () => {
     const pixelData = {
       eventSource: { email: '75524519292E51AD6F761BAA82D07D76' }
     }
@@ -14,7 +14,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql(['75524519292e51ad6f761baa82d07d76'])
   })
 
-  it('should use the providedHash if present, ignoring the case of the key', function () {
+  it('should use the providedHash if present, ignoring the case of the key', () => {
     const pixelData = {
       eventSource: { eMaIl: '75524519292E51AD6F761BAA82D07D76' }
     }
@@ -22,7 +22,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql(['75524519292e51ad6f761baa82d07d76'])
   })
 
-  it('should ignore the providedHash if it is not a valid hash', function () {
+  it('should ignore the providedHash if it is not a valid hash', () => {
     const pixelData = {
       eventSource: { email: '75524519292e51ad6f761baa82d07d76aa' }
     }
@@ -30,7 +30,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql(undefined)
   })
 
-  it('should work while ignoring whitespace ', function () {
+  it('should work while ignoring whitespace ', () => {
     const pixelData = {
       eventSource: {
         email: '    75524519292E51AD6F761BAA82D07D76'
@@ -40,7 +40,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql(['75524519292e51ad6f761baa82d07d76'])
   })
 
-  it('should use the first found hash, even if there are multiple HASH_BEARERS provided', function () {
+  it('should use the first found hash, even if there are multiple HASH_BEARERS provided', () => {
     const hashes = hashEmail('mookie@gmail.com')
     const pixelData = {
       eventSource: {
@@ -53,7 +53,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql([hashes.md5])
   })
 
-  it('should hash the plain text email if the providedHash if it is not a valid hash', function () {
+  it('should hash the plain text email if the providedHash if it is not a valid hash', () => {
     const pixelData = {
       eventSource: {
         emailHash: '75524519292e51ad6f761baa82d07d76aa',
@@ -65,7 +65,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql([hashes.md5, hashes.sha1, hashes.sha256])
   })
 
-  it('should hash the plain text url encoded email as if it contained an @ symbol', function () {
+  it('should hash the plain text url encoded email as if it contained an @ symbol', () => {
     const pixelData = {
       eventSource: {
         email: 'mookie%40gmail.com'
@@ -76,7 +76,7 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql([hashes.md5, hashes.sha1, hashes.sha256])
   })
 
-  it('should hash the plain text url encoded email as if it contained an @ symbol, ignoring the surrounding mess or case', function () {
+  it('should hash the plain text url encoded email as if it contained an @ symbol, ignoring the surrounding mess or case', () => {
     const pixelData = {
       eventSource: {
         email: '"   mOOkie%40gmail.com "'
@@ -87,17 +87,21 @@ describe('Fiddler', () => {
     expect(result.hashedEmail).to.eql([hashes.md5, hashes.sha1, hashes.sha256])
   })
 
-  it('should limit the number of items in the items array, regardless of the case', function () {
+  it('should limit the number of items in the items array, regardless of the case', () => {
+    // @ts-expect-error
     expect(fiddle({
       eventSource: {
         iTeMs: Array.from(Array(50).keys())
       }
+      // @ts-expect-error
     }).eventSource.iTeMs).to.eql(Array.from(Array(10).keys()))
 
+    // @ts-expect-error
     expect(fiddle({
       eventSource: {
         iTeMIdS: Array.from(Array(20).keys())
       }
+      // @ts-expect-error
     }).eventSource.iTeMIdS).to.eql(Array.from(Array(10).keys()))
   })
 })

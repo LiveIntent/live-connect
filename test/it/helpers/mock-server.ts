@@ -1,7 +1,9 @@
+// @ts-nocheck
+
 import * as fs from 'fs'
 import * as http from 'http'
 import { assert } from 'chai'
-import { getText, click } from './browser'
+import { getText, click } from './browser.ts'
 import express from 'express'
 import compression from 'compression'
 import cors from 'cors'
@@ -174,7 +176,7 @@ export function MockServerFactory(config) {
 
   const server = http.createServer(app)
 
-  server.listen(port, function () {
+  server.listen(port, () => {
     console.log(`App is listening on port ${port}`)
   })
 

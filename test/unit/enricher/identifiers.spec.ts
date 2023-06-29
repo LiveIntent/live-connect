@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import * as identifiersEnricher from '../../../src/enrichers/identifiers'
-import jsdom from 'mocha-jsdom'
+import jsdom from 'global-jsdom'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
@@ -30,17 +30,18 @@ const EMAIL2_HASHES = {
 
 describe('IdentifiersEnricher', () => {
   const sandbox = sinon.createSandbox()
-  jsdom({
+  beforeEach(() => jsdom('', {
     url: 'http://www.example.com/?sad=0&dsad=iou'
-  })
+  }))
 
   afterEach(() => {
     storage.setCookie(COOKIE_NAME, '')
     storage.removeDataFromLocalStorage(COOKIE_NAME)
   })
 
-  it('should return an empty result when the collecting identifiers config is not set', function () {
+  it('should return an empty result when the collecting identifiers config is not set', () => {
     const state = {}
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
     expect(result).to.eql({
       retrievedIdentifiers: [],
@@ -48,8 +49,9 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return an empty result when the collecting identifiers config is set but there are no cookies', function () {
+  it('should return an empty result when the collecting identifiers config is set but there are no cookies', () => {
     const state = { identifiersToResolve: [COOKIE_NAME] }
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
     expect(result).to.eql({
       retrievedIdentifiers: [],
@@ -57,10 +59,11 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return the collected cookies when the identifiers config is a string', function () {
+  it('should return the collected cookies when the identifiers config is a string', () => {
     storage.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     const state = { identifiersToResolve: `random_name,  ${COOKIE_NAME}  ` }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -72,10 +75,11 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return the collected cookies', function () {
+  it('should return the collected cookies', () => {
     storage.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     const state = { identifiersToResolve: [COOKIE_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -87,10 +91,11 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return the collected identifiers from local storage ', function () {
+  it('should return the collected identifiers from local storage ', () => {
     storage.setDataInLocalStorage(COOKIE_NAME, SIMPLE_COOKIE2)
     const state = { identifiersToResolve: [COOKIE_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -102,11 +107,12 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should prefer the cookie storage to the local storage', function () {
+  it('should prefer the cookie storage to the local storage', () => {
     storage.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     storage.setDataInLocalStorage(COOKIE_NAME, SIMPLE_COOKIE2)
     const state = { identifiersToResolve: [COOKIE_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -118,10 +124,11 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return hashes when the cookie is an email', function () {
+  it('should return hashes when the cookie is an email', () => {
     storage.setCookie(COOKIE_NAME, EMAIL)
     const state = { identifiersToResolve: [COOKIE_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -133,10 +140,11 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return hashes when the cookie is a json with an email', function () {
+  it('should return hashes when the cookie is a json with an email', () => {
     storage.setCookie(COOKIE_NAME, `"username":"${EMAIL}"`)
     const state = { identifiersToResolve: [COOKIE_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -148,10 +156,11 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return multiple hashes when the cookie is a json with an email', function () {
+  it('should return multiple hashes when the cookie is a json with an email', () => {
     storage.setCookie(COOKIE_NAME, `"username":"${EMAIL}","username2":"${EMAIL2}"`)
     const state = { identifiersToResolve: [COOKIE_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -163,12 +172,13 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should return cookies and deduplicated hashes', function () {
+  it('should return cookies and deduplicated hashes', () => {
     const COOKIE2_NAME = `${COOKIE_NAME}2`
     storage.setCookie(COOKIE_NAME, `"username":"${EMAIL}"`)
     storage.setDataInLocalStorage(COOKIE2_NAME, EMAIL)
     const state = { identifiersToResolve: [COOKIE_NAME, COOKIE2_NAME] }
 
+    // @ts-expect-error
     const result = identifiersEnricher.enrich(state, storage)
 
     expect(result).to.eql({
@@ -186,7 +196,7 @@ describe('IdentifiersEnricher', () => {
     })
   })
 
-  it('should emit an error and emit an empty result if cookies enrichment fails', function () {
+  it('should emit an error and emit an empty result if cookies enrichment fails', () => {
     const getCookieStub = sandbox.stub(storage, 'getCookie').throws()
     storage.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     const state = { identifiersToResolve: [COOKIE_NAME] }

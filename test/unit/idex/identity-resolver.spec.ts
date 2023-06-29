@@ -1,4 +1,6 @@
-import jsdom from 'mocha-jsdom'
+// @ts-nocheck
+
+import jsdom from 'global-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
 import { IdentityResolver } from '../../../src/idex'
@@ -18,16 +20,16 @@ describe('IdentityResolver', () => {
   let errors = []
   let callCount = 0
   const storageHandler = WrappedStorageHandler.make('cookie', new DefaultStorageHandler(eventBus), eventBus)
-  jsdom({
-    url: 'http://www.something.example.com',
-    useEach: true
-  })
 
   beforeEach(() => {
-    eventBus.on('li_errors', (error) => { errors.push(error) })
+    jsdom('', {
+      url: 'http://www.something.example.com'
+    })
+
+    eventBus.on('li_errors', error => errors.push(error))
     global.XDomainRequest = null
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
-    global.XMLHttpRequest.onCreate = function (request) {
+    global.XMLHttpRequest.onCreate = request => {
       requestToComplete = request
       callCount += 1
     }
@@ -35,7 +37,7 @@ describe('IdentityResolver', () => {
     errors = []
   })
 
-  it('should invoke callback on success, store the result in a cookie', function (done) {
+  it('should invoke callback on success, store the result in a cookie', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({}, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -52,7 +54,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should invoke callback on success, if storing the result in a cookie fails', function () {
+  it('should invoke callback on success, if storing the result in a cookie fails', () => {
     const setCookieStub = sinon.createSandbox().stub(storage, 'setCookie').throws()
     const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
     const identityResolver = IdentityResolver.make({}, failedStorage, calls, eventBus)
@@ -73,7 +75,7 @@ describe('IdentityResolver', () => {
     expect(callCount).to.be.eql(2)
   })
 
-  it('should attach the duid', function (done) {
+  it('should attach the duid', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -86,7 +88,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach additional params', function (done) {
+  it('should attach additional params', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -99,7 +101,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach additional params with an array that should be serialized as repeated query', function (done) {
+  it('should attach additional params with an array that should be serialized as repeated query', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -112,7 +114,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach publisher id', function (done) {
+  it('should attach publisher id', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -125,7 +127,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the did', function (done) {
+  it('should attach the did', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({ distributorId: 'did-01er' }, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
@@ -138,7 +140,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should not attach an empty tuple', function (done) {
+  it('should not attach an empty tuple', (done) => {
     const identityResolver = IdentityResolver.make({ peopleVerifiedId: null }, storageHandler, calls, eventBus)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
@@ -150,7 +152,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
   })
 
-  it('should attach the duid & multiple retrieved identifiers', function (done) {
+  it('should attach the duid & multiple retrieved identifiers', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({
       peopleVerifiedId: '987',
@@ -175,7 +177,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent values when gpdr does not apply', function (done) {
+  it('should attach the consent values when gpdr does not apply', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({
       gdprApplies: false,
@@ -193,7 +195,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent and n3pc values when gpdr applies', function (done) {
+  it('should attach the consent and n3pc values when gpdr applies', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({
       gdprApplies: true,
@@ -211,7 +213,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should return the default empty response and emit error if response is 500', function (done) {
+  it('should return the default empty response and emit error if response is 500', (done) => {
     const identityResolver = IdentityResolver.make({}, storageHandler, calls, eventBus)
     const errorCallback = (error) => {
       expect(error.message).to.be.eq('Incorrect status received : 500')
@@ -221,7 +223,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(500, { 'Content-Type': 'application/json' }, 'i pitty the foo')
   })
 
-  it('should return different responses for different additional params', function () {
+  it('should return different responses for different additional params', () => {
     const responseMd5 = { id: 123 }
     const responseSha1 = { id: 125 }
 
@@ -251,7 +253,7 @@ describe('IdentityResolver', () => {
     expect(callCount).to.be.eql(2)
   })
 
-  it('should allow resolving custom attributes', function (done) {
+  it('should allow resolving custom attributes', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make(
       {
@@ -276,7 +278,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should not resolve uid2 when privacy mode is enabled', function (done) {
+  it('should not resolve uid2 when privacy mode is enabled', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make(
       {
@@ -302,7 +304,7 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should prefer expires header from the server', function (done) {
+  it('should prefer expires header from the server', (done) => {
     const response = { id: 112233 }
     let recordedExpiresAt: Date
 

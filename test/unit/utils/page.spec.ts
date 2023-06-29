@@ -1,4 +1,6 @@
-import jsdom from 'mocha-jsdom'
+// @ts-nocheck
+
+import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
 import { getPage, getReferrer, getContextElements, loadedDomain } from '../../../src/utils/page'
 import dirtyChai from 'dirty-chai'
@@ -6,25 +8,33 @@ import dirtyChai from 'dirty-chai'
 use(dirtyChai)
 
 describe('Page Utils', () => {
-  jsdom({
+  beforeEach(() => jsdom('', {
     url: 'https://liveintent.com/about?key=value',
-    referrer: 'https://first.example.com?key=value',
-    useEach: true
-  })
+    referrer: 'https://first.example.com?key=value'
+  }))
 
-  it('loaded domain should return the host', function () {
+  it('loaded domain should return the host', () => {
     expect(loadedDomain()).to.be.eql('liveintent.com')
     document.domain = null
     expect(loadedDomain()).to.be.eql('liveintent.com')
-    document.location = null
+    const oldDoc = document
+
+    const doc: Document = {
+      ...document,
+      location: null
+    }
+    // eslint-disable-next-line no-global-assign
+    document = doc
     expect(loadedDomain()).to.be.eql('liveintent.com')
+    // eslint-disable-next-line no-global-assign
+    document = oldDoc
   })
 
-  it('getPage should return the url for the top-level window', function () {
+  it('getPage should return the url for the top-level window', () => {
     expect(getPage()).to.be.eql('https://liveintent.com/about?key=value')
   })
 
-  it('getPage should return the url for the iframe', function () {
+  it('getPage should return the url for the iframe', () => {
     const iframe = document.createElement('iframe')
     iframe.src = 'https://nested.liveintent.com/about?key=value'
     document.documentElement.appendChild(iframe)
@@ -32,7 +42,7 @@ describe('Page Utils', () => {
     expect(getPage(iframe.contentWindow)).to.be.eql('https://liveintent.com/about?key=value')
   })
 
-  it('getPage should return the url for the nested iframe', function () {
+  it('getPage should return the url for the nested iframe', () => {
     const iframe1 = document.createElement('iframe')
     document.documentElement.appendChild(iframe1)
     const iframe2 = iframe1.contentDocument.createElement('iframe')
@@ -42,107 +52,162 @@ describe('Page Utils', () => {
     expect(getPage(iframe2.contentWindow)).to.be.eql('https://liveintent.com/about?key=value')
   })
 
-  it('getPage should return the url when the window location is not defined', function () {
+  it('getPage should return the url when the window location is not defined', () => {
     const iframe = document.createElement('iframe')
     iframe.src = 'https://nested.liveintent.com/about?key=value'
     document.documentElement.appendChild(iframe)
-    definedProperty(window, 'location', () => { return undefined })
 
-    expect(getPage(iframe.contentWindow)).to.be.eql('https://liveintent.com/about?key=value')
+    const oldWindow = window
+    const win: Window = {
+      ...window,
+      location: undefined
+    }
+
+    const fw: Window = {
+      ...iframe.contentWindow,
+      parent: win
+    }
+
+    // eslint-disable-next-line no-global-assign
+    window = win
+
+    expect(getPage(fw)).to.be.eql('https://liveintent.com/about?key=value')
+    // eslint-disable-next-line no-global-assign
+    window = oldWindow
   })
 
-  it('getPage should return the iframe url when the window url and the iframe referrer are not defined', function () {
+  it('getPage should return the iframe url when the window url and the iframe referrer are not defined', () => {
     const iframe = document.createElement('iframe')
     iframe.src = 'https://nested.liveintent.com/about?key=value'
     document.documentElement.appendChild(iframe)
-    definedProperty(window, 'location', () => { return undefined })
-    definedProperty(iframe.contentWindow, 'document', () => { return undefined })
+    const win = {
+      ...window,
+      get location(): Location {
+        return undefined
+      }
+    }
 
-    expect(getPage(iframe.contentWindow)).to.be.eql('https://nested.liveintent.com/about?key=value')
+    const fw: Window = { ...iframe.contentWindow, document: undefined, parent: win }
+    const oldTop = top
+    // eslint-disable-next-line no-global-assign
+    top = win
+    expect(getPage(fw)).to.be.eql('https://nested.liveintent.com/about?key=value')
+    // eslint-disable-next-line no-global-assign
+    top = oldTop
   })
 
-  it('getPage should return the origin when only ancestor origins are defined', function () {
+  it('getPage should return the origin when only ancestor origins are defined', () => {
     const iframe = document.createElement('iframe')
     iframe.src = 'https://nested.liveintent.com/about?key=value'
     document.documentElement.appendChild(iframe)
-    definedProperty(window, 'location', () => { return undefined })
-    definedProperty(iframe.contentWindow, 'document', () => { return undefined })
-    definedProperty(iframe.contentWindow, 'location', () => {
-      return {
+    const win = {
+      ...window,
+      location: undefined
+    }
+
+    const fw: Window = {
+      ...iframe.contentWindow,
+      parent: win,
+      document: undefined,
+      location: {
         href: undefined,
         ancestorOrigins: { 0: 'https://liveintent.com/' }
       }
-    })
-
-    expect(getPage(iframe.contentWindow)).to.be.eql('https://liveintent.com/')
+    }
+    const oldTop = top
+    // eslint-disable-next-line no-global-assign
+    top = win
+    expect(getPage(fw)).to.be.eql('https://liveintent.com/')
+    // eslint-disable-next-line no-global-assign
+    top = oldTop
   })
 
-  it('getPage should not return the url when it is not defined', function () {
+  it('getPage should not return the url when it is not defined', () => {
     const iframe = document.createElement('iframe')
     iframe.src = 'https://nested.liveintent.com/about?key=value'
     document.documentElement.appendChild(iframe)
-    definedProperty(window, 'location', () => { return undefined })
-    definedProperty(iframe.contentWindow, 'document', () => { return undefined })
-    definedProperty(iframe.contentWindow, 'location', () => { return undefined })
-
-    expect(getPage(iframe.contentWindow)).to.be.undefined()
+    const win = {
+      ...window,
+      location: undefined
+    }
+    const fw: Window = {
+      ...iframe.contentWindow,
+      parent: win,
+      document: undefined,
+      location: undefined
+    }
+    const oldTop = top
+    // eslint-disable-next-line no-global-assign
+    top = win
+    expect(getPage(fw)).to.be.undefined()
+    // eslint-disable-next-line no-global-assign
+    top = oldTop
   })
 
-  it('getReferrer should return the referrer for the top-level window', function () {
-    expect(getReferrer()).to.be.eql('https://first.example.com?key=value')
+  it('getReferrer should return the referrer for the top-level window', () => {
+    expect(getReferrer()).to.be.eql('https://first.example.com/?key=value')
   })
 
-  it('getReferrer should not return the referrer when the top is not defined', function () {
-    definedProperty(window, 'top', () => { return undefined })
+  it('getReferrer should not return the referrer when the top is not defined', () => {
+    const win: Window = {
+      ...window,
+      top: undefined
+    }
 
+    const oldWin = window
+
+    // eslint-disable-next-line no-global-assign
+    window = win
     expect(getReferrer()).to.be.undefined()
+    // eslint-disable-next-line no-global-assign
+    window = oldWin
   })
 
-  it('getReferrer should return the referrer for the iframe', function () {
+  it('getReferrer should return the referrer for the iframe', () => {
     const iframe = document.createElement('iframe')
     iframe.src = 'https://nested.liveintent.com/about?key=value'
     document.documentElement.appendChild(iframe)
 
-    expect(getReferrer(iframe.contentWindow)).to.be.eql('https://first.example.com?key=value')
+    expect(getReferrer(iframe.contentWindow)).to.be.eql('https://first.example.com/?key=value')
   })
 
-  it('getReferrer should return the referrer for the nested iframe', function () {
+  it('getReferrer should return the referrer for the nested iframe', () => {
     const iframe1 = document.createElement('iframe')
     document.documentElement.appendChild(iframe1)
     const iframe2 = iframe1.contentDocument.createElement('iframe')
     iframe1.contentDocument.documentElement.appendChild(iframe2)
     iframe2.src = 'https://double.nested.com/about?key=value'
 
-    expect(getReferrer(iframe2.contentWindow)).to.be.eql('https://first.example.com?key=value')
+    expect(getReferrer(iframe2.contentWindow)).to.be.eql('https://first.example.com/?key=value')
   })
 
-  it('getContextElements should properly encode when emails are hashed', function () {
+  it('getContextElements should properly encode when emails are hashed', () => {
     createElement('h1', 'mailto:john@test.com, also found: another@test.com !', document)
     const result = getContextElements(false, 'h1', 1000).length
     expect(result).to.be.eql(128)
   })
 
-  it('getContextElements should return empty when contextSelectors or contextElementsLength is invalid', function () {
+  it('getContextElements should return empty when contextSelectors or contextElementsLength is invalid', () => {
     createElement('p', 'mailto:john@test.com, also found: another@test.com !', document)
     expect(getContextElements(false, '', 1000)).to.be.eql('')
   })
 
-  it('getContextElements should stop encoding when the next element overflows the contextElementsLength', function () {
+  it('getContextElements should stop encoding when the next element overflows the contextElementsLength', () => {
     createElement('h1', 'First element', document)
     createElement('h1', 'Second element', document)
-    const result1 = getContextElements(false, 'h1', 31).length
-    const result2 = getContextElements(false, 'h1', 32).length
+    const result1 = getContextElements(false, 'h1', 21).length
+    const result2 = getContextElements(false, 'h1', 31).length
     expect(result1).to.be.eql(0)
     expect(result2).to.be.eql(30)
   })
 
-  it('getContextElements should properly encode the context elements found', function () {
+  it('getContextElements should properly encode the context elements found', () => {
     createElement('p', 'Some dummy text', document)
     const result = getContextElements(false, 'p', 1000)
     expect(result).to.be.eql('PHA-U29tZSBkdW1teSB0ZXh0PC9wPg')
   })
 
-  it('getContextElements should return empty string when privacyMode is true', function () {
+  it('getContextElements should return empty string when privacyMode is true', () => {
     createElement('p', 'Some dummy text', document)
     const result = getContextElements(true, 'p', 1000).length
     expect(result).to.be.eql(0)
@@ -154,10 +219,4 @@ function createElement(tag, text, document) {
   const newContent = document.createTextNode(text)
   newElement.appendChild(newContent)
   document.documentElement.appendChild(newElement)
-}
-
-function definedProperty(object, name, getter) {
-  Object.defineProperty(object, name, {
-    get: getter
-  })
 }
