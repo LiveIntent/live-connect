@@ -176,7 +176,7 @@ describe('IdentityResolver without cache', () => {
   it('should return the default empty response and emit error if response is 500', (done) => {
     const identityResolver = IdentityResolver.makeNoCache({}, calls)
     const errorCallback = (error) => {
-      expect(error.message).to.be.eq('Incorrect status received : 500')
+      expect(error.message).to.match(/^Error during XHR call: 500/)
       done()
     }
     identityResolver.resolve(() => undefined, errorCallback)
