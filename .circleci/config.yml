@@ -186,13 +186,17 @@ workflows:
 
       - browserstack:
           name: browserstack_manual
-          context: org-global
+          context:
+            - org-global
+            - aws-region-us-east-1
           requires:
             - browserstack?
 
       - browserstack:
           name: browserstack_update_pr
-          context: org-global
+          context:
+            - org-global
+            - aws-region-us-east-1
           requires:
             - simple_test
           filters:
