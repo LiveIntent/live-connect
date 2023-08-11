@@ -12,6 +12,9 @@ parameters:
   browserstack_lock_name:
     type: string
     default: browserstack_global
+  lock_timeout_seconds:
+    type: integer
+    default: 7200
 
 references:
   releasable_branch: &releasable_branch
@@ -124,18 +127,17 @@ jobs:
       - dynamo-lock/setup:
           branches: '.*'
       - dynamo-lock/lock:
-          ttl: 7200
           lock_name: << pipeline.parameters.browserstack_lock_name >>
+          ttl: << pipeline.parameters.lock_timeout_seconds >>
+          no_output_timeout: << pipeline.parameters.lock_timeout_seconds >>s
           branches: '.*'
       - run:
           name: Run browserstack tests
           command: npm run test:it:browserstack
       - dynamo-lock/unlock-on-fail:
-          ttl: 7200
           lock_name: << pipeline.parameters.browserstack_lock_name >>
           branches: '.*'
       - dynamo-lock/unlock:
-          ttl: 7200
           lock_name: << pipeline.parameters.browserstack_lock_name >>
           branches: '.*'
       - store_test_results:
