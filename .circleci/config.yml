@@ -186,13 +186,17 @@ workflows:
 
       - browserstack:
           name: browserstack_manual
-          context: org-global
+          context:
+            - org-global
+            - dynolocker
           requires:
             - browserstack?
 
       - browserstack:
           name: browserstack_update_pr
-          context: org-global
+          context:
+            - org-global
+            - dynolocker
           requires:
             - simple_test
           filters:
