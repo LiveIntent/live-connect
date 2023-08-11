@@ -188,7 +188,7 @@ workflows:
           name: browserstack_manual
           context:
             - org-global
-            - aws-region-us-east-1
+            - dynolocker
           requires:
             - browserstack?
 
@@ -196,7 +196,7 @@ workflows:
           name: browserstack_update_pr
           context:
             - org-global
-            - aws-region-us-east-1
+            - dynolocker
           requires:
             - simple_test
           filters:
