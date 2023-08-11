@@ -1,14 +1,41 @@
 version: 2.1
 
 orbs:
+  scala-build: liveintent/scala-build@9.4
   node: circleci/node@5.0.3
+  dynamo-lock: gastfreund/dynamo-lock@1.0.1
 
 parameters:
   node_version:
     type: string
     default: "18.16.0"
+  browserstack_lock_name:
+    type: string
+    default: browserstack_global
 
 references:
+  releasable_branch: &releasable_branch
+    branches:
+      only: master
+    tags:
+      only: /^$/
+
+  prereleasable_branch: &manual_branch
+    branches:
+      ignore: /dependabot\/.*/
+    tags:
+      only: /^$/
+
+  update_pr: &update_pr
+    branches:
+      only: /dependabot\/.*/
+    tags:
+      only: /^$/
+
+  untagged_commit: &untagged_commit
+    tags:
+      only: /^$/
+
   restore_cache: &restore_cache
     restore_cache:
       key: dependency-cache-{{ checksum "package-lock.json" }}-{{ checksum "package.json" }}
@@ -94,9 +121,23 @@ jobs:
       - node/install:
           node-version: << pipeline.parameters.node_version >>
       - *npm_install
+      - dynamo-lock/setup:
+          branches: '.*'
+      - dynamo-lock/lock:
+          ttl: 7200
+          lock_name: << pipeline.parameters.browserstack_lock_name >>
+          branches: '.*'
       - run:
           name: Run browserstack tests
           command: npm run test:it:browserstack
+      - dynamo-lock/unlock-on-fail:
+          ttl: 7200
+          lock_name: << pipeline.parameters.browserstack_lock_name >>
+          branches: '.*'
+      - dynamo-lock/unlock:
+          ttl: 7200
+          lock_name: << pipeline.parameters.browserstack_lock_name >>
+          branches: '.*'
       - store_test_results:
           path: test-results
       - store_artifacts:
@@ -132,23 +173,45 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - simple_test
+      - simple_test:
+          filters:
+            <<: *untagged_commit
 
       - browserstack?:
           type: approval
           requires:
             - simple_test
+          filters:
+            <<: *manual_branch
 
       - browserstack:
+          name: browserstack_manual
           context: org-global
           requires:
             - browserstack?
+
+      - browserstack:
+          name: browserstack_update_pr
+          context: org-global
+          requires:
+            - simple_test
+          filters:
+            <<: *update_pr
+
+      - scala-build/merge_pr:
+          context: org-global
+          requires:
+            - browserstack_update_pr
+          filters:
+            <<: *update_pr
 
       - release_prepatch?:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
+          filters:
+            <<: *manual_branch
 
       - release:
           context: live-connect
@@ -161,7 +224,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
+          filters:
+            <<: *manual_branch
 
       - release:
           context: live-connect
@@ -174,7 +239,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
+          filters:
+            <<: *manual_branch
 
       - release:
           context: live-connect
@@ -187,10 +254,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
           filters:
-            branches:
-              only: master
+            <<: *releasable_branch
 
       - release:
           context: live-connect
@@ -203,10 +269,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
           filters:
-            branches:
-              only: master
+            <<: *releasable_branch
 
       - release:
           context: live-connect
@@ -219,10 +284,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
           filters:
-            branches:
-              only: master
+            <<: *releasable_branch
 
       - release:
           context: live-connect
@@ -235,10 +299,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
           filters:
-            branches:
-              only: master
+            <<: *releasable_branch
 
       - release:
           context: live-connect
@@ -251,10 +314,9 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack
+            - browserstack_manual
           filters:
-            branches:
-              only: master
+            <<: *releasable_branch
 
       - release:
           context: live-connect
@@ -262,6 +324,7 @@ workflows:
           increment: "major"
           requires:
             - release_major?
+
   daily-master:
     triggers:
       - schedule:
