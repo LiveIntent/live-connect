@@ -168,18 +168,18 @@ jobs:
     parallelism: 1
     machine: true
     steps:
-      - checkout
-      - *restore_cache
-      - *host_setup
-      - node/install:
-          node-version: << pipeline.parameters.node_version >>
-      - *npm_install
       - dynamo-lock/setup:
           branches: '.*'
       - dynamo-lock_lock:
           lock_name: << pipeline.parameters.browserstack_lock_name >>
           ttl: << pipeline.parameters.lock_timeout_seconds >>
           branches: '.*'
+      - checkout
+      - *restore_cache
+      - *host_setup
+      - node/install:
+          node-version: << pipeline.parameters.node_version >>
+      - *npm_install
       - run:
           name: Run browserstack tests
           command: npm run test:it:browserstack
