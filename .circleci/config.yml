@@ -23,7 +23,7 @@ references:
     tags:
       only: /^$/
 
-  prereleasable_branch: &manual_branch
+  manual_branch: &manual_branch
     branches:
       ignore: /dependabot\/.*/
     tags:
