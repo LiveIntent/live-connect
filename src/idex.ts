@@ -75,7 +75,7 @@ export class IdentityResolver {
     this.source = this.idexConfig.source || 'unknown'
     this.publisherId = this.idexConfig.publisherId || 'any'
     this.url = this.idexConfig.url || DEFAULT_IDEX_URL
-    this.timeout = this.idexConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
+    this.timeout = this.idexConfig.ajaxTimeout || config.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     this.requestedAttributes = this.idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
     this.tuples = []
 
