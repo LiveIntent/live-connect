@@ -393,4 +393,6 @@ workflows:
       - browserstack:
           requires:
             - simple_test
-          context: org-global
+          context:
+            - org-global
+            - dynolocker
