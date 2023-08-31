@@ -28,6 +28,7 @@ export interface LiveConnectConfig {
   globalVarName?: string
   urlCollectionMode?: UrlCollectionMode
   queryParametersFilter?: string
+  ajaxTimeout?: number
 }
 
 export type ResolutionParams = Record<string, string | string[]>

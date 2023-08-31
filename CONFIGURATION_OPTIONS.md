@@ -127,6 +127,9 @@ Example:
 }
 ```
 
+### `ajaxTimeout` [Optional, HasDefault]
+This configuration parameter sets the maximum duration of calls to all endpoints. By default, there is no timeout. Please refer to `identityResolutionConfig.ajaxTimeout` for the special handling of the timeout for the IdentityResolution endpoint.
+
 #### `identityResolutionConfig` [Optional, HasDefault]
 LiveConnect module comes with a functionality to resolve all the identifiers set in the `identifiersToResolve`, additionally to the first party ones created by LiveConnect (in case `storageStrategy` is anything else than `none`, and an actual identifier has been stored).
 This configuration setting consists of the following
@@ -158,7 +161,8 @@ sets the cookie expiration time to 4 hours, which means that in a given browser,
 
 ##### `identityResolutionConfig.ajaxTimeout` [Optional, HasDefault]
 By default, 5000 milliseconds.
-This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked.
+This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. If `identityResolutionConfig.ajaxTimeout` is not configured and the global `ajaxTimeout` is configured, the global setting is used. If none of the two is configured, the default of 5000ms is used. 
+
 Example:
 ```javascript
 {

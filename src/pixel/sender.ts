@@ -8,6 +8,7 @@ const DEFAULT_AJAX_TIMEOUT = 0
 
 export class PixelSender {
   url: string
+  timeout: number
   calls: WrappedCallHandler
   eventBus: EventBus
   onload?: () => void
@@ -15,6 +16,7 @@ export class PixelSender {
 
   constructor (liveConnectConfig: LiveConnectConfig, calls: WrappedCallHandler, eventBus: EventBus, onload?: () => void, presend?: () => void) {
     this.url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
+    this.timeout = (liveConnectConfig && liveConnectConfig.ajaxTimeout) || DEFAULT_AJAX_TIMEOUT
     this.calls = calls
     this.eventBus = eventBus
     this.onload = onload
@@ -59,7 +61,7 @@ export class PixelSender {
           this.sendPixel(state)
           this.eventBus.emitError('AjaxFailed', e)
         },
-        DEFAULT_AJAX_TIMEOUT
+        this.timeout
       )
     })
   }
