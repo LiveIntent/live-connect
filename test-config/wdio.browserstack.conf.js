@@ -1,4 +1,6 @@
 import commonConfig from './wdio.common.conf.js'
+import http from 'http';
+import https from 'https';
 const currentTime = Date.now()
 const commonBStackCapabilities = {
   projectName: 'LiveConnect',
@@ -94,6 +96,10 @@ export const config = {
   key: process.env.BS_KEY,
   hostname: 'hub.browserstack.com',
 
+  agent: {
+    http: new http.Agent({ keepAlive: true }),
+    https: new https.Agent({ keepAlive: true })
+  },
   //
   // The number of times to retry the entire specfile when it fails as a whole
   specFileRetries: 2

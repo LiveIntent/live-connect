@@ -207,21 +207,11 @@ export function MockServerFactory(config) {
       const afterPage = await getText('#after')
       assert.strictEqual(afterPage, 'After')
     },
-    getHistory: () => {
-      return history
-    },
-    getIdexHistory: () => {
-      return idex
-    },
-    getBakerHistory: () => {
-      return bakerHistory
-    },
-    getTrackingRequests: () => {
-      return history.filter(req => req.query.ae === undefined)
-    },
-    getApplicationErrors: () => {
-      return history.filter(req => req.query.ae !== undefined)
-    },
+    getHistory: () => history,
+    getIdexHistory: () => idex,
+    getBakerHistory: () => bakerHistory,
+    getTrackingRequests: () => history.filter(req => req.query.ae === undefined),
+    getApplicationErrors: () => history.filter(req => req.query.ae !== undefined),
     clearHistory: () => {
       idex = []
       history = []
