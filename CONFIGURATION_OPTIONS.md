@@ -128,7 +128,8 @@ Example:
 ```
 
 ### `ajaxTimeout` [Optional, HasDefault]
-This configuration parameter sets the maximum duration of calls to all endpoints. By default, there is no timeout.
+This configuration parameter sets the maximum duration of calls to all endpoints. By default, there is no timeout. Please refer to `identityResolutionConfig.ajaxTimeout` for the special handling of the timeout for
+the IdentityResolution endpoint.
 
 #### `identityResolutionConfig` [Optional, HasDefault]
 LiveConnect module comes with a functionality to resolve all the identifiers set in the `identifiersToResolve`, additionally to the first party ones created by LiveConnect (in case `storageStrategy` is anything else than `none`, and an actual identifier has been stored).
