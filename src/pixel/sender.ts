@@ -4,7 +4,7 @@ import { LiveConnectConfig, EventBus } from '../types'
 import { StateWrapper } from './state'
 import { WrappedCallHandler } from '../handlers/call-handler'
 
-const DEFAULT_AJAX_TIMEOUT = 1000
+const DEFAULT_AJAX_TIMEOUT = 0
 
 export class PixelSender {
   url: string
