@@ -9,3 +9,12 @@ updates:
       interval: "daily"
     labels:
       - "dependabot"
+    # group all minor or patch updates in one PR except for live-connect family.ignore:
+    # The only reason for this grouping is to cut on BrowserStack runs
+    groups:
+      npm-packages:
+        exclude-patterns:
+          - "live-connect*"
+        update-types:
+          - "minor"
+          - "patch"
