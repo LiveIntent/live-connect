@@ -21,7 +21,6 @@ export default [
         ],
         plugins: [
             cleaner({ targets: [OUTPUT_DIR] }),
-            commonJs({}),
             ts({
                 compilerOptions: {
                     outDir: OUTPUT_DIR,
