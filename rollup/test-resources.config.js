@@ -14,7 +14,7 @@ export default {
     format: 'iife'
   },
   plugins: [
-    ...config.plugins,
+    ...config[0].plugins,
     replace({
       preventAssignment: true,
       LC_VERSION: JSON.stringify(`${packageJson.versionPrefix}${packageJson.version}`)
