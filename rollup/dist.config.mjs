@@ -5,6 +5,7 @@ import mjsEntry from 'rollup-plugin-mjs-entry'
 import dts from 'rollup-plugin-dts'
 import del from "rollup-plugin-delete";
 import terser from '@rollup/plugin-terser'
+import commonJs from '@rollup/plugin-commonjs'
 
 const OUTPUT_DIR = './dist'
 
@@ -20,6 +21,7 @@ export default [
         ],
         plugins: [
             cleaner({ targets: [OUTPUT_DIR] }),
+            commonJs({}),
             ts({
                 compilerOptions: {
                     outDir: OUTPUT_DIR,

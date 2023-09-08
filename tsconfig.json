@@ -9,8 +9,7 @@
     "declaration": true,
     "sourceMap": true,
     "moduleResolution": "Node",
-    "module": "ESNext",
-    "target": "es5"
+    "module": "ESNext"
   },
   "include": ["./src/**/*", "./test/**/*"]
 }
