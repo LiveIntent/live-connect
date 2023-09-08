@@ -20,7 +20,7 @@ import dirtyChai from 'dirty-chai'
 import fs from 'fs'
 import path from 'path'
 
-const packageJson = JSON.parse(fs.readFileSync(path.resolve('..', '..', 'package.json'), { encoding: 'utf-8' }))
+const packageJson = JSON.parse(fs.readFileSync(path.resolve('package.json'), { encoding: 'utf-8' }))
 
 use(dirtyChai)
 
