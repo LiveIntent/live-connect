@@ -33,9 +33,9 @@
   "scripts": {
     "test:unit": "npm run lint && ts-mocha -p ./tsconfig-test.json --config test-config/mocha.unit.json",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "test:it:browserstack": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig.json wdio test-config/wdio.browserstack.conf.mjs",
-    "test:it:docker:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig.json wdio test-config/wdio.docker.chrome.conf.mjs",
-    "test:it:local:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig.json wdio test-config/wdio.local.chrome.conf.mjs",
+    "test:it:browserstack": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.browserstack.conf.mjs",
+    "test:it:docker:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.docker.chrome.conf.mjs",
+    "test:it:local:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.local.chrome.conf.mjs",
     "build": "rollup -c rollup/dist.config.mjs",
     "build-test-resources": "rollup -c rollup/test-resources.config.mjs",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
