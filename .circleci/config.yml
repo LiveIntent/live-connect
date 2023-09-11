@@ -298,6 +298,21 @@ workflows:
           filters:
             <<: *manual_branch
 
+      - release_bump_prerelease?:
+          context: live-connect
+          type: approval
+          requires:
+            - browserstack_manual
+          filters:
+            <<: *manual_branch
+
+      - release:
+          context: live-connect
+          name: release_bump_prerelease
+          increment: "bump-prerelease"
+          requires:
+            - release_bump_prerelease?
+
       - release:
           context: live-connect
           name: release_premajor

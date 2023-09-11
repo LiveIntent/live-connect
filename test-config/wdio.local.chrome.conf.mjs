@@ -1,4 +1,4 @@
-import common from './wdio.common.conf.js'
+import common from './wdio.common.conf.mjs'
 
 export const config = {
   ...common('local'),

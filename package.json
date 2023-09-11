@@ -13,15 +13,15 @@
   "engines": {
     "node": ">=18"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.cjs.mjs",
-  "types": "./dist/src/index.d.ts",
-  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "type": "commonjs",
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.cjs.mjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
     },
     "./package.json": "./package.json"
   },
@@ -33,11 +33,11 @@
   "scripts": {
     "test:unit": "npm run lint && ts-mocha -p ./tsconfig-test.json --config test-config/mocha.unit.json",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "test:it:browserstack": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig.json wdio test-config/wdio.browserstack.conf.js",
-    "test:it:docker:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig.json wdio test-config/wdio.docker.chrome.conf.js",
-    "test:it:local:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig.json wdio test-config/wdio.local.chrome.conf.js",
-    "build": "rollup -c rollup/dist.config.js",
-    "build-test-resources": "rollup -c rollup/test-resources.config.js",
+    "test:it:browserstack": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.browserstack.conf.mjs",
+    "test:it:docker:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.docker.chrome.conf.mjs",
+    "test:it:local:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.local.chrome.conf.mjs",
+    "build": "rollup -c rollup/dist.config.mjs",
+    "build-test-resources": "rollup -c rollup/test-resources.config.mjs",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "fix-js": "eslint --fix 'src/**/*.ts' 'test/**/*.ts' || exit 0",
     "release:ci:prepatch": "release-it patch --preRelease=alpha-$(git rev-parse --short HEAD) --ci",
@@ -51,8 +51,7 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
-    "live-connect-common": "^3.0.0",
-    "live-connect-handlers": "^2.1.0",
+    "live-connect-common": "^v3.0.1",
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
@@ -60,8 +59,8 @@
     "@babel/preset-env": "^7.22.5",
     "@babel/runtime": "^7.22.5",
     "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^25.0.2",
-    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.1",
     "@rollup/plugin-replace": "^5.0.2",
     "@rollup/plugin-strip": "^3.0.2",
     "@rollup/plugin-terser": "^0.4.3",
@@ -99,11 +98,14 @@
     "eslint-plugin-wdio": "^8.8.7",
     "express": "^4.18.2",
     "global-jsdom": "^9.0.1",
+    "live-connect-handlers": "^2.1.1",
     "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.2.0",
     "release-it": "^16.1.5",
     "rollup": "^3.25.3",
     "rollup-plugin-cleaner": "^1.0.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-dts": "^6.0.1",
     "rollup-plugin-mjs-entry": "^0.1.1",
     "serialize-javascript": ">=6.0.1",
     "sinon": "^15.2.0",

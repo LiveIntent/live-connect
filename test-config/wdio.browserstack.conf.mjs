@@ -1,4 +1,4 @@
-import commonConfig from './wdio.common.conf.js'
+import commonConfig from './wdio.common.conf.mjs'
 import http from 'http';
 import https from 'https';
 const currentTime = Date.now()
