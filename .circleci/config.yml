@@ -302,7 +302,7 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - build_and_test
+            - browserstack_manual
           filters:
             <<: *manual_branch
 
