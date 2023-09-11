@@ -51,7 +51,7 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
-    "live-connect-common": "v3.0.1-alpha-2ef8d07.0",
+    "live-connect-common": "^v3.0.1",
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
@@ -98,7 +98,7 @@
     "eslint-plugin-wdio": "^8.8.7",
     "express": "^4.18.2",
     "global-jsdom": "^9.0.1",
-    "live-connect-handlers": "^2.1.0",
+    "live-connect-handlers": "^2.1.1",
     "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.2.0",
     "release-it": "^16.1.5",
