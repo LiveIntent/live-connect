@@ -136,4 +136,26 @@ describe('StorageHandler', () => {
     expect(storageHandler.get('key')).to.be.null()
     expect(storage.getCookie('key')).to.be.null()
   })
+
+  it('should update expiration when overwriting localstorage with expiration with one without', () => {
+    const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
+    storageHandler.set('key', 'value', expiresInDays(5), 'example.com')
+    storageHandler.set('key', 'value', undefined, 'example.com')
+
+    const result = storageHandler.get('key')
+
+    expect(result?.data).to.be.eq('value')
+    expect(result?.expiresAt).to.be.undefined()
+  })
+
+  it('should update expiration when overwriting a cookie with expiration with one without', () => {
+    const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
+    storageHandler.set('key', 'value', expiresInDays(5), 'example.com')
+    storageHandler.set('key', 'value', undefined, 'example.com')
+
+    const result = storageHandler.get('key')
+
+    expect(result?.data).to.be.eq('value')
+    expect(result?.expiresAt).to.be.undefined()
+  })
 })

@@ -76,7 +76,7 @@ export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler impleme
     let expiresAt: Date | undefined
 
     const cookieExpirationEntry = this.getCookie(expirationKey(key))
-    if (cookieExpirationEntry) {
+    if (cookieExpirationEntry && cookieExpirationEntry.length > 0) {
       expiresAt = new Date(cookieExpirationEntry)
       if (expiresAt <= new Date()) {
         return null
@@ -131,10 +131,19 @@ export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler impleme
       // pass
     } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage) && this.localStorageIsEnabled()) {
       this.setDataInLocalStorage(key, value)
-      this.setDataInLocalStorage(expirationKey(key), `${expires}`)
+      if (expires) {
+        this.setDataInLocalStorage(expirationKey(key), `${expires}`)
+      } else {
+        this.removeDataFromLocalStorage(expirationKey(key))
+      }
     } else {
       this.setCookie(key, value, expires, 'Lax', domain)
-      this.setCookie(expirationKey(key), `${expires}`, expires, 'Lax', domain)
+      if (expires) {
+        this.setCookie(expirationKey(key), `${expires}`, expires, 'Lax', domain)
+      } else {
+        // sentinel value to indicate no expiration
+        this.setCookie(expirationKey(key), '', undefined, 'Lax', domain)
+      }
     }
   }
 
