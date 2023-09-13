@@ -7,8 +7,13 @@ import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedI
 import { WrappedStorageHandler } from './handlers/storage-handler'
 import { WrappedCallHandler } from './handlers/call-handler'
 
+export type CacheRecord = {
+  data: unknown
+  expiresAt?: Date
+}
+
 interface Cache {
-  get: (key: unknown) => unknown // null will be used to signal missing value
+  get: (key: unknown) => CacheRecord | null // null will be used to signal missing value
   set: (key: unknown, value: unknown, expiration?: Date) => void
 }
 
@@ -28,9 +33,9 @@ function storageHandlerBackedCache(defaultExpirationHours: number, domain: strin
     get: (key) => {
       const cachedValue = storageHandler.get(_cacheKey(key))
       if (cachedValue) {
-        return JSON.parse(cachedValue)
+        return { data: JSON.parse(cachedValue.data), expiresAt: cachedValue.expiresAt }
       } else {
-        return cachedValue
+        return null
       }
     },
     set: (key, value, expiresAt) => {
@@ -119,7 +124,7 @@ export class IdentityResolver {
 
   private responseReceived(
     additionalParams: ResolutionParams,
-    successCallback: (result: unknown) => void
+    successCallback: (result: unknown, expiresAt?: Date) => void
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
       let responseObj = {}
@@ -135,14 +140,14 @@ export class IdentityResolver {
       const expiresAt = responseExpires(response)
 
       this.cache.set(additionalParams, responseObj, expiresAt)
-      successCallback(responseObj)
+      successCallback(responseObj, expiresAt)
     }
   }
 
-  unsafeResolve(successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
+  unsafeResolve(successCallback: (result: unknown, expiresAt?: Date) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
     const cachedValue = this.cache.get(additionalParams)
     if (cachedValue) {
-      successCallback(cachedValue)
+      successCallback(cachedValue.data, cachedValue.expiresAt)
     } else {
       this.calls.ajaxGet(
         this.getUrl(additionalParams),
@@ -159,7 +164,7 @@ export class IdentityResolver {
     return `${this.url}/${this.source}/${this.publisherId}${params}`
   }
 
-  resolve(successCallback: (result: unknown) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
+  resolve(successCallback: (result: unknown, expiresAt?: Date) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
     try {
       this.unsafeResolve(successCallback, errorCallback, additionalParams || {})
     } catch (e) {

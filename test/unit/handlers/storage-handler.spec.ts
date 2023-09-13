@@ -66,7 +66,7 @@ describe('StorageHandler', () => {
   it('should use local storage', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
-    expect(storageHandler.get('key')).to.be.eq('value')
+    expect(storageHandler.get('key')?.data).to.be.eq('value')
     expect(storage.getDataFromLocalStorage('key')).to.be.eq('value')
     expect(storageHandler.get('unknownKey')).to.be.null()
   })
@@ -74,7 +74,7 @@ describe('StorageHandler', () => {
   it('should use cookies', () => {
     const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
-    expect(storageHandler.get('key')).to.be.eq('value')
+    expect(storageHandler.get('key')?.data).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
     expect(storageHandler.get('unknownKey')).to.be.null()
   })
@@ -83,7 +83,7 @@ describe('StorageHandler', () => {
     // @ts-expect-error
     const storageHandler = WrappedStorageHandler.make(null, storage, eventBus)
     storageHandler.set('key', 'value', expiresInDays(1), 'example.com')
-    expect(storageHandler.get('key')).to.be.eq('value')
+    expect(storageHandler.get('key')?.data).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
     expect(storageHandler.get('unknownKey')).to.be.null()
   })

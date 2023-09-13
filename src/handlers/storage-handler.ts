@@ -2,6 +2,11 @@ import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
 import { EventBus, ReadOnlyStorageHandler, StorageHandler, strEqualsIgnoreCase } from 'live-connect-common'
 import { WrappingContext } from '../utils/wrapping'
 
+type StorageRecord = {
+  data: string
+  expiresAt?: Date
+}
+
 const noop = () => undefined
 
 function wrapRead<T extends object, K extends keyof T & string>(wrapper: WrappingContext<T>, storageStrategy: StorageStrategy, functionName: K) {
@@ -67,36 +72,69 @@ export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler impleme
     return handler
   }
 
-  get(key: string): string | null {
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
+  private getCookieRecord(key: string): StorageRecord | null {
+    let expiresAt: Date | undefined
+
+    const cookieExpirationEntry = this.getCookie(expirationKey(key))
+    if (cookieExpirationEntry) {
+      expiresAt = new Date(cookieExpirationEntry)
+      if (expiresAt <= new Date()) {
+        return null
+      }
+    }
+
+    const data = this.getCookie(key)
+    if (data) {
+      return { data, expiresAt }
+    } else {
       return null
-    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
-      if (this.localStorageIsEnabled()) {
-        const expirationKey = `${key}_exp`
-        const oldLsExpirationEntry = this.getDataFromLocalStorage(expirationKey)
-        if (oldLsExpirationEntry && Date.parse(oldLsExpirationEntry) <= new Date().getTime()) {
+    }
+  }
+
+  private getLSRecord(key: string): StorageRecord | null {
+    if (this.localStorageIsEnabled()) {
+      let expiresAt: Date | undefined
+      const oldLsExpirationEntry = this.getDataFromLocalStorage(expirationKey(key))
+
+      if (oldLsExpirationEntry) {
+        expiresAt = new Date(oldLsExpirationEntry)
+        if (expiresAt <= new Date()) {
           this.removeDataFromLocalStorage(key)
+          this.removeDataFromLocalStorage(expirationKey(key))
+          return null
         }
-        return this.getDataFromLocalStorage(key)
+      }
+
+      const data = this.getDataFromLocalStorage(key)
+      if (data) {
+        return { data, expiresAt }
       } else {
         return null
       }
     } else {
-      return this.getCookie(key)
+      return null
     }
   }
 
-  set(key: string, value: string, expires: Date, domain?: string): void {
+  get(key: string): StorageRecord | null {
+    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
+      return null
+    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
+      return this.getLSRecord(key)
+    } else {
+      return this.getCookieRecord(key)
+    }
+  }
+
+  set(key: string, value: string, expires?: Date, domain?: string): void {
     if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
       // pass
-    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
-      if (this.localStorageIsEnabled()) {
-        const expirationKey = `${key}_exp`
-        this.setDataInLocalStorage(key, value)
-        this.setDataInLocalStorage(expirationKey, `${expires}`)
-      }
+    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage) && this.localStorageIsEnabled()) {
+      this.setDataInLocalStorage(key, value)
+      this.setDataInLocalStorage(expirationKey(key), `${expires}`)
     } else {
       this.setCookie(key, value, expires, 'Lax', domain)
+      this.setCookie(expirationKey(key), `${expires}`, expires, 'Lax', domain)
     }
   }
 
@@ -115,4 +153,8 @@ export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler impleme
   findSimilarCookies(substring: string): string[] {
     return this.functions.findSimilarCookies(substring) || []
   }
+}
+
+function expirationKey(baseKey: string): string {
+  return `${baseKey}_exp`
 }

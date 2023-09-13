@@ -111,7 +111,9 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
-      eventBus: eventBus
+      eventBus: eventBus,
+      storageHandler: storageHandler,
+      callHandler: callHandler,
     }
   } catch (x) {
     console.error(x)

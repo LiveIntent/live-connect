@@ -31,7 +31,9 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
-      eventBus: eventBus
+      eventBus: eventBus,
+      storageHandler: storageHandler,
+      callHandler: callHandler
     }
   } catch (x) {
     console.error(x)
@@ -49,7 +51,7 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
   const queue = window[liveConnectConfig.globalVarName] = window[liveConnectConfig.globalVarName] || []
   const push = queue.push.bind(queue)
   const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, push)
-  
+
   window.liQ_instances = window.liQ_instances || []
   if (window.liQ_instances.filter(i => i.config.globalVarName === lc.config.globalVarName).length === 0) {
     window.liQ_instances.push(lc)

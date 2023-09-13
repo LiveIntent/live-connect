@@ -31,14 +31,14 @@ export function resolve(state: State, storageHandler: WrappedStorageHandler, eve
 
     const getOrAddWithExpiration = (key: string, value: string) => {
       try {
-        const oldValue = storageHandler.get(key)
+        const oldValue = storageHandler.get(key)?.data
         const expiry = expiresInDays(storageOptions.expires)
         if (oldValue) {
           storageHandler.set(key, oldValue, expiry, storageOptions.domain)
         } else {
           storageHandler.set(key, value, expiry, storageOptions.domain)
         }
-        return storageHandler.get(key)
+        return storageHandler.get(key)?.data
       } catch (e) {
         eventBus.emitErrorWithMessage('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
         return null
