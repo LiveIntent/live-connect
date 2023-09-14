@@ -5,72 +5,36 @@ import { expiresInDays } from 'live-connect-common'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 import { EventBus, State } from '../types'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
+import { DurableCache } from '../cache'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
-const TLD_CACHE_KEY = '_li_dcdm_c'
 const DEFAULT_EXPIRATION_DAYS = 730
 
-export function resolve(state: State, storageHandler: WrappedStorageHandler, eventBus: EventBus): State {
-  try {
-    const determineTld = () => {
-      const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
-      if (cachedDomain) {
-        return cachedDomain
-      }
-      const domain = loadedDomain()
-      const arr = domain.split('.')
-      for (let i = arr.length; i > 0; i--) {
-        const newD = `.${arr.slice(i - 1, arr.length).join('.')}`
-        storageHandler.setCookie(TLD_CACHE_KEY, newD, undefined, 'Lax', newD)
-        if (storageHandler.getCookie(TLD_CACHE_KEY)) {
-          return newD
-        }
-      }
-      return `.${domain}`
-    }
+export function resolve(
+  state: { expirationDays?: number, domain: string },
+  storageHandler: WrappedStorageHandler,
+  cache: DurableCache,
+  eventBus: EventBus
+): State {
+  const expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS
+  const oldValue = cache.get(NEXT_GEN_FP_NAME)?.data
 
-    const getOrAddWithExpiration = (key: string, value: string) => {
-      try {
-        const oldValue = storageHandler.get(key)?.data
-        const expiry = expiresInDays(storageOptions.expires)
-        if (oldValue) {
-          storageHandler.set(key, oldValue, expiry, storageOptions.domain)
-        } else {
-          storageHandler.set(key, value, expiry, storageOptions.domain)
-        }
-        return storageHandler.get(key)?.data
-      } catch (e) {
-        eventBus.emitErrorWithMessage('CookieLsGetOrAdd', 'Failed manipulating cookie jar or ls', e)
-        return null
-      }
-    }
+  if (oldValue) {
+    cache.set(NEXT_GEN_FP_NAME, oldValue, expiresInDays(expiry))
+  } else {
+    const newValue = `${domainHash(state.domain)}--${ulid()}`
 
-    const generateCookie = (apexDomain: string) => {
-      const cookie = `${domainHash(apexDomain)}--${ulid()}`
-      return cookie.toLocaleLowerCase()
-    }
+    cache.set(NEXT_GEN_FP_NAME, newValue, expiresInDays(expiry))
+  }
 
-    const expiry = state.expirationDays || DEFAULT_EXPIRATION_DAYS
-    const cookieDomain = determineTld()
-    const storageOptions = {
-      expires: expiry,
-      domain: cookieDomain
-    }
-    const liveConnectIdentifier = getOrAddWithExpiration(
-      NEXT_GEN_FP_NAME,
-      generateCookie(cookieDomain)
-    ) || undefined
+  const liveConnectIdentifier = cache.get(NEXT_GEN_FP_NAME)?.data || undefined
 
-    if (liveConnectIdentifier) {
-      storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)
-    }
-    return {
-      domain: cookieDomain,
-      liveConnectId: liveConnectIdentifier,
-      peopleVerifiedId: liveConnectIdentifier
-    }
-  } catch (e) {
-    eventBus.emitErrorWithMessage('IdentifiersResolve', 'Error while managing identifiers', e)
-    return {}
+  if (liveConnectIdentifier) {
+    storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)
+  }
+
+  return {
+    liveConnectId: liveConnectIdentifier,
+    peopleVerifiedId: liveConnectIdentifier
   }
 }

@@ -4,7 +4,7 @@ import { fiddle, mergeObjects } from './fiddler'
 import { isObject, trim, isArray, nonNull } from 'live-connect-common'
 import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform } from '../utils/params'
 import { toParams } from '../utils/url'
-import { EventBus, State } from '../types'
+import { Enricher, EventBus, State } from '../types'
 import { collectUrl } from './url-collector'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
@@ -106,6 +106,16 @@ export class StateWrapper {
 
   combineWith(newInfo: State): StateWrapper {
     return new StateWrapper(mergeObjects(this.data, newInfo), this.eventBus)
+  }
+
+  enrich(enrichers: Enricher[]): void {
+    enrichers.forEach((enricher) => {
+      try {
+        enricher(this.data)
+      } catch (e) {
+        this.eventBus.emitErrorWithMessage('StateEnrich', 'Error while enriching state', e)
+      }
+    })
   }
 
   sendsPixel() {

@@ -4,6 +4,8 @@ import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
 import { ErrorDetails } from 'live-connect-common'
 
+export type Enricher = (state: State) => void // should mutate state in-place
+
 export interface IdentityResolutionConfig {
   url?: string
   expirationHours?: number

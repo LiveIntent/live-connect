@@ -18,6 +18,8 @@ import { WrappedCallHandler } from './handlers/call-handler'
 import { StorageStrategies } from './model/storage-strategy'
 import { ConfigMismatch, EventBus, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
+import { determineHighestAccessibleDomain } from './utils/domain'
+import { makeCache } from './cache'
 
 const hemStore: State = {}
 function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
@@ -83,12 +85,26 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
 
 function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   try {
-    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
+    // TODO: proper config validation
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
+
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
+
     const configWithPrivacy = mergeObjects(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
-    errorHandler.register(configWithPrivacy, callHandler, eventBus)
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
+    const domain = determineHighestAccessibleDomain(storageHandler)
+    const configWithDomain = mergeObjects(configWithPrivacy, { domain: domain })
+
+    errorHandler.register(configWithDomain, callHandler, eventBus)
+
+    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : (configWithPrivacy.storageStrategy || StorageStrategies.cookie)
     const storageHandler = WrappedStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
+
+    const cache  = makeCache({
+      strategy: storageStrategy,
+      storageHandler: storageHandler,
+      domain: domain,
+    })
+
     const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler, eventBus))
 
     const enrichers = [pageEnrich, identifiersEnrich]
@@ -102,7 +118,9 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
     const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
     const resolver = IdentityResolver.make(postManagedState.data, storageHandler, callHandler, eventBus)
+
     const _push = (...args: any[]) => _processArgs(args, pixelClient, postManagedState, eventBus)
+
     return {
       push: _push,
       fire: () => _push({}),
