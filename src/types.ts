@@ -1,3 +1,5 @@
+import { WrappedCallHandler } from './handlers/call-handler'
+import { WrappedStorageHandler } from './handlers/storage-handler'
 import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
 import { ErrorDetails } from 'live-connect-common'
@@ -102,5 +104,7 @@ export interface ILiveConnect {
   resolutionCallUrl?: (additionalParams: ResolutionParams) => string
   peopleVerifiedId?: string
   config: LiveConnectConfig
-  eventBus?: EventBus
+  eventBus?: EventBus,
+  callHandler?: WrappedCallHandler,
+  storageHandler?: WrappedStorageHandler,
 }
