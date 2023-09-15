@@ -51,7 +51,7 @@
     "release:ci:major": "release-it major --ci"
   },
   "dependencies": {
-    "live-connect-common": "^v3.0.1",
+    "live-connect-common": "^v3.0.2",
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
