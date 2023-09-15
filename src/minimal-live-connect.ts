@@ -1,39 +1,51 @@
 // @ts-nocheck
 /* eslint-disable */
-import { mergeObjects } from './pixel/fiddler'
+import { EnrichmentContext } from './pixel/fiddler'
 import { IdentityResolver } from './idex'
-import { enrich as peopleVerified } from './enrichers/people-verified'
-import { enrich as additionalIdentifiers } from './enrichers/identifiers-nohash'
-import { enrich as privacyConfig } from './enrichers/privacy-config'
+import { enrichIdentifiers } from './enrichers/identifiers-nohash'
+import { enrichPrivacyMode } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
-import { WrappedReadOnlyStorageHandler } from './handlers/storage-handler'
-import { WrappedCallHandler } from './handlers/call-handler'
-import { StorageStrategies } from './model/storage-strategy'
 import { EventBus, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 import { ReadOnlyStorageHandler, CallHandler, isObject } from 'live-connect-common'
+import { enrichCallHandler } from './enrichers/call-handler'
+import { enrichReadOnlyStorageHandler } from './enrichers/storage-handler'
+import { enrichStorageStrategy } from './enrichers/storage-strategy'
+import { enrichPeopleVerifiedId } from './enrichers/people-verified-id'
 
 function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus, push: (event: unknown) => void): ILiveConnect {
   try {
-    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
-    const configWithPrivacy = mergeObjects(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : configWithPrivacy.storageStrategy
-    const storageHandler = WrappedReadOnlyStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
-    const peopleVerifiedData = mergeObjects(configWithPrivacy, peopleVerified(configWithPrivacy, storageHandler, eventBus))
-    const peopleVerifiedDataWithAdditionalIds = mergeObjects(peopleVerifiedData, additionalIdentifiers(peopleVerifiedData, storageHandler, eventBus))
-    const resolver = IdentityResolver.makeNoCache(peopleVerifiedDataWithAdditionalIds, callHandler, eventBus)
+
+    const stateBuilder = new EnrichmentContext({
+      ...validLiveConnectConfig,
+      identifiersToResolve: validLiveConnectConfig.identifiersToResolve || [],
+      eventBus: eventBus,
+      storageHandler: externalStorageHandler,
+      callHandler: externalCallHandler
+    })
+
+    const enrichedState = stateBuilder
+      .via(enrichCallHandler)
+      .via(enrichPrivacyMode)
+      .via(enrichStorageStrategy)
+      .via(enrichReadOnlyStorageHandler)
+      .via(enrichPeopleVerifiedId)
+      .via(enrichIdentifiers)
+      .data
+
+    const resolver = IdentityResolver.makeNoCache(enrichedState, enrichedState.callHandler, eventBus)
+
     return {
       push: (arg) => push(arg),
       fire: () => push({}),
-      peopleVerifiedId: peopleVerifiedDataWithAdditionalIds.peopleVerifiedId,
+      peopleVerifiedId: enrichedState.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus: eventBus,
-      storageHandler: storageHandler,
-      callHandler: callHandler
+      storageHandler: enrichedState.storageHandler
     }
   } catch (x) {
     console.error(x)

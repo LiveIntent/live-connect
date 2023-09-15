@@ -108,16 +108,6 @@ export class StateWrapper {
     return new StateWrapper(mergeObjects(this.data, newInfo), this.eventBus)
   }
 
-  enrich(enrichers: Enricher[]): void {
-    enrichers.forEach((enricher) => {
-      try {
-        enricher(this.data)
-      } catch (e) {
-        this.eventBus.emitErrorWithMessage('StateEnrich', 'Error while enriching state', e)
-      }
-    })
-  }
-
   sendsPixel() {
     const source = isObject(this.data.eventSource) ? this.data.eventSource : {}
     const eventKeys = Object.keys(source)

@@ -51,12 +51,12 @@ export function asErrorDetails(e: unknown): State {
   }
 }
 
-export function register(state: State, callHandler: WrappedCallHandler, eventBus: EventBus): void {
+export function register(state: {}, callHandler: WrappedCallHandler, eventBus: EventBus): void {
   try {
     const pixelSender = new PixelSender(state, callHandler, eventBus)
 
     eventBus.on(ERRORS_CHANNEL, (error) => {
-      pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state || {}).combineWith(page.enrich({})))
+      pixelSender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state || {}))
     })
   } catch (e) {
     console.error('handlers.error.register', e)

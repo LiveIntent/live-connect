@@ -1,20 +1,22 @@
 import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from 'live-connect-common'
-import { EventBus, RetrievedIdentifier, State } from '../types'
+import { Enricher, EventBus, RetrievedIdentifier, State } from '../types'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
-export function enrich(state: State, storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus): State {
+type Input = {identifiersToResolve: string | string[], storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus}
+type Output = {retrievedIdentifiers: RetrievedIdentifier[]}
+
+export const enrichIdentifiers: Enricher<Input, Output> = state => {
   try {
-    return _parseIdentifiersToResolve(state, storageHandler)
+    return { ...state, retrievedIdentifiers: resolveIdentifiers(state.identifiersToResolve, state.storageHandler) }
   } catch (e) {
-    eventBus.emitError('IdentifiersEnrich', e)
-    return {}
+    state.eventBus.emitError('IdentifiersEnrich', e)
+    return { ...state, retrievedIdentifiers: [] }
   }
 }
 
-function _parseIdentifiersToResolve(state: State, storageHandler: WrappedReadOnlyStorageHandler): State {
-  state.identifiersToResolve = state.identifiersToResolve || []
-  const cookieNames = isArray(state.identifiersToResolve) ? state.identifiersToResolve : safeToString(state.identifiersToResolve).split(',')
+function resolveIdentifiers(identifiersToResolve: string | string[], storageHandler: WrappedReadOnlyStorageHandler): RetrievedIdentifier[] {
+  const cookieNames = isArray(identifiersToResolve) ? identifiersToResolve : safeToString(identifiersToResolve).split(',')
   const identifiers: RetrievedIdentifier[] = []
   for (let i = 0; i < cookieNames.length; i++) {
     const identifierName = trim(cookieNames[i])
@@ -26,7 +28,5 @@ function _parseIdentifiersToResolve(state: State, storageHandler: WrappedReadOnl
       })
     }
   }
-  return {
-    retrievedIdentifiers: identifiers
-  }
+  return identifiers
 }

@@ -19,19 +19,19 @@ export type StorageHandlerBackedCacheOpts = {
   defaultExpirationHours?: number
 }
 
-export type MakeCacheOpts = StorageHandlerBackedCacheOpts & {
-  strategy: StorageStrategy,
-}
+// export type MakeCacheOpts = StorageHandlerBackedCacheOpts & {
+//   strategy: StorageStrategy,
+// }
 
-export function makeCache(opts: MakeCacheOpts): DurableCache {
-  if (!strEqualsIgnoreCase(opts.strategy, StorageStrategies.cookie) && strEqualsIgnoreCase(opts.strategy, StorageStrategies.none)) {
-    return NoOpCache
-  } else {
-    // TODO: Remove once we validate config properly
-    const strategyWithDefault = opts.strategy ?? StorageStrategies.cookie
-    return new StorageHandlerBackedCache({ ...opts, strategy: strategyWithDefault })
-  }
-}
+// export function makeCache(opts: MakeCacheOpts): DurableCache {
+//   if (!strEqualsIgnoreCase(opts.strategy, StorageStrategies.cookie) && strEqualsIgnoreCase(opts.strategy, StorageStrategies.none)) {
+//     return NoOpCache
+//   } else {
+//     // TODO: Remove once we validate config properly
+//     const strategyWithDefault = opts.strategy ?? StorageStrategies.cookie
+//     return new StorageHandlerBackedCache({ ...opts, strategy: strategyWithDefault })
+//   }
+// }
 
 export class StorageHandlerBackedCache implements DurableCache {
   private handler

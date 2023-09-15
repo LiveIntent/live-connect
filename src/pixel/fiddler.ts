@@ -1,4 +1,4 @@
-import { State } from '../types'
+import { Enricher, State } from '../types'
 import { extractEmail } from '../utils/email'
 import { decodeValue } from '../utils/url'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
@@ -74,4 +74,16 @@ export function mergeObjects<A extends object, B extends object>(obj1: A, obj2: 
     res[key] = second[key]
   })
   return res
+}
+
+export class EnrichmentContext<A extends object> {
+  data: A
+
+  constructor(state: A) {
+    this.data = state
+  }
+
+  via<B extends object>(enricher: Enricher<A, B>): EnrichmentContext<A & B> {
+    return new EnrichmentContext({...this.data, ...enricher(this.data)})
+  }
 }

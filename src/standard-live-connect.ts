@@ -1,25 +1,24 @@
 // @ts-nocheck
 /* eslint-disable */
 import { PixelSender } from './pixel/sender'
-import * as errorHandler from './events/error-pixel'
 import * as C from './utils/consts'
 import { StateWrapper } from './pixel/state'
-import { mergeObjects } from './pixel/fiddler'
-import { resolve as idResolve } from './manager/identifiers'
-import { resolve as decisionsResolve } from './manager/decisions'
-import { enrich as pageEnrich } from './enrichers/page'
-import { enrich as identifiersEnrich } from './enrichers/identifiers'
-import { enrich as privacyConfig } from './enrichers/privacy-config'
+import { EnrichmentContext, mergeObjects } from './pixel/fiddler'
+import { enrichPage } from './enrichers/page'
+import { enrichIdentifiers } from './enrichers/identifiers'
+import { enrichPrivacyMode } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { isArray, isObject, CallHandler, StorageHandler } from 'live-connect-common'
 import { IdentityResolver } from './idex'
-import { WrappedStorageHandler } from './handlers/storage-handler'
-import { WrappedCallHandler } from './handlers/call-handler'
-import { StorageStrategies } from './model/storage-strategy'
 import { ConfigMismatch, EventBus, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
-import { determineHighestAccessibleDomain } from './utils/domain'
-import { makeCache } from './cache'
+import { enrichDomain } from './enrichers/domain'
+import { enrichStorageHandler } from './enrichers/storage-handler'
+import { enrichStorageStrategy } from './enrichers/storage-strategy'
+import { enrichDecisionIds } from './enrichers/decisions'
+import { enrichLiveConnectId } from './enrichers/live-connect-id'
+import { enrichCache } from './enrichers/cache'
+import { enrichCallHandler } from './enrichers/call-handler'
 
 const hemStore: State = {}
 function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
@@ -88,50 +87,48 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     // TODO: proper config validation
     const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
 
-    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
-
-    const configWithPrivacy = mergeObjects(validLiveConnectConfig, privacyConfig(validLiveConnectConfig))
-    const domain = determineHighestAccessibleDomain(storageHandler)
-    const configWithDomain = mergeObjects(configWithPrivacy, { domain: domain })
-
-    errorHandler.register(configWithDomain, callHandler, eventBus)
-
-    const storageStrategy = configWithPrivacy.privacyMode ? StorageStrategies.disabled : (configWithPrivacy.storageStrategy || StorageStrategies.cookie)
-    const storageHandler = WrappedStorageHandler.make(storageStrategy, externalStorageHandler, eventBus)
-
-    const cache  = makeCache({
-      strategy: storageStrategy,
-      storageHandler: storageHandler,
-      domain: domain,
+    const stateBuilder = new EnrichmentContext({
+      ...validLiveConnectConfig,
+      identifiersToResolve: validLiveConnectConfig.identifiersToResolve || [],
+      contextSelectors: validLiveConnectConfig.contextSelectors || "",
+      contextElementsLength: validLiveConnectConfig.contextElementsLength || 0,
+      callHandler: externalCallHandler,
+      storageHandler: externalStorageHandler,
+      eventBus
     })
 
-    const reducer = (accumulator, func) => accumulator.combineWith(func(accumulator.data, storageHandler, eventBus))
+    const enrichedState = stateBuilder
+      .via(enrichPrivacyMode)
+      .via(enrichStorageStrategy)
+      .via(enrichStorageHandler)
+      .via(enrichDomain)
+      .via(enrichCache)
+      .via(enrichPage)
+      .via(enrichIdentifiers)
+      .via(enrichDecisionIds)
+      .via(enrichLiveConnectId)
+      .via(enrichCallHandler)
+      .data
 
-    const enrichers = [pageEnrich, identifiersEnrich]
-    const managers = [idResolve, decisionsResolve]
-
-    const enrichedState = enrichers.reduce(reducer, new StateWrapper(configWithPrivacy, eventBus))
-    const postManagedState = managers.reduce(reducer, enrichedState)
-
-    const syncContainerData = mergeObjects(configWithPrivacy, { peopleVerifiedId: postManagedState.data.peopleVerifiedId })
-    const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, syncContainerData)
+    const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, enrichedState)
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
-    const pixelClient = new PixelSender(configWithPrivacy, callHandler, eventBus, onPixelLoad, onPixelPreload)
-    const resolver = IdentityResolver.make(postManagedState.data, storageHandler, callHandler, eventBus)
 
-    const _push = (...args: any[]) => _processArgs(args, pixelClient, postManagedState, eventBus)
+    const pixelClient = new PixelSender(enrichedState, enrichedState.callHandler, eventBus, onPixelLoad, onPixelPreload)
+    const resolver = IdentityResolver.make(enrichedState, enrichedState.storageHandler, enrichedState.callHandler, eventBus)
+
+    const _push = (...args: any[]) => _processArgs(args, pixelClient, new StateWrapper(enrichedState, enrichedState.eventBus), eventBus)
 
     return {
       push: _push,
       fire: () => _push({}),
-      peopleVerifiedId: postManagedState.data.peopleVerifiedId,
+      peopleVerifiedId: enrichedState.peopleVerifiedId,
       ready: true,
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus: eventBus,
-      storageHandler: storageHandler,
-      callHandler: callHandler,
+      storageHandler: enrichedState.storageHandler,
+      callHandler: enrichedState.callHandler,
     }
   } catch (x) {
     console.error(x)

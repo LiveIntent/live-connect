@@ -4,7 +4,8 @@ import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
 import { ErrorDetails } from 'live-connect-common'
 
-export type Enricher = (state: State) => void // should mutate state in-place
+export type Enricher<in In extends object, out Out extends object> =
+  <ActualIn extends In> (state: ActualIn) => ActualIn & Out
 
 export interface IdentityResolutionConfig {
   url?: string
@@ -13,8 +14,6 @@ export interface IdentityResolutionConfig {
   source?: string
   publisherId?: number
   requestedAttributes?: string[]
-  contextSelectors?: string
-  contextElementsLength?: number
 }
 
 export interface LiveConnectConfig {
@@ -32,7 +31,9 @@ export interface LiveConnectConfig {
   globalVarName?: string
   urlCollectionMode?: UrlCollectionMode
   queryParametersFilter?: string
-  ajaxTimeout?: number
+  ajaxTimeout?: number,
+  contextSelectors?: string
+  contextElementsLength?: number
 }
 
 export type ResolutionParams = Record<string, string | string[]>
