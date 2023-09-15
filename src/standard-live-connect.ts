@@ -117,7 +117,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const pixelClient = new PixelSender(enrichedState, enrichedState.callHandler, eventBus, onPixelLoad, onPixelPreload)
     registerErrorPixel(enrichedState, pixelClient, eventBus)
 
-    const resolver = IdentityResolver.make(enrichedState, enrichedState.storageHandler, enrichedState.callHandler, eventBus)
+    const resolver = IdentityResolver.make(enrichedState, enrichedState.cache, enrichedState.callHandler, eventBus)
 
     const _push = (...args: any[]) => _processArgs(args, pixelClient, new StateWrapper(enrichedState, enrichedState.eventBus), eventBus)
 
