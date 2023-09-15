@@ -38,7 +38,8 @@ export class StorageHandlerBackedCache implements DurableCache {
     const cookieExpirationEntry = this.handler.getCookie(expirationKey(key))
     if (cookieExpirationEntry && cookieExpirationEntry.length > 0) {
       expiresAt = new Date(cookieExpirationEntry)
-      if (expiresAt <= new Date()) {
+      const expirationTime = expiresAt.getTime()
+      if (isNaN(expirationTime) || expirationTime <= Date.now()) {
         return null
       }
     }
@@ -57,7 +58,8 @@ export class StorageHandlerBackedCache implements DurableCache {
 
     if (oldLsExpirationEntry) {
       expiresAt = new Date(oldLsExpirationEntry)
-      if (expiresAt <= new Date()) {
+      const expirationTime = expiresAt.getTime()
+      if (isNaN(expirationTime) || expirationTime <= Date.now()) {
         this.handler.removeDataFromLocalStorage(key)
         this.handler.removeDataFromLocalStorage(expirationKey(key))
         return null
