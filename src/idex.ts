@@ -4,66 +4,27 @@ import { expiresInHours, isFunction, isObject } from 'live-connect-common'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from './utils/params'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
-import { WrappedStorageHandler } from './handlers/storage-handler'
 import { WrappedCallHandler } from './handlers/call-handler'
+import { DurableCache, NoOpCache } from './cache'
 
-export type CacheRecord = {
-  data: unknown
-  expiresAt?: Date
-}
+const IDEX_STORAGE_KEY = '__li_idex_cache'
 
-interface Cache {
-  get: (key: unknown) => CacheRecord | null // null will be used to signal missing value
-  set: (key: unknown, value: unknown, expiration?: Date) => void
-}
-
-function storageHandlerBackedCache(defaultExpirationHours: number, domain: string | undefined, storageHandler: WrappedStorageHandler, eventBus: EventBus): Cache {
-  const IDEX_STORAGE_KEY = '__li_idex_cache'
-
-  function _cacheKey(rawKey: unknown) {
-    if (rawKey) {
-      const suffix = base64UrlEncode(JSON.stringify(rawKey))
-      return `${IDEX_STORAGE_KEY}_${suffix}`
-    } else {
-      return IDEX_STORAGE_KEY
-    }
+function _cacheKey(rawKey: unknown) {
+  if (rawKey) {
+    const suffix = base64UrlEncode(JSON.stringify(rawKey))
+    return `${IDEX_STORAGE_KEY}_${suffix}`
+  } else {
+    return IDEX_STORAGE_KEY
   }
-
-  return {
-    get: (key) => {
-      const cachedValue = storageHandler.get(_cacheKey(key))
-      if (cachedValue) {
-        return { data: JSON.parse(cachedValue.data), expiresAt: cachedValue.expiresAt }
-      } else {
-        return null
-      }
-    },
-    set: (key, value, expiresAt) => {
-      try {
-        storageHandler.set(
-          _cacheKey(key),
-          JSON.stringify(value),
-          expiresAt || expiresInHours(defaultExpirationHours),
-          domain
-        )
-      } catch (ex) {
-        eventBus.emitError('IdentityResolverStorage', ex)
-      }
-    }
-  }
-}
-
-const noopCache: Cache = {
-  get: () => null,
-  set: () => undefined
 }
 
 export class IdentityResolver {
   eventBus: EventBus
   calls: WrappedCallHandler
-  cache: Cache
+  cache: DurableCache
   idexConfig: IdentityResolutionConfig
   externalIds: RetrievedIdentifier[]
+  defaultExpirationHours: number
   source: string
   publisherId: number | string
   url: string
@@ -71,12 +32,18 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
 
-  private constructor (config: State, calls: WrappedCallHandler, cache: Cache, eventBus: EventBus) {
+  private constructor (
+    config: State,
+    calls: WrappedCallHandler,
+    cache: DurableCache,
+    eventBus: EventBus
+  ) {
     this.eventBus = eventBus
     this.calls = calls
     this.cache = cache
     this.idexConfig = config.identityResolutionConfig || {}
     this.externalIds = config.retrievedIdentifiers || []
+    this.defaultExpirationHours = this.idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
     this.source = this.idexConfig.source || 'unknown'
     this.publisherId = this.idexConfig.publisherId || 'any'
     this.url = this.idexConfig.url || DEFAULT_IDEX_URL
@@ -108,18 +75,31 @@ export class IdentityResolver {
     })
   }
 
-  static make(config: State, storageHandler: WrappedStorageHandler, calls: WrappedCallHandler, eventBus: EventBus): IdentityResolver {
-    const nonNullConfig = config || {}
-    const idexConfig = nonNullConfig.identityResolutionConfig || {}
-    const expirationHours = idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
-    const domain = nonNullConfig.domain
-
-    const cache = storageHandlerBackedCache(expirationHours, domain, storageHandler, eventBus)
+  static make(
+    config: State,
+    cache: DurableCache,
+    calls: WrappedCallHandler,
+    eventBus: EventBus
+  ): IdentityResolver {
+    const nonNullConfig = config || { identityResolutionConfig: {} }
     return new IdentityResolver(nonNullConfig, calls, cache, eventBus)
   }
 
   static makeNoCache(config: State, calls: WrappedCallHandler, eventBus: EventBus): IdentityResolver {
-    return new IdentityResolver(config || {}, calls, noopCache, eventBus)
+    return IdentityResolver.make(config || {}, NoOpCache, calls, eventBus)
+  }
+
+  private getCached(key: unknown) {
+    const cachedValue = this.cache.get(_cacheKey(key))
+    if (cachedValue) {
+      return { data: JSON.parse(cachedValue.data), expiresAt: cachedValue.expiresAt }
+    } else {
+      return null
+    }
+  }
+
+  private setCached(key: unknown, value: unknown, expiresAt?: Date) {
+    this.cache.set(_cacheKey(key), JSON.stringify(value), expiresAt || expiresInHours(this.defaultExpirationHours))
   }
 
   private responseReceived(
@@ -139,13 +119,13 @@ export class IdentityResolver {
 
       const expiresAt = responseExpires(response)
 
-      this.cache.set(additionalParams, responseObj, expiresAt)
+      this.setCached(additionalParams, responseObj, expiresAt)
       successCallback(responseObj, expiresAt)
     }
   }
 
   unsafeResolve(successCallback: (result: unknown, expiresAt?: Date) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
-    const cachedValue = this.cache.get(additionalParams)
+    const cachedValue = this.getCached(additionalParams)
     if (cachedValue) {
       successCallback(cachedValue.data, cachedValue.expiresAt)
     } else {
@@ -164,12 +144,14 @@ export class IdentityResolver {
     return `${this.url}/${this.source}/${this.publisherId}${params}`
   }
 
-  resolve(successCallback: (result: unknown, expiresAt?: Date) => void, errorCallback: () => void, additionalParams?: ResolutionParams): void {
+  resolve(successCallback: (result: unknown, expiresAt?: Date) => void, errorCallback?: () => void, additionalParams?: ResolutionParams): void {
     try {
-      this.unsafeResolve(successCallback, errorCallback, additionalParams || {})
+      this.unsafeResolve(successCallback, errorCallback || (() => {}), additionalParams || {})
     } catch (e) {
       console.error('IdentityResolve', e)
-      errorCallback()
+      if (errorCallback && isFunction(errorCallback)) {
+        errorCallback()
+      }
       if (this.eventBus) {
         this.eventBus.emitError('IdentityResolve', e)
       }

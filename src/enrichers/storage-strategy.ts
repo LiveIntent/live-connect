@@ -1,5 +1,5 @@
-import { StorageStrategies, StorageStrategy } from "../model/storage-strategy";
-import { Enricher } from "../types";
+import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
+import { Enricher } from '../types'
 
 type Input = { privacyMode: boolean, storageStrategy?: StorageStrategy }
 type Output = { storageStrategy: StorageStrategy }

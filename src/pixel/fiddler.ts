@@ -79,11 +79,11 @@ export function mergeObjects<A extends object, B extends object>(obj1: A, obj2: 
 export class EnrichmentContext<A extends object> {
   data: A
 
-  constructor(state: A) {
+  constructor (state: A) {
     this.data = state
   }
 
   via<B extends object>(enricher: Enricher<A, B>): EnrichmentContext<A & B> {
-    return new EnrichmentContext({...this.data, ...enricher(this.data)})
+    return new EnrichmentContext({ ...this.data, ...enricher(this.data) })
   }
 }

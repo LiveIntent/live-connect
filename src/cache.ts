@@ -1,6 +1,6 @@
 import { strEqualsIgnoreCase, expiresInHours } from 'live-connect-common'
 import { WrappedStorageHandler } from './handlers/storage-handler'
-import { StorageStrategies, StorageStrategy } from './model/storage-strategy'
+import { StorageStrategies } from './model/storage-strategy'
 
 export type CacheRecord = {
   data: string
@@ -18,20 +18,6 @@ export type StorageHandlerBackedCacheOpts = {
   domain: string,
   defaultExpirationHours?: number
 }
-
-// export type MakeCacheOpts = StorageHandlerBackedCacheOpts & {
-//   strategy: StorageStrategy,
-// }
-
-// export function makeCache(opts: MakeCacheOpts): DurableCache {
-//   if (!strEqualsIgnoreCase(opts.strategy, StorageStrategies.cookie) && strEqualsIgnoreCase(opts.strategy, StorageStrategies.none)) {
-//     return NoOpCache
-//   } else {
-//     // TODO: Remove once we validate config properly
-//     const strategyWithDefault = opts.strategy ?? StorageStrategies.cookie
-//     return new StorageHandlerBackedCache({ ...opts, strategy: strategyWithDefault })
-//   }
-// }
 
 export class StorageHandlerBackedCache implements DurableCache {
   private handler

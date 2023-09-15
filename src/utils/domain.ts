@@ -1,5 +1,5 @@
-import { WrappedStorageHandler } from "../handlers/storage-handler"
-import { loadedDomain } from "./page"
+import { WrappedStorageHandler } from '../handlers/storage-handler'
+import { loadedDomain } from './page'
 
 const TLD_CACHE_KEY = '_li_dcdm_c'
 

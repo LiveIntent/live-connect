@@ -4,7 +4,7 @@ import { fiddle, mergeObjects } from './fiddler'
 import { isObject, trim, isArray, nonNull } from 'live-connect-common'
 import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform } from '../utils/params'
 import { toParams } from '../utils/url'
-import { Enricher, EventBus, State } from '../types'
+import { EventBus, State } from '../types'
 import { collectUrl } from './url-collector'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']

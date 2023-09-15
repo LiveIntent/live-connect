@@ -1,6 +1,6 @@
 import { isArray, isFunction } from 'live-connect-common'
 import { asStringParam } from '../utils/params'
-import { LiveConnectConfig, EventBus, Enricher } from '../types'
+import { LiveConnectConfig, EventBus } from '../types'
 import { StateWrapper } from './state'
 import { WrappedCallHandler } from '../handlers/call-handler'
 

@@ -12,4 +12,3 @@ export const enrichPage: Enricher<Input, Output> = state => {
     contextElements: getContextElements(state.privacyMode, state.contextSelectors, state.contextElementsLength)
   }
 }
-

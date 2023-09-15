@@ -22,14 +22,14 @@ export class WrappingContext<T extends object> {
     if (isObject(this.obj)) {
       const member = this.obj[functionName]
       if (isFunction(member)) {
-        return ((...args) => {
+        return (...args) => {
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return (member as any).call(this.obj, ...args)
           } catch (e) {
             this.eventBus.emitErrorWithMessage(this.name, `Failed calling ${functionName}`, e)
           }
-        })
+        }
       }
     }
     this.errors.push(functionName)

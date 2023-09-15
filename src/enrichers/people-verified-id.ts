@@ -16,4 +16,3 @@ export const enrichPeopleVerifiedId: Enricher<Input, Output> = state => {
     return state
   }
 }
-

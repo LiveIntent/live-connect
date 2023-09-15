@@ -2,7 +2,7 @@ import { ulid } from '../utils/ulid'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from 'live-connect-common'
 import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
-import { Enricher, EventBus } from '../types'
+import { Enricher } from '../types'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 import { DurableCache } from '../cache'
 
@@ -13,7 +13,7 @@ type Input = { expirationDays?: number, domain: string, cache: DurableCache, sto
 type Output = { liveConnectId?: string, peopleVerifiedId?: string }
 
 export const enrichLiveConnectId: Enricher<Input, Output> = state => {
-  const {expirationDays, domain, storageHandler, cache } = state
+  const { expirationDays, domain, storageHandler, cache } = state
 
   const expiry = expirationDays || DEFAULT_EXPIRATION_DAYS
   const oldValue = cache.get(NEXT_GEN_FP_NAME)?.data
@@ -21,8 +21,7 @@ export const enrichLiveConnectId: Enricher<Input, Output> = state => {
   if (oldValue) {
     cache.set(NEXT_GEN_FP_NAME, oldValue, expiresInDays(expiry))
   } else {
-    const newValue = `${domainHash(domain)}--${ulid()}`
-
+    const newValue = `${domainHash(domain)}--${ulid()}`.toLocaleLowerCase()
     cache.set(NEXT_GEN_FP_NAME, newValue, expiresInDays(expiry))
   }
 

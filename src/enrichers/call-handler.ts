@@ -1,6 +1,6 @@
-import { CallHandler, EventBus } from "live-connect-common"
-import { WrappedCallHandler } from "../handlers/call-handler"
-import { Enricher } from "../types"
+import { CallHandler, EventBus } from 'live-connect-common'
+import { WrappedCallHandler } from '../handlers/call-handler'
+import { Enricher } from '../types'
 
 type Input = { callHandler: CallHandler, eventBus: EventBus }
 type Output = { callHandler: WrappedCallHandler }

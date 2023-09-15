@@ -1,10 +1,10 @@
 import { containsEmailField, isEmail } from '../utils/email'
 import { safeToString, isArray, trim } from 'live-connect-common'
-import { Enricher, EventBus, RetrievedIdentifier, State } from '../types'
+import { Enricher, EventBus, RetrievedIdentifier } from '../types'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
-type Input = {identifiersToResolve: string | string[], storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus}
-type Output = {retrievedIdentifiers: RetrievedIdentifier[]}
+type Input = { identifiersToResolve: string | string[], storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus }
+type Output = { retrievedIdentifiers: RetrievedIdentifier[] }
 
 export const enrichIdentifiers: Enricher<Input, Output> = state => {
   try {

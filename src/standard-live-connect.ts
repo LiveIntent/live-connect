@@ -19,6 +19,7 @@ import { enrichDecisionIds } from './enrichers/decisions'
 import { enrichLiveConnectId } from './enrichers/live-connect-id'
 import { enrichCache } from './enrichers/cache'
 import { enrichCallHandler } from './enrichers/call-handler'
+import { register as registerErrorPixel } from './events/error-pixel'
 
 const hemStore: State = {}
 function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
@@ -114,6 +115,8 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
     const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
 
     const pixelClient = new PixelSender(enrichedState, enrichedState.callHandler, eventBus, onPixelLoad, onPixelPreload)
+    registerErrorPixel(enrichedState, pixelClient, eventBus)
+
     const resolver = IdentityResolver.make(enrichedState, enrichedState.storageHandler, enrichedState.callHandler, eventBus)
 
     const _push = (...args: any[]) => _processArgs(args, pixelClient, new StateWrapper(enrichedState, enrichedState.eventBus), eventBus)

@@ -1,6 +1,6 @@
-import { WrappedStorageHandler } from "../handlers/storage-handler"
-import { Enricher } from "../types"
-import { determineHighestAccessibleDomain } from "../utils/domain"
+import { WrappedStorageHandler } from '../handlers/storage-handler'
+import { Enricher } from '../types'
+import { determineHighestAccessibleDomain } from '../utils/domain'
 
 type Input = { storageHandler: WrappedStorageHandler }
 type Output = { domain: string }

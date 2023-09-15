@@ -49,7 +49,6 @@ describe('DecisionsManager for stored decisions', () => {
   it('should not return empty values', () => {
     storage.setCookie('lidids.', '')
     const resolutionResult = decisions.resolve({}, storage, eventBus)
-    // @ts-expect-error
     expect(resolutionResult.decisionIds.length).to.eql(0)
   })
 

@@ -1,6 +1,6 @@
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from 'live-connect-common'
-import { EventBus, HashedEmail, State, RetrievedIdentifier, Enricher } from '../types'
+import { EventBus, HashedEmail, RetrievedIdentifier, Enricher } from '../types'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
 type Input = { identifiersToResolve: string | string[], storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus }
