@@ -96,8 +96,7 @@ describe('LiveConnect', function () {
     expect(trackingRequests[0].query.tna).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
 
     const _cookies = await browser.getCookies()
-    const _ls = await browser.getLocalStorage()
-    console.log([_cookies, _ls])
+    console.log([_cookies])
 
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
