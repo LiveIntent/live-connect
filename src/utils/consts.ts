@@ -7,6 +7,7 @@ export const PIXEL_SENT_PREFIX = 'lips'
 export const PRELOAD_PIXEL = 'pre_lips'
 
 export const PEOPLE_VERIFIED_LS_ENTRY = '_li_duid'
+export const NEXT_GEN_FP_NAME = '_lc2_fpi'
 
 export const DEFAULT_IDEX_EXPIRATION_HOURS = 1
 export const DEFAULT_IDEX_AJAX_TIMEOUT = 5000

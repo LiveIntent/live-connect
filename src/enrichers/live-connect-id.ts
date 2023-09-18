@@ -1,12 +1,12 @@
 import { ulid } from '../utils/ulid'
 import { domainHash } from '../utils/hash'
 import { expiresInDays } from 'live-connect-common'
-import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
+import { NEXT_GEN_FP_NAME, PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 import { Enricher } from '../types'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 import { DurableCache } from '../cache'
 
-const NEXT_GEN_FP_NAME = '_lc2_fpi'
+const CACHE_KEY = '_lc2_fpi_cache'
 const DEFAULT_EXPIRATION_DAYS = 730
 
 type Input = { expirationDays?: number, domain: string, cache: DurableCache, storageHandler: WrappedStorageHandler }
@@ -16,18 +16,34 @@ export const enrichLiveConnectId: Enricher<Input, Output> = state => {
   const { expirationDays, domain, storageHandler, cache } = state
 
   const expiry = expirationDays || DEFAULT_EXPIRATION_DAYS
-  const oldValue = cache.get(NEXT_GEN_FP_NAME)?.data
 
+  // sync cookiejar and cache. Prefer cookiejar value as it will live longer than cache and we don't want to overwrite it
+  let liveConnectIdentifier
+  const oldValue = storageHandler.getCookie(NEXT_GEN_FP_NAME)
   if (oldValue) {
-    cache.set(NEXT_GEN_FP_NAME, oldValue, expiresInDays(expiry))
+    cache.set(CACHE_KEY, oldValue, expiresInDays(expiry))
+    liveConnectIdentifier = oldValue
   } else {
-    const newValue = `${domainHash(domain)}--${ulid()}`.toLocaleLowerCase()
-    cache.set(NEXT_GEN_FP_NAME, newValue, expiresInDays(expiry))
+    // try retrieving from cache
+    const cachedValue = cache.get(CACHE_KEY)
+    if (cachedValue) {
+      storageHandler.setCookie(NEXT_GEN_FP_NAME, cachedValue.data, cachedValue.meta.expiresAt, 'Lax')
+      liveConnectIdentifier = cachedValue.data
+    } else {
+      // generate new value
+      const newValue = `${domainHash(domain)}--${ulid()}`.toLocaleLowerCase()
+      const expiresAt = expiresInDays(expiry)
+
+      storageHandler.setCookie(NEXT_GEN_FP_NAME, newValue, expiresAt, 'Lax')
+      cache.set(CACHE_KEY, newValue, expiresAt)
+
+      // handle case where underlying storage is disabled.
+      liveConnectIdentifier = storageHandler.getCookie(NEXT_GEN_FP_NAME) || cache.get(CACHE_KEY)?.data || undefined
+    }
   }
 
-  const liveConnectIdentifier = cache.get(NEXT_GEN_FP_NAME)?.data || undefined
-
   if (liveConnectIdentifier) {
+    // TODO: should we expose this to users even if the write failed?
     storageHandler.setDataInLocalStorage(PEOPLE_VERIFIED_LS_ENTRY, liveConnectIdentifier)
   }
 

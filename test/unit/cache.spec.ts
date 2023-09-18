@@ -7,7 +7,6 @@ import { EventBus, expiresInDays } from 'live-connect-common'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../src/events/event-bus'
 import { StorageHandlerBackedCache } from '../../src/cache'
-import { StorageStrategy } from '../../src/model/storage-strategy'
 
 use(dirtyChai)
 
@@ -17,7 +16,7 @@ type RecordedError = {
   exception?: unknown
 }
 
-describe('StorageHandler', () => {
+describe('Cache', () => {
   let errors: RecordedError[] = []
   let eventBusStub: SinonStub<[string, string, unknown?], EventBus>
   const eventBus = LocalEventBus()
@@ -44,53 +43,63 @@ describe('StorageHandler', () => {
     eventBusStub.restore()
   })
 
-  it('should use local storage', () => {
+  it('should use both cookie and local storage', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'ls',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(1))
+    expect(cache.get('key')?.data).to.be.eq('value')
+
+    expect(storageHandler.getDataFromLocalStorage('key')).to.be.eq('value')
+    expect(storage.getCookie('key')).to.be.eq('value')
+
+    expect(cache.get('unknownKey')).to.be.null()
+  })
+
+  it('should use local storage entry and repair cookie if cookie is deleted', () => {
+    const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      domain: 'example.com'
+    })
+
+    cache.set('key', 'value', expiresInDays(1))
+    expect(storageHandler.getCookie('key')).to.be.eq('value')
+    storage.setCookie('key', '', new Date(0), 'Lax', 'example.com')
+
+    expect(cache.get('key')?.data).to.be.eq('value')
+
+    expect(storageHandler.getDataFromLocalStorage('key')).to.be.eq('value')
+    expect(storage.getCookie('key')).to.be.eq('value')
+  })
+
+  it('should use cookie entry and repair ls if ls is deleted', () => {
+    const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      domain: 'example.com'
+    })
+
+    cache.set('key', 'value', expiresInDays(1))
+    expect(storageHandler.getDataFromLocalStorage('key')).to.be.eq('value')
+    storage.removeDataFromLocalStorage('key')
+
     expect(cache.get('key')?.data).to.be.eq('value')
     expect(storageHandler.getDataFromLocalStorage('key')).to.be.eq('value')
-    expect(cache.get('unknownKey')).to.be.null()
-  })
-
-  it('should use cookies', () => {
-    const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
-    const cache = new StorageHandlerBackedCache({
-      strategy: 'cookie',
-      storageHandler,
-      domain: 'example.com'
-    })
-
-    cache.set('key', 'value', expiresInDays(1))
-    expect(cache.get('key')?.data).to.be.eq('value')
     expect(storage.getCookie('key')).to.be.eq('value')
-    expect(cache.get('unknownKey')).to.be.null()
   })
 
-  it('should use cookies when the strategy is not defined', () => {
-    const storageHandler = WrappedStorageHandler.make(null as unknown as StorageStrategy, storage, eventBus)
-    const cache = new StorageHandlerBackedCache({
-      strategy: null as unknown as 'cookie',
-      storageHandler,
-      domain: 'example.com'
-    })
-
-    cache.set('key', 'value', expiresInDays(1))
-    expect(cache.get('key')?.data).to.be.eq('value')
-    expect(storage.getCookie('key')).to.be.eq('value')
-    expect(cache.get('unknownKey')).to.be.null()
-  })
-
-  it('should return nothing when the underlying handler\'s strategy is none', () => {
+  it('should write nothing when the underlying handler\'s strategy is none', () => {
     const storageHandler = WrappedStorageHandler.make('none', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'cookie',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
@@ -104,8 +113,8 @@ describe('StorageHandler', () => {
   it('should return nothing when the underlying handler\'s the strategy is disabled', () => {
     const storageHandler = WrappedStorageHandler.make('disabled', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'cookie',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
@@ -127,8 +136,8 @@ describe('StorageHandler', () => {
   it('should return nothing when the strategy is ls and the time is in the past', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'ls',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
@@ -140,8 +149,8 @@ describe('StorageHandler', () => {
   it('should return nothing when the strategy is cookie and the time is in the past', () => {
     const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'cookie',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
@@ -150,11 +159,66 @@ describe('StorageHandler', () => {
     expect(storage.getCookie('key')).to.be.null()
   })
 
+  it('should return expiration date', () => {
+    const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      domain: 'example.com'
+    })
+
+    const expires = expiresInDays(5)
+
+    cache.set('key', 'value', expires)
+    const result = cache.get('key')
+
+    expect(result?.data).to.be.eq('value')
+    expect(result?.meta.expiresAt!.getTime()).to.be.eq(expires.getTime())
+  })
+
+  it('should return written date', () => {
+    const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      domain: 'example.com'
+    })
+
+    const now = new Date()
+
+    cache.set('key', 'value', expiresInDays(5))
+    const result = cache.get('key')
+
+    expect(result?.data).to.be.eq('value')
+    expect(result?.meta.writtenAt.getTime()).to.be.greaterThanOrEqual(now.getTime())
+  })
+
+  it('should prefer the younger entry and fix the older entry if both exist', () => {
+    const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      domain: 'example.com'
+    })
+
+    cache.set('key', 'value', expiresInDays(5))
+
+    const metaRecord = storageHandler.getDataFromLocalStorage('key_meta')!
+    const meta = JSON.parse(metaRecord)
+    storage.setDataInLocalStorage('key', 'value1')
+    storage.setDataInLocalStorage('key_meta', JSON.stringify({ ...meta, writtenAt: new Date(new Date(meta.writtenAt).getTime() - 1) }))
+
+    const result = cache.get('key')
+
+    expect(result?.data).to.be.eq('value')
+    expect(storage.getDataFromLocalStorage('key')).to.be.eq('value')
+  })
+
   it('should update expiration when overwriting localstorage with expiration with one without', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'ls',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
@@ -164,14 +228,14 @@ describe('StorageHandler', () => {
     const result = cache.get('key')
 
     expect(result?.data).to.be.eq('value')
-    expect(result?.expiresAt).to.be.undefined()
+    expect(result?.meta.expiresAt).to.be.undefined()
   })
 
   it('should update expiration when overwriting a cookie with expiration with one without', () => {
     const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'cookie',
       storageHandler,
+      eventBus,
       domain: 'example.com'
     })
 
@@ -181,6 +245,6 @@ describe('StorageHandler', () => {
     const result = cache.get('key')
 
     expect(result?.data).to.be.eq('value')
-    expect(result?.expiresAt).to.be.undefined()
+    expect(result?.meta.expiresAt).to.be.undefined()
   })
 })

@@ -1,10 +1,21 @@
-import { strEqualsIgnoreCase, expiresInHours } from 'live-connect-common'
+import { expiresInHours, EventBus, isObject } from 'live-connect-common'
 import { WrappedStorageHandler } from './handlers/storage-handler'
-import { StorageStrategies } from './model/storage-strategy'
+
+export type RecordMetadata = {
+  expiresAt?: Date
+  writtenAt: Date
+}
 
 export type CacheRecord = {
   data: string
-  expiresAt?: Date
+  meta: RecordMetadata
+}
+
+export class ParseError extends Error {
+  constructor (message: string) {
+    super(message)
+    this.name = 'ParseError'
+  }
 }
 
 export interface DurableCache {
@@ -12,73 +23,156 @@ export interface DurableCache {
   set: (key: string, value: string, expiration?: Date) => void
 }
 
-export type StorageHandlerBackedCacheOpts = {
-  strategy: 'cookie' | 'ls',
+export type StorageHandlerBackedCacheArgs = {
   storageHandler: WrappedStorageHandler,
+  eventBus: EventBus,
   domain: string,
   defaultExpirationHours?: number
 }
 
 export class StorageHandlerBackedCache implements DurableCache {
   private handler
-  private storageStrategy
   private defaultExpirationHours?
   private domain
+  private eventBus
 
-  constructor (opts: StorageHandlerBackedCacheOpts) {
+  constructor (opts: StorageHandlerBackedCacheArgs) {
     this.handler = opts.storageHandler
-    this.storageStrategy = opts.strategy
     this.defaultExpirationHours = opts.defaultExpirationHours
     this.domain = opts.domain
+    this.eventBus = opts.eventBus
   }
 
-  private getCookieRecord(key: string): CacheRecord | null {
-    let expiresAt: Date | undefined
+  private deleteCookie(key: string): void {
+    this.handler.setCookie(key, '', new Date(0), 'Lax', this.domain)
+  }
 
-    const cookieExpirationEntry = this.handler.getCookie(expirationKey(key))
-    if (cookieExpirationEntry && cookieExpirationEntry.length > 0) {
-      expiresAt = new Date(cookieExpirationEntry)
-      const expirationTime = expiresAt.getTime()
-      if (isNaN(expirationTime) || expirationTime <= Date.now()) {
-        return null
+  private parseMetaRecord(serialized: string): RecordMetadata | null {
+    const meta = JSON.parse(serialized)
+    if (!isObject(meta)) {
+      throw new ParseError('Meta record is not an object')
+    }
+
+    let expiresAt
+    if ('expiresAt' in meta) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expiresAt = new Date(meta.expiresAt as any)
+      if (isNaN(expiresAt.getTime())) {
+        throw new ParseError('Invalid expiresAt')
       }
+    }
+
+    if (!('writtenAt' in meta)) {
+      throw new ParseError('Missing writtenAt')
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const writtenAt = new Date(meta.writtenAt as any)
+    if (isNaN(writtenAt.getTime())) {
+      throw new ParseError('Invalid writtenAt')
+    }
+
+    return { expiresAt, writtenAt }
+  }
+
+  private getCookieRecord(key: string, metaRecordKey: string): CacheRecord | null {
+    const metaRecord = this.handler.getCookie(metaRecordKey)
+
+    if (!metaRecord || metaRecord.length === 0) {
+      return null
+    }
+
+    let _meta
+    try {
+      _meta = this.parseMetaRecord(metaRecord)
+    } catch (e) {
+      this.eventBus.emitErrorWithMessage('Cache', 'Failed reading meta from cookies', e)
+      // delete this so we don't keep trying to read it
+      this.deleteCookie(key)
+      this.deleteCookie(metaRecordKey)
+      return null
+    }
+    const meta = _meta!
+
+    const expiresAt = meta.expiresAt
+    if (expiresAt && expiresAt.getTime() <= Date.now()) {
+      // expired. No need to clean up as the browser will do it for us
+      return null
     }
 
     const data = this.handler.getCookie(key)
-    if (data) {
-      return { data, expiresAt }
-    } else {
+    if (!data) {
       return null
     }
+    return { data, meta }
   }
 
-  private getLSRecord(key: string): CacheRecord | null {
-    let expiresAt: Date | undefined
-    const oldLsExpirationEntry = this.handler.getDataFromLocalStorage(expirationKey(key))
+  private getLSRecord(key: string, metaRecordKey: string): CacheRecord | null {
+    const metaRecord = this.handler.getDataFromLocalStorage(metaRecordKey)
 
-    if (oldLsExpirationEntry) {
-      expiresAt = new Date(oldLsExpirationEntry)
-      const expirationTime = expiresAt.getTime()
-      if (isNaN(expirationTime) || expirationTime <= Date.now()) {
-        this.handler.removeDataFromLocalStorage(key)
-        this.handler.removeDataFromLocalStorage(expirationKey(key))
-        return null
-      }
+    if (!metaRecord || metaRecord.length === 0) {
+      return null
+    }
+
+    let _meta
+    try {
+      _meta = this.parseMetaRecord(metaRecord)
+    } catch (e) {
+      this.eventBus.emitErrorWithMessage('Cache', 'Failed reading meta from ls', e)
+      this.handler.removeDataFromLocalStorage(key)
+      this.handler.removeDataFromLocalStorage(metaRecordKey)
+      return null
+    }
+    const meta = _meta!
+
+    const expiresAt = meta.expiresAt
+    if (expiresAt && expiresAt.getTime() <= Date.now()) {
+      // expired.
+      this.handler.removeDataFromLocalStorage(key)
+      this.handler.removeDataFromLocalStorage(metaRecordKey)
+      return null
     }
 
     const data = this.handler.getDataFromLocalStorage(key)
-    if (data) {
-      return { data, expiresAt }
-    } else {
+    if (!data) {
       return null
     }
+
+    return { data, meta }
   }
 
   get(key: string): CacheRecord | null {
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage) && this.handler.localStorageIsEnabled()) {
-      return this.getLSRecord(key)
+    const metaRecordKey = metaKey(key)
+    const cookieRecord = this.getCookieRecord(key, metaRecordKey)
+    const lsRecord = this.getLSRecord(key, metaRecordKey)
+
+    if (cookieRecord && lsRecord) {
+      // comparing dates with getTime() because Date objects are not equal
+      if (cookieRecord.meta.writtenAt.getTime() === lsRecord.meta.writtenAt.getTime()) {
+        return cookieRecord
+      } else if (cookieRecord.meta.writtenAt > lsRecord.meta.writtenAt) {
+        // cookie record is newer. Update ls record
+        this.handler.setDataInLocalStorage(key, cookieRecord.data)
+        this.handler.setDataInLocalStorage(metaRecordKey, JSON.stringify(cookieRecord.meta))
+        return cookieRecord
+      } else {
+        // ls record is newer. Update cookie record
+        this.handler.setCookie(key, lsRecord.data)
+        this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta))
+        return lsRecord
+      }
+    } else if (cookieRecord) {
+      // only cookie record exists. Write to ls
+      this.handler.setDataInLocalStorage(key, cookieRecord.data)
+      this.handler.setDataInLocalStorage(metaRecordKey, JSON.stringify(cookieRecord.meta))
+      return cookieRecord
+    } else if (lsRecord) {
+      // only ls record exists. Write to cookie
+      this.handler.setCookie(key, lsRecord.data)
+      this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta))
+      return lsRecord
     } else {
-      return this.getCookieRecord(key)
+      return null
     }
   }
 
@@ -87,22 +181,16 @@ export class StorageHandlerBackedCache implements DurableCache {
       expires = expiresInHours(this.defaultExpirationHours)
     }
 
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage) && this.handler.localStorageIsEnabled()) {
-      this.handler.setDataInLocalStorage(key, value)
-      if (expires) {
-        this.handler.setDataInLocalStorage(expirationKey(key), `${expires}`)
-      } else {
-        this.handler.removeDataFromLocalStorage(expirationKey(key))
-      }
-    } else {
-      this.handler.setCookie(key, value, expires, 'Lax', this.domain)
-      if (expires) {
-        this.handler.setCookie(expirationKey(key), `${expires}`, expires, 'Lax', this.domain)
-      } else {
-        // sentinel value to indicate no expiration
-        this.handler.setCookie(expirationKey(key), '', undefined, 'Lax', this.domain)
-      }
-    }
+    const metaRecordKey = metaKey(key)
+    const metaRecord = JSON.stringify({ writtenAt: new Date(), expiresAt: expires })
+
+    // set in ls
+    this.handler.setDataInLocalStorage(key, value)
+    this.handler.setDataInLocalStorage(metaRecordKey, metaRecord)
+
+    // set in cookie
+    this.handler.setCookie(key, value, expires, 'Lax', this.domain)
+    this.handler.setCookie(metaRecordKey, metaRecord, expires, 'Lax', this.domain)
   }
 }
 
@@ -111,6 +199,6 @@ export const NoOpCache: DurableCache = {
   set: () => undefined
 }
 
-function expirationKey(baseKey: string): string {
-  return `${baseKey}_exp`
+function metaKey(baseKey: string): string {
+  return `${baseKey}_meta`
 }

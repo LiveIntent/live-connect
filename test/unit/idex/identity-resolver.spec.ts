@@ -13,6 +13,8 @@ import { StorageHandlerBackedCache } from '../../../src/cache'
 use(dirtyChai)
 
 describe('IdentityResolver', () => {
+  const sandbox = sinon.createSandbox()
+
   let requestToComplete = null
   const eventBus = LocalEventBus()
   const calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
@@ -21,7 +23,7 @@ describe('IdentityResolver', () => {
   let callCount = 0
   const storageHandler = WrappedStorageHandler.make('cookie', new DefaultStorageHandler(eventBus), eventBus)
   const cache = new StorageHandlerBackedCache({
-    strategy: 'cookie',
+    eventBus,
     storageHandler,
     domain: 'example.com'
   })
@@ -42,6 +44,10 @@ describe('IdentityResolver', () => {
     errors = []
   })
 
+  afterEach(() => {
+    sandbox.restore()
+  })
+
   it('should invoke callback on success, store the result in a cookie', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
@@ -59,11 +65,38 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should invoke callback on success, if storing the result in a cookie fails', () => {
-    const setCookieStub = sinon.createSandbox().stub(storage, 'setCookie').throws()
+  it('should cache response even if one backend fails', () => {
+    sandbox.stub(storage, 'setCookie').throws()
+
     const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
-      strategy: 'cookie',
+      eventBus,
+      storageHandler: failedStorage,
+      domain: 'example.com'
+    })
+    const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
+    let jsonResponse = null
+    const successCallback = (responseAsJson) => {
+      jsonResponse = responseAsJson
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({ id: 321 }))
+    expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+    expect(jsonResponse).to.be.eql({ id: 321 })
+
+    identityResolver.resolve(successCallback)
+    expect(jsonResponse).to.be.eql({ id: 321 })
+    expect(errors).to.not.be.empty()
+    expect(callCount).to.be.eql(1)
+  })
+
+  it('should invoke callback on success, if storing the result in a either backend fails', () => {
+    sandbox.stub(storage, 'setCookie').throws()
+    sandbox.stub(storage, 'setDataInLocalStorage').throws()
+
+    const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      eventBus,
       storageHandler: failedStorage,
       domain: 'example.com'
     })
@@ -80,7 +113,6 @@ describe('IdentityResolver', () => {
     identityResolver.resolve(successCallback)
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({ id: 123 }))
     expect(jsonResponse).to.be.eql({ id: 123 })
-    setCookieStub.restore()
     expect(errors).to.not.be.empty()
     expect(callCount).to.be.eql(2)
   })

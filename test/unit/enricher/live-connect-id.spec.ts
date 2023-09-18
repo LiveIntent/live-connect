@@ -6,7 +6,7 @@ import jsdom from 'global-jsdom'
 import dirtyChai from 'dirty-chai'
 import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 import { LocalEventBus } from '../../../src/events/event-bus'
-import { NoOpCache, StorageHandlerBackedCache } from '../../../src/cache'
+import { StorageHandlerBackedCache } from '../../../src/cache'
 import { StorageStrategies, StorageStrategy } from '../../../src/model/storage-strategy'
 import { expiresInHours } from 'live-connect-common'
 
@@ -17,13 +17,7 @@ function makeDeps(strategy: StorageStrategy = StorageStrategies.cookie) {
   const eventBus = LocalEventBus()
   const storage = new DefaultStorageHandler(eventBus)
   const storageHandler = WrappedStorageHandler.make(strategy, storage, eventBus)
-
-  let cache
-  if (strategy === 'cookie' || strategy === 'ls') {
-    cache = new StorageHandlerBackedCache({ strategy, storageHandler, domain })
-  } else {
-    cache = NoOpCache
-  }
+  const cache = new StorageHandlerBackedCache({ storageHandler, domain, eventBus })
   return { storageHandler, cache, eventBus, domain }
 }
 
@@ -66,8 +60,8 @@ describe('LiveConnectIdEnricher', () => {
 
     const resolutionResult = enrichLiveConnectId(deps)
 
-    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_exp')).to.be.not.null()
+    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_cache')).to.eql(resolutionResult.liveConnectId)
+    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_cache_meta')).to.be.not.null()
     expect(storageHandler.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
