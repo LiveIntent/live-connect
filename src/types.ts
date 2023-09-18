@@ -100,7 +100,7 @@ export interface ILiveConnect {
   push: (event: unknown) => void
   fire: () => void
   resolve?: (
-    successCallBack: (result: IdentityResultionResult) => void,
+    successCallBack: (result: IdentityResultionResult, expiresAt: Date) => void,
     errorCallBack: () => void,
     additionalParams?: ResolutionParams
   ) => void
