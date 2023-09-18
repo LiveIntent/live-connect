@@ -42,24 +42,16 @@ describe('LiveConnectIdEnricher', () => {
     expect(storageHandler.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
-  it('should create a first party cookie if it doesn\'t exist, and storage strategy is cookie', () => {
+  it('should create a first party cookie & ls entry if it doesn\'t exist', () => {
     const deps = makeDeps('cookie')
     const { storageHandler } = deps
 
     expect(storageHandler.getCookie('_lc2_fpi')).to.eql(null)
-    const resolutionResult = enrichLiveConnectId(deps)
-    expect(storageHandler.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
-    expect(storageHandler.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
-  })
-
-  it('should create a first party identifier in local storage if it doesn\'t exist, and storage strategy is ls', () => {
-    const deps = makeDeps('ls')
-    const { storageHandler } = deps
-
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-
     const resolutionResult = enrichLiveConnectId(deps)
 
+    expect(storageHandler.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storageHandler.getCookie('_lc2_fpi_meta')).to.be.not.null()
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_meta')).to.be.not.null()
     expect(storageHandler.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)

@@ -1,44 +1,36 @@
 import { ulid } from '../utils/ulid'
 import { domainHash } from '../utils/hash'
-import { expiresInDays } from 'live-connect-common'
-import { NEXT_GEN_FP_NAME, PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
+import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
 import { Enricher } from '../types'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 import { DurableCache } from '../cache'
 
-const CACHE_KEY = '_lc2_fpi_cache'
-const DEFAULT_EXPIRATION_DAYS = 730
+const NEXT_GEN_FP_NAME = '_lc2_fpi'
 
-type Input = { expirationDays?: number, domain: string, cache: DurableCache, storageHandler: WrappedStorageHandler }
+type Input = { domain: string, cache: DurableCache, storageHandler: WrappedStorageHandler }
 type Output = { liveConnectId?: string, peopleVerifiedId?: string }
 
 export const enrichLiveConnectId: Enricher<Input, Output> = state => {
-  const { expirationDays, domain, storageHandler, cache } = state
+  const { domain, storageHandler, cache } = state
 
-  const expiry = expirationDays || DEFAULT_EXPIRATION_DAYS
-
-  // sync cookiejar and cache. Prefer cookiejar value as it will live longer than cache and we don't want to overwrite it
   let liveConnectIdentifier
-  const oldValue = storageHandler.getCookie(NEXT_GEN_FP_NAME)
+  // reading the value will also repair any broken records
+  const oldValue = cache.get(NEXT_GEN_FP_NAME)
   if (oldValue) {
-    cache.set(CACHE_KEY, oldValue, expiresInDays(expiry))
-    liveConnectIdentifier = oldValue
+    liveConnectIdentifier = oldValue.data
   } else {
-    // try retrieving from cache
-    const cachedValue = cache.get(CACHE_KEY)
-    if (cachedValue) {
-      storageHandler.setCookie(NEXT_GEN_FP_NAME, cachedValue.data, cachedValue.meta.expiresAt, 'Lax')
-      liveConnectIdentifier = cachedValue.data
+    const legacyValue = storageHandler.getCookie(NEXT_GEN_FP_NAME)
+    if (legacyValue) {
+      // backwards compatibility case. We have a cookie but no cache metadata.
+      // We might overwrite a http cookie here. But this will be fixed with the next http request to cff.
+      cache.set(NEXT_GEN_FP_NAME, legacyValue)
+      liveConnectIdentifier = legacyValue
     } else {
-      // generate new value
       const newValue = `${domainHash(domain)}--${ulid()}`.toLocaleLowerCase()
-      const expiresAt = expiresInDays(expiry)
-
-      storageHandler.setCookie(NEXT_GEN_FP_NAME, newValue, expiresAt, 'Lax')
-      cache.set(CACHE_KEY, newValue, expiresAt)
-
-      // handle case where underlying storage is disabled.
-      liveConnectIdentifier = storageHandler.getCookie(NEXT_GEN_FP_NAME) || cache.get(CACHE_KEY)?.data || undefined
+      // will also set cookie. It will also later be extended by cookie bouncing in the cff.
+      cache.set(NEXT_GEN_FP_NAME, newValue)
+      // handle case when all storage backends are disabled
+      liveConnectIdentifier = cache.get(NEXT_GEN_FP_NAME)?.data
     }
   }
 
