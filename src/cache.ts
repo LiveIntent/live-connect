@@ -1,5 +1,7 @@
-import { expiresInHours, EventBus, isObject } from 'live-connect-common'
+import { EventBus, isObject, expiresInDays } from 'live-connect-common'
 import { WrappedStorageHandler } from './handlers/storage-handler'
+
+const DEFAULT_COOKIE_EXPIRATION_DAYS = 730
 
 export type RecordMetadata = {
   expiresAt?: Date
@@ -27,18 +29,15 @@ export type StorageHandlerBackedCacheArgs = {
   storageHandler: WrappedStorageHandler,
   eventBus: EventBus,
   domain: string,
-  defaultExpirationHours?: number
 }
 
 export class StorageHandlerBackedCache implements DurableCache {
   private handler
-  private defaultExpirationHours?
   private domain
   private eventBus
 
   constructor (opts: StorageHandlerBackedCacheArgs) {
     this.handler = opts.storageHandler
-    this.defaultExpirationHours = opts.defaultExpirationHours
     this.domain = opts.domain
     this.eventBus = opts.eventBus
   }
@@ -157,8 +156,8 @@ export class StorageHandlerBackedCache implements DurableCache {
         return cookieRecord
       } else {
         // ls record is newer. Update cookie record
-        this.handler.setCookie(key, lsRecord.data)
-        this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta))
+        this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.domain)
+        this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
         return lsRecord
       }
     } else if (cookieRecord) {
@@ -168,8 +167,8 @@ export class StorageHandlerBackedCache implements DurableCache {
       return cookieRecord
     } else if (lsRecord) {
       // only ls record exists. Write to cookie
-      this.handler.setCookie(key, lsRecord.data)
-      this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta))
+      this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.domain)
+      this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
       return lsRecord
     } else {
       return null
@@ -177,10 +176,6 @@ export class StorageHandlerBackedCache implements DurableCache {
   }
 
   set(key: string, value: string, expires?: Date): void {
-    if (!expires && this.defaultExpirationHours) {
-      expires = expiresInHours(this.defaultExpirationHours)
-    }
-
     const metaRecordKey = metaKey(key)
     const metaRecord = JSON.stringify({ writtenAt: new Date(), expiresAt: expires })
 
@@ -188,9 +183,11 @@ export class StorageHandlerBackedCache implements DurableCache {
     this.handler.setDataInLocalStorage(key, value)
     this.handler.setDataInLocalStorage(metaRecordKey, metaRecord)
 
+    // needs to be set as cookies will be session cookies otherwise. Try to make them live as long as possible
+    const cookieExpires = expires || expiresInDays(DEFAULT_COOKIE_EXPIRATION_DAYS)
     // set in cookie
-    this.handler.setCookie(key, value, expires, 'Lax', this.domain)
-    this.handler.setCookie(metaRecordKey, metaRecord, expires, 'Lax', this.domain)
+    this.handler.setCookie(key, value, cookieExpires, 'Lax', this.domain)
+    this.handler.setCookie(metaRecordKey, metaRecord, cookieExpires, 'Lax', this.domain)
   }
 }
 

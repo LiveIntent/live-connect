@@ -95,9 +95,6 @@ describe('LiveConnect', function () {
     expect(fpcCookie).to.eql(trackingRequests[0].query.duid)
     expect(trackingRequests[0].query.tna).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
 
-    const _cookies = await browser.getCookies()
-    console.log([_cookies])
-
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
     await sendEvent({}, expectedRequests, server)

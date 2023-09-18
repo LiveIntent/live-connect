@@ -60,8 +60,8 @@ describe('LiveConnectIdEnricher', () => {
 
     const resolutionResult = enrichLiveConnectId(deps)
 
-    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_cache')).to.eql(resolutionResult.liveConnectId)
-    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_cache_meta')).to.be.not.null()
+    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
+    expect(storageHandler.getDataFromLocalStorage('_lc2_fpi_meta')).to.be.not.null()
     expect(storageHandler.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
