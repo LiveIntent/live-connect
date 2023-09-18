@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { assert, expect, use } from 'chai'
-import * as serverUtil from './helpers/mock-server.ts'
+import * as serverUtil from './helpers/mock-server'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
@@ -15,7 +15,7 @@ import {
   sendEvent,
   waitForBakerRequests,
   waitForRequests
-} from './helpers/browser.ts'
+} from './helpers/browser'
 import dirtyChai from 'dirty-chai'
 import fs from 'fs'
 import path from 'path'
@@ -94,6 +94,10 @@ describe('LiveConnect', function () {
     expect(tldCookie).to.eql('.liveintent.com')
     expect(fpcCookie).to.eql(trackingRequests[0].query.duid)
     expect(trackingRequests[0].query.tna).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
+
+    const _cookies = await browser.getCookies()
+    const _ls = await browser.getLocalStorage()
+    console.log([_cookies, _ls])
 
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
