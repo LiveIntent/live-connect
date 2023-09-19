@@ -1,40 +1,38 @@
-// @ts-nocheck
 /* eslint-disable */
-import { EnrichmentContext } from './pixel/fiddler'
 import { IdentityResolver } from './idex'
-import { enrichIdentifiers } from './enrichers/identifiers-nohash'
 import { enrichPrivacyMode } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { EventBus, ILiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 import { ReadOnlyStorageHandler, CallHandler, isObject } from 'live-connect-common'
-import { enrichCallHandler } from './enrichers/call-handler'
-import { enrichReadOnlyStorageHandler } from './enrichers/storage-handler'
 import { enrichStorageStrategy } from './enrichers/storage-strategy'
 import { enrichPeopleVerifiedId } from './enrichers/people-verified-id'
+import { WrappedReadOnlyStorageHandler } from './handlers/storage-handler'
+import { WrappedCallHandler } from './handlers/call-handler'
+import { enrichIdentifiers } from './enrichers/identifiers-nohash'
 
 function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus, push: (event: unknown) => void): ILiveConnect {
   try {
-    const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
+    const validLiveConnectConfig = {
+      ...removeInvalidPairs(liveConnectConfig, eventBus),
+      identifiersToResolve: liveConnectConfig.identifiersToResolve || [],
+    }
 
-    const stateBuilder = new EnrichmentContext({
-      ...validLiveConnectConfig,
-      identifiersToResolve: validLiveConnectConfig.identifiersToResolve || [],
-      eventBus: eventBus,
-      storageHandler: externalStorageHandler,
-      callHandler: externalCallHandler
-    })
+    const stateWithStorage =
+      enrichStorageStrategy(enrichPrivacyMode(validLiveConnectConfig))
 
-    const enrichedState = stateBuilder
-      .via(enrichCallHandler)
-      .via(enrichPrivacyMode)
-      .via(enrichStorageStrategy)
-      .via(enrichReadOnlyStorageHandler)
-      .via(enrichPeopleVerifiedId)
-      .via(enrichIdentifiers)
-      .data
+    const storageHandler = WrappedReadOnlyStorageHandler.make(stateWithStorage.storageStrategy, externalStorageHandler, eventBus)
 
-    const resolver = IdentityResolver.makeNoCache(enrichedState, enrichedState.callHandler, eventBus)
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
+
+    const enrichedState =
+      enrichIdentifiers(storageHandler, eventBus)(
+        enrichPeopleVerifiedId(storageHandler, eventBus)(
+          stateWithStorage
+        )
+      )
+
+    const resolver = IdentityResolver.makeNoCache(enrichedState, callHandler, eventBus)
 
     return {
       push: (arg) => push(arg),
@@ -45,7 +43,7 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus: eventBus,
-      storageHandler: enrichedState.storageHandler
+      storageHandler
     }
   } catch (x) {
     console.error(x)

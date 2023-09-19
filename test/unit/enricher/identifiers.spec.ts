@@ -40,15 +40,15 @@ describe('IdentifiersEnricher', () => {
   })
 
   it('should return an empty result when the collecting identifiers config is not set', () => {
-    const result = enrichIdentifiers({ identifiersToResolve: [], storageHandler, eventBus })
+    const result = enrichIdentifiers(storageHandler, eventBus)({ identifiersToResolve: [] })
 
     expect(result.retrievedIdentifiers).to.eql([])
     expect(result.hashesFromIdentifiers).to.eql([])
   })
 
   it('should return an empty result when the collecting identifiers config is set but there are no cookies', () => {
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
-    const result = enrichIdentifiers(state)
+    const state = { identifiersToResolve: [COOKIE_NAME] }
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([])
     expect(result.hashesFromIdentifiers).to.eql([])
@@ -56,9 +56,9 @@ describe('IdentifiersEnricher', () => {
 
   it('should return the collected cookies when the identifiers config is a string', () => {
     storageHandler.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
-    const state = { identifiersToResolve: `random_name,  ${COOKIE_NAME}  `, storageHandler, eventBus }
+    const state = { identifiersToResolve: `random_name,  ${COOKIE_NAME}  ` }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -70,9 +70,9 @@ describe('IdentifiersEnricher', () => {
 
   it('should return the collected cookies', () => {
     storageHandler.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -84,9 +84,9 @@ describe('IdentifiersEnricher', () => {
 
   it('should return the collected identifiers from local storage ', () => {
     storageHandler.setDataInLocalStorage(COOKIE_NAME, SIMPLE_COOKIE2)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -99,9 +99,9 @@ describe('IdentifiersEnricher', () => {
   it('should prefer the cookie storage to the local storage', () => {
     storageHandler.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
     storageHandler.setDataInLocalStorage(COOKIE_NAME, SIMPLE_COOKIE2)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -113,9 +113,9 @@ describe('IdentifiersEnricher', () => {
 
   it('should return hashes when the cookie is an email', () => {
     storageHandler.setCookie(COOKIE_NAME, EMAIL)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -127,9 +127,9 @@ describe('IdentifiersEnricher', () => {
 
   it('should return hashes when the cookie is a json with an email', () => {
     storageHandler.setCookie(COOKIE_NAME, `"username":"${EMAIL}"`)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -141,9 +141,9 @@ describe('IdentifiersEnricher', () => {
 
   it('should return multiple hashes when the cookie is a json with an email', () => {
     storageHandler.setCookie(COOKIE_NAME, `"username":"${EMAIL}","username2":"${EMAIL2}"`)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([{
       name: COOKIE_NAME,
@@ -158,9 +158,9 @@ describe('IdentifiersEnricher', () => {
     storageHandler.setCookie(COOKIE_NAME, `"username":"${EMAIL}"`)
     storageHandler.setDataInLocalStorage(COOKIE2_NAME, EMAIL)
 
-    const state = { identifiersToResolve: [COOKIE_NAME, COOKIE2_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME, COOKIE2_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([
       {
@@ -179,9 +179,9 @@ describe('IdentifiersEnricher', () => {
   it('should emit an error and emit an empty result if cookies enrichment fails', () => {
     const getCookieStub = sandbox.stub(storageHandler, 'getCookie').throws()
     storageHandler.setCookie(COOKIE_NAME, SIMPLE_COOKIE1)
-    const state = { identifiersToResolve: [COOKIE_NAME], storageHandler, eventBus }
+    const state = { identifiersToResolve: [COOKIE_NAME] }
 
-    const result = enrichIdentifiers(state)
+    const result = enrichIdentifiers(storageHandler, eventBus)(state)
 
     expect(result.retrievedIdentifiers).to.eql([])
     expect(result.hashesFromIdentifiers).to.eql([])

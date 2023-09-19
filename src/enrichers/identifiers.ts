@@ -3,15 +3,20 @@ import { safeToString, isString, isArray } from 'live-connect-common'
 import { EventBus, HashedEmail, RetrievedIdentifier, Enricher } from '../types'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
-type Input = { identifiersToResolve: string | string[], storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus }
+type Input = { identifiersToResolve: string | string[] }
 type Output = { retrievedIdentifiers: RetrievedIdentifier[], hashesFromIdentifiers: HashedEmail[] }
 
-export const enrichIdentifiers: Enricher<Input, Output> = state => {
-  try {
-    return { ...state, ...getIdentifiers(parseIdentifiersToResolve(state.identifiersToResolve), state.storageHandler) }
-  } catch (e) {
-    state.eventBus.emitError('IdentifiersEnricher', e)
-    return { ...state, retrievedIdentifiers: [], hashesFromIdentifiers: [] }
+export function enrichIdentifiers(
+  storageHandler: WrappedReadOnlyStorageHandler,
+  eventBus: EventBus
+): Enricher<Input, Output> {
+  return state => {
+    try {
+      return { ...state, ...getIdentifiers(parseIdentifiersToResolve(state.identifiersToResolve), storageHandler) }
+    } catch (e) {
+      eventBus.emitError('IdentifiersEnricher', e)
+      return { ...state, retrievedIdentifiers: [], hashesFromIdentifiers: [] }
+    }
   }
 }
 

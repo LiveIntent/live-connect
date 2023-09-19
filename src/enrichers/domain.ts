@@ -2,8 +2,9 @@ import { WrappedStorageHandler } from '../handlers/storage-handler'
 import { Enricher } from '../types'
 import { determineHighestAccessibleDomain } from '../utils/domain'
 
-type Input = { storageHandler: WrappedStorageHandler }
+type Input = object
 type Output = { domain: string }
 
-export const enrichDomain: Enricher<Input, Output> = state =>
-  ({ ...state, domain: determineHighestAccessibleDomain(state.storageHandler) })
+export function enrichDomain(storageHandler: WrappedStorageHandler): Enricher<Input, Output> {
+  return state => ({ ...state, domain: determineHighestAccessibleDomain(storageHandler) })
+}

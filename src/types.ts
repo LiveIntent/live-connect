@@ -1,4 +1,5 @@
 import { WrappedStorageHandler } from './handlers/storage-handler'
+import { ResolutionMetadata } from './idex'
 import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
 import { ErrorDetails } from 'live-connect-common'
@@ -32,13 +33,13 @@ export interface LiveConnectConfig {
   queryParametersFilter?: string
   ajaxTimeout?: number,
   contextSelectors?: string
-  contextElementsLength?: number
+  contextElementsLength?: number,
+  peopleVerifiedId?: string,
 }
 
 export type ResolutionParams = Record<string, string | string[]>
 
-// Object fields will be name and value of requested attributes
-export type IdentityResultionResult = object
+export type IdentityResultionResult = unknown
 
 export interface HashedEmail {
   md5: string
@@ -99,7 +100,7 @@ export interface ILiveConnect {
   push: (event: unknown) => void
   fire: () => void
   resolve?: (
-    successCallBack: (result: IdentityResultionResult, expiresAt: Date) => void,
+    successCallBack: (result: IdentityResultionResult, meta: ResolutionMetadata) => void,
     errorCallBack: () => void,
     additionalParams?: ResolutionParams
   ) => void

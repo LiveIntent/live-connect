@@ -18,7 +18,7 @@ function makeDeps(strategy: StorageStrategy = StorageStrategies.cookie) {
   const storage = new DefaultStorageHandler(eventBus)
   const storageHandler = WrappedStorageHandler.make(strategy, storage, eventBus)
   const cache = new StorageHandlerBackedCache({ storageHandler, domain, eventBus })
-  return { storageHandler, cache, eventBus, domain }
+  return { storageHandler, cache, domain }
 }
 
 describe('LiveConnectIdEnricher', () => {
@@ -31,24 +31,22 @@ describe('LiveConnectIdEnricher', () => {
   })
 
   it('should create a first party cookie if it doesn\'t exist', () => {
-    const deps = makeDeps('cookie')
-    const { storageHandler } = deps
+    const { cache, storageHandler, ...args } = makeDeps('cookie')
 
     expect(storageHandler.getCookie('_lc2_fpi')).to.eql(null)
 
-    const resolutionResult = enrichLiveConnectId(deps)
+    const resolutionResult = enrichLiveConnectId(cache, storageHandler)(args)
 
     expect(storageHandler.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storageHandler.getDataFromLocalStorage('_li_duid')).to.eql(resolutionResult.liveConnectId)
   })
 
   it('should create a first party cookie & ls entry if it doesn\'t exist', () => {
-    const deps = makeDeps('cookie')
-    const { storageHandler } = deps
+    const { cache, storageHandler, ...args } = makeDeps('cookie')
 
     expect(storageHandler.getCookie('_lc2_fpi')).to.eql(null)
     expect(storageHandler.getDataFromLocalStorage('_lc2_fpi')).to.eql(null)
-    const resolutionResult = enrichLiveConnectId(deps)
+    const resolutionResult = enrichLiveConnectId(cache, storageHandler)(args)
 
     expect(storageHandler.getCookie('_lc2_fpi')).to.eql(resolutionResult.liveConnectId)
     expect(storageHandler.getCookie('_lc2_fpi_meta')).to.be.not.null()
@@ -58,41 +56,38 @@ describe('LiveConnectIdEnricher', () => {
   })
 
   it('should not create or return a first party identifier if the StorageStrategy is set to "none"', () => {
-    const deps = makeDeps('none')
+    const { cache, storageHandler, ...args } = makeDeps('none')
 
-    const resolutionResult = enrichLiveConnectId(deps)
+    const resolutionResult = enrichLiveConnectId(cache, storageHandler)(args)
 
     expect(resolutionResult.liveConnectId).to.be.undefined()
     expect(resolutionResult.peopleVerifiedId).to.be.undefined()
   })
 
   it('should re-use a first party cookie if it exist', () => {
-    const deps = makeDeps('cookie')
-    const { storageHandler } = deps
+    const { cache, storageHandler, ...args } = makeDeps('cookie')
 
     const id = 'xxxxx'
     storageHandler.setCookie('_lc2_fpi', id, expiresInHours(4), undefined, '.example.com')
 
-    const resolutionResult = enrichLiveConnectId(deps)
+    const resolutionResult = enrichLiveConnectId(cache, storageHandler)(args)
     expect(storageHandler.getCookie('_lc2_fpi')).to.eql(id)
     expect(resolutionResult.liveConnectId).to.eql(id)
   })
 
   it('should create a first party cookie that starts with apex domain hash', () => {
-    const deps = makeDeps('cookie')
-    const { storageHandler } = deps
+    const { cache, storageHandler, ...args } = makeDeps('cookie')
 
-    enrichLiveConnectId(deps)
+    enrichLiveConnectId(cache, storageHandler)(args)
 
     // apexOfExampleCom = '0caaf24ab1a0'
     expect(storageHandler.getCookie('_lc2_fpi')).to.match(/0caaf24ab1a0--.*/)
   })
 
   it('should create a first party cookie that is lowercased', () => {
-    const deps = makeDeps('cookie')
-    const { storageHandler } = deps
+    const { cache, storageHandler, ...args } = makeDeps('cookie')
 
-    enrichLiveConnectId(deps)
+    enrichLiveConnectId(cache, storageHandler)(args)
 
     expect(storageHandler.getCookie('_lc2_fpi')).to.satisfy((cookie: string) => cookie === cookie.toLowerCase())
   })

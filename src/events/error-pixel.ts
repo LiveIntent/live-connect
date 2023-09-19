@@ -52,7 +52,7 @@ export function asErrorDetails(e: unknown): State {
 export function register(state: State, sender: PixelSender, eventBus: EventBus): void {
   try {
     eventBus.on(ERRORS_CHANNEL, (error) => {
-      sender.sendPixel(new StateWrapper(asErrorDetails(error), eventBus).combineWith(state || {}))
+      sender.sendPixel(new StateWrapper({ ...state, ...asErrorDetails(error) }, eventBus))
     })
   } catch (e) {
     console.error('handlers.error.register', e)

@@ -11,7 +11,7 @@ use(dirtyChai)
 const eventBus = LocalEventBus()
 const storage = new DefaultStorageHandler(eventBus)
 const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
-const input = { storageHandler }
+const input = {}
 
 describe('TLD checker', () => {
   beforeEach(() => jsdom('', {
@@ -19,13 +19,13 @@ describe('TLD checker', () => {
   }))
 
   it('should determine correct tld', () => {
-    const resolved = enrichDomain(input)
+    const resolved = enrichDomain(storageHandler)(input)
     expect(resolved.domain).to.eq('.example.com')
   })
 
   it('should reuse the cached correct tld', () => {
     storageHandler.setCookie('_li_dcdm_c', '.example.com')
-    const resolved = enrichDomain(input)
+    const resolved = enrichDomain(storageHandler)(input)
     expect(resolved.domain).to.eq('.example.com')
   })
 })
@@ -36,7 +36,7 @@ describe('TLD on sub-domain', () => {
   }))
 
   it('should use the full domain', () => {
-    const resolved = enrichDomain(input)
+    const resolved = enrichDomain(storageHandler)(input)
     expect(resolved.domain).to.eq('.example.co.uk')
   })
 })

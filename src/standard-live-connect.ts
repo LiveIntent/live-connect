@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* eslint-disable */
 import { PixelSender } from './pixel/sender'
 import * as C from './utils/consts'
@@ -13,25 +12,29 @@ import { IdentityResolver } from './idex'
 import { ConfigMismatch, EventBus, ILiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
 import { enrichDomain } from './enrichers/domain'
-import { enrichStorageHandler } from './enrichers/storage-handler'
 import { enrichStorageStrategy } from './enrichers/storage-strategy'
 import { enrichDecisionIds } from './enrichers/decisions'
 import { enrichLiveConnectId } from './enrichers/live-connect-id'
-import { enrichCache } from './enrichers/cache'
-import { enrichCallHandler } from './enrichers/call-handler'
 import { register as registerErrorPixel } from './events/error-pixel'
+import { WrappedStorageHandler } from './handlers/storage-handler'
+import { StorageHandlerBackedCache } from './cache'
+import { WrappedCallHandler } from './handlers/call-handler'
 
 const hemStore: State = {}
-function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
+function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: State, eventBus: EventBus) {
   if (!event || !isObject(event)) {
     eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if ('config' in event) {
     eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(JSON.stringify(event)))
   } else {
-    const combined = enrichedState.combineWith({ eventSource: event })
+    const wrapper = new StateWrapper(enrichedState, eventBus)
+    const combined = wrapper.combineWith({ eventSource: event })
     hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
     const withHemStore = mergeObjects({ eventSource: event }, hemStore)
-    pixelClient.sendAjax(enrichedState.combineWith(withHemStore))
+
+    const onPreSend = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
+    const onLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, enrichedState)
+    pixelClient.sendAjax(wrapper.combineWith(withHemStore), { onPreSend, onLoad })
   }
 }
 
@@ -48,7 +51,7 @@ function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConne
   }
 }
 
-function _processArgs (args: any[], pixelClient: PixelSender, enrichedState: StateWrapper, eventBus: EventBus) {
+function _processArgs (args: any[], pixelClient: PixelSender, enrichedState: State, eventBus: EventBus) {
   try {
     args.forEach(arg => {
       const event = arg
@@ -86,40 +89,47 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
 function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   try {
     // TODO: proper config validation
-    const validLiveConnectConfig = removeInvalidPairs(liveConnectConfig, eventBus)
+    const validLiveConnectConfig = {
+      ...removeInvalidPairs(liveConnectConfig, eventBus),
+      identifiersToResolve: liveConnectConfig.identifiersToResolve || [],
+      contextSelectors: liveConnectConfig.contextSelectors || '',
+      contextElementsLength: liveConnectConfig.contextElementsLength || 0
+    }
 
-    const stateBuilder = new EnrichmentContext({
-      ...validLiveConnectConfig,
-      identifiersToResolve: validLiveConnectConfig.identifiersToResolve || [],
-      contextSelectors: validLiveConnectConfig.contextSelectors || "",
-      contextElementsLength: validLiveConnectConfig.contextElementsLength || 0,
-      callHandler: externalCallHandler,
-      storageHandler: externalStorageHandler,
-      eventBus
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
+
+    const stateWithStorage =
+      enrichPage(enrichStorageStrategy(enrichPrivacyMode(validLiveConnectConfig)))
+
+    const storageHandler = WrappedStorageHandler.make(stateWithStorage.storageStrategy, externalStorageHandler, eventBus)
+
+    const stateWithDomain = enrichDomain(storageHandler)(stateWithStorage)
+
+    const cache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      domain: stateWithDomain.domain
     })
 
-    const enrichedState = stateBuilder
-      .via(enrichPrivacyMode)
-      .via(enrichStorageStrategy)
-      .via(enrichStorageHandler)
-      .via(enrichDomain)
-      .via(enrichCache)
-      .via(enrichPage)
-      .via(enrichIdentifiers)
-      .via(enrichDecisionIds)
-      .via(enrichLiveConnectId)
-      .via(enrichCallHandler)
-      .data
+    const enrichedState =
+      enrichLiveConnectId(cache, storageHandler)(
+        enrichDecisionIds(storageHandler, eventBus)(
+          enrichIdentifiers(storageHandler, eventBus)(
+            stateWithDomain
+      )))
 
-    const onPixelLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, enrichedState)
-    const onPixelPreload = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
+    const pixelSender = new PixelSender({
+      collectorUrl: validLiveConnectConfig.collectorUrl,
+      ajaxTimeout: validLiveConnectConfig.ajaxTimeout,
+      eventBus,
+      callHandler
+    })
 
-    const pixelClient = new PixelSender(enrichedState, enrichedState.callHandler, eventBus, onPixelLoad, onPixelPreload)
-    registerErrorPixel(enrichedState, pixelClient, eventBus)
+    registerErrorPixel(enrichedState, pixelSender, eventBus)
 
-    const resolver = IdentityResolver.make(enrichedState, enrichedState.cache, enrichedState.callHandler, eventBus)
+    const resolver = IdentityResolver.make(enrichedState, cache, callHandler, eventBus)
 
-    const _push = (...args: any[]) => _processArgs(args, pixelClient, new StateWrapper(enrichedState, enrichedState.eventBus), eventBus)
+    const _push = (...args: any[]) => _processArgs(args, pixelSender, enrichedState, eventBus)
 
     return {
       push: _push,
@@ -129,8 +139,8 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
-      eventBus: eventBus,
-      storageHandler: enrichedState.storageHandler
+      eventBus,
+      storageHandler: storageHandler
     }
   } catch (x) {
     console.error(x)
