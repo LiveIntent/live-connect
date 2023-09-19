@@ -1,4 +1,3 @@
-import { WrappedCallHandler } from './handlers/call-handler'
 import { WrappedStorageHandler } from './handlers/storage-handler'
 import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
