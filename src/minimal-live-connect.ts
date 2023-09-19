@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { IdentityResolver } from './idex'
 import { enrichPrivacyMode } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
@@ -11,11 +10,12 @@ import { WrappedReadOnlyStorageHandler } from './handlers/storage-handler'
 import { WrappedCallHandler } from './handlers/call-handler'
 import { enrichIdentifiers } from './enrichers/identifiers-nohash'
 
+// @ts-ignore
 function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus, push: (event: unknown) => void): ILiveConnect {
   try {
     const validLiveConnectConfig = {
       ...removeInvalidPairs(liveConnectConfig, eventBus),
-      identifiersToResolve: liveConnectConfig.identifiersToResolve || [],
+      identifiersToResolve: liveConnectConfig.identifiersToResolve || []
     }
 
     const stateWithStorage =
@@ -42,7 +42,8 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
       resolve: resolver.resolve.bind(resolver),
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
-      eventBus: eventBus,
+      eventBus,
+      // @ts-ignore
       storageHandler
     }
   } catch (x) {
@@ -51,13 +52,14 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
 }
 
 function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus) {
-  const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, (event: unknown) => {})
+  const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, () => {})
   window.liQ_instances = window.liQ_instances || []
   window.liQ_instances.push(lc)
   return lc
 }
 
 function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus) {
+  // @ts-ignore
   const queue = window[liveConnectConfig.globalVarName] = window[liveConnectConfig.globalVarName] || []
   const push = queue.push.bind(queue)
   const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, push)
@@ -73,11 +75,12 @@ export function MinimalLiveConnect(liveConnectConfig: LiveConnectConfig, externa
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   const eventBus = externalEventBus || LocalEventBus()
   try {
-    return configuration.globalVarName ?
-      _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
-      _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
+    return configuration.globalVarName
+      ? _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
+      : _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
   } catch (x) {
     console.error(x)
   }
+  // @ts-ignore
   return {}
 }

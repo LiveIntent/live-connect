@@ -1,8 +1,7 @@
-/* eslint-disable */
 import { PixelSender } from './pixel/sender'
 import * as C from './utils/consts'
 import { StateWrapper } from './pixel/state'
-import { EnrichmentContext, mergeObjects } from './pixel/fiddler'
+import { mergeObjects } from './pixel/fiddler'
 import { enrichPage } from './enrichers/page'
 import { enrichIdentifiers } from './enrichers/identifiers'
 import { enrichPrivacyMode } from './enrichers/privacy-config'
@@ -21,8 +20,9 @@ import { StorageHandlerBackedCache } from './cache'
 import { WrappedCallHandler } from './handlers/call-handler'
 
 const hemStore: State = {}
-function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: State, eventBus: EventBus) {
+function _pushSingleEvent(event: unknown, pixelClient: PixelSender, enrichedState: State, eventBus: EventBus) {
   if (!event || !isObject(event)) {
+    // @ts-ignore
     eventBus.emitErrorWithMessage('EventNotAnObject', 'Received event was not an object', new Error(event))
   } else if ('config' in event) {
     eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(JSON.stringify(event)))
@@ -38,7 +38,7 @@ function _pushSingleEvent (event: any, pixelClient: PixelSender, enrichedState: 
   }
 }
 
-function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMismatch | undefined {
+function _configMatcher(previousConfig: LiveConnectConfig, newConfig: LiveConnectConfig): ConfigMismatch | undefined {
   const equalConfigs = previousConfig.appId === newConfig.appId &&
     previousConfig.wrapperName === newConfig.wrapperName &&
     previousConfig.collectorUrl === newConfig.collectorUrl
@@ -51,7 +51,7 @@ function _configMatcher (previousConfig: LiveConnectConfig, newConfig: LiveConne
   }
 }
 
-function _processArgs (args: any[], pixelClient: PixelSender, enrichedState: State, eventBus: EventBus) {
+function _processArgs(args: unknown[], pixelClient: PixelSender, enrichedState: State, eventBus: EventBus) {
   try {
     args.forEach(arg => {
       const event = arg
@@ -67,18 +67,23 @@ function _processArgs (args: any[], pixelClient: PixelSender, enrichedState: Sta
   }
 }
 
-function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiveConnect | undefined {
+function _getInitializedLiveConnect(liveConnectConfig: LiveConnectConfig): ILiveConnect | undefined {
   try {
+    // @ts-ignore
     if (window && window[liveConnectConfig.globalVarName] && window[liveConnectConfig.globalVarName].ready) {
+      // @ts-ignore
       const mismatchedConfig = window[liveConnectConfig.globalVarName].config && _configMatcher(window[liveConnectConfig.globalVarName].config, liveConnectConfig)
       if (mismatchedConfig) {
         const error = new Error()
         error.name = 'ConfigSent'
         error.message = 'Additional configuration received'
+        // @ts-ignore
         const eventBus = getAvailableBus(liveConnectConfig.globalVarName)
+        // @ts-ignore
         window[liveConnectConfig.globalVarName].eventBus = eventBus
         eventBus.emitErrorWithMessage('LCDuplication', JSON.stringify(mismatchedConfig), error)
       }
+      // @ts-ignore
       return window[liveConnectConfig.globalVarName]
     }
   } catch (e) {
@@ -86,7 +91,8 @@ function _getInitializedLiveConnect (liveConnectConfig: LiveConnectConfig): ILiv
   }
 }
 
-function _standardInitialization (liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
+// @ts-ignore
+function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
   try {
     // TODO: proper config validation
     const validLiveConnectConfig = {
@@ -116,7 +122,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
         enrichDecisionIds(storageHandler, eventBus)(
           enrichIdentifiers(storageHandler, eventBus)(
             stateWithDomain
-      )))
+          )))
 
     const pixelSender = new PixelSender({
       collectorUrl: validLiveConnectConfig.collectorUrl,
@@ -129,7 +135,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
 
     const resolver = IdentityResolver.make(enrichedState, cache, callHandler, eventBus)
 
-    const _push = (...args: any[]) => _processArgs(args, pixelSender, enrichedState, eventBus)
+    const _push = (...args: unknown[]) => _processArgs(args, pixelSender, enrichedState, eventBus)
 
     return {
       push: _push,
@@ -140,7 +146,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus,
-      storageHandler: storageHandler
+      storageHandler
     }
   } catch (x) {
     console.error(x)
@@ -156,6 +162,7 @@ function _initializeWithoutGlobalName(liveConnectConfig: LiveConnectConfig, exte
 }
 
 function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, eventBus: EventBus): ILiveConnect {
+  // @ts-ignore
   const queue = window[liveConnectConfig.globalVarName] || []
   const lc = _getInitializedLiveConnect(liveConnectConfig) || _standardInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus) || queue
 
@@ -165,6 +172,7 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
     }
   }
 
+  // @ts-ignore
   window[lc.config.globalVarName] = lc
 
   window.liQ_instances = window.liQ_instances || []
@@ -174,18 +182,19 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
   return lc
 }
 
-export function StandardLiveConnect (liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
+export function StandardLiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, externalEventBus?: EventBus): ILiveConnect {
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   const eventBus = externalEventBus || LocalEventBus()
 
   let lc
   try {
-    lc = configuration.globalVarName ?
-          _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus) :
-          _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
+    lc = configuration.globalVarName
+      ? _initializeWithGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
+      : _initializeWithoutGlobalName(configuration, externalStorageHandler, externalCallHandler, eventBus)
   } catch (e) {
     console.error(e)
     eventBus.emitErrorWithMessage('LCConstruction', 'Failed to build LC', e)
   }
+  // @ts-ignore
   return lc
 }

@@ -10,7 +10,7 @@
     "sourceMap": true,
     "moduleResolution": "Node",
     "module": "ESNext",
-    "noEmitOnError": false,
+    "noEmitOnError": true,
   },
   "include": ["./src/**/*", "./test/**/*"]
 }
