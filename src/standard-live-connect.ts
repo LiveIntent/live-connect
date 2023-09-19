@@ -130,8 +130,7 @@ function _standardInitialization (liveConnectConfig: LiveConnectConfig, external
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus: eventBus,
-      storageHandler: enrichedState.storageHandler,
-      callHandler: enrichedState.callHandler,
+      storageHandler: enrichedState.storageHandler
     }
   } catch (x) {
     console.error(x)

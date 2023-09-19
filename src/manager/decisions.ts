@@ -22,7 +22,7 @@ export function resolve(state: { pageUrl?: string, domain?: string }, storageHan
     }
   }
 
-  function _orElseEmtpy<A>(errorDescription: string, f: () => A[]): A[] {
+  function _orElseEmpty<A>(errorDescription: string, f: () => A[]): A[] {
     try {
       return f()
     } catch (e) {
@@ -31,7 +31,7 @@ export function resolve(state: { pageUrl?: string, domain?: string }, storageHan
     }
   }
 
-  const freshDecisions = _orElseEmtpy(
+  const freshDecisions = _orElseEmpty(
     'Error while extracting new decision ids',
     () => {
       const extractedFreshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
@@ -43,14 +43,14 @@ export function resolve(state: { pageUrl?: string, domain?: string }, storageHan
     }
   )
 
-  const storedDecisions = _orElseEmtpy(
+  const storedDecisions = _orElseEmpty(
     'Error while retrieving stored decision ids',
     () => {
       const extractedStoredDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
-      return extractedStoredDecisions.map(trim)
+      return extractedStoredDecisions
+        .map(trim)
         .filter(_nonEmpty)
         .filter(isUUID)
-        .filter(_onlyUnique)
     }
   )
 

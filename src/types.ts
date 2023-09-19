@@ -108,6 +108,5 @@ export interface ILiveConnect {
   peopleVerifiedId?: string
   config: LiveConnectConfig
   eventBus?: EventBus,
-  callHandler?: WrappedCallHandler,
   storageHandler?: WrappedStorageHandler,
 }
