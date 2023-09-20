@@ -28,22 +28,22 @@ export interface DurableCache {
 export type StorageHandlerBackedCacheArgs = {
   storageHandler: WrappedStorageHandler,
   eventBus: EventBus,
-  domain: string,
+  cookieDomain: string,
 }
 
 export class StorageHandlerBackedCache implements DurableCache {
   private handler
-  private domain
+  private cookieDomain
   private eventBus
 
   constructor (opts: StorageHandlerBackedCacheArgs) {
     this.handler = opts.storageHandler
-    this.domain = opts.domain
+    this.cookieDomain = opts.cookieDomain
     this.eventBus = opts.eventBus
   }
 
   private deleteCookie(key: string): void {
-    this.handler.setCookie(key, '', new Date(0), 'Lax', this.domain)
+    this.handler.setCookie(key, '', new Date(0), 'Lax', this.cookieDomain)
   }
 
   // layout: { w: writtenAt in millis, e? : expiresAt in millis }
@@ -161,8 +161,8 @@ export class StorageHandlerBackedCache implements DurableCache {
         return cookieRecord
       } else {
         // ls record is newer. Update cookie record
-        this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.domain)
-        this.handler.setCookie(metaRecordKey, this.serializeMetaRecord(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
+        this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.cookieDomain)
+        this.handler.setCookie(metaRecordKey, this.serializeMetaRecord(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.cookieDomain)
         return lsRecord
       }
     } else if (cookieRecord) {
@@ -172,8 +172,8 @@ export class StorageHandlerBackedCache implements DurableCache {
       return cookieRecord
     } else if (lsRecord) {
       // only ls record exists. Write to cookie
-      this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.domain)
-      this.handler.setCookie(metaRecordKey, this.serializeMetaRecord(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
+      this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.cookieDomain)
+      this.handler.setCookie(metaRecordKey, this.serializeMetaRecord(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.cookieDomain)
       return lsRecord
     } else {
       return null

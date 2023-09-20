@@ -1,10 +1,10 @@
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 import { Enricher } from '../types'
-import { determineHighestAccessibleDomain } from '../utils/domain'
+import { determineHighestWritableDomain } from '../utils/domain'
 
 type Input = object
-type Output = { domain: string }
+type Output = { cookieDomain: string }
 
 export function enrichDomain(storageHandler: WrappedStorageHandler): Enricher<Input, Output> {
-  return state => ({ ...state, domain: determineHighestAccessibleDomain(storageHandler) })
+  return state => ({ ...state, cookieDomain: determineHighestWritableDomain(storageHandler) })
 }

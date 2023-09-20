@@ -48,7 +48,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(1))
@@ -65,7 +65,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(1))
@@ -83,7 +83,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(1))
@@ -100,7 +100,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(1))
@@ -115,7 +115,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key_any', 'value_any', expiresInDays(1))
@@ -138,7 +138,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(-1))
@@ -151,7 +151,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(-1))
@@ -164,7 +164,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     const expires = expiresInDays(5)
@@ -181,7 +181,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     const now = new Date()
@@ -198,7 +198,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(5))
@@ -219,7 +219,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(5))
@@ -236,7 +236,7 @@ describe('Cache', () => {
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: 'example.com'
+      cookieDomain: 'example.com'
     })
 
     cache.set('key', 'value', expiresInDays(5))

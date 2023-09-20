@@ -7,7 +7,7 @@ import { DurableCache } from '../cache'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 
-type Input = { domain: string }
+type Input = { cookieDomain: string }
 type Output = { liveConnectId?: string, peopleVerifiedId?: string }
 
 export function enrichLiveConnectId(
@@ -28,7 +28,7 @@ export function enrichLiveConnectId(
         cache.set(NEXT_GEN_FP_NAME, legacyValue)
         liveConnectIdentifier = legacyValue
       } else {
-        const newValue = `${domainHash(state.domain)}--${ulid()}`.toLocaleLowerCase()
+        const newValue = `${domainHash(state.cookieDomain)}--${ulid()}`.toLocaleLowerCase()
         // will also set cookie. It will also later be extended by cookie bouncing in the cff.
         cache.set(NEXT_GEN_FP_NAME, newValue)
         // handle case when all storage backends are disabled

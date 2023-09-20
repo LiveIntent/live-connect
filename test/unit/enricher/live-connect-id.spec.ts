@@ -13,12 +13,12 @@ import { expiresInHours } from 'live-connect-common'
 use(dirtyChai)
 
 function makeDeps(strategy: StorageStrategy = StorageStrategies.cookie) {
-  const domain = '.example.com'
+  const cookieDomain = '.example.com'
   const eventBus = LocalEventBus()
   const storage = new DefaultStorageHandler(eventBus)
   const storageHandler = WrappedStorageHandler.make(strategy, storage, eventBus)
-  const cache = new StorageHandlerBackedCache({ storageHandler, domain, eventBus })
-  return { storageHandler, cache, domain }
+  const cache = new StorageHandlerBackedCache({ storageHandler, cookieDomain, eventBus })
+  return { storageHandler, cache, cookieDomain }
 }
 
 describe('LiveConnectIdEnricher', () => {

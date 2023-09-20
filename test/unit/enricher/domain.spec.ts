@@ -20,13 +20,13 @@ describe('TLD checker', () => {
 
   it('should determine correct tld', () => {
     const resolved = enrichDomain(storageHandler)(input)
-    expect(resolved.domain).to.eq('.example.com')
+    expect(resolved.cookieDomain).to.eq('.example.com')
   })
 
   it('should reuse the cached correct tld', () => {
     storageHandler.setCookie('_li_dcdm_c', '.example.com')
     const resolved = enrichDomain(storageHandler)(input)
-    expect(resolved.domain).to.eq('.example.com')
+    expect(resolved.cookieDomain).to.eq('.example.com')
   })
 })
 
@@ -37,6 +37,6 @@ describe('TLD on sub-domain', () => {
 
   it('should use the full domain', () => {
     const resolved = enrichDomain(storageHandler)(input)
-    expect(resolved.domain).to.eq('.example.co.uk')
+    expect(resolved.cookieDomain).to.eq('.example.co.uk')
   })
 })

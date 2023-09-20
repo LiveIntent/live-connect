@@ -3,7 +3,7 @@ import { loadedDomain } from './page'
 
 const TLD_CACHE_KEY = '_li_dcdm_c'
 
-export function determineHighestAccessibleDomain(storageHandler: WrappedStorageHandler): string {
+export function determineHighestWritableDomain(storageHandler: WrappedStorageHandler): string {
   const cachedDomain = storageHandler.getCookie(TLD_CACHE_KEY)
   if (cachedDomain) {
     return cachedDomain

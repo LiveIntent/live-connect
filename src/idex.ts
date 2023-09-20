@@ -129,7 +129,7 @@ export class IdentityResolver {
     }
   }
 
-  unsafeResolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback: () => void, additionalParams: ResolutionParams): void {
+  unsafeResolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback: (e: unknown) => void, additionalParams: ResolutionParams): void {
     const cachedValue = this.getCached(additionalParams)
     if (cachedValue) {
       successCallback(...cachedValue)
@@ -149,13 +149,13 @@ export class IdentityResolver {
     return `${this.url}/${this.source}/${this.publisherId}${params}`
   }
 
-  resolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback?: () => void, additionalParams?: ResolutionParams): void {
+  resolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback?: (e: unknown) => void, additionalParams?: ResolutionParams): void {
     try {
       this.unsafeResolve(successCallback, errorCallback || (() => {}), additionalParams || {})
     } catch (e) {
       console.error('IdentityResolve', e)
       if (errorCallback && isFunction(errorCallback)) {
-        errorCallback()
+        errorCallback(e)
       }
       if (this.eventBus) {
         this.eventBus.emitError('IdentityResolve', e)

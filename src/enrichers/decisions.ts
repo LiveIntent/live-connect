@@ -3,7 +3,7 @@ import { getQueryParameter, ParsedParam } from '../utils/url'
 import { trim, isUUID, expiresInDays } from 'live-connect-common'
 import { WrappedStorageHandler } from '../handlers/storage-handler'
 
-type Input = { pageUrl?: string, domain: string }
+type Input = { pageUrl?: string, cookieDomain: string }
 type Output = { decisionIds: string[] }
 
 const DEFAULT_DECISION_ID_COOKIE_EXPIRES = expiresInDays(30)
@@ -18,18 +18,18 @@ export function enrichDecisionIds(
   eventBus: EventBus
 ): Enricher<Input, Output> {
   return state => {
-    function _addDecisionId(key: string, cookieDomain?: string) {
+    function addDecisionId(key: string) {
       if (key) {
         storageHandler.setCookie(
           `${DECISION_ID_COOKIE_NAMESPACE}${key}`,
           key,
           DEFAULT_DECISION_ID_COOKIE_EXPIRES,
           'Lax',
-          cookieDomain)
+          state.cookieDomain)
       }
     }
 
-    function _orElseEmpty<A>(errorDescription: string, f: () => A[]): A[] {
+    function orElseEmpty<A>(errorDescription: string, f: () => A[]): A[] {
       try {
         return f()
       } catch (e) {
@@ -38,7 +38,7 @@ export function enrichDecisionIds(
       }
     }
 
-    const freshDecisions = _orElseEmpty(
+    const freshDecisions = orElseEmpty(
       'Error while extracting new decision ids',
       () => {
         const extractedFreshDecisions = ([] as ParsedParam[]).concat((state.pageUrl && getQueryParameter(state.pageUrl, DECISION_ID_QUERY_PARAM_NAME)) || [])
@@ -50,7 +50,7 @@ export function enrichDecisionIds(
       }
     )
 
-    const storedDecisions = _orElseEmpty(
+    const storedDecisions = orElseEmpty(
       'Error while retrieving stored decision ids',
       () => {
         const extractedStoredDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
@@ -63,7 +63,7 @@ export function enrichDecisionIds(
 
     freshDecisions.forEach(decision => {
       try {
-        _addDecisionId(decision, state.domain)
+        addDecisionId(decision)
       } catch (e) {
         eventBus.emitErrorWithMessage('DecisionsResolve', 'Error while storing new decision id', e)
       }

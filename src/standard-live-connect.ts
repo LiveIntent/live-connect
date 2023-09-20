@@ -114,7 +114,7 @@ function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalS
     const cache = new StorageHandlerBackedCache({
       storageHandler,
       eventBus,
-      domain: stateWithDomain.domain
+      cookieDomain: stateWithDomain.cookieDomain
     })
 
     const enrichedState =
