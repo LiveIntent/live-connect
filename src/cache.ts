@@ -191,8 +191,8 @@ export class StorageHandlerBackedCache implements DurableCache {
     // needs to be set as cookies will be session cookies otherwise. Try to make them live as long as possible
     const cookieExpires = expires || expiresInDays(DEFAULT_COOKIE_EXPIRATION_DAYS)
     // set in cookie
-    this.handler.setCookie(key, value, cookieExpires, 'Lax', this.domain)
-    this.handler.setCookie(metaRecordKey, metaRecord, cookieExpires, 'Lax', this.domain)
+    this.handler.setCookie(key, value, cookieExpires, 'Lax', this.cookieDomain)
+    this.handler.setCookie(metaRecordKey, metaRecord, cookieExpires, 'Lax', this.cookieDomain)
   }
 }
 
