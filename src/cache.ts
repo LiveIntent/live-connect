@@ -75,6 +75,10 @@ export class StorageHandlerBackedCache implements DurableCache {
     return { expiresAt, writtenAt }
   }
 
+  private serializeMetaRecord(meta: RecordMetadata): string {
+    return JSON.stringify({ w: meta.writtenAt.getTime(), e: meta.expiresAt && meta.expiresAt.getTime() })
+  }
+
   private getCookieRecord(key: string, metaRecordKey: string): CacheRecord | null {
     const metaRecord = this.handler.getCookie(metaRecordKey)
 
@@ -153,23 +157,23 @@ export class StorageHandlerBackedCache implements DurableCache {
       } else if (cookieRecord.meta.writtenAt > lsRecord.meta.writtenAt) {
         // cookie record is newer. Update ls record
         this.handler.setDataInLocalStorage(key, cookieRecord.data)
-        this.handler.setDataInLocalStorage(metaRecordKey, JSON.stringify(cookieRecord.meta))
+        this.handler.setDataInLocalStorage(metaRecordKey, this.serializeMetaRecord(cookieRecord.meta))
         return cookieRecord
       } else {
         // ls record is newer. Update cookie record
         this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.domain)
-        this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
+        this.handler.setCookie(metaRecordKey, this.serializeMetaRecord(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
         return lsRecord
       }
     } else if (cookieRecord) {
       // only cookie record exists. Write to ls
       this.handler.setDataInLocalStorage(key, cookieRecord.data)
-      this.handler.setDataInLocalStorage(metaRecordKey, JSON.stringify(cookieRecord.meta))
+      this.handler.setDataInLocalStorage(metaRecordKey, this.serializeMetaRecord(cookieRecord.meta))
       return cookieRecord
     } else if (lsRecord) {
       // only ls record exists. Write to cookie
       this.handler.setCookie(key, lsRecord.data, lsRecord.meta.expiresAt, 'Lax', this.domain)
-      this.handler.setCookie(metaRecordKey, JSON.stringify(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
+      this.handler.setCookie(metaRecordKey, this.serializeMetaRecord(lsRecord.meta), lsRecord.meta.expiresAt, 'Lax', this.domain)
       return lsRecord
     } else {
       return null
@@ -178,7 +182,7 @@ export class StorageHandlerBackedCache implements DurableCache {
 
   set(key: string, value: string, expires?: Date): void {
     const metaRecordKey = metaKey(key)
-    const metaRecord = JSON.stringify({ w: Date.now(), e: expires && expires.getTime() })
+    const metaRecord = this.serializeMetaRecord({ writtenAt: new Date(), expiresAt: expires })
 
     // set in ls
     this.handler.setDataInLocalStorage(key, value)
