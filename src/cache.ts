@@ -46,6 +46,7 @@ export class StorageHandlerBackedCache implements DurableCache {
     this.handler.setCookie(key, '', new Date(0), 'Lax', this.domain)
   }
 
+  // layout: { w: writtenAt in millis, e? : expiresAt in millis }
   private parseMetaRecord(serialized: string): RecordMetadata | null {
     const meta = JSON.parse(serialized)
     if (!isObject(meta)) {
@@ -53,20 +54,20 @@ export class StorageHandlerBackedCache implements DurableCache {
     }
 
     let expiresAt
-    if ('expiresAt' in meta) {
+    if ('e' in meta) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expiresAt = new Date(meta.expiresAt as any)
+      expiresAt = new Date(meta.e as any)
       if (isNaN(expiresAt.getTime())) {
         throw new ParseError('Invalid expiresAt')
       }
     }
 
-    if (!('writtenAt' in meta)) {
+    if (!('w' in meta)) {
       throw new ParseError('Missing writtenAt')
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const writtenAt = new Date(meta.writtenAt as any)
+    const writtenAt = new Date(meta.w as any)
     if (isNaN(writtenAt.getTime())) {
       throw new ParseError('Invalid writtenAt')
     }
@@ -177,7 +178,7 @@ export class StorageHandlerBackedCache implements DurableCache {
 
   set(key: string, value: string, expires?: Date): void {
     const metaRecordKey = metaKey(key)
-    const metaRecord = JSON.stringify({ writtenAt: new Date(), expiresAt: expires })
+    const metaRecord = JSON.stringify({ w: Date.now(), e: expires && expires.getTime() })
 
     // set in ls
     this.handler.setDataInLocalStorage(key, value)

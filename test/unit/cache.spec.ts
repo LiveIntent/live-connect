@@ -206,7 +206,7 @@ describe('Cache', () => {
     const metaRecord = storageHandler.getDataFromLocalStorage('key_meta')!
     const meta = JSON.parse(metaRecord)
     storage.setDataInLocalStorage('key', 'value1')
-    storage.setDataInLocalStorage('key_meta', JSON.stringify({ ...meta, writtenAt: new Date(new Date(meta.writtenAt).getTime() - 1) }))
+    storage.setDataInLocalStorage('key_meta', JSON.stringify({ ...meta, w: meta.w - 1 }))
 
     const result = cache.get('key')
 
