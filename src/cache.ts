@@ -47,7 +47,7 @@ export class StorageHandlerBackedCache implements DurableCache {
   }
 
   // layout: { w: writtenAt in millis, e? : expiresAt in millis }
-  private parseMetaRecord(serialized: string): RecordMetadata | null {
+  private parseMetaRecord(serialized: string): RecordMetadata {
     const meta = JSON.parse(serialized)
     if (!isObject(meta)) {
       throw new ParseError('Meta record is not an object')
@@ -76,7 +76,12 @@ export class StorageHandlerBackedCache implements DurableCache {
   }
 
   private serializeMetaRecord(meta: RecordMetadata): string {
-    return JSON.stringify({ w: meta.writtenAt.getTime(), e: meta.expiresAt && meta.expiresAt.getTime() })
+    let expiresAtMillis
+    if (meta.expiresAt) {
+      expiresAtMillis = meta.expiresAt.getTime()
+    }
+
+    return JSON.stringify({ w: meta.writtenAt.getTime(), e: expiresAtMillis })
   }
 
   private getCookieRecord(key: string, metaRecordKey: string): CacheRecord | null {
