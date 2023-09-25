@@ -214,7 +214,7 @@ describe('Cache', () => {
     expect(storage.getDataFromLocalStorage('key')).to.be.eq('value')
   })
 
-  it('should update expiration when overwriting localstorage with expiration with one without', () => {
+  it('should update expiration when overwriting LS with value without expiration', () => {
     const storageHandler = WrappedStorageHandler.make('ls', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
       storageHandler,
@@ -231,7 +231,7 @@ describe('Cache', () => {
     expect(result?.meta.expiresAt).to.be.undefined()
   })
 
-  it('should update expiration when overwriting a cookie with expiration with one without', () => {
+  it('should update expiration when overwriting cookie with value without expiration', () => {
     const storageHandler = WrappedStorageHandler.make('cookie', storage, eventBus)
     const cache = new StorageHandlerBackedCache({
       storageHandler,
