@@ -1,8 +1,15 @@
 import { isArray, isFunction } from 'live-connect-common'
 import { asStringParam } from '../utils/params'
-import { LiveConnectConfig, EventBus } from '../types'
+import { EventBus } from '../types'
 import { StateWrapper } from './state'
 import { WrappedCallHandler } from '../handlers/call-handler'
+
+export type PixelSenderOpts = {
+  collectorUrl?: string,
+  ajaxTimeout?: number
+  callHandler: WrappedCallHandler,
+  eventBus: EventBus
+}
 
 const DEFAULT_AJAX_TIMEOUT = 0
 
@@ -11,16 +18,12 @@ export class PixelSender {
   timeout: number
   calls: WrappedCallHandler
   eventBus: EventBus
-  onload?: () => void
-  presend?: () => void
 
-  constructor (liveConnectConfig: LiveConnectConfig, calls: WrappedCallHandler, eventBus: EventBus, onload?: () => void, presend?: () => void) {
-    this.url = (liveConnectConfig && liveConnectConfig.collectorUrl) || 'https://rp.liadm.com'
-    this.timeout = (liveConnectConfig && liveConnectConfig.ajaxTimeout) || DEFAULT_AJAX_TIMEOUT
-    this.calls = calls
-    this.eventBus = eventBus
-    this.onload = onload
-    this.presend = presend
+  constructor (opts: PixelSenderOpts) {
+    this.url = opts.collectorUrl || 'https://rp.liadm.com'
+    this.timeout = opts.ajaxTimeout || DEFAULT_AJAX_TIMEOUT
+    this.calls = opts.callHandler
+    this.eventBus = opts.eventBus
   }
 
   private callBakers(bakersJson: string): void {
@@ -34,10 +37,15 @@ export class PixelSender {
     }
   }
 
-  private sendState(state: StateWrapper, endpoint: string, makeCall: (url: string) => void): void {
+  private sendState(
+    state: StateWrapper,
+    endpoint: string,
+    makeCall: (url: string) => void,
+    onPreSend?: () => void
+  ): void {
     if (state.sendsPixel()) {
-      if (isFunction(this.presend)) {
-        this.presend()
+      if (onPreSend && isFunction(onPreSend)) {
+        onPreSend()
       }
 
       const dtstmpTuple = asStringParam('dtstmp', Date.now())
@@ -49,24 +57,24 @@ export class PixelSender {
     }
   }
 
-  sendAjax(state: StateWrapper): void {
+  sendAjax(state: StateWrapper, opts: { onPreSend?: () => void, onLoad?: () => void } = {}): void {
     this.sendState(state, 'j', uri => {
       this.calls.ajaxGet(
         uri,
         bakersJson => {
-          if (isFunction(this.onload)) this.onload()
+          if (opts.onLoad && isFunction(opts.onLoad)) opts.onLoad()
           this.callBakers(bakersJson)
         },
         (e) => {
-          this.sendPixel(state)
+          this.sendPixel(state, opts)
           this.eventBus.emitError('AjaxFailed', e)
         },
         this.timeout
       )
-    })
+    }, opts.onPreSend)
   }
 
-  sendPixel(state: StateWrapper): void {
-    this.sendState(state, 'p', uri => this.calls.pixelGet(uri, this.onload))
+  sendPixel(state: StateWrapper, opts: { onPreSend?: () => void, onLoad?: () => void } = {}): void {
+    this.sendState(state, 'p', uri => this.calls.pixelGet(uri, opts.onLoad), opts.onPreSend)
   }
 }

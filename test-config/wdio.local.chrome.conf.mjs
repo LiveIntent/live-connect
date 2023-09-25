@@ -2,9 +2,6 @@ import common from './wdio.common.conf.mjs'
 
 export const config = {
   ...common('local'),
-  hostname: 'localhost',
-  port: 4444,
-  path: '/wd/hub',
 
   //
   // If you have trouble getting all important capabilities together, check out the

@@ -235,7 +235,7 @@ describe('StandardLiveConnect', () => {
   })
 
   it('should expose the config', () => {
-    const config = { appId: 'a-00xx' }
+    const config = { appId: 'a-00xx', contextElementsLength: 0, contextSelectors: '', identifiersToResolve: [] }
     const lc = StandardLiveConnect(config, storage, calls)
     expect(lc.config).to.eql(config)
   })
@@ -261,7 +261,7 @@ describe('StandardLiveConnect', () => {
   it('should remove distributorId when both appId and distributorId are present', () => {
     const config = { appId: 'a-00xx', distributorId: 'did-00xx', globalVarName: 'liQTest' }
     const lc = StandardLiveConnect(config, storage, calls)
-    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
+    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest', contextElementsLength: 0, contextSelectors: '', identifiersToResolve: [] }
     expect(lc.config).to.eql(expectedConfig)
   })
 

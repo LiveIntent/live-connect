@@ -5,7 +5,6 @@ import mjsEntry from 'rollup-plugin-mjs-entry'
 import dts from 'rollup-plugin-dts'
 import del from "rollup-plugin-delete";
 import terser from '@rollup/plugin-terser'
-import commonJs from '@rollup/plugin-commonjs'
 
 const OUTPUT_DIR = './dist'
 
@@ -30,6 +29,12 @@ export default [
             strip(),
             terser(),
             mjsEntry() // https://nodejs.org/api/packages.html#packages_dual_commonjs_es_module_packages
+        ],
+        external: [
+            'live-connect-common',
+            'tiny-hashes/md5',
+            'tiny-hashes/sha1',
+            'tiny-hashes/sha256',
         ]
     },
     {

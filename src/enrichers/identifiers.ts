@@ -1,26 +1,32 @@
 import { replaceEmailsWithHashes } from '../utils/email'
 import { safeToString, isString, isArray } from 'live-connect-common'
-import { EventBus, HashedEmail, State, RetrievedIdentifier } from '../types'
+import { EventBus, HashedEmail, RetrievedIdentifier, Enricher } from '../types'
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
 
-export function enrich(state: State, storageHandler: WrappedReadOnlyStorageHandler, eventBus: EventBus): State {
-  try {
-    return _getIdentifiers(_parseIdentifiersToResolve(state), storageHandler)
-  } catch (e) {
-    if (eventBus) {
+type Input = { identifiersToResolve: string | string[] }
+type Output = { retrievedIdentifiers: RetrievedIdentifier[], hashesFromIdentifiers: HashedEmail[] }
+
+export function enrichIdentifiers(
+  storageHandler: WrappedReadOnlyStorageHandler,
+  eventBus: EventBus
+): Enricher<Input, Output> {
+  return state => {
+    try {
+      return { ...state, ...getIdentifiers(parseIdentifiersToResolve(state.identifiersToResolve), storageHandler) }
+    } catch (e) {
       eventBus.emitError('IdentifiersEnricher', e)
+      return { ...state, retrievedIdentifiers: [], hashesFromIdentifiers: [] }
     }
-    return {}
   }
 }
 
-function _parseIdentifiersToResolve(state: State): string[] {
+function parseIdentifiersToResolve(identifiersToResolve: string | string[]): string[] {
   let cookieNames: string[] = []
-  if (state.identifiersToResolve) {
-    if (isArray(state.identifiersToResolve)) {
-      cookieNames = state.identifiersToResolve as string[]
-    } else if (isString(state.identifiersToResolve)) {
-      cookieNames = (state.identifiersToResolve as string).split(',')
+  if (identifiersToResolve) {
+    if (isArray(identifiersToResolve)) {
+      cookieNames = identifiersToResolve as string[]
+    } else if (isString(identifiersToResolve)) {
+      cookieNames = (identifiersToResolve as string).split(',')
     }
   }
   for (let i = 0; i < cookieNames.length; i++) {
@@ -29,7 +35,7 @@ function _parseIdentifiersToResolve(state: State): string[] {
   return cookieNames
 }
 
-function _getIdentifiers(cookieNames: string[], storageHandler: WrappedReadOnlyStorageHandler): State {
+function getIdentifiers(cookieNames: string[], storageHandler: WrappedReadOnlyStorageHandler): Output {
   const identifiers: RetrievedIdentifier[] = []
   let hashes: HashedEmail[] = []
   for (let i = 0; i < cookieNames.length; i++) {
@@ -46,11 +52,11 @@ function _getIdentifiers(cookieNames: string[], storageHandler: WrappedReadOnlyS
   }
   return {
     retrievedIdentifiers: identifiers,
-    hashesFromIdentifiers: _deduplicateHashes(hashes)
+    hashesFromIdentifiers: deduplicateHashes(hashes)
   }
 }
 
-function _deduplicateHashes(hashes: HashedEmail[]): HashedEmail[] {
+function deduplicateHashes(hashes: HashedEmail[]): HashedEmail[] {
   const seen = new Set<string>()
   const result: HashedEmail[] = []
   for (let i = 0; i < hashes.length; i++) {

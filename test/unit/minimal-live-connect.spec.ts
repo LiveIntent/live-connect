@@ -122,7 +122,7 @@ describe('MinimalLiveConnect', () => {
   })
 
   it('should expose the config', () => {
-    const config = { appId: 'a-00xx' }
+    const config = { appId: 'a-00xx', identifiersToResolve: [] }
     const lc = MinimalLiveConnect(config, storage, calls)
     expect(lc.config).to.eql(config)
   })
@@ -141,7 +141,7 @@ describe('MinimalLiveConnect', () => {
   it('should remove distributorId when both appId and distributorId are present', () => {
     const config = { appId: 'a-00xx', distributorId: 'did-00xx', globalVarName: 'liQTest' }
     const lc = MinimalLiveConnect(config, storage, calls)
-    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest' }
+    const expectedConfig = { appId: 'a-00xx', globalVarName: 'liQTest', identifiersToResolve: [] }
     expect(lc.config).to.eql(expectedConfig)
   })
 

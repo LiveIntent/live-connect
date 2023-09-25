@@ -1,6 +1,11 @@
+import { WrappedStorageHandler } from './handlers/storage-handler'
+import { ResolutionMetadata } from './idex'
 import { StorageStrategy } from './model/storage-strategy'
 import { UrlCollectionMode } from './model/url-collection-mode'
 import { ErrorDetails } from 'live-connect-common'
+
+export type Enricher<in In extends object, out Out extends object> =
+  <ActualIn extends In> (state: ActualIn) => ActualIn & Out
 
 export interface IdentityResolutionConfig {
   url?: string
@@ -9,8 +14,6 @@ export interface IdentityResolutionConfig {
   source?: string
   publisherId?: number
   requestedAttributes?: string[]
-  contextSelectors?: string
-  contextElementsLength?: number
 }
 
 export interface LiveConnectConfig {
@@ -28,13 +31,15 @@ export interface LiveConnectConfig {
   globalVarName?: string
   urlCollectionMode?: UrlCollectionMode
   queryParametersFilter?: string
-  ajaxTimeout?: number
+  ajaxTimeout?: number,
+  contextSelectors?: string
+  contextElementsLength?: number,
+  peopleVerifiedId?: string,
 }
 
 export type ResolutionParams = Record<string, string | string[]>
 
-// Object fields will be name and value of requested attributes
-export type IdentityResultionResult = object
+export type IdentityResultionResult = unknown
 
 export interface HashedEmail {
   md5: string
@@ -95,12 +100,13 @@ export interface ILiveConnect {
   push: (event: unknown) => void
   fire: () => void
   resolve?: (
-    successCallBack: (result: IdentityResultionResult) => void,
+    successCallBack: (result: IdentityResultionResult, meta: ResolutionMetadata) => void,
     errorCallBack: () => void,
     additionalParams?: ResolutionParams
   ) => void
   resolutionCallUrl?: (additionalParams: ResolutionParams) => string
   peopleVerifiedId?: string
   config: LiveConnectConfig
-  eventBus?: EventBus
+  eventBus?: EventBus,
+  storageHandler?: WrappedStorageHandler,
 }

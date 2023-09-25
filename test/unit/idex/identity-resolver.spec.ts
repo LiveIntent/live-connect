@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import jsdom from 'global-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
@@ -9,26 +7,38 @@ import { LocalEventBus } from '../../../src/events/event-bus'
 import dirtyChai from 'dirty-chai'
 import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
 import { WrappedCallHandler } from '../../../src/handlers/call-handler'
+import { StorageHandlerBackedCache } from '../../../src/cache'
 
 use(dirtyChai)
 
 describe('IdentityResolver', () => {
-  let requestToComplete = null
+  const sandbox = sinon.createSandbox()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let requestToComplete: any = null
   const eventBus = LocalEventBus()
   const calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
   const storage = new DefaultStorageHandler(eventBus)
-  let errors = []
+  let errors: string[] = []
   let callCount = 0
   const storageHandler = WrappedStorageHandler.make('cookie', new DefaultStorageHandler(eventBus), eventBus)
+  const cache = new StorageHandlerBackedCache({
+    eventBus,
+    storageHandler,
+    cookieDomain: 'example.com'
+  })
 
   beforeEach(() => {
     jsdom('', {
       url: 'http://www.something.example.com'
     })
 
-    eventBus.on('li_errors', error => errors.push(error))
+    eventBus.on('li_errors', error => errors.push(error as string))
+    // @ts-ignore
     global.XDomainRequest = null
+    // @ts-ignore
     global.XMLHttpRequest = sinon.createSandbox().useFakeXMLHttpRequest()
+    // @ts-ignore
     global.XMLHttpRequest.onCreate = request => {
       requestToComplete = request
       callCount += 1
@@ -37,10 +47,14 @@ describe('IdentityResolver', () => {
     errors = []
   })
 
+  afterEach(() => {
+    sandbox.restore()
+  })
+
   it('should invoke callback on success, store the result in a cookie', (done) => {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver.make({}, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -54,12 +68,44 @@ describe('IdentityResolver', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should invoke callback on success, if storing the result in a cookie fails', () => {
-    const setCookieStub = sinon.createSandbox().stub(storage, 'setCookie').throws()
+  it('should cache response even if one backend fails', () => {
+    sandbox.stub(storage, 'setCookie').throws()
+
     const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
-    const identityResolver = IdentityResolver.make({}, failedStorage, calls, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      eventBus,
+      storageHandler: failedStorage,
+      cookieDomain: 'example.com'
+    })
+    const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
     let jsonResponse = null
-    const successCallback = (responseAsJson) => {
+    const successCallback = (responseAsJson: unknown) => {
+      jsonResponse = responseAsJson
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({ id: 321 }))
+    expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+    expect(jsonResponse).to.be.eql({ id: 321 })
+
+    identityResolver.resolve(successCallback)
+    expect(jsonResponse).to.be.eql({ id: 321 })
+    expect(errors).to.not.be.empty()
+    expect(callCount).to.be.eql(1)
+  })
+
+  it('should invoke callback on success, if storing the result in a either backend fails', () => {
+    sandbox.stub(storage, 'setCookie').throws()
+    sandbox.stub(storage, 'setDataInLocalStorage').throws()
+
+    const failedStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
+    const cache = new StorageHandlerBackedCache({
+      eventBus,
+      storageHandler: failedStorage,
+      cookieDomain: 'example.com'
+    })
+    const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
+    let jsonResponse = null
+    const successCallback = (responseAsJson: unknown) => {
       jsonResponse = responseAsJson
     }
     identityResolver.resolve(successCallback)
@@ -70,15 +116,14 @@ describe('IdentityResolver', () => {
     identityResolver.resolve(successCallback)
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({ id: 123 }))
     expect(jsonResponse).to.be.eql({ id: 123 })
-    setCookieStub.restore()
     expect(errors).to.not.be.empty()
     expect(callCount).to.be.eql(2)
   })
 
   it('should attach the duid', (done) => {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -90,8 +135,8 @@ describe('IdentityResolver', () => {
 
   it('should attach additional params', (done) => {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&key=value')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -103,8 +148,8 @@ describe('IdentityResolver', () => {
 
   it('should attach additional params with an array that should be serialized as repeated query', (done) => {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987' }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&qf=0.1&resolve=age&resolve=gender')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -116,8 +161,8 @@ describe('IdentityResolver', () => {
 
   it('should attach publisher id', (done) => {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({ peopleVerifiedId: '987', identityResolutionConfig: { publisherId: 123 } }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/123?duid=987&key=value')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -129,8 +174,8 @@ describe('IdentityResolver', () => {
 
   it('should attach the did', (done) => {
     const response = { id: 112233 }
-    const identityResolver = IdentityResolver.make({ distributorId: 'did-01er' }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({ distributorId: 'did-01er' }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?did=did-01er')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -141,8 +186,8 @@ describe('IdentityResolver', () => {
   })
 
   it('should not attach an empty tuple', (done) => {
-    const identityResolver = IdentityResolver.make({ peopleVerifiedId: null }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    const identityResolver = IdentityResolver.make({ peopleVerifiedId: undefined }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql({})
@@ -166,8 +211,8 @@ describe('IdentityResolver', () => {
           value: 'AnotherId'
         }
       ]
-    }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pubcid=exexex&some-id=AnotherId')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -184,8 +229,8 @@ describe('IdentityResolver', () => {
       privacyMode: false,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
-    }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -202,8 +247,8 @@ describe('IdentityResolver', () => {
       privacyMode: true,
       gdprConsent: 'gdprConsent',
       usPrivacyString: 'usPrivacyString'
-    }, storageHandler, calls, eventBus)
-    const successCallback = (responseAsJson) => {
+    }, cache, calls, eventBus)
+    const successCallback = (responseAsJson: unknown) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&n3pc=1&gdpr_consent=gdprConsent')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -214,9 +259,9 @@ describe('IdentityResolver', () => {
   })
 
   it('should return the default empty response and emit error if response is 500', (done) => {
-    const identityResolver = IdentityResolver.make({}, storageHandler, calls, eventBus)
-    const errorCallback = (error) => {
-      expect(error.message).to.match(/^Error during XHR call: 500, url/)
+    const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
+    const errorCallback = (error: unknown) => {
+      expect((error as Error).message).to.match(/^Error during XHR call: 500, url/)
       done()
     }
     identityResolver.resolve(() => undefined, errorCallback)
@@ -227,9 +272,9 @@ describe('IdentityResolver', () => {
     const responseMd5 = { id: 123 }
     const responseSha1 = { id: 125 }
 
-    const identityResolver = IdentityResolver.make({}, storageHandler, calls, eventBus)
+    const identityResolver = IdentityResolver.make({}, cache, calls, eventBus)
     let jsonResponse = null
-    const successCallback = (responseAsJson) => {
+    const successCallback = (responseAsJson: unknown) => {
       jsonResponse = responseAsJson
     }
     identityResolver.resolve(successCallback, () => undefined, { type: 'md5' })
@@ -261,11 +306,11 @@ describe('IdentityResolver', () => {
           requestedAttributes: ['uid2', 'md5']
         }
       },
-      storageHandler,
+      cache,
       calls,
       eventBus
     )
-    const successCallback = (responseAsJson) => {
+    const successCallback = (responseAsJson: unknown) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -287,11 +332,11 @@ describe('IdentityResolver', () => {
         },
         privacyMode: true
       },
-      storageHandler,
+      cache,
       calls,
       eventBus
     )
-    const successCallback = (responseAsJson) => {
+    const successCallback = (responseAsJson: unknown) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -306,24 +351,28 @@ describe('IdentityResolver', () => {
 
   it('should prefer expires header from the server', (done) => {
     const response = { id: 112233 }
-    let recordedExpiresAt: Date
+    let recordedExpiresAt: Date | undefined
 
-    const customStorage = WrappedStorageHandler.make('cookie', storage, eventBus)
-    customStorage.set = (key, value, expiresAt, sameSite, domain) => {
+    const customCache = new StorageHandlerBackedCache({
+      storageHandler,
+      eventBus,
+      cookieDomain: 'example.com'
+    })
+    customCache.set = (key, value, expiresAt) => {
       recordedExpiresAt = expiresAt
-      storageHandler.set(key, value, expiresAt, sameSite, domain)
+      cache.set(key, value, expiresAt)
     }
 
-    const identityResolver = IdentityResolver.make({}, customStorage, calls, eventBus)
+    const identityResolver = IdentityResolver.make({}, customCache, calls, eventBus)
 
     const expiresAt = new Date()
     expiresAt.setHours(expiresAt.getHours() + 12)
 
-    function epochSeconds(date) {
+    function epochSeconds(date: Date) {
       Math.floor(date.getTime() / 1000)
     }
 
-    const successCallback = (responseAsJson) => {
+    const successCallback = (responseAsJson: unknown) => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
@@ -332,7 +381,7 @@ describe('IdentityResolver', () => {
       expect(callCount).to.be.eql(1)
 
       expect(storageHandler.getCookie('__li_idex_cache_e30')).to.be.eq(JSON.stringify(response))
-      expect(epochSeconds(recordedExpiresAt)).to.be.eq(epochSeconds(expiresAt))
+      expect(epochSeconds(recordedExpiresAt!)).to.be.eq(epochSeconds(expiresAt))
 
       done()
     }

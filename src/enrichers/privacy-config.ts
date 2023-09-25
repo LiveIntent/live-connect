@@ -1,11 +1,7 @@
-import { State } from '../types'
-import { isNonEmpty } from 'live-connect-common'
+import { Enricher } from '../types'
 
-export function enrich(state: State): State {
-  if (isNonEmpty(state) && isNonEmpty(state.gdprApplies)) {
-    const privacyMode = !!state.gdprApplies
-    return {
-      privacyMode
-    }
-  } else return {}
-}
+type Input = { gdprApplies?: boolean }
+type Output = { privacyMode: boolean }
+
+export const enrichPrivacyMode: Enricher<Input, Output> = state =>
+  ({ ...state, privacyMode: !!state.gdprApplies })

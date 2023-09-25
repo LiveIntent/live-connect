@@ -67,39 +67,6 @@ export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler impleme
     return handler
   }
 
-  get(key: string): string | null {
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
-      return null
-    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
-      if (this.localStorageIsEnabled()) {
-        const expirationKey = `${key}_exp`
-        const oldLsExpirationEntry = this.getDataFromLocalStorage(expirationKey)
-        if (oldLsExpirationEntry && Date.parse(oldLsExpirationEntry) <= new Date().getTime()) {
-          this.removeDataFromLocalStorage(key)
-        }
-        return this.getDataFromLocalStorage(key)
-      } else {
-        return null
-      }
-    } else {
-      return this.getCookie(key)
-    }
-  }
-
-  set(key: string, value: string, expires: Date, domain?: string): void {
-    if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.none) || strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.disabled)) {
-      // pass
-    } else if (strEqualsIgnoreCase(this.storageStrategy, StorageStrategies.localStorage)) {
-      if (this.localStorageIsEnabled()) {
-        const expirationKey = `${key}_exp`
-        this.setDataInLocalStorage(key, value)
-        this.setDataInLocalStorage(expirationKey, `${expires}`)
-      }
-    } else {
-      this.setCookie(key, value, expires, 'Lax', domain)
-    }
-  }
-
   setCookie(key: string, value: string, expires?: Date, sameSite?: string, domain?: string): void {
     this.functions.setCookie(key, value, expires, sameSite, domain)
   }
