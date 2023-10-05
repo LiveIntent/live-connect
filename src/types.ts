@@ -96,9 +96,12 @@ export interface EventBus extends ErrorBus {
   off(name: string, callback: (event: unknown) => void): this
 }
 
-export interface ILiveConnect {
-  ready?: boolean
+export interface PublicLiveConnect {
   push: (...event: unknown[]) => void
+}
+
+export interface InternalLiveConnect extends PublicLiveConnect {
+  ready?: boolean
   fire?: () => void
   resolve?: (
     successCallBack: (result: IdentityResultionResult, meta: ResolutionMetadata) => void,
