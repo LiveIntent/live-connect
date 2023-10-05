@@ -31,4 +31,3 @@ export * as eventBus from './events/event-bus'
 export * as consts from './utils/consts'
 
 export { PublicLiveConnect, LiveConnectConfig } from './types'
-
