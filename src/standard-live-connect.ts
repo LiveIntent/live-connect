@@ -146,7 +146,8 @@ function _standardInitialization(liveConnectConfig: LiveConnectConfig, externalS
       resolutionCallUrl: resolver.getUrl.bind(resolver),
       config: validLiveConnectConfig,
       eventBus,
-      storageHandler
+      storageHandler,
+      cache
     }
   } catch (x) {
     console.error(x)
@@ -176,6 +177,7 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
   window[lc.config.globalVarName] = lc
 
   window.liQ_instances = window.liQ_instances || []
+  // @ts-ignore
   if (window.liQ_instances.filter(i => i.config.globalVarName === lc.config.globalVarName).length === 0) {
     window.liQ_instances.push(lc)
   }

@@ -1,6 +1,6 @@
 import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
 import { EventBus, ReadOnlyStorageHandler, StorageHandler, strEqualsIgnoreCase } from 'live-connect-common'
-import { WrappingContext } from '../utils/wrapping'
+import { Wrapped, WrappingContext } from '../utils/wrapping'
 
 const noop = () => undefined
 
@@ -13,7 +13,11 @@ function wrapWrite<T extends object, K extends keyof T & string>(wrapper: Wrappi
 }
 
 export class WrappedReadOnlyStorageHandler implements ReadOnlyStorageHandler {
-  private minimalFunctions
+  private minimalFunctions: {
+    getCookie: Wrapped<ReadOnlyStorageHandler['getCookie']>,
+    getDataFromLocalStorage: Wrapped<ReadOnlyStorageHandler['getDataFromLocalStorage']>,
+    localStorageIsEnabled: Wrapped<ReadOnlyStorageHandler['localStorageIsEnabled']>,
+  }
 
   protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<ReadOnlyStorageHandler>) {
     this.minimalFunctions = {
@@ -45,7 +49,12 @@ export class WrappedReadOnlyStorageHandler implements ReadOnlyStorageHandler {
 
 export class WrappedStorageHandler extends WrappedReadOnlyStorageHandler implements StorageHandler {
   storageStrategy: StorageStrategy
-  private functions
+  private functions: {
+    setCookie: Wrapped<StorageHandler['setCookie']>,
+    removeDataFromLocalStorage: Wrapped<StorageHandler['removeDataFromLocalStorage']>,
+    setDataInLocalStorage: Wrapped<StorageHandler['setDataInLocalStorage']>,
+    findSimilarCookies: Wrapped<StorageHandler['findSimilarCookies']>,
+  }
 
   protected constructor (storageStrategy: StorageStrategy, wrapper: WrappingContext<StorageHandler>) {
     super(storageStrategy, wrapper)

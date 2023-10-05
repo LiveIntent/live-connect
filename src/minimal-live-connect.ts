@@ -11,7 +11,7 @@ import { WrappedCallHandler } from './handlers/call-handler'
 import { enrichIdentifiers } from './enrichers/identifiers-nohash'
 
 // @ts-ignore
-function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus, push: (event: unknown) => void): ILiveConnect {
+function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus, push: (...events: unknown[]) => void): ILiveConnect {
   try {
     const validLiveConnectConfig = {
       ...removeInvalidPairs(liveConnectConfig, eventBus),
@@ -65,6 +65,7 @@ function _initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, externa
   const lc = _minimalInitialization(liveConnectConfig, externalStorageHandler, externalCallHandler, eventBus, push)
 
   window.liQ_instances = window.liQ_instances || []
+  // @ts-ignore
   if (window.liQ_instances.filter(i => i.config.globalVarName === lc.config.globalVarName).length === 0) {
     window.liQ_instances.push(lc)
   }

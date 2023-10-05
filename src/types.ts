@@ -1,3 +1,4 @@
+import { DurableCache } from './cache'
 import { WrappedStorageHandler } from './handlers/storage-handler'
 import { ResolutionMetadata } from './idex'
 import { StorageStrategy } from './model/storage-strategy'
@@ -96,9 +97,9 @@ export interface EventBus extends ErrorBus {
 }
 
 export interface ILiveConnect {
-  ready: boolean
-  push: (event: unknown) => void
-  fire: () => void
+  ready?: boolean
+  push: (...event: unknown[]) => void
+  fire?: () => void
   resolve?: (
     successCallBack: (result: IdentityResultionResult, meta: ResolutionMetadata) => void,
     errorCallBack: () => void,
@@ -106,7 +107,8 @@ export interface ILiveConnect {
   ) => void
   resolutionCallUrl?: (additionalParams: ResolutionParams) => string
   peopleVerifiedId?: string
-  config: LiveConnectConfig
+  config?: LiveConnectConfig
   eventBus?: EventBus,
   storageHandler?: WrappedStorageHandler,
+  cache?: DurableCache,
 }

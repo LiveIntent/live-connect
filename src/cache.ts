@@ -91,9 +91,9 @@ export class StorageHandlerBackedCache implements DurableCache {
       return null
     }
 
-    let _meta
+    let meta: RecordMetadata
     try {
-      _meta = this.parseMetaRecord(metaRecord)
+      meta = this.parseMetaRecord(metaRecord)
     } catch (e) {
       this.eventBus.emitErrorWithMessage('Cache', 'Failed reading meta from cookies', e)
       // delete this so we don't keep trying to read it
@@ -101,7 +101,6 @@ export class StorageHandlerBackedCache implements DurableCache {
       this.deleteCookie(metaRecordKey)
       return null
     }
-    const meta = _meta!
 
     const expiresAt = meta.expiresAt
     if (expiresAt && expiresAt.getTime() <= Date.now()) {
@@ -123,16 +122,15 @@ export class StorageHandlerBackedCache implements DurableCache {
       return null
     }
 
-    let _meta
+    let meta: RecordMetadata
     try {
-      _meta = this.parseMetaRecord(metaRecord)
+      meta = this.parseMetaRecord(metaRecord)
     } catch (e) {
       this.eventBus.emitErrorWithMessage('Cache', 'Failed reading meta from ls', e)
       this.handler.removeDataFromLocalStorage(key)
       this.handler.removeDataFromLocalStorage(metaRecordKey)
       return null
     }
-    const meta = _meta!
 
     const expiresAt = meta.expiresAt
     if (expiresAt && expiresAt.getTime() <= Date.now()) {

@@ -10,10 +10,10 @@ const OUTPUT_DIR = './dist'
 
 export default [
     {
-        input: './src/index.ts',
+        input: ['./src/index.ts', './src/internal.ts'],
         output: [
             {
-                file: `${OUTPUT_DIR}/index.js`,
+                dir: `${OUTPUT_DIR}`,
                 format: 'cjs',
                 sourcemap: true
             }
@@ -38,8 +38,11 @@ export default [
         ]
     },
     {
-        input: `${OUTPUT_DIR}/dts/src/index.d.ts`,
-        output: [{ file: `${OUTPUT_DIR}/index.d.ts`, format: 'es' }],
+        input: {
+            index: `${OUTPUT_DIR}/dts/src/index.d.ts`,
+            internal: `${OUTPUT_DIR}/dts/src/internal.d.ts`
+        },
+        output: [{ dir: OUTPUT_DIR, format: 'es' }],
         plugins: [dts(), del({ targets: `${OUTPUT_DIR}/dts`, hook: 'buildEnd' })],
     }
 ]

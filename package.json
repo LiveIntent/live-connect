@@ -23,6 +23,11 @@
       "require": "./dist/index.js",
       "import": "./dist/index.mjs"
     },
+    "./internal": {
+      "types": "./dist/internal.d.ts",
+      "require": "./dist/internal.js",
+      "import": "./dist/internal.mjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
