@@ -9,7 +9,7 @@ export const LiveConnect: (
   liveConnectConfig: LiveConnectConfig,
   externalStorageHandler: StorageHandler,
   externalCallHandler: CallHandler,
-  mode: string,
+  mode: 'minimal' | string,
   externalEventBus?: EventBus
 ) => PublicLiveConnect | null = _LiveConnect
 
