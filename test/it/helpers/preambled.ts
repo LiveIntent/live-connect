@@ -27,6 +27,6 @@ const lc = StandardLiveConnect(
 )
 
 if (Array.isArray(queue)) {
-  queue.forEach(q => lc.push(q))
+  queue.forEach(q => lc.push!(q))
 }
 window.liQ = lc

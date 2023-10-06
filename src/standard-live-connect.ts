@@ -169,7 +169,7 @@ function initializeWithGlobalName(liveConnectConfig: LiveConnectConfig, external
 
   if (isArray(queue)) {
     for (let i = 0; i < queue.length; i++) {
-      lc.push(queue[i])
+      lc.push!(queue[i])
     }
   }
 

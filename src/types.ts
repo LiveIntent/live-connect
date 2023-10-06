@@ -97,17 +97,17 @@ export interface EventBus extends ErrorBus {
 }
 
 export interface PublicLiveConnect {
-  push: (...event: unknown[]) => void
-}
-
-export interface InternalLiveConnect extends PublicLiveConnect {
-  ready?: boolean
-  fire?: () => void
+  push?: (...event: unknown[]) => void
   resolve?: (
     successCallBack: (result: IdentityResultionResult, meta: ResolutionMetadata) => void,
     errorCallBack: () => void,
     additionalParams?: ResolutionParams
   ) => void
+}
+
+export interface InternalLiveConnect extends PublicLiveConnect {
+  ready?: boolean
+  fire?: () => void
   resolutionCallUrl?: (additionalParams: ResolutionParams) => string
   peopleVerifiedId?: string
   config?: LiveConnectConfig
