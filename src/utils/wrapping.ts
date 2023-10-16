@@ -1,7 +1,7 @@
 import { EventBus } from '../types'
 import { isFunction, isObject } from 'live-connect-common'
 
-export type NoopFunction = () => undefined
+export type Wrapped<T> = NonNullable<T> | (() => undefined)
 
 const noop = () => undefined
 
@@ -18,7 +18,7 @@ export class WrappingContext<T extends object> {
     this.eventBus = eventBus
   }
 
-  wrap<K extends keyof T & string>(functionName: K): NonNullable<T[K]> | NoopFunction {
+  wrap<K extends keyof T & string>(functionName: K): Wrapped<T[K]> {
     if (isObject(this.obj)) {
       const member = this.obj[functionName]
       if (isFunction(member)) {

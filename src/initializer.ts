@@ -1,10 +1,10 @@
 import { StandardLiveConnect } from './standard-live-connect'
 import { MinimalLiveConnect } from './minimal-live-connect'
 import { CallHandler, StorageHandler, isObject } from 'live-connect-common'
-import { EventBus, ILiveConnect, LiveConnectConfig } from './types'
+import { EventBus, InternalLiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 
-export function LiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, mode: string, externalEventBus?: EventBus): ILiveConnect | null {
+export function LiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, mode: 'minimal' | string, externalEventBus?: EventBus): InternalLiveConnect | null {
   const minimalMode = mode === 'minimal' || process.env.LiveConnectMode === 'minimal'
   const bus = externalEventBus || LocalEventBus()
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
