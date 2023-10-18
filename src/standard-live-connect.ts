@@ -6,7 +6,7 @@ import { enrichPage } from './enrichers/page'
 import { enrichIdentifiers } from './enrichers/identifiers'
 import { enrichPrivacyMode } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
-import { isArray, isObject, CallHandler, StorageHandler } from 'live-connect-common'
+import { isArray, isObject, CallHandler, StorageHandler, expiresInDays } from 'live-connect-common'
 import { IdentityResolver } from './idex'
 import { ConfigMismatch, EventBus, InternalLiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
@@ -16,7 +16,7 @@ import { enrichDecisionIds } from './enrichers/decisions'
 import { enrichLiveConnectId } from './enrichers/live-connect-id'
 import { register as registerErrorPixel } from './events/error-pixel'
 import { WrappedStorageHandler } from './handlers/storage-handler'
-import { StorageHandlerBackedCache } from './cache'
+import { StorageHandlerBackedCache, DurableCache } from './cache'
 import { WrappedCallHandler } from './handlers/call-handler'
 
 const hemStore: State = {}
@@ -133,6 +133,7 @@ function standardInitialization(liveConnectConfig: LiveConnectConfig, externalSt
 
     registerErrorPixel(enrichedState, pixelSender, eventBus)
 
+    clearIdexCache(cache, eventBus, enrichedState.cookieDomain)
     const resolver = IdentityResolver.make(enrichedState, cache, callHandler, eventBus)
 
     const _push = (...args: unknown[]) => processArgs(args, pixelSender, enrichedState, eventBus)
@@ -199,4 +200,38 @@ export function StandardLiveConnect(liveConnectConfig: LiveConnectConfig, extern
   }
   // @ts-ignore
   return lc
+}
+
+// TODO: remove this in next version
+function clearIdexCache(cache: DurableCache, bus: EventBus, cookieDomain: string) {
+  const cachekey = '__li_idexc'
+  if (cache.get(cachekey)) {
+    cache.set(cachekey, '1', expiresInDays(7))
+  } else {
+    if (window.localStorage) {
+      try {
+        for (const key in window.localStorage) {
+          if (key.startsWith('__li_idex_')) {
+            localStorage.removeItem(key)
+          }
+        }
+      } catch (e) {
+        bus.emitErrorWithMessage('ClearIdexLs', 'Failed to clear localStorage', e)
+      }
+    }
+
+    try {
+      const allCookies = window.document.cookie.split(';')
+      for (const cookie in allCookies) {
+        const key = cookie.split('=')[0].trim()
+        if (key.startsWith('__li_idex_')) {
+          document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${cookieDomain}`
+        }
+      }
+    } catch (e) {
+      bus.emitErrorWithMessage('ClearIdexCookie', 'Failed to clear cookies', e)
+    }
+
+    cache.set(cachekey, '1', expiresInDays(7))
+  }
 }
