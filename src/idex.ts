@@ -95,7 +95,6 @@ export class IdentityResolver {
   }
 
   private setCached(key: string, value: unknown, expiresAt?: Date) {
-    console.warn(cacheKey(key))
     this.cache.set(cacheKey(key), JSON.stringify(value), expiresAt || expiresInHours(this.defaultExpirationHours))
   }
 
