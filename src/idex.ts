@@ -164,7 +164,7 @@ export class IdentityResolver {
   }
 }
 
-function responseExpires(response: unknown) {
+function responseExpires(response: unknown): Date | undefined {
   if (isObject(response) && 'getResponseHeader' in response && isFunction(response.getResponseHeader)) {
     const expiresHeader = response.getResponseHeader('expires')
     if (expiresHeader) {
