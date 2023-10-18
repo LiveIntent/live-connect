@@ -173,11 +173,7 @@ function responseExpires(response: unknown) {
   }
 }
 
-function cacheKey(rawKey: unknown) {
-  if (rawKey) {
-    const suffix = base64UrlEncode(JSON.stringify(rawKey))
-    return `${IDEX_STORAGE_KEY}_${suffix}`
-  } else {
-    return IDEX_STORAGE_KEY
-  }
+function cacheKey(rawKey: string): string {
+  const suffix = base64UrlEncode(JSON.stringify(rawKey))
+  return `${IDEX_STORAGE_KEY}_${suffix}`
 }
