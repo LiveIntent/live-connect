@@ -211,7 +211,7 @@ function clearIdexCache(cache: DurableCache, bus: EventBus, cookieDomain: string
     if (window.localStorage) {
       try {
         for (const key in window.localStorage) {
-          if (key.startsWith('__li_idex_')) {
+          if (key.startsWith('__li_idex_cache')) {
             localStorage.removeItem(key)
           }
         }
@@ -222,9 +222,9 @@ function clearIdexCache(cache: DurableCache, bus: EventBus, cookieDomain: string
 
     try {
       const allCookies = window.document.cookie.split(';')
-      for (const cookie in allCookies) {
+      for (const cookie of allCookies) {
         const key = cookie.split('=')[0].trim()
-        if (key.startsWith('__li_idex_')) {
+        if (key.startsWith('__li_idex_cache')) {
           document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${cookieDomain}`
         }
       }
