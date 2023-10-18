@@ -354,7 +354,7 @@ workflows:
           context: live-connect
           type: approval
           requires:
-            - browserstack_manual
+            - simple_test
           filters:
             <<: *releasable_branch
 
