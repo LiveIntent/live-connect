@@ -61,7 +61,7 @@ describe('IdentityResolver', () => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
       expect(responseAsJson).to.be.eql(response)
       expect(callCount).to.be.eql(1)
-      expect(storageHandler.getCookie('__li_idex_cache_e30')).to.be.eq(JSON.stringify(response))
+      expect(storageHandler.getCookie('__li_idex_cache2_InVua25vd24vYW55Ig')).to.be.eq(JSON.stringify(response))
       done()
     }
     identityResolver.resolve(successCallback)
@@ -380,7 +380,7 @@ describe('IdentityResolver', () => {
       expect(responseAsJson).to.be.eql(response)
       expect(callCount).to.be.eql(1)
 
-      expect(storageHandler.getCookie('__li_idex_cache_e30')).to.be.eq(JSON.stringify(response))
+      expect(storageHandler.getCookie('__li_idex_cache2_InVua25vd24vYW55Ig')).to.be.eq(JSON.stringify(response))
       expect(epochSeconds(recordedExpiresAt!)).to.be.eq(epochSeconds(expiresAt))
 
       done()

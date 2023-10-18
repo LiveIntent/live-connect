@@ -7,16 +7,7 @@ import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedI
 import { WrappedCallHandler } from './handlers/call-handler'
 import { DurableCache, NoOpCache } from './cache'
 
-const IDEX_STORAGE_KEY = '__li_idex_cache'
-
-function _cacheKey(rawKey: unknown) {
-  if (rawKey) {
-    const suffix = base64UrlEncode(JSON.stringify(rawKey))
-    return `${IDEX_STORAGE_KEY}_${suffix}`
-  } else {
-    return IDEX_STORAGE_KEY
-  }
-}
+const IDEX_STORAGE_KEY = '__li_idex_cache2'
 
 export type ResolutionMetadata = {
   expiresAt?: Date,
@@ -94,8 +85,8 @@ export class IdentityResolver {
     return IdentityResolver.make(config || {}, NoOpCache, calls, eventBus)
   }
 
-  private getCached(key: unknown): [unknown, ResolutionMetadata] | null {
-    const cachedValue = this.cache.get(_cacheKey(key))
+  private getCached(key: string): [unknown, ResolutionMetadata] | null {
+    const cachedValue = this.cache.get(cacheKey(key))
     if (cachedValue) {
       return [JSON.parse(cachedValue.data), { expiresAt: cachedValue.meta.expiresAt, resolvedAt: cachedValue.meta.writtenAt }]
     } else {
@@ -103,12 +94,13 @@ export class IdentityResolver {
     }
   }
 
-  private setCached(key: unknown, value: unknown, expiresAt?: Date) {
-    this.cache.set(_cacheKey(key), JSON.stringify(value), expiresAt || expiresInHours(this.defaultExpirationHours))
+  private setCached(key: string, value: unknown, expiresAt?: Date) {
+    console.warn(cacheKey(key))
+    this.cache.set(cacheKey(key), JSON.stringify(value), expiresAt || expiresInHours(this.defaultExpirationHours))
   }
 
   private responseReceived(
-    additionalParams: ResolutionParams,
+    idexPath: string,
     successCallback: (result: unknown, meta: ResolutionMetadata) => void
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
@@ -124,19 +116,20 @@ export class IdentityResolver {
 
       const expiresAt = responseExpires(response)
       const resolvedAt = new Date()
-      this.setCached(additionalParams, responseObj, expiresAt)
+      this.setCached(idexPath, responseObj, expiresAt)
       successCallback(responseObj, { expiresAt, resolvedAt })
     }
   }
 
   unsafeResolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback: (e: unknown) => void, additionalParams: ResolutionParams): void {
-    const cachedValue = this.getCached(additionalParams)
+    const idexPath = this.buildPath(additionalParams)
+    const cachedValue = this.getCached(idexPath)
     if (cachedValue) {
       successCallback(...cachedValue)
     } else {
       this.calls.ajaxGet(
-        this.getUrl(additionalParams),
-        this.responseReceived(additionalParams, successCallback),
+        this.buildUrl(idexPath),
+        this.responseReceived(idexPath, successCallback),
         errorCallback,
         this.timeout
       )
@@ -144,9 +137,7 @@ export class IdentityResolver {
   }
 
   getUrl(additionalParams: Record<string, string | string[]>): string {
-    const originalParams = this.tuples.slice().concat(mapAsParams(additionalParams))
-    const params = toParams(originalParams)
-    return `${this.url}/${this.source}/${this.publisherId}${params}`
+    return this.buildUrl(this.buildPath(additionalParams))
   }
 
   resolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback?: (e: unknown) => void, additionalParams?: ResolutionParams): void {
@@ -162,6 +153,16 @@ export class IdentityResolver {
       }
     }
   }
+
+  private buildPath(additionalParams: Record<string, string | string[]>): string {
+    const originalParams = this.tuples.slice().concat(mapAsParams(additionalParams))
+    const params = toParams(originalParams)
+    return `${this.source}/${this.publisherId}${params}`
+  }
+
+  private buildUrl(path: string): string {
+    return `${this.url}/${path}`
+  }
 }
 
 function responseExpires(response: unknown) {
@@ -170,5 +171,14 @@ function responseExpires(response: unknown) {
     if (expiresHeader) {
       return new Date(expiresHeader)
     }
+  }
+}
+
+function cacheKey(rawKey: unknown) {
+  if (rawKey) {
+    const suffix = base64UrlEncode(JSON.stringify(rawKey))
+    return `${IDEX_STORAGE_KEY}_${suffix}`
+  } else {
+    return IDEX_STORAGE_KEY
   }
 }
