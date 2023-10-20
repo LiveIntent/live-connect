@@ -1,4 +1,4 @@
-import { ILiveConnect } from '../types'
+import { InternalLiveConnect } from '../types'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -6,8 +6,8 @@ declare global {
 
   interface Window {
     // eslint-disable-next-line camelcase
-    liQ_instances?: ILiveConnect[]
-    liQ?: ILiveConnect | unknown[]
+    liQ_instances?: InternalLiveConnect[]
+    liQ?: InternalLiveConnect | unknown[]
     XDomainRequest?: { new(): XDomainRequest; prototype: XDomainRequest; create(): XDomainRequest }; // for IE compat
     [k: string]: unknown // allow accessing arbitrary fields
     msCrypto: Crypto

@@ -1,6 +1,4 @@
-import md5 from 'tiny-hashes/md5'
-import sha1 from 'tiny-hashes/sha1'
-import sha256 from 'tiny-hashes/sha256'
+import { md5, sha1, sha256 } from 'tiny-hashes/dist'
 import { HashedEmail } from '../types'
 import { trim } from 'live-connect-common'
 
