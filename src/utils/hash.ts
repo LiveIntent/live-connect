@@ -26,6 +26,5 @@ export function hashEmail(email: string): HashedEmail {
 }
 
 export function domainHash(domain: string, limit = 12): string {
-  console.error(sha1)
   return sha1(domain.replace(/^\./, '')).substring(0, limit)
 }
