@@ -98,6 +98,26 @@ Example:
 }
 ```
 
+#### `gppString` [Optional]
+The GPP (https://github.com/InteractiveAdvertisingBureau/Global-Privacy-Platform) consent string.
+
+Example:
+```javascript
+{
+  gppString: 'DBABMA~CPXxRfAPXxRfAAfKABENB-CgAAAAAAAAAAYgAAAAAAAA'
+}
+```
+
+#### `gppApplicableSections` [Optional]
+The GPP (https://github.com/InteractiveAdvertisingBureau/Global-Privacy-Platform) applicable sections considered to be in force for this transaction provided as array of numbers.
+
+Example:
+```javascript
+{
+  gppApplicableSections: [1]
+}
+```
+
 #### `expirationDays` [Optional, HasDefault]
 The expiration time of an identifier created and updated by LiveConnect.
 By default, 730 days.

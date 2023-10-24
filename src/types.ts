@@ -24,6 +24,7 @@ export interface LiveConnectConfig {
   collectorUrl?: string
   usPrivacyString?: string
   gdprApplies?: boolean
+  gdprConsent?: string
   expirationDays?: number
   identifiersToResolve?: string | string[]
   trackerName?: string
@@ -32,10 +33,12 @@ export interface LiveConnectConfig {
   globalVarName?: string
   urlCollectionMode?: UrlCollectionMode
   queryParametersFilter?: string
-  ajaxTimeout?: number,
+  ajaxTimeout?: number
   contextSelectors?: string
-  contextElementsLength?: number,
-  peopleVerifiedId?: string,
+  contextElementsLength?: number
+  peopleVerifiedId?: string
+  gppString?: string
+  gppApplicableSections?: number[]
 }
 
 export type ResolutionParams = Record<string, string | string[]>
@@ -66,7 +69,6 @@ export interface State extends LiveConnectConfig {
   retrievedIdentifiers?: RetrievedIdentifier[]
   hashedEmail?: HashedEmail[]
   providedHash?: string
-  gdprConsent?: string
   contextSelectors?: string
   contextElementsLength?: number
   contextElements?: string
