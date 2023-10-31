@@ -53,6 +53,8 @@ export class IdentityResolver {
     this.tuples.push(...asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
     this.tuples.push(...asStringParam('gdpr_consent', config.gdprConsent))
     this.tuples.push(...asStringParam('did', config.distributorId))
+    this.tuples.push(...asStringParam('gpp_s', config.gppString))
+    this.tuples.push(...asStringParam('gpp_as', config.gppApplicableSections?.join(',')))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))

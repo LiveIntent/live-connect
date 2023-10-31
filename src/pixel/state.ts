@@ -64,7 +64,9 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('privacyMode', privacyMode => asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)),
   ifDefined('gdprConsent', gdprConsentString => asStringParam('gdpr_consent', gdprConsentString)),
   ifDefined('referrer', referrer => asStringParam('refr', referrer)),
-  ifDefined('contextElements', contextElements => asStringParam('c', contextElements))
+  ifDefined('contextElements', contextElements => asStringParam('c', contextElements)),
+  ifDefined('gppString', gppString => asStringParam('gpp_s', gppString)),
+  ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(',')))
 ]
 
 export class Query {

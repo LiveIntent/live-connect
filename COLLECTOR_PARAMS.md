@@ -40,12 +40,16 @@
 - if present, it indicates to not send Set-Cookie headers in the response to update the TTL of existing 3rd party cookies; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `nb`
 - if present, it indicates to not send bakers in the response; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
-### `gdprConsent`
+### `gdpr_consent`
 - the value of the `config.gdprConsent` config parameter.
 ### `dtstmp`
 - the UTC timestamp when the pixel was sent.
 ### `c`
 - content of contextSelectors matches, concatenated and base64 encoded.
+### `gpp_s`
+- the value of the `config.gppString` config parameter
+### `gpp_as`
+- the value of the `config.gppApplicableSections` config parameter
 
 ## Example of a request to a default collectorUrl:
 `https://rp.liadm.com/p?tna=v1.0.16&aid=a-00co&lduid=a-00co--bda8cda1-9000-4632-8c64-06e04fa8d113&duid=df9f30ab37f2--01dwcepmbbbqm0hvj4wytvyss4&pu=https%3A%2F%2Fwww.example.com%2F&se=eyJldmVudCI6InZpZXdIb21lUGFnZSJ9&dtstmp=1577968744235`

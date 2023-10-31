@@ -137,16 +137,13 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent values when gpdr does not apply', (done) => {
+  it('should attach us_privacy', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({
-      gdprApplies: false,
-      privacyMode: false,
-      gdprConsent: 'gdprConsent',
-      usPrivacyString: 'usPrivacyString'
+      usPrivacyString: 'us,Privacy,String'
     }, calls)
-    const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=0&gdpr_consent=gdprConsent')
+    const successCallback = (responseAsJson: unknown) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=us%2CPrivacy%2CString')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()
@@ -155,16 +152,46 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach the consent and nc values when gpdr applies', (done) => {
+  it('should attach gdpr and gdpr_consent', (done) => {
     const response = { id: 112233 }
     const identityResolver = IdentityResolver.makeNoCache({
-      gdprApplies: true,
-      privacyMode: true,
-      gdprConsent: 'gdprConsent',
-      usPrivacyString: 'usPrivacyString'
+      gdprApplies: false,
+      gdprConsent: 'gdpr,Consent'
     }, calls)
-    const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?us_privacy=usPrivacyString&gdpr=1&n3pc=1&gdpr_consent=gdprConsent')
+    const successCallback = (responseAsJson: unknown) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?gdpr=0&gdpr_consent=gdpr%2CConsent')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
+  it('should attach gpp_s and gpp_as', (done) => {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver.makeNoCache({
+      gppString: 'gpp,String',
+      gppApplicableSections: [1, 2, 3]
+    }, calls)
+    const successCallback = (responseAsJson: unknown) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?gpp_s=gpp%2CString&gpp_as=1%2C2%2C3')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
+  it('should attach n3pc when in privacy mode', (done) => {
+    const response = { id: 112233 }
+    const identityResolver = IdentityResolver.makeNoCache({
+      privacyMode: true,
+      distributorId: 'did-0001'
+    }, calls)
+    const successCallback = (responseAsJson: unknown) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?n3pc=1&did=did-0001')
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
       done()

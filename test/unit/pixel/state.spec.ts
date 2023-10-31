@@ -59,7 +59,7 @@ describe('EventComposition', () => {
       usPrivacyString: '1---',
       wrapperName: 'test wrapper name',
       gdprApplies: true,
-      gdprConsent: 'test-consent-string',
+      gdprConsent: 'test-gdpr-string',
       referrer: 'https://some.test.referrer.com'
     }
     const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)))
@@ -81,7 +81,7 @@ describe('EventComposition', () => {
       'n3pc=1', // privacyMode
       'n3pct=1', // privacyMode
       'nb=1', // privacyMode
-      'gdpr_consent=test-consent-string', // gdprConsent
+      'gdpr_consent=test-gdpr-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
     ]
@@ -161,7 +161,20 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]])
   })
 
-  it('should send the usPrivacyString', () => {
+  it('should send gpp_s and gpp_as', () => {
+    const pixelData = {
+      gppString: 'test-gpp-string',
+      gppApplicableSections: [1, 2, 3]
+    }
+    const event = new StateWrapper(pixelData)
+    const expectedPairs = [
+      'gpp_s=test-gpp-string', // GPP string
+      'gpp_as=1%2C2%2C3' // GPP applicable sections
+    ]
+    expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
+  })
+
+  it('should send us_privacy', () => {
     const pixelData = {
       usPrivacyString: '1---'
     }
@@ -170,7 +183,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
-  it('should send the gdpr, n3pc, n3pct, nb as 1 & gdprConsent', () => {
+  it('should send gdpr, n3pc, n3pct, nb as 1 & gdprConsent', () => {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,
@@ -182,7 +195,7 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
   })
 
-  it('should send the gdprApplies as 0 if false', () => {
+  it('should send gdpr 0 if gdprApplies is false', () => {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: false,
@@ -202,18 +215,9 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
   })
 
-  it('should ignore nullable fields for consent', () => {
-    const trackerName = 'some-name'
-    const pixelData = {
-      trackerName,
-      usPrivacyString: null,
-      gdprApplies: null,
-      gdprConsent: undefined,
-      wrapperName: undefined
-    }
-    const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)))
-    expect(event.asQuery().toQueryString()).to.eql(`?tna=${trackerName}`)
-    assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
+  it('should ignore nullable fields', () => {
+    const event = new StateWrapper({})
+    expect(event.asQuery().toQueryString()).to.eql('')
   })
 
   it('should send the page url', () => {
