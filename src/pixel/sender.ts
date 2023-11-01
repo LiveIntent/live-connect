@@ -8,22 +8,26 @@ export type PixelSenderOpts = {
   collectorUrl?: string,
   ajaxTimeout?: number
   callHandler: WrappedCallHandler,
-  eventBus: EventBus
+  eventBus: EventBus,
+  ajaxRetries?: number
 }
 
 const DEFAULT_AJAX_TIMEOUT = 0
+const DEFAULT_AJAX_RETRIES = 3
 
 export class PixelSender {
   url: string
   timeout: number
   calls: WrappedCallHandler
   eventBus: EventBus
+  retries: number
 
   constructor (opts: PixelSenderOpts) {
-    this.url = opts.collectorUrl || 'https://rp.liadm.com'
-    this.timeout = opts.ajaxTimeout || DEFAULT_AJAX_TIMEOUT
+    this.url = opts.collectorUrl ?? 'https://rp.liadm.com'
+    this.timeout = opts.ajaxTimeout ?? DEFAULT_AJAX_TIMEOUT
     this.calls = opts.callHandler
     this.eventBus = opts.eventBus
+    this.retries = opts.ajaxRetries ?? DEFAULT_AJAX_RETRIES
   }
 
   private callBakers(bakersJson: string): void {
@@ -59,18 +63,26 @@ export class PixelSender {
 
   sendAjax(state: StateWrapper, opts: { onPreSend?: () => void, onLoad?: () => void } = {}): void {
     this.sendState(state, 'j', uri => {
-      this.calls.ajaxGet(
-        uri,
-        bakersJson => {
-          if (opts.onLoad && isFunction(opts.onLoad)) opts.onLoad()
-          this.callBakers(bakersJson)
-        },
-        (e) => {
-          this.sendPixel(state, opts)
-          this.eventBus.emitError('AjaxFailed', e)
-        },
-        this.timeout
-      )
+      const go = (remainingRetries: number) => {
+        this.calls.ajaxGet(
+          uri,
+          bakersJson => {
+            if (opts.onLoad && isFunction(opts.onLoad)) opts.onLoad()
+            this.callBakers(bakersJson)
+          },
+          (e) => {
+            if (remainingRetries <= 0) {
+              this.sendPixel(state, opts)
+              this.eventBus.emitError('AjaxFailed', e)
+            } else {
+              go(remainingRetries - 1)
+            }
+          },
+          this.timeout
+        )
+      }
+
+      go(this.retries)
     }, opts.onPreSend)
   }
 

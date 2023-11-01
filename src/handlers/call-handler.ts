@@ -1,8 +1,11 @@
 import { EventBus, CallHandler } from 'live-connect-common'
-import { WrappingContext } from '../utils/wrapping'
+import { Wrapped, WrappingContext } from '../utils/wrapping'
 
 export class WrappedCallHandler implements CallHandler {
-  private functions
+  private functions: {
+    ajaxGet: Wrapped<CallHandler['ajaxGet']>,
+    pixelGet: Wrapped<CallHandler['pixelGet']>
+  }
 
   constructor (externalCallHandler: CallHandler, eventBus: EventBus) {
     const wrapper = new WrappingContext(externalCallHandler, 'CallHandler', eventBus)
