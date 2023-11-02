@@ -4,7 +4,6 @@ import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from '.
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
 import { WrappedCallHandler } from './handlers/call-handler'
-import { DurableCache, NoOpCache } from './cache'
 
 export type ResolutionMetadata = {
   expiresAt?: Date
