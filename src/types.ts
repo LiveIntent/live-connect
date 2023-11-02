@@ -10,7 +10,6 @@ export type Enricher<in In extends object, out Out extends object> =
 
 export interface IdentityResolutionConfig {
   url?: string
-  expirationHours?: number
   ajaxTimeout?: number
   source?: string
   publisherId?: number
