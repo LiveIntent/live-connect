@@ -32,7 +32,7 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
         )
       )
 
-    const resolver = IdentityResolver.makeNoCache(enrichedState, callHandler, eventBus)
+    const resolver = new IdentityResolver(enrichedState, callHandler, eventBus)
 
     return {
       push: (arg) => push(arg),

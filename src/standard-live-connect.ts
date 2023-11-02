@@ -133,9 +133,11 @@ function standardInitialization(liveConnectConfig: LiveConnectConfig, externalSt
 
     registerErrorPixel(enrichedState, pixelSender, eventBus)
 
-    const resolver = IdentityResolver.make(enrichedState, cache, callHandler, eventBus)
+    const resolver = new IdentityResolver(enrichedState, callHandler, eventBus)
 
     const _push = (...args: unknown[]) => processArgs(args, pixelSender, enrichedState, eventBus)
+
+    clearIdexCache(eventBus, enrichedState.cookieDomain)
 
     return {
       push: _push,
@@ -199,4 +201,31 @@ export function StandardLiveConnect(liveConnectConfig: LiveConnectConfig, extern
   }
   // @ts-ignore
   return lc
+}
+
+// TODO: remove this in next version
+function clearIdexCache(bus: EventBus, cookieDomain: string) {
+  if (window.localStorage) {
+    try {
+      for (const key in window.localStorage) {
+        if (key.startsWith('__li_idex_cache2')) {
+          localStorage.removeItem(key)
+        }
+      }
+    } catch (e) {
+      bus.emitErrorWithMessage('ClearIdexLs', 'Failed to clear localStorage', e)
+    }
+  }
+
+  try {
+    const allCookies = window.document.cookie.split(';')
+    for (const cookie of allCookies) {
+      const key = cookie.split('=')[0].trim()
+      if (key.startsWith('__li_idex_cache2')) {
+        document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${cookieDomain}`
+      }
+    }
+  } catch (e) {
+    bus.emitErrorWithMessage('ClearIdexCookie', 'Failed to clear cookies', e)
+  }
 }

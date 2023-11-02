@@ -166,22 +166,9 @@ Example:
 }
 ```
 
-##### `identityResolutionConfig.expirationHours` [Optional, HasDefault]
-By default, 1 hour.
-This configuration parameter determines the expiration of a result stored in previous `liveConnect.resolve (...)` calls. The result is stored in a cookie.
-Example:
-```javascript
-{
-  identityResolutionConfig: {
-    expirationHours: 4
-  }
-}
-```
-sets the cookie expiration time to 4 hours, which means that in a given browser, the LiveIntent stable id will be reused for 4 hours until it's refreshed.
-
 ##### `identityResolutionConfig.ajaxTimeout` [Optional, HasDefault]
 By default, 5000 milliseconds.
-This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. If `identityResolutionConfig.ajaxTimeout` is not configured and the global `ajaxTimeout` is configured, the global setting is used. If none of the two is configured, the default of 5000ms is used. 
+This configuration parameter sets the maximum duration of a call to the IdentityResolution endpoint, after which the callback passed to the `resolve` function will be invoked. If `identityResolutionConfig.ajaxTimeout` is not configured and the global `ajaxTimeout` is configured, the global setting is used. If none of the two is configured, the default of 5000ms is used.
 
 Example:
 ```javascript
@@ -247,9 +234,9 @@ Example:
 ```
 
 ##### `globalVarName` [Optional]
-**Usage of this parameter is discouraged and it will be deprecated in a future version of this module.** This parameter allows to define the name for the LiveConnect instance that is attached to the window object. If none is provided, Liveconnect will not be attached to the window object. 
+**Usage of this parameter is discouraged and it will be deprecated in a future version of this module.** This parameter allows to define the name for the LiveConnect instance that is attached to the window object. If none is provided, Liveconnect will not be attached to the window object.
 
-For example `globalVarName: "liQ2"` will make the instance name `window.liQ2`. 
+For example `globalVarName: "liQ2"` will make the instance name `window.liQ2`.
 
 Example:
 ```javascript
