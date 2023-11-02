@@ -8,7 +8,6 @@ export const PRELOAD_PIXEL = 'pre_lips'
 
 export const PEOPLE_VERIFIED_LS_ENTRY = '_li_duid'
 
-export const DEFAULT_IDEX_EXPIRATION_HOURS = 1
 export const DEFAULT_IDEX_AJAX_TIMEOUT = 5000
 export const DEFAULT_IDEX_URL = 'https://idx.liadm.com/idex'
 

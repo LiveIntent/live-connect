@@ -1,26 +1,20 @@
-import { base64UrlEncode } from './utils/b64'
 import { toParams } from './utils/url'
-import { expiresInHours, isFunction, isObject } from 'live-connect-common'
+import { isFunction, isObject } from 'live-connect-common'
 import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from './utils/params'
-import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_EXPIRATION_HOURS, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
+import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
 import { WrappedCallHandler } from './handlers/call-handler'
 import { DurableCache, NoOpCache } from './cache'
 
-const IDEX_STORAGE_KEY = '__li_idex_cache2'
-
 export type ResolutionMetadata = {
-  expiresAt?: Date,
-  resolvedAt: Date
+  expiresAt?: Date
 }
 
 export class IdentityResolver {
   eventBus: EventBus
   calls: WrappedCallHandler
-  cache: DurableCache
   idexConfig: IdentityResolutionConfig
   externalIds: RetrievedIdentifier[]
-  defaultExpirationHours: number
   source: string
   publisherId: number | string
   url: string
@@ -28,33 +22,32 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
 
-  private constructor (
+  constructor (
     config: State,
     calls: WrappedCallHandler,
-    cache: DurableCache,
     eventBus: EventBus
   ) {
+    const nonNullConfig = config || { identityResolutionConfig: {} }
+
     this.eventBus = eventBus
     this.calls = calls
-    this.cache = cache
-    this.idexConfig = config.identityResolutionConfig || {}
-    this.externalIds = config.retrievedIdentifiers || []
-    this.defaultExpirationHours = this.idexConfig.expirationHours || DEFAULT_IDEX_EXPIRATION_HOURS
+    this.idexConfig = nonNullConfig.identityResolutionConfig || {}
+    this.externalIds = nonNullConfig.retrievedIdentifiers || []
     this.source = this.idexConfig.source || 'unknown'
     this.publisherId = this.idexConfig.publisherId || 'any'
     this.url = this.idexConfig.url || DEFAULT_IDEX_URL
-    this.timeout = this.idexConfig.ajaxTimeout || config.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
+    this.timeout = this.idexConfig.ajaxTimeout || nonNullConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     this.requestedAttributes = this.idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
     this.tuples = []
 
-    this.tuples.push(...asStringParam('duid', config.peopleVerifiedId))
-    this.tuples.push(...asStringParam('us_privacy', config.usPrivacyString))
-    this.tuples.push(...asParamOrEmpty('gdpr', config.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    this.tuples.push(...asStringParamWhen('n3pc', config.privacyMode ? '1' : '0', v => v === '1'))
-    this.tuples.push(...asStringParam('gdpr_consent', config.gdprConsent))
-    this.tuples.push(...asStringParam('did', config.distributorId))
-    this.tuples.push(...asStringParam('gpp_s', config.gppString))
-    this.tuples.push(...asStringParam('gpp_as', config.gppApplicableSections?.join(',')))
+    this.tuples.push(...asStringParam('duid', nonNullConfig.peopleVerifiedId))
+    this.tuples.push(...asStringParam('us_privacy', nonNullConfig.usPrivacyString))
+    this.tuples.push(...asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
+    this.tuples.push(...asStringParamWhen('n3pc', nonNullConfig.privacyMode ? '1' : '0', v => v === '1'))
+    this.tuples.push(...asStringParam('gdpr_consent', nonNullConfig.gdprConsent))
+    this.tuples.push(...asStringParam('did', nonNullConfig.distributorId))
+    this.tuples.push(...asStringParam('gpp_s', nonNullConfig.gppString))
+    this.tuples.push(...asStringParam('gpp_as', nonNullConfig.gppApplicableSections?.join(',')))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
@@ -62,7 +55,7 @@ export class IdentityResolver {
 
     const attributeResolutionAllowed = (attribute: string) => {
       if (attribute === 'uid2') {
-        return !config.privacyMode
+        return !nonNullConfig.privacyMode
       } else {
         return true
       }
@@ -73,35 +66,7 @@ export class IdentityResolver {
     })
   }
 
-  static make(
-    config: State,
-    cache: DurableCache,
-    calls: WrappedCallHandler,
-    eventBus: EventBus
-  ): IdentityResolver {
-    const nonNullConfig = config || { identityResolutionConfig: {} }
-    return new IdentityResolver(nonNullConfig, calls, cache, eventBus)
-  }
-
-  static makeNoCache(config: State, calls: WrappedCallHandler, eventBus: EventBus): IdentityResolver {
-    return IdentityResolver.make(config || {}, NoOpCache, calls, eventBus)
-  }
-
-  private getCached(key: string): [unknown, ResolutionMetadata] | null {
-    const cachedValue = this.cache.get(cacheKey(key))
-    if (cachedValue) {
-      return [JSON.parse(cachedValue.data), { expiresAt: cachedValue.meta.expiresAt, resolvedAt: cachedValue.meta.writtenAt }]
-    } else {
-      return null
-    }
-  }
-
-  private setCached(key: string, value: unknown, expiresAt?: Date) {
-    this.cache.set(cacheKey(key), JSON.stringify(value), expiresAt || expiresInHours(this.defaultExpirationHours))
-  }
-
   private responseReceived(
-    idexPath: string,
     successCallback: (result: unknown, meta: ResolutionMetadata) => void
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
@@ -116,29 +81,23 @@ export class IdentityResolver {
       }
 
       const expiresAt = responseExpires(response)
-      const resolvedAt = new Date()
-      this.setCached(idexPath, responseObj, expiresAt)
-      successCallback(responseObj, { expiresAt, resolvedAt })
+      successCallback(responseObj, { expiresAt })
     }
   }
 
   unsafeResolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback: (e: unknown) => void, additionalParams: ResolutionParams): void {
-    const idexPath = this.buildPath(additionalParams)
-    const cachedValue = this.getCached(idexPath)
-    if (cachedValue) {
-      successCallback(...cachedValue)
-    } else {
-      this.calls.ajaxGet(
-        this.buildUrl(idexPath),
-        this.responseReceived(idexPath, successCallback),
-        errorCallback,
-        this.timeout
-      )
-    }
+    this.calls.ajaxGet(
+      this.getUrl(additionalParams),
+      this.responseReceived(successCallback),
+      errorCallback,
+      this.timeout
+    )
   }
 
   getUrl(additionalParams: Record<string, string | string[]>): string {
-    return this.buildUrl(this.buildPath(additionalParams))
+    const originalParams = this.tuples.slice().concat(mapAsParams(additionalParams))
+    const params = toParams(originalParams)
+    return `${this.url}/${this.source}/${this.publisherId}${params}`
   }
 
   resolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback?: (e: unknown) => void, additionalParams?: ResolutionParams): void {
@@ -154,16 +113,6 @@ export class IdentityResolver {
       }
     }
   }
-
-  private buildPath(additionalParams: Record<string, string | string[]>): string {
-    const originalParams = this.tuples.slice().concat(mapAsParams(additionalParams))
-    const params = toParams(originalParams)
-    return `${this.source}/${this.publisherId}${params}`
-  }
-
-  private buildUrl(path: string): string {
-    return `${this.url}/${path}`
-  }
 }
 
 function responseExpires(response: unknown): Date | undefined {
@@ -173,9 +122,4 @@ function responseExpires(response: unknown): Date | undefined {
       return new Date(expiresHeader)
     }
   }
-}
-
-function cacheKey(rawKey: string): string {
-  const suffix = base64UrlEncode(JSON.stringify(rawKey))
-  return `${IDEX_STORAGE_KEY}_${suffix}`
 }
