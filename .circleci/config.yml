@@ -11,6 +11,9 @@ parameters:
     default: "18.19.0"
 
 executors:
+  machine_runner:
+    machine:
+      image: ubuntu-2204:2023.10.1
   node_runner:
     docker:
       - image: cimg/node:18.19
