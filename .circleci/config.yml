@@ -8,7 +8,7 @@ parameters:
   node_version:
     type: string
     # This should match with the cimg/node version
-    default: "18.19.0"
+    default: "18.18.0"
 
 executors:
   machine_runner:
@@ -16,7 +16,7 @@ executors:
       image: ubuntu-2204:2023.10.1
   node_runner:
     docker:
-      - image: cimg/node:18.19
+      - image: cimg/node:18.18
     resource_class: liveintent/browserstack
 
 references:
