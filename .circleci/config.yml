@@ -2,6 +2,13 @@ version: 2.1
 
 orbs:
   scala-build: liveintent/scala-build@10.0
+  node: circleci/node@5.1
+
+parameters:
+  node_version:
+    type: string
+    # This should match with the cimg/node version
+    default: "18.19.0"
 
 executors:
   node_runner:
@@ -79,11 +86,13 @@ references:
 
 jobs:
   simple_test:
-    executor: node_runner
+    executor: machine_runner
     steps:
       - checkout
       - *restore_cache
       - *host_setup
+      - node/install:
+          node-version:  << pipeline.parameters.node_version >>
       - *npm_install
       - *save_cache
       - run:
