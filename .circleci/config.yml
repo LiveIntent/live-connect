@@ -14,10 +14,13 @@ executors:
   machine_runner:
     machine:
       image: ubuntu-2204:2023.10.1
-  node_runner:
+  browserstack_runner:
     docker:
       - image: cimg/node:18.18
     resource_class: liveintent/browserstack
+  node_runner:
+    docker:
+      - image: cimg/node:18.18
 
 references:
   releasable_branch: &releasable_branch
@@ -117,7 +120,7 @@ jobs:
             ./codecov -t ${CODECOV_TOKEN}
 
   browserstack:
-    executor: node_runner
+    executor: browserstack_runner
     steps:
       - checkout
       - *restore_cache
