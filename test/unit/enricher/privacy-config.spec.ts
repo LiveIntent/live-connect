@@ -41,7 +41,6 @@ describe('PrivacyConfigEnricher', () => {
     expect(result.privacyMode).to.be.false()
   })
 
-
   it('should return privacyMode set to true when gdprApplies is false and gppApplicableSections contains 2', () => {
     const state = {
       gdprApplies: false,
