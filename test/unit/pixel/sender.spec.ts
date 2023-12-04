@@ -1,12 +1,10 @@
-// @ts-nocheck
-
 import { expect, use } from 'chai'
 import jsdom from 'global-jsdom'
-import sinon from 'sinon'
+import sinon, { SinonFakeXMLHttpRequest, SinonStub } from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
-import { ERRORS_CHANNEL } from 'live-connect-common'
+import { ERRORS_CHANNEL, ErrorDetails, EventBus } from 'live-connect-common'
 import { DefaultCallHandler } from 'live-connect-handlers'
-import { Query } from '../../../src/pixel/state'
+import { Query, StateWrapper } from '../../../src/pixel/state'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { WrappedCallHandler } from '../../../src/handlers/call-handler'
@@ -14,12 +12,13 @@ import { WrappedCallHandler } from '../../../src/handlers/call-handler'
 use(dirtyChai)
 
 describe('PixelSender', () => {
-  let ajaxRequests = []
-  let pixelRequests = []
+  let ajaxRequests: SinonFakeXMLHttpRequest[] = []
+  let pixelRequests: { uri: string, onload?: () => void }[] = []
   const sandbox = sinon.createSandbox()
-  let eventBus
-  let pixelStub
-  let calls: CallHandler
+  let eventBus: EventBus
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let pixelStub: SinonStub<any[], any>
+  let calls: WrappedCallHandler
 
   beforeEach(() => {
     jsdom('', {
@@ -29,8 +28,11 @@ describe('PixelSender', () => {
     calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
     ajaxRequests = []
     pixelRequests = []
+    // @ts-ignore
     global.XDomainRequest = null
+    // @ts-ignore
     global.XMLHttpRequest = sandbox.useFakeXMLHttpRequest()
+    // @ts-ignore
     global.XMLHttpRequest.onCreate = xhr => ajaxRequests.push(xhr)
     pixelStub = sandbox.stub(calls, 'pixelGet').callsFake(
       (uri, onload) => {
@@ -47,7 +49,7 @@ describe('PixelSender', () => {
   })
 
   it('exposes the send and sendPixel functions', () => {
-    const sender = new PixelSender({ collectorUrl: 'http://localhost' }, calls, null)
+    const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
     expect(typeof sender.sendAjax).to.eql('function')
     expect(typeof sender.sendPixel).to.eql('function')
   })
@@ -58,7 +60,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true }, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -68,7 +70,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true }, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -78,7 +80,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy'], ['gdpr', 1], ['n3pc', 1], ['n3pct', 1], ['nb', 1]]), sendsPixel: () => true }, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy'], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -97,33 +99,48 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
   })
 
   it('calls emit an error when the pixel response is not a json when sendAjax', (done) => {
     eventBus.on(ERRORS_CHANNEL, (e) => {
-      expect(e.name).to.eq('CallBakers')
+      expect((e as ErrorDetails).name).to.eq('CallBakers')
       done()
     })
 
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
   it('sends the event via pixel as fallback if ajax fails', (done) => {
     const onload = () => 1
     eventBus.on(ERRORS_CHANNEL, (e) => {
-      expect(e.name).to.eq('AjaxFailed')
+      expect((e as ErrorDetails).name).to.eq('AjaxFailed')
       expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
       expect(pixelRequests[0].onload).to.eql(onload)
       done()
     })
 
-    const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true }, { onLoad: onload })
+    const sender = new PixelSender({ callHandler: calls, eventBus, ajaxRetries: 0 })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
     ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
+  })
+
+  it('retries ajax requests when they fail', (done) => {
+    const onload = () => 1
+    eventBus.on(ERRORS_CHANNEL, (e) => {
+      expect((e as ErrorDetails).name).to.eq('AjaxFailed')
+      expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
+      expect(pixelRequests[0].onload).to.eql(onload)
+      done()
+    })
+
+    const sender = new PixelSender({ callHandler: calls, eventBus, ajaxRetries: 1 })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
+    ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
+    ajaxRequests[1].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
   it('defaults to production if none set when sendAjax', (done) => {
@@ -132,7 +149,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true }, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -142,12 +159,12 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true }, { onPreSend: presend })
+    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onPreSend: presend })
   })
 
   it('defaults to production if none set when sendPixel', () => {
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true })
+    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
     expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.be.undefined()
   })
@@ -155,14 +172,14 @@ describe('PixelSender', () => {
   it('sends an image pixel and call onload if request succeeds when sendPixel', () => {
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true }, { onLoad: onload })
+    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
     expect(pixelRequests[0].uri).to.match(/http:\/\/localhost\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.eql(onload)
   })
 
   it('does not send an image pixel if sendsPixel resolves to false when sendPixel', () => {
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendPixel({ asQuery: () => new Query([['zzz', 'ccc']]), sendsPixel: () => false })
+    sender.sendPixel({ asQuery: () => new Query([['zzz', 'ccc']]), sendsPixel: () => false } as StateWrapper)
     expect(pixelRequests).to.be.empty()
   })
 })

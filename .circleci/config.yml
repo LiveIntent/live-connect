@@ -1,20 +1,26 @@
 version: 2.1
 
 orbs:
-  scala-build: liveintent/scala-build@9.4
-  node: circleci/node@5.0.3
-  dynamo-lock: gastfreund/dynamo-lock@1.0.1
+  scala-build: liveintent/scala-build@10.0
+  node: circleci/node@5.1
 
 parameters:
   node_version:
     type: string
+    # This should match with the cimg/node version
     default: "18.18.0"
-  browserstack_lock_name:
-    type: string
-    default: browserstack_global
-  lock_timeout_seconds:
-    type: integer
-    default: 7200
+
+executors:
+  machine_runner:
+    machine:
+      image: ubuntu-2204:2023.10.1
+  browserstack_runner:
+    docker:
+      - image: cimg/node:18.18
+    resource_class: liveintent/browserstack
+  node_runner:
+    docker:
+      - image: cimg/node:18.18
 
 references:
   releasable_branch: &releasable_branch
@@ -84,66 +90,15 @@ references:
       name: Reset package-lock.json
       command: git checkout -- package-lock.json
 
-commands:
-  # for of dynamo-lock/lock that specifies no_output_timeout
-  dynamo-lock_lock:
-    parameters:
-      ttl:
-        description: TTL of lock in seconds
-        type: integer
-        default: 600
-      table:
-        description: DynamoDB table for locks
-        type: string
-        default: ci_locks
-      lock_name:
-        description: >-
-          Name of the lock to acquire
-
-          This name affects which builds lock against each other. The default will
-          lock branches on the same project and the same branch. If you'd like to
-          lock all builds in a project, you could use
-          `${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME}`
-        type: string
-        default: ${CIRCLE_PROJECT_USERNAME}_${CIRCLE_PROJECT_REPONAME}_${CIRCLE_BRANCH}
-      branches:
-        description: >-
-          Branch regex to limit locking on
-
-          This is a bash regex, so keep in mind that short escape sequences won't
-          work (eg `\d` - use `[0-9]` instead). The lock commands will only be
-          effective on branches matching this regex.
-        type: string
-        default: master|develop
-    steps:
-      - run:
-          name: Acquire lock
-          no_output_timeout: << parameters.ttl >>s
-          command: |-
-            if [[ "$CIRCLE_BRANCH" =~ << parameters.branches >> ]]; then
-              [[ -x "/tmp/dynolocker_linux_amd64" ]] || echo 'Please call "setup" first'
-
-              /tmp/dynolocker_linux_amd64 \
-                --debug \
-                --table "<< parameters.table >>" \
-                --name "<< parameters.lock_name >>" \
-                --ttl << parameters.ttl >> \
-                lock
-            else
-              echo "Skipping lock due to excluded branch"
-            fi
-
-
 jobs:
   simple_test:
-    parallelism: 1
-    machine: true
+    executor: machine_runner
     steps:
       - checkout
       - *restore_cache
       - *host_setup
       - node/install:
-          node-version: << pipeline.parameters.node_version >>
+          node-version:  << pipeline.parameters.node_version >>
       - *npm_install
       - *save_cache
       - run:
@@ -165,30 +120,15 @@ jobs:
             ./codecov -t ${CODECOV_TOKEN}
 
   browserstack:
-    parallelism: 1
-    machine: true
+    executor: browserstack_runner
     steps:
-      - dynamo-lock/setup:
-          branches: '.*'
-      - dynamo-lock_lock:
-          lock_name: << pipeline.parameters.browserstack_lock_name >>
-          ttl: << pipeline.parameters.lock_timeout_seconds >>
-          branches: '.*'
       - checkout
       - *restore_cache
       - *host_setup
-      - node/install:
-          node-version: << pipeline.parameters.node_version >>
       - *npm_install
       - run:
           name: Run browserstack tests
           command: npm run test:it:browserstack
-      - dynamo-lock/unlock-on-fail:
-          lock_name: << pipeline.parameters.browserstack_lock_name >>
-          branches: '.*'
-      - dynamo-lock/unlock:
-          lock_name: << pipeline.parameters.browserstack_lock_name >>
-          branches: '.*'
       - store_test_results:
           path: test-results
       - store_artifacts:
@@ -196,8 +136,7 @@ jobs:
           destination: test-results
 
   release:
-    parallelism: 1
-    machine: true
+    executor: node_runner
     parameters:
       increment:
         description: |
@@ -207,8 +146,6 @@ jobs:
         type: string
     steps:
       - checkout
-      - node/install:
-          node-version: << pipeline.parameters.node_version >>
       - *npm_install
       - *configure_git
       - *set_ssh_key
@@ -239,7 +176,6 @@ workflows:
           name: browserstack_manual
           context:
             - org-global
-            - dynolocker
           requires:
             - browserstack?
 
@@ -247,7 +183,6 @@ workflows:
           name: browserstack_update_pr
           context:
             - org-global
-            - dynolocker
           requires:
             - simple_test
           filters:
@@ -410,4 +345,3 @@ workflows:
             - simple_test
           context:
             - org-global
-            - dynolocker
