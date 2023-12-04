@@ -163,9 +163,9 @@ export async function probeLS() {
 }
 
 export const deleteAllCookies = () => browser.deleteAllCookies()
-export const getAllCookies = () => {
-  const extractedStoredDecisions = browser.getCookies()
-  console.info('****The stored decision ids : ' + JSON.stringify(extractedStoredDecisions))
+export async function getAllCookies() {
+  const cookies = await browser.getCookies()
+  console.info('****The cookies : ' + JSON.stringify(cookies))
 }
 
 export function isMobileSafari() {

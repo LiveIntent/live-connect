@@ -51,15 +51,16 @@ describe('LiveConnect', function () {
     const decisionIdTwo = '5ca76883-1e26-3fb8-b6d1-f881ac7d6699'
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdOne}`)
     await sendEvent({}, supportsLS ? 1 : 2, server)
-    const firstTrackingRequest = server.getTrackingRequests(1)[0]
+    const firstTrackingRequest = server.getTrackingRequests()[0]
+    console.info('---- the li_did1 = ' + JSON.stringify(firstTrackingRequest.query))
     expect(decisionIdOne).to.eq(firstTrackingRequest.query.li_did)
 
     server.clearHistory()
     await server.openPage('bln.test.liveintent.com', `page?li_did=${decisionIdTwo}`)
     await sendEvent({}, supportsLS ? 1 : 2, server)
     const secondTrackingRequest = server.getTrackingRequests()[0]
-    getAllCookies()
-    console.info('---- the li_did = ' + JSON.stringify(secondTrackingRequest.query))
+    await getAllCookies()
+    console.info('---- the li_did 2 = ' + JSON.stringify(secondTrackingRequest.query))
     expect(`${decisionIdTwo},${decisionIdOne}`).to.eq(secondTrackingRequest.query.li_did)
   })
   //
