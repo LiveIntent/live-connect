@@ -54,7 +54,6 @@ export function enrichDecisionIds(
       'Error while retrieving stored decision ids',
       () => {
         const extractedStoredDecisions = storageHandler.findSimilarCookies(DECISION_ID_COOKIE_NAMESPACE)
-        console.info('****The stored decision ids : ' + JSON.stringify(extractedStoredDecisions))
         return extractedStoredDecisions
           .map(trim)
           .filter(_nonEmpty)
