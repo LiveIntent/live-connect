@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 
 const WAIT_UNTIL_TIMEOUT_MILLIS = 30000
-const WAIT_UNTIL_INTERVAL = 500
+const WAIT_UNTIL_INTERVAL = 15
 
 export async function getText(selector) {
   let text: string
@@ -163,6 +163,7 @@ export async function probeLS() {
 }
 
 export const deleteAllCookies = () => browser.deleteAllCookies()
+export const getCookies = () => browser.getCookies()
 
 export function isMobileSafari() {
   return browser.capabilities.browserName === 'safari' &&
