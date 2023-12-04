@@ -84,4 +84,13 @@ export const config = {
   //
   // The number of times to retry the entire specfile when it fails as a whole
   specFileRetries: 2
+
+    //
+    // Options to be passed to Mocha.
+    // See the full list at http://mochajs.org/
+  mochaOpts: {
+    ui: 'bdd',
+    timeout: 600000,
+    require: ['@babel/register', '@babel/polyfill']
+ }
 }
