@@ -13,10 +13,9 @@ const commonBStackCapabilities = {
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
   { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
-  { browserName: 'Chrome', browserVersion: '40.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
+  { browserName: 'Chrome', browserVersion: '45.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
   { browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
-  { browserName: 'firefox', browserVersion: '52.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
-  { browserName: 'IE', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10', seleniumVersion: '3.5.2' } },
+  { browserName: 'firefox', browserVersion: '78.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
   { browserName: 'Edge', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
 
   { browserName: 'Safari', browserVersion: '14.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Big Sur' } },
@@ -30,6 +29,7 @@ const allCapabilities = [
   { browserName: 'Safari', browserVersion: '13.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11', osVersion: '13', realMobile: true } },
   { browserName: 'Safari', browserVersion: '12.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 8', osVersion: '12', realMobile: true } },
   { browserName: 'Safari', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPad Pro 9.7 2016', osVersion: '11', realMobile: true } },
+  { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 15 Pro', osVersion: '17', realMobile: true } },
 
   { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S21', osVersion: '11.0', realMobile: true } },
   { browserName: 'Chrome', browserVersion: '67', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S8', osVersion: '7.0', realMobile: true } }
