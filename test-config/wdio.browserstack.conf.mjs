@@ -13,7 +13,7 @@ const commonBStackCapabilities = {
 // https://www.browserstack.com/automate/capabilities
 const allCapabilities = [
   { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
-  { browserName: 'Chrome', browserVersion: '45.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
+  { browserName: 'Chrome', browserVersion: '67.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
   { browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
   { browserName: 'firefox', browserVersion: '78.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
   { browserName: 'Edge', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
