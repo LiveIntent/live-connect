@@ -16,7 +16,6 @@ const allCapabilities = [
   { browserName: 'Chrome', browserVersion: '47.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
   { browserName: 'firefox', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
   { browserName: 'firefox', browserVersion: '52.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '7' } },
-  { browserName: 'IE', browserVersion: '11.0', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10', seleniumVersion: '3.5.2' } },
   { browserName: 'Edge', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, os: 'Windows', osVersion: '10' } },
 
   { browserName: 'Safari', browserVersion: '14.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Big Sur' } },
