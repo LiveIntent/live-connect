@@ -78,7 +78,7 @@ describe('StandardLiveConnect', () => {
     const exisitingKeys = Object.keys(window)
     StandardLiveConnect({}, storage, calls)
     const keysAfterInit = Object.keys(window)
-    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
+    const constNewKeys = keysAfterInit.filter(v => exisitingKeys.indexOf(v) < 0)
     expect(constNewKeys).to.be.eql(['liQ_instances'])
   })
 
