@@ -54,7 +54,7 @@ describe('MinimalLiveConnect', () => {
     const exisitingKeys = Object.keys(window)
     MinimalLiveConnect({}, storage, calls)
     const keysAfterInit = Object.keys(window)
-    const constNewKeys = keysAfterInit.filter(v => exisitingKeys.indexOf(v) < 0)
+    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
     expect(constNewKeys).to.be.eql(['liQ_instances'])
   })
 
@@ -68,7 +68,7 @@ describe('MinimalLiveConnect', () => {
     const exisitingKeys = Object.keys(window)
     LiveConnect({}, storage, calls, 'minimal')
     const keysAfterInit = Object.keys(window)
-    const constNewKeys = keysAfterInit.filter(v => exisitingKeys.indexOf(v) < 0)
+    const constNewKeys = keysAfterInit.filter(v => !exisitingKeys.includes(v))
     expect(constNewKeys).to.be.eql(['liQ_instances'])
   })
 
