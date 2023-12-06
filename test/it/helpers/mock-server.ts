@@ -155,7 +155,7 @@ export function MockServerFactory(config) {
   app.get('/j', (req, res) => {
     console.log(`J PIXEL :: Received request '${JSON.stringify(req.query)}'. Referer: ${req.get('Referer')}. Origin: ${req.get('Origin')}`)
     history.push(req)
-    if (req.query.pu.indexOf('http://baked.liveintent.com') > -1) {
+    if (typeof (req.query.pu) === 'string' && req.query.pu.indexOf('baked.liveintent.com') > -1) {
       res.status(200).json({
         bakers: ['http://baked.liveintent.com:3001/baker', 'http://bln.test.liveintent.com:3001/baker']
       })
