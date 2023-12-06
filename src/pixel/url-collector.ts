@@ -1,6 +1,7 @@
 import { UrlCollectionModes } from '../model/url-collection-mode'
 import { LiveConnectConfig, State } from '../types'
 import { ParsedParam, ParsedUrl, urlParamsArray } from '../utils/url'
+import 'core-js/features/array/includes'
 
 type UrlParam = ParsedParam | ParsedParam[]
 
