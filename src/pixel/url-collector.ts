@@ -38,7 +38,7 @@ function paramsToDelete(urlQueryParameters: [string, UrlParam][], conf: LiveConn
 
 function queryStringToKeep(urlQueryParameters: [string, UrlParam][], paramsToDelete: string[]): string {
   const params = urlQueryParameters
-    .filter(param => !paramsToDelete.includes(param[0]))
+    .filter(param => paramsToDelete.indexOf(param[0]) === -1)
     .map(keyValue => `${keyValue[0]}=${keyValue[1]}`)
   if (params.length > 0) {
     return `?${params.join('&')}`
