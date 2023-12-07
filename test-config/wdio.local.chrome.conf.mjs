@@ -26,12 +26,5 @@ export const config = {
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
-  connectionRetryTimeout: 30000,
-
-  services: [
-    // If testing locally fails due to a mismatch of the chrome versions, adjust the value to use the closest version
-    // to yours from the released drivers listed here: https://chromedriver.chromium.org/downloads
-    // For example: { drivers: { chrome: '106.0.5249.61'  } }
-    ['selenium-standalone', { logs: 'logs', drivers: { chrome: true } }]
-  ]
+  connectionRetryTimeout: 30000
 }
