@@ -66,7 +66,8 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('referrer', referrer => asStringParam('refr', referrer)),
   ifDefined('contextElements', contextElements => asStringParam('c', contextElements)),
   ifDefined('gppString', gppString => asStringParam('gpp_s', gppString)),
-  ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(',')))
+  ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(','))),
+  ifDefined('cookieDomain', d => asStringParam('cd', d))
 ]
 
 export class Query {

@@ -185,6 +185,15 @@ describe('StandardLiveConnect', () => {
     expect(params.e).to.eql(`${hashes.md5},${hashes.sha1},${hashes.sha256}`)
   })
 
+  it('send the cookie domain', () => {
+    storage.setCookie('_li_dcdm_c', '.example.com')
+    const lc = StandardLiveConnect({}, storage, calls)
+    lc.fire()
+    expect(pixelCalls.length).to.eql(1)
+    const params = urlParams(pixelCalls[0].url)
+    expect(params.cd).to.eql('.example.com')
+  })
+
   it('send an empty event when fired', () => {
     const lc = StandardLiveConnect({}, storage, calls)
     lc.fire()

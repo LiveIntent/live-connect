@@ -73,6 +73,7 @@ export interface State extends LiveConnectConfig {
   contextElements?: string
   privacyMode?: boolean
   referrer?: string
+  cookieDomain?: string
 }
 
 export interface HemStore {
