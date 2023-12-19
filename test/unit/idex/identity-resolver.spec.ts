@@ -61,6 +61,19 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
+  it('should attach the cookie domain', (done) => {
+    const response = { id: 112233 }
+    const identityResolver = new IdentityResolver({ cookieDomain: '.abc.xyz.com' }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?cd=.abc.xyz.com')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
   it('should attach additional params', (done) => {
     const response = { id: 112233 }
     const identityResolver = new IdentityResolver({ peopleVerifiedId: '987' }, calls)

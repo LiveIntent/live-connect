@@ -47,6 +47,7 @@ export class IdentityResolver {
     this.tuples.push(...asStringParam('did', nonNullConfig.distributorId))
     this.tuples.push(...asStringParam('gpp_s', nonNullConfig.gppString))
     this.tuples.push(...asStringParam('gpp_as', nonNullConfig.gppApplicableSections?.join(',')))
+    this.tuples.push(...asStringParam('cd', nonNullConfig.cookieDomain))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
