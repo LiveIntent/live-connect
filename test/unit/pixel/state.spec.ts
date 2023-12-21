@@ -42,7 +42,7 @@ describe('EventComposition', () => {
       appId: '9898',
       eventSource: { eventName: 'viewContent' },
       liveConnectId: '213245',
-      trackerName: 'test tracker',
+      trackerVersion: 'test tracker',
       pageUrl: 'https://wwww.example.com?sss',
       errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
@@ -68,7 +68,7 @@ describe('EventComposition', () => {
       'aid=9898', // appId
       'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
       'duid=213245', // liveConnectId
-      'tna=test%20tracker', // trackerName
+      'tv=test%20tracker', // trackerVersion
       'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
       'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
@@ -94,7 +94,7 @@ describe('EventComposition', () => {
       appId: '9898',
       eventSource: { eventName: 'viewContent' },
       liveConnectId: '213245',
-      trackerName: 'test tracker',
+      trackerVersion: 'test tracker',
       pageUrl: 'https://wwww.example.com?sss',
       errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
@@ -120,7 +120,7 @@ describe('EventComposition', () => {
       'aid=9898', // appId
       'se=eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9', // base64 of eventSource
       'duid=213245', // liveConnectId
-      'tna=test%20tracker', // trackerName
+      'tv=test%20tracker', // trackerVersion
       'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
       'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
@@ -208,11 +208,11 @@ describe('EventComposition', () => {
   })
 
   it('should send the tracker name', () => {
-    const trackerName = 'some-name'
-    const pixelData = { trackerName }
+    const trackerVersion = 'some-name'
+    const pixelData = { trackerVersion }
     const event = new StateWrapper(pixelData)
-    expect(event.asQuery().toQueryString()).to.eql(`?tna=${trackerName}`)
-    assert.includeDeepMembers(event.asTuples(), [['tna', trackerName]])
+    expect(event.asQuery().toQueryString()).to.eql(`?tv=${trackerVersion}`)
+    assert.includeDeepMembers(event.asTuples(), [['tv', trackerVersion]])
   })
 
   it('should ignore nullable fields', () => {

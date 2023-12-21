@@ -26,7 +26,7 @@ export interface LiveConnectConfig {
   gdprConsent?: string
   expirationDays?: number
   identifiersToResolve?: string | string[]
-  trackerName?: string
+  trackerVersion?: string
   identityResolutionConfig?: IdentityResolutionConfig
   distributorId?: string
   globalVarName?: string
@@ -58,7 +58,7 @@ export interface RetrievedIdentifier {
 export interface State extends LiveConnectConfig {
   eventSource?: object
   liveConnectId?: string
-  trackerName?: string
+  trackerVersion?: string
   pageUrl?: string
   domain?: string
   hashesFromIdentifiers?: HashedEmail[]

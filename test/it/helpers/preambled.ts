@@ -16,7 +16,7 @@ const lc = StandardLiveConnect(
     customerSpecifics,
     {
       // @ts-expect-error
-      trackerName: LC_VERSION,
+      trackerVersion: LC_VERSION,
       contextSelectors: 'p',
       contextElementsLength: '100'
     }

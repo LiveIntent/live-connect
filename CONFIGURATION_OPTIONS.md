@@ -137,13 +137,13 @@ Example:
   identifiersToResolve:["tdid","some-fpc"]
 }
 ```
-#### `trackerName` [Optional, HasDefault]
-You might want multiple trackerNames on the page, so this can be the used to separate multiple use cases. By default, LC will use the version of this module.
+#### `trackerVersion` [Optional, HasDefault]
+You might want multiple trackerVersion on the page, so this can be the used to separate multiple use cases. By default, LC will use the version of this module.
 The default value will be taken from `package.json` if it's not set.
 Example:
 ```javascript
 {
-  trackerName:"v1.0.1"
+  trackerVersion:"v2.11.4"
 }
 ```
 
