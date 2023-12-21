@@ -93,7 +93,7 @@ describe('LiveConnect', function () {
     assert.strictEqual(trackingRequests.length, 1)
     expect(tldCookie).to.eql('.liveintent.com')
     expect(fpcCookie).to.eql(trackingRequests[0].query.duid)
-    expect(trackingRequests[0].query.tna).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
+    expect(trackingRequests[0].query.tv).to.eq(`${packageJson.versionPrefix}${packageJson.version}`)
 
     server.clearHistory()
     await server.openPage('test.liveintent.com', 'page')
