@@ -8,8 +8,8 @@
 - contains the b64 url encoded string of the JSON that was sent via `liveConnect.push` function
 ### `duid`
 - contains the LiveConnect managed first party identifier, in the `${apexDomainHash}--${ULID}`
-### `tna`
-- contains the `config.trackerName`
+### `tv`
+- contains the `config.trackerVersion`
 ### `pu`
 - the url on which the event happened, which is populated by the `page` enricher
 ### `pu_rp`
