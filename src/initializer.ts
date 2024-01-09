@@ -5,7 +5,7 @@ import { EventBus, InternalLiveConnect, LiveConnectConfig } from './types'
 import { LocalEventBus } from './events/event-bus'
 
 export function LiveConnect(liveConnectConfig: LiveConnectConfig, externalStorageHandler: StorageHandler, externalCallHandler: CallHandler, mode: 'minimal' | string, externalEventBus?: EventBus): InternalLiveConnect | null {
-  const minimalMode = mode === 'minimal' || process.env.LiveConnectMode === 'minimal'
+  const minimalMode = mode === 'minimal'
   const bus = externalEventBus || LocalEventBus()
   const configuration = (isObject(liveConnectConfig) && liveConnectConfig) || {}
   const initializationFunction = minimalMode ? MinimalLiveConnect : StandardLiveConnect
