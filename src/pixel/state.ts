@@ -26,6 +26,7 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
   ifDefined('liveConnectId', fpc => asStringParam('duid', fpc)),
   ifDefined('trackerVersion', v => asStringParam('tv', v)),
+  ifDefined('trackerName', v => asStringParam('tv', v)),
   state => {
     if (nonNull(state.pageUrl)) {
       const [url, isPathRemoved, blockedParams] = collectUrl(state)
