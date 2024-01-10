@@ -1,10 +1,15 @@
-import { UrlCollectionModes } from '../model/url-collection-mode'
-import { LiveConnectConfig, State } from '../types'
+import { UrlCollectionMode, UrlCollectionModes } from '../model/url-collection-mode'
+import { LiveConnectConfig } from '../types'
 import { ParsedParam, ParsedUrl, urlParamsArray } from '../utils/url'
 
 type UrlParam = ParsedParam | ParsedParam[]
+type UrlState = {
+  pageUrl?: string
+  urlCollectionMode?: UrlCollectionMode
+  queryParametersFilter?: string
+}
 
-export function collectUrl(state: State): [string, boolean, string[]] {
+export function collectUrl(state: UrlState): [string, boolean, string[]] {
   if (state.pageUrl === undefined || state.pageUrl.length === 0) {
     return ['', false, []]
   }
@@ -47,7 +52,7 @@ function queryStringToKeep(urlQueryParameters: [string, UrlParam][], paramsToDel
   }
 }
 
-function isDefaultBehavior(state: State): boolean {
+function isDefaultBehavior(state: UrlState): boolean {
   return (state.urlCollectionMode === undefined || state.urlCollectionMode === UrlCollectionModes.full) &&
     (state.queryParametersFilter === undefined || state.queryParametersFilter === '')
 }
