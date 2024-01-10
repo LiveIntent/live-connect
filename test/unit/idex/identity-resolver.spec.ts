@@ -301,4 +301,30 @@ describe('IdentityResolver without cache', () => {
       JSON.stringify(response)
     )
   })
+
+  it('should resolve the idcookie', (done) => {
+    const value = 'foo'
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: value, identityResolutionConfig: { requestedAttributes: ['idcookie'] } }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql({ idcookie: value })
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
+  })
+
+  it('should resolve the idcookie when requested via additional attributes', (done) => {
+    const value = 'foo'
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: value }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql({ idcookie: value })
+      done()
+    }
+    identityResolver.resolve(successCallback, () => {}, { resolve: ['idcookie'] })
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
+  })
 })

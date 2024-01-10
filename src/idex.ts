@@ -20,13 +20,15 @@ export class IdentityResolver {
   timeout: number
   requestedAttributes: string[]
   tuples: [string, string][]
+  privacyMode: boolean
+  resolvedIdCookie: string | null
 
   constructor (
     config: State,
     calls: WrappedCallHandler,
     eventBus: EventBus
   ) {
-    const nonNullConfig = config || { identityResolutionConfig: {} }
+    const nonNullConfig: State = config || { identityResolutionConfig: {}, resolvedIdCookie: null }
 
     this.eventBus = eventBus
     this.calls = calls
@@ -37,6 +39,8 @@ export class IdentityResolver {
     this.url = this.idexConfig.url || DEFAULT_IDEX_URL
     this.timeout = this.idexConfig.ajaxTimeout || nonNullConfig.ajaxTimeout || DEFAULT_IDEX_AJAX_TIMEOUT
     this.requestedAttributes = this.idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
+    this.privacyMode = nonNullConfig.privacyMode ?? false
+    this.resolvedIdCookie = nonNullConfig.resolvedIdCookie
     this.tuples = []
 
     this.tuples.push(...asStringParam('duid', nonNullConfig.peopleVerifiedId))
@@ -53,21 +57,50 @@ export class IdentityResolver {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
     })
 
-    const attributeResolutionAllowed = (attribute: string) => {
-      if (attribute === 'uid2') {
-        return !nonNullConfig.privacyMode
-      } else {
-        return true
-      }
-    }
-
-    this.requestedAttributes.filter(attributeResolutionAllowed).forEach(requestedAttribute => {
+    this.requestedAttributes.forEach(requestedAttribute => {
       this.tuples.push(...asStringParam('resolve', requestedAttribute))
     })
   }
 
+  private attributeResolutionAllowed(attribute: string): boolean {
+    if (attribute === 'uid2') {
+      return !this.privacyMode
+    } else if (attribute === 'idcookie') {
+      // cannot be resolved server-side
+      return false
+    } else {
+      return true
+    }
+  }
+
+  private filterParams(params: [string, string][]): [string, string][] {
+    return params.filter(([key, value]) => {
+      if (key === 'resolve') {
+        return this.attributeResolutionAllowed(value)
+      } else {
+        return true
+      }
+    })
+  }
+
+  private enrichExtraIdentifiers<T extends object>(response: T, params: [string, string][]): T & { idcookie?: string } {
+    const requestedAttributes = params.filter(([key]) => key === 'resolve').map(([, value]) => value)
+    function requested(attribute: string): boolean {
+      return requestedAttributes.indexOf(attribute) > -1
+    }
+
+    let result = response
+
+    if (requested('idcookie') && this.resolvedIdCookie) {
+      result = { ...result, idcookie: this.resolvedIdCookie }
+    }
+
+    return result
+  }
+
   private responseReceived(
-    successCallback: (result: unknown, meta: ResolutionMetadata) => void
+    successCallback: (result: unknown, meta: ResolutionMetadata) => void,
+    params: [string, string][]
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
       let responseObj = {}
@@ -81,28 +114,28 @@ export class IdentityResolver {
       }
 
       const expiresAt = responseExpires(response)
-      successCallback(responseObj, { expiresAt })
+      successCallback(this.enrichExtraIdentifiers(responseObj, params), { expiresAt })
     }
   }
 
-  unsafeResolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback: (e: unknown) => void, additionalParams: ResolutionParams): void {
-    this.calls.ajaxGet(
-      this.getUrl(additionalParams),
-      this.responseReceived(successCallback),
-      errorCallback,
-      this.timeout
-    )
+  private buildUrl(params: [string, string][]): string {
+    return `${this.url}/${this.source}/${this.publisherId}${toParams(this.filterParams(params))}`
   }
 
   getUrl(additionalParams: Record<string, string | string[]>): string {
-    const originalParams = this.tuples.slice().concat(mapAsParams(additionalParams))
-    const params = toParams(originalParams)
-    return `${this.url}/${this.source}/${this.publisherId}${params}`
+    const params = this.tuples.slice().concat(mapAsParams(additionalParams))
+    return this.buildUrl(params)
   }
 
   resolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback?: (e: unknown) => void, additionalParams?: ResolutionParams): void {
     try {
-      this.unsafeResolve(successCallback, errorCallback || (() => {}), additionalParams || {})
+      const params = this.tuples.slice().concat(mapAsParams(additionalParams ?? {}))
+      this.calls.ajaxGet(
+        this.buildUrl(params),
+        this.responseReceived(successCallback, params),
+        errorCallback,
+        this.timeout
+      )
     } catch (e) {
       console.error('IdentityResolve', e)
       if (errorCallback && isFunction(errorCallback)) {

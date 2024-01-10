@@ -8,7 +8,7 @@ import { enrichPrivacyMode } from './enrichers/privacy-config'
 import { removeInvalidPairs } from './config-validators/remove-invalid-pairs'
 import { isArray, isObject, CallHandler, StorageHandler } from 'live-connect-common'
 import { IdentityResolver } from './idex'
-import { ConfigMismatch, EventBus, InternalLiveConnect, LiveConnectConfig, State } from './types'
+import { ConfigMismatch, EventBus, HashedEmail, InternalLiveConnect, LiveConnectConfig, State } from './types'
 import { LocalEventBus, getAvailableBus } from './events/event-bus'
 import { enrichDomain } from './enrichers/domain'
 import { enrichStorageStrategy } from './enrichers/storage-strategy'
@@ -18,8 +18,9 @@ import { register as registerErrorPixel } from './events/error-pixel'
 import { WrappedStorageHandler } from './handlers/storage-handler'
 import { StorageHandlerBackedCache } from './cache'
 import { WrappedCallHandler } from './handlers/call-handler'
+import { enrichIdCookie } from './enrichers/idcookie'
 
-const hemStore: State = {}
+const hemStore: { hashedEmail?: HashedEmail[] } = {}
 function pushSingleEvent(event: unknown, pixelClient: PixelSender, enrichedState: State, eventBus: EventBus): void {
   if (!event || !isObject(event)) {
     // @ts-ignore
@@ -118,11 +119,12 @@ function standardInitialization(liveConnectConfig: LiveConnectConfig, externalSt
     })
 
     const enrichedState =
-      enrichLiveConnectId(cache, storageHandler)(
-        enrichDecisionIds(storageHandler, eventBus)(
-          enrichIdentifiers(storageHandler, eventBus)(
-            stateWithDomain
-          )))
+      enrichIdCookie(storageHandler)(
+        enrichLiveConnectId(cache, storageHandler)(
+          enrichDecisionIds(storageHandler, eventBus)(
+            enrichIdentifiers(storageHandler, eventBus)(
+              stateWithDomain
+            ))))
 
     const pixelSender = new PixelSender({
       collectorUrl: validLiveConnectConfig.collectorUrl,
