@@ -30,7 +30,7 @@ describe('ErrorPixel', () => {
   it('should register itself on the global bus', () => {
     const pixelSender = {} as PixelSender
 
-    errorPixel.register({ collectorUrl: 'http://localhost' }, pixelSender, eventBus)
+    errorPixel.register({ collectorUrl: 'http://localhost', resolvedIdCookie: null }, pixelSender, eventBus)
     // @ts-expect-error
     const errorHandler = eventBus.data.h
     expect(errorHandler).to.have.key(ERRORS_CHANNEL)
@@ -44,7 +44,8 @@ describe('ErrorPixel', () => {
 
     errorPixel.register({
       collectorUrl: 'http://localhost',
-      pageUrl: 'https://www.example.com/?sad=0&dsad=iou'
+      pageUrl: 'https://www.example.com/?sad=0&dsad=iou',
+      resolvedIdCookie: null
     }, pixelSender, eventBus)
     eventBus.emitErrorWithMessage('Error', 'some other message')
     expect(errors.length).to.eql(1)
@@ -62,7 +63,6 @@ describe('ErrorPixel', () => {
     const longText = 'x'.repeat(200)
     const error = new Error(longText)
     const result = errorPixel.asErrorDetails(error)
-    // @ts-expect-error
     expect(result.errorDetails.message.length).to.eq(123)
   })
 

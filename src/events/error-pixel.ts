@@ -1,11 +1,11 @@
 import { PixelSender } from '../pixel/sender'
 import { StateWrapper } from '../pixel/state'
-import { ERRORS_CHANNEL, isRecord, isString } from 'live-connect-common'
+import { ERRORS_CHANNEL, ErrorDetails, isRecord, isString } from 'live-connect-common'
 import { EventBus, State } from '../types'
 
 const MAX_ERROR_FIELD_LENGTH = 120
 
-const _defaultReturn: State = {
+const defaultReturn: { errorDetails: ErrorDetails } = {
   errorDetails: {
     message: 'Unknown message',
     name: 'Unknown name'
@@ -32,7 +32,7 @@ function _truncate(value: unknown): string | undefined {
   }
 }
 
-export function asErrorDetails(e: unknown): State {
+export function asErrorDetails(e: unknown): { errorDetails: ErrorDetails } {
   if (isRecord(e)) {
     return {
       errorDetails: {
@@ -45,7 +45,7 @@ export function asErrorDetails(e: unknown): State {
       }
     }
   } else {
-    return _defaultReturn
+    return defaultReturn
   }
 }
 
