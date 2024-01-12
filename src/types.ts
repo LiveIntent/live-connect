@@ -16,11 +16,17 @@ export interface IdentityResolutionConfig {
   requestedAttributes?: string[]
 }
 
-export interface IdCookieConfig {
-  mode?: 'generated' | 'provided',
-  strategy?: 'cookie' | 'localStorage',
-  name?: string,
+export interface ProvidedIdCookieConfig {
+  mode: 'provided'
+  strategy: 'cookie' | 'localStorage'
+  name: string
 }
+
+export interface GeneratedIdCookieConfig {
+  mode: 'generated'
+}
+
+export type IdCookieConfig = ProvidedIdCookieConfig | GeneratedIdCookieConfig
 
 export interface LiveConnectConfig {
   appId?: string
