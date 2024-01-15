@@ -20,7 +20,8 @@ import { StorageHandlerBackedCache } from './cache'
 import { WrappedCallHandler } from './handlers/call-handler'
 import { enrichIdCookie } from './enrichers/idcookie'
 
-const hemStore: { hashedEmail?: HashedEmail[] } = {}
+const hemStore: { hashedEmail?: string[] } = {}
+
 function pushSingleEvent(event: unknown, pixelClient: PixelSender, enrichedState: State, eventBus: EventBus): void {
   if (!event || !isObject(event)) {
     // @ts-ignore

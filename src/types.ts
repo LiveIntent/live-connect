@@ -79,7 +79,7 @@ export interface State extends LiveConnectConfig {
   peopleVerifiedId?: string
   errorDetails?: ErrorDetails
   retrievedIdentifiers?: RetrievedIdentifier[]
-  hashedEmail?: HashedEmail[]
+  hashedEmail?: string[]
   providedHash?: string
   contextSelectors?: string
   contextElementsLength?: number
@@ -88,10 +88,6 @@ export interface State extends LiveConnectConfig {
   referrer?: string
   cookieDomain?: string
   resolvedIdCookie: string | null
-}
-
-export interface HemStore {
-  hashedEmail?: HashedEmail[]
 }
 
 export interface ConfigMismatch {

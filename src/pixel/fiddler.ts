@@ -2,6 +2,7 @@ import { extractEmail } from '../utils/email'
 import { decodeValue } from '../utils/url'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
 import { isArray, isObject, safeToString, trim } from 'live-connect-common'
+import { HashedEmail } from '../types'
 
 const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
@@ -41,7 +42,7 @@ function itemsLimiter(state: { eventSource?: Record<string, unknown> }): Record<
 
 const fiddlers = [provided, itemsLimiter]
 
-export function fiddle<A extends { eventSource?: Record<string, unknown> }>(state: A): A & { hashedEmail?: string[] } {
+export function fiddle<A extends { eventSource?: Record<string, unknown> }>(state: A): A & { hashedEmail?: HashedEmail[] } {
   function reducer<B extends object>(accumulator: A, func: (current: A) => B): A & B {
     return mergeObjects(accumulator, func(accumulator))
   }
