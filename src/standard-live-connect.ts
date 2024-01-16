@@ -18,8 +18,10 @@ import { register as registerErrorPixel } from './events/error-pixel'
 import { WrappedStorageHandler } from './handlers/storage-handler'
 import { StorageHandlerBackedCache } from './cache'
 import { WrappedCallHandler } from './handlers/call-handler'
+import { enrichIdCookie } from './enrichers/idcookie'
 
-const hemStore: State = {}
+const hemStore: { hashedEmail?: string[] } = {}
+
 function pushSingleEvent(event: unknown, pixelClient: PixelSender, enrichedState: State, eventBus: EventBus): void {
   if (!event || !isObject(event)) {
     // @ts-ignore
@@ -118,11 +120,12 @@ function standardInitialization(liveConnectConfig: LiveConnectConfig, externalSt
     })
 
     const enrichedState =
-      enrichLiveConnectId(cache, storageHandler)(
-        enrichDecisionIds(storageHandler, eventBus)(
-          enrichIdentifiers(storageHandler, eventBus)(
-            stateWithDomain
-          )))
+      enrichIdCookie(storageHandler)(
+        enrichLiveConnectId(cache, storageHandler)(
+          enrichDecisionIds(storageHandler, eventBus)(
+            enrichIdentifiers(storageHandler, eventBus)(
+              stateWithDomain
+            ))))
 
     const pixelSender = new PixelSender({
       collectorUrl: validLiveConnectConfig.collectorUrl,

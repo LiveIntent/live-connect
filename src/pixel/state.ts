@@ -103,11 +103,11 @@ export class StateWrapper {
     } catch (e) {
       console.error(e)
       eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
-      return {}
+      return { resolvedIdCookie: null }
     }
   }
 
-  combineWith(newInfo: State): StateWrapper {
+  combineWith(newInfo: Partial<State>): StateWrapper {
     return new StateWrapper(mergeObjects(this.data, newInfo), this.eventBus)
   }
 

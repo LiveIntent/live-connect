@@ -9,6 +9,7 @@ import { enrichPeopleVerifiedId } from './enrichers/people-verified-id'
 import { WrappedReadOnlyStorageHandler } from './handlers/storage-handler'
 import { WrappedCallHandler } from './handlers/call-handler'
 import { enrichIdentifiers } from './enrichers/identifiers-nohash'
+import { enrichIdCookie } from './enrichers/idcookie'
 
 // @ts-ignore
 function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalStorageHandler: ReadOnlyStorageHandler, externalCallHandler: CallHandler, eventBus: EventBus, push: (...events: unknown[]) => void): InternalLiveConnect {
@@ -27,10 +28,10 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
 
     const enrichedState =
       enrichIdentifiers(storageHandler, eventBus)(
-        enrichPeopleVerifiedId(storageHandler, eventBus)(
-          stateWithStorage
-        )
-      )
+        enrichIdCookie(storageHandler)(
+          enrichPeopleVerifiedId(storageHandler, eventBus)(
+            stateWithStorage
+          )))
 
     const resolver = new IdentityResolver(enrichedState, callHandler, eventBus)
 

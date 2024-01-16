@@ -16,6 +16,18 @@ export interface IdentityResolutionConfig {
   requestedAttributes?: string[]
 }
 
+export interface ProvidedIdCookieConfig {
+  mode: 'provided'
+  strategy: 'cookie' | 'localStorage'
+  name: string
+}
+
+export interface GeneratedIdCookieConfig {
+  mode: 'generated'
+}
+
+export type IdCookieConfig = ProvidedIdCookieConfig | GeneratedIdCookieConfig
+
 export interface LiveConnectConfig {
   appId?: string
   wrapperName?: string
@@ -38,6 +50,7 @@ export interface LiveConnectConfig {
   peopleVerifiedId?: string
   gppString?: string
   gppApplicableSections?: number[]
+  idCookie?: IdCookieConfig
 }
 
 export type ResolutionParams = Record<string, string | string[]>
@@ -66,7 +79,7 @@ export interface State extends LiveConnectConfig {
   peopleVerifiedId?: string
   errorDetails?: ErrorDetails
   retrievedIdentifiers?: RetrievedIdentifier[]
-  hashedEmail?: HashedEmail[]
+  hashedEmail?: string[]
   providedHash?: string
   contextSelectors?: string
   contextElementsLength?: number
@@ -74,10 +87,7 @@ export interface State extends LiveConnectConfig {
   privacyMode?: boolean
   referrer?: string
   cookieDomain?: string
-}
-
-export interface HemStore {
-  hashedEmail?: HashedEmail[]
+  resolvedIdCookie: string | null
 }
 
 export interface ConfigMismatch {

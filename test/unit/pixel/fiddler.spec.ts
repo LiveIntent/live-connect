@@ -88,20 +88,16 @@ describe('Fiddler', () => {
   })
 
   it('should limit the number of items in the items array, regardless of the case', () => {
-    // @ts-expect-error
     expect(fiddle({
       eventSource: {
         iTeMs: Array.from(Array(50).keys())
       }
-      // @ts-expect-error
     }).eventSource.iTeMs).to.eql(Array.from(Array(10).keys()))
 
-    // @ts-expect-error
     expect(fiddle({
       eventSource: {
         iTeMIdS: Array.from(Array(20).keys())
       }
-      // @ts-expect-error
     }).eventSource.iTeMIdS).to.eql(Array.from(Array(10).keys()))
   })
 })

@@ -1,14 +1,14 @@
-import { State } from '../types'
 import { extractEmail } from '../utils/email'
 import { decodeValue } from '../utils/url'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash'
 import { isArray, isObject, safeToString, trim } from 'live-connect-common'
+import { HashedEmail } from '../types'
 
 const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
 const HASH_BEARERS = ['email', 'emailhash', 'hash', 'hashedemail']
 
-function _provided(state: State): State {
+function provided<A extends { eventSource?: Record<string, unknown> }>(state: A): A & { hashedEmail?: string[] } {
   const eventSource = state.eventSource || {}
   const objectKeys = Object.keys(eventSource)
   for (const key of objectKeys) {
@@ -28,7 +28,7 @@ function _provided(state: State): State {
   return state
 }
 
-function _itemsLimiter(state: State): State {
+function itemsLimiter(state: { eventSource?: Record<string, unknown> }): Record<string, never> {
   const event = state.eventSource || {}
   Object.keys(event).forEach(key => {
     const lowerCased = key.toLowerCase()
@@ -40,10 +40,10 @@ function _itemsLimiter(state: State): State {
   return {}
 }
 
-const fiddlers = [_provided, _itemsLimiter]
+const fiddlers = [provided, itemsLimiter]
 
-export function fiddle(state: State): State {
-  const reducer = (accumulator: State, func: (current: State) => State) => {
+export function fiddle<A extends { eventSource?: Record<string, unknown> }>(state: A): A & { hashedEmail?: HashedEmail[] } {
+  function reducer<B extends object>(accumulator: A, func: (current: A) => B): A & B {
     return mergeObjects(accumulator, func(accumulator))
   }
   if (isObject(state.eventSource)) {

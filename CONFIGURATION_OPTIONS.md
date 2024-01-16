@@ -272,3 +272,27 @@ Example:
   queryParametersFilter: "^(foo|bar)$"
 }
 ```
+
+##### `idcookie` [Optional]
+
+This parameter allows to configure a custom cookie or localstorage entry as an additional identifier that will
+be used for id resolution. It can be resolved by the id resolution module by requesting the attribute 'idcookie'.
+This identifier will also be used internally by liveintent to identify a user, so it should be set to a
+stable, long-lived and unique identifier. Setting this to an identifier that does not meet these requirements
+might negatively affect id resolution.
+
+Default configuration uses the liveintent first-party cookie as the idcookie:
+```javascript
+{
+  mode: "generated"
+}
+```
+
+A custom cookie can be provided like this:
+```javascript
+{
+  mode: "provided",
+  strategy: "cookie" // or "localStorage"
+  name: "foobar" // name of the entry
+}
+```
