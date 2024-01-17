@@ -80,7 +80,6 @@ describe('MinimalLiveConnect', () => {
   it('should accept a single event and put it in the queue', () => {
     const lc = MinimalLiveConnect({ globalVarName: 'liQ' }, storage, calls)
     lc.push({ event: 'some' })
-    console.log(window.liQ)
     expect(window.liQ.length).to.eql(1)
   })
 

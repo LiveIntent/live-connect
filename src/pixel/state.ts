@@ -6,10 +6,13 @@ import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransfor
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
 import { collectUrl } from './url-collector'
+import { md5 } from 'tiny-hashes/dist'
+
+type ParamExtractor = (state: State) => [string, string][]
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
-function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): (state: State) => [string, string][] {
+function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): ParamExtractor {
   return state => {
     const value = state[key]
     if (nonNull(value)) {
@@ -20,7 +23,11 @@ function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State
   }
 }
 
-const paramExtractors: ((state: State) => [string, string][])[] = [
+function ifState(predicate: (state: State) => boolean, extractor: ParamExtractor): ParamExtractor {
+  return state => predicate(state) ? extractor(state) : []
+}
+
+const paramExtractors: ParamExtractor[] = [
   ifDefined('appId', aid => asStringParam('aid', aid)),
   ifDefined('distributorId', did => asStringParam('did', did)),
   ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
@@ -67,7 +74,8 @@ const paramExtractors: ((state: State) => [string, string][])[] = [
   ifDefined('contextElements', contextElements => asStringParam('c', contextElements)),
   ifDefined('gppString', gppString => asStringParam('gpp_s', gppString)),
   ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(','))),
-  ifDefined('cookieDomain', d => asStringParam('cd', d))
+  ifDefined('cookieDomain', d => asStringParam('cd', d)),
+  ifState(state => state.idCookie?.mode === 'provided', ifDefined('resolvedIdCookie', p => asStringParam('ic', md5(p))))
 ]
 
 export class Query {
