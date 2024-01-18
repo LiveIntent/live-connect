@@ -442,4 +442,41 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?did=did-9898&duid=213245')
     assert.includeDeepMembers(event.asTuples(), [['did', 'did-9898'], ['duid', '213245']])
   })
+
+  it('should send ic if idcookie is in mode provided', () => {
+    const eventBus = LocalEventBus()
+    const pixelData = {
+      idCookie: {
+        mode: 'provided',
+        strategy: 'cookie',
+        name: 'test-name'
+      },
+      resolvedIdCookie: '123'
+    }
+    const event = new StateWrapper(pixelData, eventBus)
+
+    // golden test. md5 hash of 123
+    const expected = '202cb962ac59075b964b07152d234b70'
+
+    expect(event.data).to.eql(pixelData)
+    expect(event.asQuery().toQueryString()).to.eql(`?ic=${expected}`)
+    assert.includeDeepMembers(event.asTuples(), [['ic', expected]])
+  })
+
+  it('should not send ic if idcookie is in mode generated', () => {
+    const eventBus = LocalEventBus()
+    const pixelData = {
+      idCookie: {
+        mode: 'generated',
+        strategy: 'cookie',
+        name: 'test-name'
+      },
+      resolvedIdCookie: '123'
+    }
+    const event = new StateWrapper(pixelData, eventBus)
+
+    expect(event.data).to.eql(pixelData)
+    expect(event.asQuery().toQueryString()).to.be.empty()
+    assert.includeDeepMembers(event.asTuples(), [])
+  })
 })

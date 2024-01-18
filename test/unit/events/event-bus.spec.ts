@@ -37,7 +37,6 @@ describe('EventsBus in a window', () => {
     const name = 'testBus'
     // @ts-expect-error
     const firstBus = GlobalEventBus(name)
-    firstBus.on('a-dell', () => console.log('Hello, its me'))
     // @ts-expect-error
     const secondBus = GlobalEventBus(name)
     expect(firstBus).to.eql(secondBus)

@@ -327,4 +327,18 @@ describe('IdentityResolver without cache', () => {
     identityResolver.resolve(successCallback, () => {}, { resolve: ['idcookie'] })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
   })
+
+  it('should include the idcookie in the url if the mode is provided', () => {
+    const value = 'foo'
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: value, idCookie: { mode: 'provided' } }, calls)
+
+    expect(identityResolver.getUrl({})).to.eq('https://idx.liadm.com/idex/unknown/any?ic=acbd18db4cc2f85cedef654fccc4a4d8')
+  })
+
+  it('should not include the idcookie in the url if the mode is generated', () => {
+    const value = 'foo'
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: value, idCookie: { mode: 'generated' } }, calls)
+
+    expect(identityResolver.getUrl({})).to.eq('https://idx.liadm.com/idex/unknown/any')
+  })
 })
