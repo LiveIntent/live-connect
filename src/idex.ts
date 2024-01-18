@@ -22,8 +22,9 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
   privacyMode: boolean
-  resolvedIdCookie: string | null
-  idCookieMode: 'provided' | 'generated'
+  resolvedIdCookie?: string
+  generateIdCookie: boolean
+  peopleVerifiedId?: string
 
   constructor (
     config: State,
@@ -43,7 +44,9 @@ export class IdentityResolver {
     this.requestedAttributes = this.idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
     this.privacyMode = nonNullConfig.privacyMode ?? false
     this.resolvedIdCookie = nonNullConfig.resolvedIdCookie
-    this.idCookieMode = nonNullConfig.idCookie?.mode ?? 'generated'
+    this.generateIdCookie = nonNullConfig.idCookie?.mode === 'generated'
+    this.peopleVerifiedId = nonNullConfig.peopleVerifiedId
+
     this.tuples = []
 
     this.tuples.push(...asStringParam('duid', nonNullConfig.peopleVerifiedId))
@@ -55,10 +58,7 @@ export class IdentityResolver {
     this.tuples.push(...asStringParam('gpp_s', nonNullConfig.gppString))
     this.tuples.push(...asStringParam('gpp_as', nonNullConfig.gppApplicableSections?.join(',')))
     this.tuples.push(...asStringParam('cd', nonNullConfig.cookieDomain))
-
-    if (this.idCookieMode === 'provided' && this.resolvedIdCookie) {
-      this.tuples.push(...asStringParam('ic', md5(this.resolvedIdCookie)))
-    }
+    this.tuples.push(...asParamOrEmpty('ic', nonNullConfig.resolvedIdCookie, ic => md5(ic)))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
@@ -98,8 +98,12 @@ export class IdentityResolver {
 
     let result = response
 
-    if (requested('idcookie') && this.resolvedIdCookie) {
-      result = { ...result, idcookie: this.resolvedIdCookie }
+    if (requested('idcookie')) {
+      if (this.resolvedIdCookie) {
+        result = { ...result, idcookie: this.resolvedIdCookie }
+      } else if (this.generateIdCookie && this.peopleVerifiedId) {
+        result = { ...result, idcookie: this.peopleVerifiedId }
+      }
     }
 
     return result

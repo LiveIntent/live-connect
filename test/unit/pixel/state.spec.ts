@@ -443,14 +443,9 @@ describe('EventComposition', () => {
     assert.includeDeepMembers(event.asTuples(), [['did', 'did-9898'], ['duid', '213245']])
   })
 
-  it('should send ic if idcookie is in mode provided', () => {
+  it('should send ic if idcookie is resolved', () => {
     const eventBus = LocalEventBus()
     const pixelData = {
-      idCookie: {
-        mode: 'provided',
-        strategy: 'cookie',
-        name: 'test-name'
-      },
       resolvedIdCookie: '123'
     }
     const event = new StateWrapper(pixelData, eventBus)
@@ -461,22 +456,5 @@ describe('EventComposition', () => {
     expect(event.data).to.eql(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?ic=${expected}`)
     assert.includeDeepMembers(event.asTuples(), [['ic', expected]])
-  })
-
-  it('should not send ic if idcookie is in mode generated', () => {
-    const eventBus = LocalEventBus()
-    const pixelData = {
-      idCookie: {
-        mode: 'generated',
-        strategy: 'cookie',
-        name: 'test-name'
-      },
-      resolvedIdCookie: '123'
-    }
-    const event = new StateWrapper(pixelData, eventBus)
-
-    expect(event.data).to.eql(pixelData)
-    expect(event.asQuery().toQueryString()).to.be.empty()
-    assert.includeDeepMembers(event.asTuples(), [])
   })
 })

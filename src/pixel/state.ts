@@ -23,10 +23,6 @@ function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State
   }
 }
 
-function ifState(predicate: (state: State) => boolean, extractor: ParamExtractor): ParamExtractor {
-  return state => predicate(state) ? extractor(state) : []
-}
-
 const paramExtractors: ParamExtractor[] = [
   ifDefined('appId', aid => asStringParam('aid', aid)),
   ifDefined('distributorId', did => asStringParam('did', did)),
@@ -75,7 +71,7 @@ const paramExtractors: ParamExtractor[] = [
   ifDefined('gppString', gppString => asStringParam('gpp_s', gppString)),
   ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(','))),
   ifDefined('cookieDomain', d => asStringParam('cd', d)),
-  ifState(state => state.idCookie?.mode === 'provided', ifDefined('resolvedIdCookie', p => asStringParam('ic', md5(p))))
+  ifDefined('resolvedIdCookie', p => asStringParam('ic', md5(p)))
 ]
 
 export class Query {
@@ -111,7 +107,7 @@ export class StateWrapper {
     } catch (e) {
       console.error(e)
       eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
-      return { resolvedIdCookie: null }
+      return {}
     }
   }
 
