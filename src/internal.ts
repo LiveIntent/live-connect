@@ -5,4 +5,4 @@ export * from './standard-live-connect'
 
 export { DurableCache, StorageHandlerBackedCache } from './cache'
 export { WrappedStorageHandler } from './handlers/storage-handler'
-export { InternalLiveConnect, LiveConnectConfig } from './types'
+export { InternalLiveConnect, LiveConnectConfig, State } from './types'
