@@ -304,11 +304,11 @@ describe('IdentityResolver without cache', () => {
 
   it('should resolve the idcookie', (done) => {
     const value = 'foo'
-    const identityResolver = new IdentityResolver({ resolvedIdCookie: value, identityResolutionConfig: { requestedAttributes: ['idcookie'] } }, calls)
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: value, identityResolutionConfig: { idCookieMode: 'provided', requestedAttributes: ['idCookie'] } }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?ic=acbd18db4cc2f85cedef654fccc4a4d8')
       expect(errors).to.be.empty()
-      expect(responseAsJson).to.be.eql({ idcookie: value })
+      expect(responseAsJson).to.be.eql({ idCookie: value })
       done()
     }
     identityResolver.resolve(successCallback)
@@ -317,25 +317,25 @@ describe('IdentityResolver without cache', () => {
 
   it('should resolve the idcookie when requested via additional attributes', (done) => {
     const value = 'foo'
-    const identityResolver = new IdentityResolver({ resolvedIdCookie: value }, calls)
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: value, identityResolutionConfig: { idCookieMode: 'provided' } }, calls)
     const successCallback = (responseAsJson) => {
       expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?ic=acbd18db4cc2f85cedef654fccc4a4d8')
       expect(errors).to.be.empty()
-      expect(responseAsJson).to.be.eql({ idcookie: value })
+      expect(responseAsJson).to.be.eql({ idCookie: value })
       done()
     }
-    identityResolver.resolve(successCallback, () => {}, { resolve: ['idcookie'] })
+    identityResolver.resolve(successCallback, () => {}, { resolve: ['idCookie'] })
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
   })
 
   it('should expose peopleVerifiedId as the idcookie if the mode is generated', (done) => {
     const value = 'foo'
-    const identityResolver = new IdentityResolver({ peopleVerifiedId: value, idCookie: { mode: 'generated' }, identityResolutionConfig: { requestedAttributes: ['idcookie'] } }, calls)
+    const identityResolver = new IdentityResolver({ peopleVerifiedId: value, resolvedIdCookie: 'foobar', identityResolutionConfig: { idCookieMode: 'generated', requestedAttributes: ['idCookie'] } }, calls)
 
     const successCallback = (responseAsJson) => {
-      expect(requestToComplete.url).to.eq(`https://idx.liadm.com/idex/unknown/any?duid=${value}`)
+      expect(requestToComplete.url).to.eq(`https://idx.liadm.com/idex/unknown/any?duid=${value}&ic=3858f62230ac3c915f300c664312c63f`)
       expect(errors).to.be.empty()
-      expect(responseAsJson).to.be.eql({ idcookie: value })
+      expect(responseAsJson).to.be.eql({ idCookie: value })
       done()
     }
     identityResolver.resolve(successCallback)

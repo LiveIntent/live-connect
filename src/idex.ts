@@ -6,6 +6,8 @@ import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedI
 import { WrappedCallHandler } from './handlers/call-handler'
 import { md5 } from 'tiny-hashes/dist'
 
+const ID_COOKIE_ATTR = 'idCookie'
+
 export type ResolutionMetadata = {
   expiresAt?: Date
 }
@@ -44,7 +46,7 @@ export class IdentityResolver {
     this.requestedAttributes = this.idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
     this.privacyMode = nonNullConfig.privacyMode ?? false
     this.resolvedIdCookie = nonNullConfig.resolvedIdCookie
-    this.generateIdCookie = nonNullConfig.idCookie?.mode === 'generated'
+    this.generateIdCookie = this.idexConfig.idCookieMode === 'generated'
     this.peopleVerifiedId = nonNullConfig.peopleVerifiedId
 
     this.tuples = []
@@ -72,7 +74,7 @@ export class IdentityResolver {
   private attributeResolutionAllowed(attribute: string): boolean {
     if (attribute === 'uid2') {
       return !this.privacyMode
-    } else if (attribute === 'idcookie') {
+    } else if (attribute === ID_COOKIE_ATTR) {
       // cannot be resolved server-side
       return false
     } else {
@@ -90,19 +92,21 @@ export class IdentityResolver {
     })
   }
 
-  private enrichExtraIdentifiers<T extends object>(response: T, params: [string, string][]): T & { idcookie?: string } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private enrichExtraIdentifiers(response: Record<any, any>, params: [string, string][]): Record<any, any> {
     const requestedAttributes = params.filter(([key]) => key === 'resolve').map(([, value]) => value)
+
     function requested(attribute: string): boolean {
       return requestedAttributes.indexOf(attribute) > -1
     }
 
-    let result = response
+    const result = { ...response }
 
-    if (requested('idcookie')) {
-      if (this.resolvedIdCookie) {
-        result = { ...result, idcookie: this.resolvedIdCookie }
-      } else if (this.generateIdCookie && this.peopleVerifiedId) {
-        result = { ...result, idcookie: this.peopleVerifiedId }
+    if (requested(ID_COOKIE_ATTR)) {
+      if (this.generateIdCookie && this.peopleVerifiedId) {
+        result[ID_COOKIE_ATTR] = this.peopleVerifiedId
+      } else if (this.resolvedIdCookie) {
+        result[ID_COOKIE_ATTR] = this.resolvedIdCookie
       }
     }
 
@@ -114,10 +118,14 @@ export class IdentityResolver {
     params: [string, string][]
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
-      let responseObj = {}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let responseObj: Record<any, any> = {}
       if (responseText) {
         try {
-          responseObj = JSON.parse(responseText)
+          const responseJson = JSON.parse(responseText)
+          if (isObject(responseJson)) {
+            responseObj = responseJson
+          }
         } catch (ex) {
           console.error('Error parsing response', ex)
           this.eventBus.emitError('IdentityResolverParser', ex)

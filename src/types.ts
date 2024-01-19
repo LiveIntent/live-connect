@@ -13,20 +13,14 @@ export interface IdentityResolutionConfig {
   ajaxTimeout?: number
   source?: string
   publisherId?: number
-  requestedAttributes?: string[]
+  requestedAttributes?: string[],
+  idCookieMode?: 'generated' | 'provided'
 }
 
-export interface ProvidedIdCookieConfig {
-  mode: 'provided'
-  strategy: 'cookie' | 'localStorage'
-  name: string
+export type IdCookieConfig = {
+  strategy?: 'cookie' | 'localStorage'
+  name?: string
 }
-
-export interface GeneratedIdCookieConfig {
-  mode: 'generated'
-}
-
-export type IdCookieConfig = ProvidedIdCookieConfig | GeneratedIdCookieConfig
 
 export interface LiveConnectConfig {
   appId?: string
