@@ -215,6 +215,24 @@ Example:
 }
 ```
 
+##### `identityResolutionConfig.idCookieMode` [Optional, HasDefault]
+Strategy that will be used by live-connect to resolve the `idCookie` identifier.
+
+`generated` (default) : live-connect will use an internally generated value as the idcookie.
+
+`provided`: live-connect will return a user provided identifier as the idCookie. See the [idCookie](#idcookie)
+section for how to configure this identifier.
+
+
+Example:
+```javascript
+{
+  identityResolutionConfig: {
+    idCookieMode: 'generated'
+  }
+}
+```
+
 ##### `contextSelectors` [Optional]
 The context selectors to collect from the current page.
 Example:
@@ -273,25 +291,21 @@ Example:
 }
 ```
 
-##### `idcookie` [Optional]
+<h5 id="idcookie">
+<code>idCookie</code> [Optional]
+</h5>
 
 This parameter allows to configure a custom cookie or localstorage entry as an additional identifier that will
-be used for id resolution. It can be resolved by the id resolution module by requesting the attribute 'idcookie'.
-This identifier will also be used internally by liveintent to identify a user, so it should be set to a
-stable, long-lived and unique identifier. Setting this to an identifier that does not meet these requirements
-might negatively affect id resolution.
+be used for user identification.
 
-Default configuration uses the liveintent first-party cookie as the idcookie:
+Setting this to a stable, long-lived and unique identifier will improve tracking performance of live-connect which will
+in turn improve identity resolution. For these reasons we strongly recommend using this setting if a suitable identifier is available.
+
+Setting this to an identifier that does not meet these requirements might negatively affect id resolution.
+
+Example for providing a custom cookie
 ```javascript
 {
-  mode: "generated"
-}
-```
-
-A custom cookie can be provided like this:
-```javascript
-{
-  mode: "provided",
   strategy: "cookie" // or "localStorage"
   name: "foobar" // name of the entry
 }
