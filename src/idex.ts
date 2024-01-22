@@ -31,7 +31,7 @@ export class IdentityResolver {
     calls: WrappedCallHandler,
     eventBus: EventBus
   ) {
-    const nonNullConfig: State = config || { identityResolutionConfig: {}, resolvedIdCookie: null }
+    const nonNullConfig: State = config || { identityResolutionConfig: {} }
 
     this.eventBus = eventBus
     this.calls = calls
