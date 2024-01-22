@@ -57,7 +57,7 @@ export class IdentityResolver {
       .addOptionalParam('gpp_s', nonNullConfig.gppString)
       .addOptionalParam('gpp_as', nonNullConfig.gppApplicableSections?.join(','))
       .addOptionalParam('cd', nonNullConfig.cookieDomain)
-      .addOptionalParam('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
+      .addOptionalParam('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.query.addParam(retrievedIdentifier.name, retrievedIdentifier.value)

@@ -69,8 +69,8 @@ export class StateWrapper {
     }
 
     builder
-      .addOptionalParam('li_did', onNonNull(state.decisionIds, s => s.join(',')))
-      .addOptionalParam('e', onNonNull(state.hashedEmail, s => s.join(',')))
+      .addOptionalParam('li_did', state.decisionIds?.join(','))
+      .addOptionalParam('e', state.hashedEmail?.join(','))
       .addOptionalParam('us_privacy', state.usPrivacyString)
       .addOptionalParam('wpn', state.wrapperName)
       .addOptionalParam('gdpr', onNonNull(state.gdprApplies, v => v ? '1' : '0'))
@@ -81,7 +81,7 @@ export class StateWrapper {
       .addOptionalParam('refr', state.referrer)
       .addOptionalParam('c', state.contextElements)
       .addOptionalParam('gpp_s', state.gppString)
-      .addOptionalParam('gpp_as', onNonNull(state.gppApplicableSections, s => s.join(',')))
+      .addOptionalParam('gpp_as', state.gppApplicableSections?.join(','))
       .addOptionalParam('cd', state.cookieDomain)
       .addOptionalParam('ic', encodeIdCookie(state.resolvedIdCookie), { stripEmpty: false })
 

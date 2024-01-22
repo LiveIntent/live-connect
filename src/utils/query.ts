@@ -7,11 +7,6 @@ export type ParamOptions = {
   prepend?: boolean
 }
 
-const DEFAULT_OPTIONS: ParamOptions = {
-  stripEmpty: true,
-  prepend: false
-}
-
 export class QueryBuilder {
   tuples: [string, ParamValue][]
 
@@ -19,10 +14,12 @@ export class QueryBuilder {
     this.tuples = tuples
   }
 
-  addParam(key: string, value: ParamValue, options: ParamOptions = DEFAULT_OPTIONS): QueryBuilder {
-    if (options.stripEmpty && value === '') {
+  addParam(key: string, value: ParamValue, options: ParamOptions = {}): QueryBuilder {
+    const { stripEmpty = true, prepend = false } = options
+
+    if (stripEmpty && value === '') {
       // do nothing
-    } else if (options.prepend) {
+    } else if (prepend) {
       this.tuples.unshift([key, value])
     } else {
       this.tuples.push([key, value])
@@ -30,7 +27,7 @@ export class QueryBuilder {
     return this
   }
 
-  addOptionalParam(key: string, value: ParamValue | null | undefined, options: ParamOptions = DEFAULT_OPTIONS): QueryBuilder {
+  addOptionalParam(key: string, value: ParamValue | null | undefined, options: ParamOptions = {}): QueryBuilder {
     if (nonNull(value)) {
       return this.addParam(key, value, options)
     } else {
