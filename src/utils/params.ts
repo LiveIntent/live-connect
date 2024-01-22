@@ -1,4 +1,5 @@
 import { isNonEmpty, isObject, isArray, isFunction } from 'live-connect-common'
+import { md5 } from 'tiny-hashes/dist'
 
 export function asParamOrEmpty<A>(param: string, value: A, transform: (a: NonNullable<A>) => string): [string, string][] {
   return isNonEmpty(value) ? [[param, transform(value)]] : []
@@ -30,6 +31,16 @@ export function mapAsParams(paramsMap: Record<string, string | string[]>): [stri
       }
     })
     return array
+  } else {
+    return []
+  }
+}
+
+export function encodeIdCookieParam(value: string | undefined | null): [string, string][] {
+  if (value !== null && value !== undefined) {
+    return asStringParam('ic', md5(value))
+  } else if (value === null) {
+    return [['ic', '']]
   } else {
     return []
   }

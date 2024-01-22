@@ -81,7 +81,7 @@ export interface State extends LiveConnectConfig {
   privacyMode?: boolean
   referrer?: string
   cookieDomain?: string
-  resolvedIdCookie?: string
+  resolvedIdCookie?: string | null // null signals failure to resolve
 }
 
 export interface ConfigMismatch {

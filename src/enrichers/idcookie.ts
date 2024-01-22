@@ -9,9 +9,9 @@ export function enrichIdCookie(
 ): Enricher<Input, Output> {
   return state => {
     if (state.idCookie?.strategy === 'cookie' && typeof state.idCookie?.name === 'string') {
-      return { ...state, resolvedIdCookie: storageHandler.getCookie(state.idCookie.name) || undefined }
+      return { ...state, resolvedIdCookie: storageHandler.getCookie(state.idCookie.name) }
     } else if (state.idCookie?.strategy === 'localStorage' && typeof state.idCookie?.name === 'string') {
-      return { ...state, resolvedIdCookie: storageHandler.getDataFromLocalStorage(state.idCookie.name) || undefined }
+      return { ...state, resolvedIdCookie: storageHandler.getDataFromLocalStorage(state.idCookie.name) }
     } else {
       return state
     }

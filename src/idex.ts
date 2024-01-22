@@ -1,10 +1,9 @@
 import { toParams } from './utils/url'
 import { isFunction, isObject } from 'live-connect-common'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from './utils/params'
+import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams, encodeIdCookieParam } from './utils/params'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
 import { WrappedCallHandler } from './handlers/call-handler'
-import { md5 } from 'tiny-hashes/dist'
 
 const ID_COOKIE_ATTR = 'idCookie'
 
@@ -24,7 +23,7 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
   privacyMode: boolean
-  resolvedIdCookie?: string
+  resolvedIdCookie?: string | null
   generateIdCookie: boolean
   peopleVerifiedId?: string
 
@@ -60,7 +59,7 @@ export class IdentityResolver {
     this.tuples.push(...asStringParam('gpp_s', nonNullConfig.gppString))
     this.tuples.push(...asStringParam('gpp_as', nonNullConfig.gppApplicableSections?.join(',')))
     this.tuples.push(...asStringParam('cd', nonNullConfig.cookieDomain))
-    this.tuples.push(...asParamOrEmpty('ic', nonNullConfig.resolvedIdCookie, ic => md5(ic)))
+    this.tuples.push(...encodeIdCookieParam(nonNullConfig.resolvedIdCookie))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))

@@ -6,7 +6,7 @@ export const toParams = (tuples: ([string, string][])) => {
   let acc = ''
   tuples.forEach((tuple) => {
     const operator = acc.length === 0 ? '?' : '&'
-    if (tuple && tuple.length && tuple.length === 2 && tuple[0] && tuple[1]) {
+    if (tuple && tuple.length && tuple.length === 2 && tuple[0]) {
       acc = `${acc}${operator}${tuple[0]}=${tuple[1]}`
     }
   })

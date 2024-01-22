@@ -2,11 +2,10 @@ import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle, mergeObjects } from './fiddler'
 import { isObject, trim, isArray, nonNull } from 'live-connect-common'
-import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform } from '../utils/params'
+import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, encodeIdCookieParam } from '../utils/params'
 import { toParams } from '../utils/url'
 import { EventBus, State } from '../types'
 import { collectUrl } from './url-collector'
-import { md5 } from 'tiny-hashes/dist'
 
 type ParamExtractor = (state: State) => [string, string][]
 
@@ -71,7 +70,7 @@ const paramExtractors: ParamExtractor[] = [
   ifDefined('gppString', gppString => asStringParam('gpp_s', gppString)),
   ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(','))),
   ifDefined('cookieDomain', d => asStringParam('cd', d)),
-  ifDefined('resolvedIdCookie', p => asStringParam('ic', md5(p)))
+  (state) => encodeIdCookieParam(state.resolvedIdCookie)
 ]
 
 export class Query {

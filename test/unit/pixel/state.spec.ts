@@ -457,4 +457,16 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql(`?ic=${expected}`)
     assert.includeDeepMembers(event.asTuples(), [['ic', expected]])
   })
+
+  it('should send empty ic if idcookie fails to resolved', () => {
+    const eventBus = LocalEventBus()
+    const pixelData = {
+      resolvedIdCookie: null
+    }
+    const event = new StateWrapper(pixelData, eventBus)
+
+    expect(event.data).to.eql(pixelData)
+    expect(event.asQuery().toQueryString()).to.eql('?ic=')
+    assert.includeDeepMembers(event.asTuples(), [['ic', '']])
+  })
 })
