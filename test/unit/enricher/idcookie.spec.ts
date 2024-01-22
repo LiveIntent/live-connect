@@ -31,15 +31,4 @@ describe('IdentifiersEnricher', () => {
 
     expect(result.resolvedIdCookie).to.eql(value)
   })
-
-  it('enrich peopleVerifiedId', () => {
-    const value = 'bar'
-    const result = enrichIdCookie(storageHandler)({ idCookie: { mode: 'generated' }, peopleVerifiedId: value })
-    expect(result.resolvedIdCookie).to.eql(value)
-  })
-
-  it('return null when set to generated and peopleVerifiedId missing', () => {
-    const result = enrichIdCookie(storageHandler)({ idCookie: { mode: 'generated' } })
-    expect(result.resolvedIdCookie).to.null()
-  })
 })

@@ -1,23 +1,19 @@
 import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
-import { Enricher, IdCookieConfig } from '../types'
+import { Enricher, State } from '../types'
 
-type Input = { idCookie?: IdCookieConfig, peopleVerifiedId?: string }
-type Output = { resolvedIdCookie: string | null }
+type Input = Pick<State, 'idCookie' | 'peopleVerifiedId'>
+type Output = Pick<State, 'resolvedIdCookie'>
 
 export function enrichIdCookie(
   storageHandler: WrappedReadOnlyStorageHandler
 ): Enricher<Input, Output> {
   return state => {
-    let resolvedIdCookie: string | null
-
-    if (state.idCookie?.mode === 'provided' && state.idCookie?.strategy === 'cookie' && typeof state.idCookie?.name === 'string') {
-      resolvedIdCookie = storageHandler.getCookie(state.idCookie.name)
-    } else if (state.idCookie?.mode === 'provided' && state.idCookie?.strategy === 'localStorage' && typeof state.idCookie?.name === 'string') {
-      resolvedIdCookie = storageHandler.getDataFromLocalStorage(state.idCookie.name)
+    if (state.idCookie?.strategy === 'cookie' && typeof state.idCookie?.name === 'string') {
+      return { ...state, resolvedIdCookie: storageHandler.getCookie(state.idCookie.name) }
+    } else if (state.idCookie?.strategy === 'localStorage' && typeof state.idCookie?.name === 'string') {
+      return { ...state, resolvedIdCookie: storageHandler.getDataFromLocalStorage(state.idCookie.name) }
     } else {
-      resolvedIdCookie = state.peopleVerifiedId ?? null
+      return state
     }
-
-    return { ...state, resolvedIdCookie }
   }
 }

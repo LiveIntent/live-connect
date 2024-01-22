@@ -1,10 +1,11 @@
 import { toParams } from './utils/url'
 import { isFunction, isObject } from 'live-connect-common'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams } from './utils/params'
+import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams, encodeIdCookieParam } from './utils/params'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
 import { WrappedCallHandler } from './handlers/call-handler'
-import { md5 } from 'tiny-hashes/dist'
+
+const ID_COOKIE_ATTR = 'idCookie'
 
 export type ResolutionMetadata = {
   expiresAt?: Date
@@ -22,8 +23,9 @@ export class IdentityResolver {
   requestedAttributes: string[]
   tuples: [string, string][]
   privacyMode: boolean
-  resolvedIdCookie: string | null
-  idCookieMode: 'provided' | 'generated'
+  resolvedIdCookie?: string | null
+  generateIdCookie: boolean
+  peopleVerifiedId?: string
 
   constructor (
     config: State,
@@ -43,7 +45,9 @@ export class IdentityResolver {
     this.requestedAttributes = this.idexConfig.requestedAttributes || DEFAULT_REQUESTED_ATTRIBUTES
     this.privacyMode = nonNullConfig.privacyMode ?? false
     this.resolvedIdCookie = nonNullConfig.resolvedIdCookie
-    this.idCookieMode = nonNullConfig.idCookie?.mode ?? 'generated'
+    this.generateIdCookie = this.idexConfig.idCookieMode === 'generated'
+    this.peopleVerifiedId = nonNullConfig.peopleVerifiedId
+
     this.tuples = []
 
     this.tuples.push(...asStringParam('duid', nonNullConfig.peopleVerifiedId))
@@ -55,10 +59,7 @@ export class IdentityResolver {
     this.tuples.push(...asStringParam('gpp_s', nonNullConfig.gppString))
     this.tuples.push(...asStringParam('gpp_as', nonNullConfig.gppApplicableSections?.join(',')))
     this.tuples.push(...asStringParam('cd', nonNullConfig.cookieDomain))
-
-    if (this.idCookieMode === 'provided' && this.resolvedIdCookie) {
-      this.tuples.push(...asStringParam('ic', md5(this.resolvedIdCookie)))
-    }
+    this.tuples.push(...encodeIdCookieParam(nonNullConfig.resolvedIdCookie))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
@@ -72,7 +73,7 @@ export class IdentityResolver {
   private attributeResolutionAllowed(attribute: string): boolean {
     if (attribute === 'uid2') {
       return !this.privacyMode
-    } else if (attribute === 'idcookie') {
+    } else if (attribute === ID_COOKIE_ATTR) {
       // cannot be resolved server-side
       return false
     } else {
@@ -90,16 +91,22 @@ export class IdentityResolver {
     })
   }
 
-  private enrichExtraIdentifiers<T extends object>(response: T, params: [string, string][]): T & { idcookie?: string } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private enrichExtraIdentifiers(response: Record<any, any>, params: [string, string][]): Record<any, any> {
     const requestedAttributes = params.filter(([key]) => key === 'resolve').map(([, value]) => value)
+
     function requested(attribute: string): boolean {
       return requestedAttributes.indexOf(attribute) > -1
     }
 
-    let result = response
+    const result = { ...response }
 
-    if (requested('idcookie') && this.resolvedIdCookie) {
-      result = { ...result, idcookie: this.resolvedIdCookie }
+    if (requested(ID_COOKIE_ATTR)) {
+      if (this.generateIdCookie && this.peopleVerifiedId) {
+        result[ID_COOKIE_ATTR] = this.peopleVerifiedId
+      } else if (this.resolvedIdCookie) {
+        result[ID_COOKIE_ATTR] = this.resolvedIdCookie
+      }
     }
 
     return result
@@ -110,10 +117,14 @@ export class IdentityResolver {
     params: [string, string][]
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
-      let responseObj = {}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let responseObj: Record<any, any> = {}
       if (responseText) {
         try {
-          responseObj = JSON.parse(responseText)
+          const responseJson = JSON.parse(responseText)
+          if (isObject(responseJson)) {
+            responseObj = responseJson
+          }
         } catch (ex) {
           console.error('Error parsing response', ex)
           this.eventBus.emitError('IdentityResolverParser', ex)
