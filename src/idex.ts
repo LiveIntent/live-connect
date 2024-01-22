@@ -1,6 +1,5 @@
-import { toParams } from './utils/url'
-import { isFunction, isObject } from 'live-connect-common'
-import { asParamOrEmpty, asStringParamWhen, asStringParam, mapAsParams, encodeIdCookieParam } from './utils/params'
+import { isFunction, isObject, isString, onNonNull } from 'live-connect-common'
+import { QueryBuilder, encodeIdCookie } from './utils/query'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
 import { WrappedCallHandler } from './handlers/call-handler'
@@ -21,7 +20,7 @@ export class IdentityResolver {
   url: string
   timeout: number
   requestedAttributes: string[]
-  tuples: [string, string][]
+  query: QueryBuilder // ensure to copy this before mutating
   privacyMode: boolean
   resolvedIdCookie?: string | null
   generateIdCookie: boolean
@@ -48,25 +47,24 @@ export class IdentityResolver {
     this.generateIdCookie = this.idexConfig.idCookieMode === 'generated'
     this.peopleVerifiedId = nonNullConfig.peopleVerifiedId
 
-    this.tuples = []
-
-    this.tuples.push(...asStringParam('duid', nonNullConfig.peopleVerifiedId))
-    this.tuples.push(...asStringParam('us_privacy', nonNullConfig.usPrivacyString))
-    this.tuples.push(...asParamOrEmpty('gdpr', nonNullConfig.gdprApplies, v => encodeURIComponent(v ? 1 : 0)))
-    this.tuples.push(...asStringParamWhen('n3pc', nonNullConfig.privacyMode ? '1' : '0', v => v === '1'))
-    this.tuples.push(...asStringParam('gdpr_consent', nonNullConfig.gdprConsent))
-    this.tuples.push(...asStringParam('did', nonNullConfig.distributorId))
-    this.tuples.push(...asStringParam('gpp_s', nonNullConfig.gppString))
-    this.tuples.push(...asStringParam('gpp_as', nonNullConfig.gppApplicableSections?.join(',')))
-    this.tuples.push(...asStringParam('cd', nonNullConfig.cookieDomain))
-    this.tuples.push(...encodeIdCookieParam(nonNullConfig.resolvedIdCookie))
+    this.query = new QueryBuilder()
+      .addOptionalParam('duid', nonNullConfig.peopleVerifiedId)
+      .addOptionalParam('us_privacy', nonNullConfig.usPrivacyString)
+      .addOptionalParam('gdpr', onNonNull(nonNullConfig.gdprApplies, v => v ? 1 : 0))
+      .addOptionalParam('n3pc', nonNullConfig.privacyMode ? 1 : undefined)
+      .addOptionalParam('gdpr_consent', nonNullConfig.gdprConsent)
+      .addOptionalParam('did', nonNullConfig.distributorId)
+      .addOptionalParam('gpp_s', nonNullConfig.gppString)
+      .addOptionalParam('gpp_as', nonNullConfig.gppApplicableSections?.join(','))
+      .addOptionalParam('cd', nonNullConfig.cookieDomain)
+      .addOptionalParam('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
 
     this.externalIds.forEach(retrievedIdentifier => {
-      this.tuples.push(...asStringParam(retrievedIdentifier.name, retrievedIdentifier.value))
+      this.query.addParam(retrievedIdentifier.name, retrievedIdentifier.value)
     })
 
     this.requestedAttributes.forEach(requestedAttribute => {
-      this.tuples.push(...asStringParam('resolve', requestedAttribute))
+      this.query.addParam('resolve', requestedAttribute)
     })
   }
 
@@ -81,10 +79,14 @@ export class IdentityResolver {
     }
   }
 
-  private filterParams(params: [string, string][]): [string, string][] {
-    return params.filter(([key, value]) => {
+  private filterParams(query: QueryBuilder): QueryBuilder {
+    return query.filteredCopy((key, value) => {
       if (key === 'resolve') {
-        return this.attributeResolutionAllowed(value)
+        if (isString(value)) {
+          return this.attributeResolutionAllowed(value)
+        } else {
+          return false
+        }
       } else {
         return true
       }
@@ -92,8 +94,8 @@ export class IdentityResolver {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private enrichExtraIdentifiers(response: Record<any, any>, params: [string, string][]): Record<any, any> {
-    const requestedAttributes = params.filter(([key]) => key === 'resolve').map(([, value]) => value)
+  private enrichExtraIdentifiers(response: Record<any, any>, params: QueryBuilder): Record<any, any> {
+    const requestedAttributes = params.tuples.filter(([key]) => key === 'resolve').map(([, value]) => value)
 
     function requested(attribute: string): boolean {
       return requestedAttributes.indexOf(attribute) > -1
@@ -114,7 +116,7 @@ export class IdentityResolver {
 
   private responseReceived(
     successCallback: (result: unknown, meta: ResolutionMetadata) => void,
-    params: [string, string][]
+    params: QueryBuilder
   ): ((responseText: string, response: unknown) => void) {
     return (responseText, response) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -136,18 +138,18 @@ export class IdentityResolver {
     }
   }
 
-  private buildUrl(params: [string, string][]): string {
-    return `${this.url}/${this.source}/${this.publisherId}${toParams(this.filterParams(params))}`
+  private buildUrl(query: QueryBuilder): string {
+    return `${this.url}/${this.source}/${this.publisherId}${this.filterParams(query).toQueryString()}`
   }
 
-  getUrl(additionalParams: Record<string, string | string[]>): string {
-    const params = this.tuples.slice().concat(mapAsParams(additionalParams))
+  getUrl(additionalParams?: Record<string, string | string[]>): string {
+    const params = this.query.copy().addParamsMap(additionalParams ?? {})
     return this.buildUrl(params)
   }
 
   resolve(successCallback: (result: unknown, meta: ResolutionMetadata) => void, errorCallback?: (e: unknown) => void, additionalParams?: ResolutionParams): void {
     try {
-      const params = this.tuples.slice().concat(mapAsParams(additionalParams ?? {}))
+      const params = this.query.copy().addParamsMap(additionalParams ?? {})
       this.calls.ajaxGet(
         this.buildUrl(params),
         this.responseReceived(successCallback, params),

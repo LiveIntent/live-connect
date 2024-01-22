@@ -1,95 +1,12 @@
 import { base64UrlEncode } from '../utils/b64'
 import { replacer } from './stringify'
 import { fiddle, mergeObjects } from './fiddler'
-import { isObject, trim, isArray, nonNull } from 'live-connect-common'
-import { asStringParam, asParamOrEmpty, asStringParamWhen, asStringParamTransform, encodeIdCookieParam } from '../utils/params'
-import { toParams } from '../utils/url'
+import { isObject, trim, isArray, nonNull, onNonNull } from 'live-connect-common'
+import { QueryBuilder, encodeIdCookie } from '../utils/query'
 import { EventBus, State } from '../types'
 import { collectUrl } from './url-collector'
 
-type ParamExtractor = (state: State) => [string, string][]
-
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
-
-function ifDefined<K extends keyof State>(key: K, fun: (value: NonNullable<State[K]>) => [string, string][]): ParamExtractor {
-  return state => {
-    const value = state[key]
-    if (nonNull(value)) {
-      return fun(value)
-    } else {
-      return []
-    }
-  }
-}
-
-const paramExtractors: ParamExtractor[] = [
-  ifDefined('appId', aid => asStringParam('aid', aid)),
-  ifDefined('distributorId', did => asStringParam('did', did)),
-  ifDefined('eventSource', source => asParamOrEmpty('se', source, (s) => base64UrlEncode(JSON.stringify(s, replacer)))),
-  ifDefined('liveConnectId', fpc => asStringParam('duid', fpc)),
-  ifDefined('trackerVersion', v => asStringParam('tv', v)),
-  state => {
-    if (nonNull(state.pageUrl)) {
-      const [url, isPathRemoved, blockedParams] = collectUrl(state)
-      const nestedUrlParams = [
-        asStringParam('pu', url),
-        asStringParamWhen('pu_rp', isPathRemoved ? 1 : 0, v => v === 1),
-        asStringParamTransform('pu_rqp', blockedParams, (s) => s.join(','))
-      ]
-      return Array.prototype.concat.apply([], nestedUrlParams)
-    } else {
-      return []
-    }
-  },
-  ifDefined('errorDetails', ed => asParamOrEmpty('ae', ed, (s) => base64UrlEncode(JSON.stringify(s)))),
-  ifDefined('retrievedIdentifiers', identifiers => {
-    const identifierParams: [string, string][] = []
-    if (isArray(identifiers)) {
-      identifiers.forEach((i) => identifierParams.push(...asStringParam(`ext_${i.name}`, i.value)))
-    }
-    return identifierParams
-  }),
-  ifDefined('hashesFromIdentifiers', hashes => {
-    const hashParams: [string, string][] = []
-    if (isArray(hashes)) {
-      hashes.forEach((h) => hashParams.push(...asStringParam('scre', `${h.md5},${h.sha1},${h.sha256}`)))
-    }
-    return hashParams
-  }),
-  ifDefined('decisionIds', dids => asStringParamTransform('li_did', dids, (s) => s.join(','))),
-  ifDefined('hashedEmail', he => asStringParamTransform('e', he, (s) => s.join(','))),
-  ifDefined('usPrivacyString', usps => asStringParam('us_privacy', usps)),
-  ifDefined('wrapperName', wrapper => asStringParam('wpn', wrapper)),
-  ifDefined('gdprApplies', gdprApplies => asStringParamTransform('gdpr', gdprApplies, (s) => s ? 1 : 0)),
-  ifDefined('privacyMode', privacyMode => asStringParamWhen('n3pc', privacyMode ? 1 : 0, v => v === 1)),
-  ifDefined('privacyMode', privacyMode => asStringParamWhen('n3pct', privacyMode ? 1 : 0, v => v === 1)),
-  ifDefined('privacyMode', privacyMode => asStringParamWhen('nb', privacyMode ? 1 : 0, v => v === 1)),
-  ifDefined('gdprConsent', gdprConsentString => asStringParam('gdpr_consent', gdprConsentString)),
-  ifDefined('referrer', referrer => asStringParam('refr', referrer)),
-  ifDefined('contextElements', contextElements => asStringParam('c', contextElements)),
-  ifDefined('gppString', gppString => asStringParam('gpp_s', gppString)),
-  ifDefined('gppApplicableSections', gppApplicableSections => asStringParamTransform('gpp_as', gppApplicableSections, (gppAs) => gppAs.join(','))),
-  ifDefined('cookieDomain', d => asStringParam('cd', d)),
-  (state) => encodeIdCookieParam(state.resolvedIdCookie)
-]
-
-export class Query {
-  tuples: [string, string][]
-
-  constructor (tuples: [string, string][]) {
-    this.tuples = tuples
-  }
-
-  prependParams(...params: [string, string][]): Query {
-    const _tuples = this.tuples
-    _tuples.unshift(...params)
-    return new Query(_tuples)
-  }
-
-  toQueryString(): string {
-    return toParams(this.tuples)
-  }
-}
 
 export class StateWrapper {
   data: State
@@ -123,18 +40,51 @@ export class StateWrapper {
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
   }
 
-  asTuples(): [string, string][] {
-    const acc: [string, string][] = []
-    paramExtractors.forEach((extractor) => {
-      const params = extractor(this.data)
-      if (params && isArray(params)) {
-        acc.push(...params)
-      }
-    })
-    return acc
-  }
+  asQuery(): QueryBuilder {
+    const state = this.data
 
-  asQuery(): Query {
-    return new Query(this.asTuples())
+    const builder = new QueryBuilder()
+      .addOptionalParam('aid', state.appId)
+      .addOptionalParam('did', state.distributorId)
+      .addOptionalParam('se', onNonNull(state.eventSource, s => base64UrlEncode(JSON.stringify(s, replacer))))
+      .addOptionalParam('duid', state.liveConnectId)
+      .addOptionalParam('tv', state.trackerVersion)
+
+    if (nonNull(state.pageUrl)) {
+      const [url, isPathRemoved, blockedParams] = collectUrl(state)
+      builder
+        .addParam('pu', url)
+        .addOptionalParam('pu_rp', isPathRemoved ? '1' : undefined)
+        .addParam('pu_rqp', blockedParams.join(','))
+    }
+
+    builder.addOptionalParam('ae', onNonNull(state.errorDetails, ed => base64UrlEncode(JSON.stringify(ed))))
+
+    if (isArray(state.retrievedIdentifiers)) {
+      state.retrievedIdentifiers.forEach((i) => builder.addParam(`ext_${i.name}`, i.value))
+    }
+
+    if (isArray(state.hashesFromIdentifiers)) {
+      state.hashesFromIdentifiers.forEach((h) => builder.addParam('scre', `${h.md5},${h.sha1},${h.sha256}`))
+    }
+
+    builder
+      .addOptionalParam('li_did', onNonNull(state.decisionIds, s => s.join(',')))
+      .addOptionalParam('e', onNonNull(state.hashedEmail, s => s.join(',')))
+      .addOptionalParam('us_privacy', state.usPrivacyString)
+      .addOptionalParam('wpn', state.wrapperName)
+      .addOptionalParam('gdpr', onNonNull(state.gdprApplies, v => v ? '1' : '0'))
+      .addOptionalParam('n3pc', state.privacyMode ? '1' : undefined)
+      .addOptionalParam('n3pct', state.privacyMode ? '1' : undefined)
+      .addOptionalParam('nb', state.privacyMode ? '1' : undefined)
+      .addOptionalParam('gdpr_consent', state.gdprConsent)
+      .addOptionalParam('refr', state.referrer)
+      .addOptionalParam('c', state.contextElements)
+      .addOptionalParam('gpp_s', state.gppString)
+      .addOptionalParam('gpp_as', onNonNull(state.gppApplicableSections, s => s.join(',')))
+      .addOptionalParam('cd', state.cookieDomain)
+      .addOptionalParam('ic', encodeIdCookie(state.resolvedIdCookie), { stripEmpty: false })
+
+    return builder
   }
 }
