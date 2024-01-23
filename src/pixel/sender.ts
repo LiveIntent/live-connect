@@ -51,7 +51,7 @@ export class PixelSender {
         onPreSend()
       }
 
-      const query = state.asQuery().addParam('dtstmp', Date.now(), { prepend: true }).toQueryString()
+      const query = state.asQuery().add('dtstmp', Date.now(), { prepend: true }).toQueryString()
       const uri = `${this.url}/${endpoint}${query}`
 
       makeCall(uri)

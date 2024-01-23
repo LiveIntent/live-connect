@@ -14,22 +14,25 @@ export class QueryBuilder {
     this.tuples = tuples
   }
 
-  addParam(key: string, value: ParamValue, options: ParamOptions = {}): QueryBuilder {
+  add(key: string, value: ParamValue, options: ParamOptions = {}): QueryBuilder {
     const { stripEmpty = true, prepend = false } = options
 
-    if (stripEmpty && value === '') {
-      // do nothing
+    if (key === '') {
+      return this
+    } else if (stripEmpty && value === '') {
+      return this
     } else if (prepend) {
       this.tuples.unshift([key, value])
+      return this
     } else {
       this.tuples.push([key, value])
+      return this
     }
-    return this
   }
 
-  addOptionalParam(key: string, value: ParamValue | null | undefined, options: ParamOptions = {}): QueryBuilder {
+  addOptional(key: string, value: ParamValue | null | undefined, options: ParamOptions = {}): QueryBuilder {
     if (nonNull(value)) {
-      return this.addParam(key, value, options)
+      return this.add(key, value, options)
     } else {
       return this
     }
@@ -40,9 +43,9 @@ export class QueryBuilder {
       const value = paramsMap[key]
       if (nonNull(value)) {
         if (isArray(value)) {
-          value.forEach(entry => this.addParam(key, entry))
+          value.forEach(entry => this.add(key, entry))
         } else {
-          this.addParam(key, value)
+          this.add(key, value)
         }
       }
     })

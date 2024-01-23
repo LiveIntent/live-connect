@@ -44,46 +44,46 @@ export class StateWrapper {
     const state = this.data
 
     const builder = new QueryBuilder()
-      .addOptionalParam('aid', state.appId)
-      .addOptionalParam('did', state.distributorId)
-      .addOptionalParam('se', onNonNull(state.eventSource, s => base64UrlEncode(JSON.stringify(s, replacer))))
-      .addOptionalParam('duid', state.liveConnectId)
-      .addOptionalParam('tv', state.trackerVersion)
+      .addOptional('aid', state.appId)
+      .addOptional('did', state.distributorId)
+      .addOptional('se', onNonNull(state.eventSource, s => base64UrlEncode(JSON.stringify(s, replacer))))
+      .addOptional('duid', state.liveConnectId)
+      .addOptional('tv', state.trackerVersion)
 
     if (nonNull(state.pageUrl)) {
       const [url, isPathRemoved, blockedParams] = collectUrl(state)
       builder
-        .addParam('pu', url)
-        .addOptionalParam('pu_rp', isPathRemoved ? '1' : undefined)
-        .addParam('pu_rqp', blockedParams.join(','))
+        .add('pu', url)
+        .addOptional('pu_rp', isPathRemoved ? '1' : undefined)
+        .add('pu_rqp', blockedParams.join(','))
     }
 
-    builder.addOptionalParam('ae', onNonNull(state.errorDetails, ed => base64UrlEncode(JSON.stringify(ed))))
+    builder.addOptional('ae', onNonNull(state.errorDetails, ed => base64UrlEncode(JSON.stringify(ed))))
 
     if (isArray(state.retrievedIdentifiers)) {
-      state.retrievedIdentifiers.forEach((i) => builder.addParam(`ext_${i.name}`, i.value))
+      state.retrievedIdentifiers.forEach((i) => builder.add(`ext_${i.name}`, i.value))
     }
 
     if (isArray(state.hashesFromIdentifiers)) {
-      state.hashesFromIdentifiers.forEach((h) => builder.addParam('scre', `${h.md5},${h.sha1},${h.sha256}`))
+      state.hashesFromIdentifiers.forEach((h) => builder.add('scre', `${h.md5},${h.sha1},${h.sha256}`))
     }
 
     builder
-      .addOptionalParam('li_did', state.decisionIds?.join(','))
-      .addOptionalParam('e', state.hashedEmail?.join(','))
-      .addOptionalParam('us_privacy', state.usPrivacyString)
-      .addOptionalParam('wpn', state.wrapperName)
-      .addOptionalParam('gdpr', onNonNull(state.gdprApplies, v => v ? '1' : '0'))
-      .addOptionalParam('n3pc', state.privacyMode ? '1' : undefined)
-      .addOptionalParam('n3pct', state.privacyMode ? '1' : undefined)
-      .addOptionalParam('nb', state.privacyMode ? '1' : undefined)
-      .addOptionalParam('gdpr_consent', state.gdprConsent)
-      .addOptionalParam('refr', state.referrer)
-      .addOptionalParam('c', state.contextElements)
-      .addOptionalParam('gpp_s', state.gppString)
-      .addOptionalParam('gpp_as', state.gppApplicableSections?.join(','))
-      .addOptionalParam('cd', state.cookieDomain)
-      .addOptionalParam('ic', encodeIdCookie(state.resolvedIdCookie), { stripEmpty: false })
+      .addOptional('li_did', state.decisionIds?.join(','))
+      .addOptional('e', state.hashedEmail?.join(','))
+      .addOptional('us_privacy', state.usPrivacyString)
+      .addOptional('wpn', state.wrapperName)
+      .addOptional('gdpr', onNonNull(state.gdprApplies, v => v ? '1' : '0'))
+      .addOptional('n3pc', state.privacyMode ? '1' : undefined)
+      .addOptional('n3pct', state.privacyMode ? '1' : undefined)
+      .addOptional('nb', state.privacyMode ? '1' : undefined)
+      .addOptional('gdpr_consent', state.gdprConsent)
+      .addOptional('refr', state.referrer)
+      .addOptional('c', state.contextElements)
+      .addOptional('gpp_s', state.gppString)
+      .addOptional('gpp_as', state.gppApplicableSections?.join(','))
+      .addOptional('cd', state.cookieDomain)
+      .addOptional('ic', encodeIdCookie(state.resolvedIdCookie), { stripEmpty: false })
 
     return builder
   }

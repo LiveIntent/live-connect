@@ -20,7 +20,9 @@ export class IdentityResolver {
   url: string
   timeout: number
   requestedAttributes: string[]
-  query: QueryBuilder // ensure to copy this before mutating
+  // Be careful, this object is mutable. In cases where temporary changes are needed
+  // - e.g. adding parameters that are only valid for one single call - ensure to copy it
+  query: QueryBuilder
   privacyMode: boolean
   resolvedIdCookie?: string | null
   generateIdCookie: boolean
@@ -48,23 +50,23 @@ export class IdentityResolver {
     this.peopleVerifiedId = nonNullConfig.peopleVerifiedId
 
     this.query = new QueryBuilder()
-      .addOptionalParam('duid', nonNullConfig.peopleVerifiedId)
-      .addOptionalParam('us_privacy', nonNullConfig.usPrivacyString)
-      .addOptionalParam('gdpr', onNonNull(nonNullConfig.gdprApplies, v => v ? 1 : 0))
-      .addOptionalParam('n3pc', nonNullConfig.privacyMode ? 1 : undefined)
-      .addOptionalParam('gdpr_consent', nonNullConfig.gdprConsent)
-      .addOptionalParam('did', nonNullConfig.distributorId)
-      .addOptionalParam('gpp_s', nonNullConfig.gppString)
-      .addOptionalParam('gpp_as', nonNullConfig.gppApplicableSections?.join(','))
-      .addOptionalParam('cd', nonNullConfig.cookieDomain)
-      .addOptionalParam('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
+      .addOptional('duid', nonNullConfig.peopleVerifiedId)
+      .addOptional('us_privacy', nonNullConfig.usPrivacyString)
+      .addOptional('gdpr', onNonNull(nonNullConfig.gdprApplies, v => v ? 1 : 0))
+      .addOptional('n3pc', nonNullConfig.privacyMode ? 1 : undefined)
+      .addOptional('gdpr_consent', nonNullConfig.gdprConsent)
+      .addOptional('did', nonNullConfig.distributorId)
+      .addOptional('gpp_s', nonNullConfig.gppString)
+      .addOptional('gpp_as', nonNullConfig.gppApplicableSections?.join(','))
+      .addOptional('cd', nonNullConfig.cookieDomain)
+      .addOptional('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
 
     this.externalIds.forEach(retrievedIdentifier => {
-      this.query.addParam(retrievedIdentifier.name, retrievedIdentifier.value)
+      this.query.add(retrievedIdentifier.name, retrievedIdentifier.value)
     })
 
     this.requestedAttributes.forEach(requestedAttribute => {
-      this.query.addParam('resolve', requestedAttribute)
+      this.query.add('resolve', requestedAttribute)
     })
   }
 
