@@ -1,5 +1,4 @@
 import { isArray, isFunction } from 'live-connect-common'
-import { asStringParam } from '../utils/params'
 import { EventBus } from '../types'
 import { StateWrapper } from './state'
 import { WrappedCallHandler } from '../handlers/call-handler'
@@ -52,10 +51,8 @@ export class PixelSender {
         onPreSend()
       }
 
-      const dtstmpTuple = asStringParam('dtstmp', Date.now())
-      const query = state.asQuery().prependParams(...dtstmpTuple)
-      const queryString = query.toQueryString()
-      const uri = `${this.url}/${endpoint}${queryString}`
+      const query = state.asQuery().add('dtstmp', Date.now(), { prepend: true }).toQueryString()
+      const uri = `${this.url}/${endpoint}${query}`
 
       makeCall(uri)
     }

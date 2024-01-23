@@ -315,6 +315,18 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
   })
 
+  it('should not resolve - but send - and empty idcookie', (done) => {
+    const identityResolver = new IdentityResolver({ resolvedIdCookie: null, identityResolutionConfig: { idCookieMode: 'provided', requestedAttributes: ['idCookie'] } }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?ic=')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql({})
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
+  })
+
   it('should send an empty param to the backend if the idcookie fails to reslove', (done) => {
     const identityResolver = new IdentityResolver({ resolvedIdCookie: null, identityResolutionConfig: { idCookieMode: 'provided', requestedAttributes: ['idCookie'] } }, calls)
     const successCallback = (responseAsJson) => {

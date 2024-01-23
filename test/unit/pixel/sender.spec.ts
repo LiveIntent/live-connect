@@ -4,10 +4,11 @@ import sinon, { SinonFakeXMLHttpRequest, SinonStub } from 'sinon'
 import { PixelSender } from '../../../src/pixel/sender'
 import { ERRORS_CHANNEL, ErrorDetails, EventBus } from 'live-connect-common'
 import { DefaultCallHandler } from 'live-connect-handlers'
-import { Query, StateWrapper } from '../../../src/pixel/state'
+import { StateWrapper } from '../../../src/pixel/state'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { WrappedCallHandler } from '../../../src/handlers/call-handler'
+import { QueryBuilder } from '../../../src/internal'
 
 use(dirtyChai)
 
@@ -60,7 +61,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -70,7 +71,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -80,7 +81,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy'], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy'], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -99,7 +100,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{ "bakers": ["https://baker1.com/baker", "https://baker2.com/baker"]}')
   })
 
@@ -110,7 +111,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
@@ -124,7 +125,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({ callHandler: calls, eventBus, ajaxRetries: 0 })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
     ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
 
@@ -138,7 +139,7 @@ describe('PixelSender', () => {
     })
 
     const sender = new PixelSender({ callHandler: calls, eventBus, ajaxRetries: 1 })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
     ajaxRequests[0].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
     ajaxRequests[1].respond(500, { 'Content-Type': 'application/json' }, '{kaiserschmarrn}')
   })
@@ -149,7 +150,7 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
@@ -159,12 +160,12 @@ describe('PixelSender', () => {
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onPreSend: presend })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onPreSend: presend })
   })
 
   it('defaults to production if none set when sendPixel', () => {
     const sender = new PixelSender({ callHandler: calls, eventBus })
-    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
+    sender.sendPixel({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper)
     expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.be.undefined()
   })
@@ -172,14 +173,14 @@ describe('PixelSender', () => {
   it('sends an image pixel and call onload if request succeeds when sendPixel', () => {
     const onload = () => 1
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendPixel({ asQuery: () => new Query([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
+    sender.sendPixel({ asQuery: () => new QueryBuilder([['xxx', 'yyy']]), sendsPixel: () => true } as StateWrapper, { onLoad: onload })
     expect(pixelRequests[0].uri).to.match(/http:\/\/localhost\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.eql(onload)
   })
 
   it('does not send an image pixel if sendsPixel resolves to false when sendPixel', () => {
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendPixel({ asQuery: () => new Query([['zzz', 'ccc']]), sendsPixel: () => false } as StateWrapper)
+    sender.sendPixel({ asQuery: () => new QueryBuilder([['zzz', 'ccc']]), sendsPixel: () => false } as StateWrapper)
     expect(pixelRequests).to.be.empty()
   })
 })

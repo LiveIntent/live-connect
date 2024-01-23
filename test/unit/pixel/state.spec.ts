@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { assert, expect, use } from 'chai'
+import { expect, use } from 'chai'
 import { hashEmail } from '../../../src/utils/hash'
 import { enrichPrivacyMode } from '../../../src/enrichers/privacy-config'
 import { StateWrapper } from '../../../src/pixel/state'
@@ -16,12 +16,6 @@ describe('EventComposition', () => {
     const pixelData = { appId: '9898' }
     const event = new StateWrapper(pixelData)
     expect(event.data).to.eql(pixelData)
-  })
-
-  it('should construct valid tuples for valid members', () => {
-    const pixelData = { appId: '9898' }
-    const event = new StateWrapper(pixelData)
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898']])
   })
 
   it('should construct valid params for valid members', () => {
@@ -147,7 +141,6 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898')
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898']])
   })
 
   it('should base64 the source', () => {
@@ -158,7 +151,6 @@ describe('EventComposition', () => {
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}`)
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]])
   })
 
   it('should send gpp_s and gpp_as', () => {
@@ -180,7 +172,6 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('?us_privacy=1---')
-    assert.includeDeepMembers(event.asTuples(), [['us_privacy', '1---']])
   })
 
   it('should send gdpr, n3pc, n3pct, nb as 1 & gdprConsent', () => {
@@ -192,7 +183,6 @@ describe('EventComposition', () => {
     const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&n3pc=1&n3pct=1&nb=1&gdpr_consent=some-string`)
-    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1'], ['gdpr_consent', 'some-string']])
   })
 
   it('should send gdpr 0 if gdprApplies is false', () => {
@@ -204,7 +194,6 @@ describe('EventComposition', () => {
     const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&gdpr_consent=some-string`)
-    assert.includeDeepMembers(event.asTuples(), [['se', b64EncodedEventSource], ['gdpr', '0'], ['gdpr_consent', 'some-string']])
   })
 
   it('should send the tracker name', () => {
@@ -212,7 +201,6 @@ describe('EventComposition', () => {
     const pixelData = { trackerVersion }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?tv=${trackerVersion}`)
-    assert.includeDeepMembers(event.asTuples(), [['tv', trackerVersion]])
   })
 
   it('should ignore nullable fields', () => {
@@ -225,7 +213,6 @@ describe('EventComposition', () => {
     const pixelData = { pageUrl }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
-    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
   })
 
   it('should send the removed parts of the page url', () => {
@@ -237,9 +224,6 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(pixelData)
     const expectedUrl = 'https://www.example.com/?query=v1&id=v4'
-    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(expectedUrl)]])
-    assert.includeDeepMembers(event.asTuples(), [['pu_rp', '1']])
-    assert.includeDeepMembers(event.asTuples(), [['pu_rqp', `foo${COMMA}bar`]])
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(expectedUrl)}&pu_rp=1&pu_rqp=foo${COMMA}bar`)
   })
 
@@ -251,9 +235,6 @@ describe('EventComposition', () => {
       queryParametersFilter: '^(foo|bar)$'
     }
     const event = new StateWrapper(pixelData)
-    assert.includeDeepMembers(event.asTuples(), [['pu', encodeURIComponent(pageUrl)]])
-    assert.notIncludeMembers(event.asTuples(), [['pu_rp', '0']])
-    assert.notIncludeMembers(event.asTuples(), [['pu_rqp', '']])
     expect(event.asQuery().toQueryString()).to.eql(`?pu=${encodeURIComponent(pageUrl)}`)
   })
 
@@ -265,7 +246,6 @@ describe('EventComposition', () => {
     const event = new StateWrapper(pixelData)
     const b64EncodedEventSource = 'eyJzb21lS2V5IjoidmFsdWUifQ'
     expect(event.asQuery().toQueryString()).to.eql(`?ae=${b64EncodedEventSource}`)
-    assert.includeDeepMembers(event.asTuples(), [['ae', b64EncodedEventSource]])
   })
 
   it('should update the data', () => {
@@ -285,11 +265,9 @@ describe('EventComposition', () => {
 
     expect(newEvent.data).to.eql(expectedData)
     expect(newEvent.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&duid=213245`)
-    assert.includeDeepMembers(newEvent.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource], ['duid', '213245']])
 
     expect(event.data).to.eql(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}`)
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]])
   })
 
   it('should send the provided email hash', () => {
@@ -304,7 +282,6 @@ describe('EventComposition', () => {
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCIsImVtYWlsIjoiICBlMTY4ZTBlZGExMWY0ZmJiOGZiZDdjZmU1Zjc1MGNkMGY3ZTdmNGQ4NjQ5ZGE2OGUwNzNlOTI3NTA0ZWM1ZDcyICAgICJ9'
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&e=e168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72`)
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource], ['e', 'e168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72']])
   })
 
   it('should never send emails as plain text, and hash the email that is set in the source', () => {
@@ -320,7 +297,6 @@ describe('EventComposition', () => {
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCIsImVtYWlsIjoiKioqKioqKioqIn0'
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&e=${hashes.md5}%2C${hashes.sha1}%2C${hashes.sha256}`)
-    assert.includeDeepMembers(event.asTuples(), [['aid', '9898'], ['se', b64EncodedEventSource]], ['e', [`${hashes.md5},${hashes.sha1},${hashes.sha256}`]])
   })
 
   it('should send the retrieved identifiers', () => {
@@ -339,9 +315,6 @@ describe('EventComposition', () => {
     const event = new StateWrapper(pixelData)
 
     expect(event.asQuery().toQueryString()).to.eql(`?ext_${cookie1.name}=${cookie1.value}&ext_${cookie2.name}=${cookie2.value}`)
-    assert.includeDeepMembers(event.asTuples(), [
-      [`ext_${cookie1.name}`, cookie1.value], [`ext_${cookie2.name}`, cookie2.value]
-    ])
   })
 
   it('should send the hashes found in retrieved identifiers', () => {
@@ -362,10 +335,6 @@ describe('EventComposition', () => {
     const event = new StateWrapper(pixelData)
 
     expect(event.asQuery().toQueryString()).to.eql(`?scre=${hashes1.md5}${COMMA}${hashes1.sha1}${COMMA}${hashes1.sha256}&scre=${hashes2.md5}${COMMA}${hashes2.sha1}${COMMA}${hashes2.sha256}`)
-    assert.includeDeepMembers(event.asTuples(), [
-      ['scre', `${hashes1.md5}${COMMA}${hashes1.sha1}${COMMA}${hashes1.sha256}`],
-      ['scre', `${hashes2.md5}${COMMA}${hashes2.sha1}${COMMA}${hashes2.sha256}`]
-    ])
   })
 
   it('should send decisionIds ', () => {
@@ -374,7 +343,6 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?li_did=1${COMMA}2`)
-    assert.includeDeepMembers(event.asTuples(), [['li_did', `1${COMMA}2`]])
   })
 
   it('should not send decisionIds if array is empty', () => {
@@ -383,7 +351,6 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('')
-    assert.includeDeepMembers(event.asTuples(), [])
   })
 
   it('should not send an event if the event is just setting a HEM', () => {
@@ -425,7 +392,6 @@ describe('EventComposition', () => {
       eventSource: { items: Array.from(Array(50).keys()) }
     })
     expect(eventWithItems.asQuery().toQueryString()).to.eql('?se=eyJpdGVtcyI6WzAsMSwyLDMsNCw1LDYsNyw4LDldfQ')
-    assert.includeDeepMembers(eventWithItems.asTuples(), [['se', 'eyJpdGVtcyI6WzAsMSwyLDMsNCw1LDYsNyw4LDldfQ']])
     // Making sure this works and that we're not changing the object for the customer
     expect(event.data).to.eql(pixelData)
   })
@@ -440,7 +406,6 @@ describe('EventComposition', () => {
 
     expect(event.data).to.eql(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('?did=did-9898&duid=213245')
-    assert.includeDeepMembers(event.asTuples(), [['did', 'did-9898'], ['duid', '213245']])
   })
 
   it('should send ic if idcookie is resolved', () => {
@@ -455,10 +420,9 @@ describe('EventComposition', () => {
 
     expect(event.data).to.eql(pixelData)
     expect(event.asQuery().toQueryString()).to.eql(`?ic=${expected}`)
-    assert.includeDeepMembers(event.asTuples(), [['ic', expected]])
   })
 
-  it('should send empty ic if idcookie fails to resolved', () => {
+  it('should send empty ic if idcookie fails to be resolved', () => {
     const eventBus = LocalEventBus()
     const pixelData = {
       resolvedIdCookie: null
@@ -467,6 +431,5 @@ describe('EventComposition', () => {
 
     expect(event.data).to.eql(pixelData)
     expect(event.asQuery().toQueryString()).to.eql('?ic=')
-    assert.includeDeepMembers(event.asTuples(), [['ic', '']])
   })
 })

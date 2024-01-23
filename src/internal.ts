@@ -3,7 +3,7 @@ export * from './initializer'
 export * from './minimal-live-connect'
 export * from './standard-live-connect'
 
-export * as params from './utils/params'
+export { QueryBuilder, encodeIdCookie } from './utils/query'
 
 export { DurableCache, StorageHandlerBackedCache } from './cache'
 export { WrappedStorageHandler } from './handlers/storage-handler'
