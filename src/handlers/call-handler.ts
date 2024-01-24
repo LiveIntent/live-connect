@@ -1,18 +1,24 @@
 import { EventBus, CallHandler } from 'live-connect-common'
 import { Wrapped, WrappingContext } from '../utils/wrapping'
 
+const empty = () => undefined
+
+function privacyCheck<K extends keyof CallHandler>(wrapper: WrappingContext<CallHandler>, privacyMode: boolean, functionName: K): Wrapped<CallHandler[K]> {
+  return (privacyMode) ? empty : wrapper.wrap(functionName)
+}
+
 export class WrappedCallHandler implements CallHandler {
   private functions: {
     ajaxGet: Wrapped<CallHandler['ajaxGet']>,
     pixelGet: Wrapped<CallHandler['pixelGet']>
   }
 
-  constructor (externalCallHandler: CallHandler, eventBus: EventBus) {
+  constructor (externalCallHandler: CallHandler, eventBus: EventBus, privacyMode: boolean) {
     const wrapper = new WrappingContext(externalCallHandler, 'CallHandler', eventBus)
 
     this.functions = {
-      ajaxGet: wrapper.wrap('ajaxGet'),
-      pixelGet: wrapper.wrap('pixelGet')
+      ajaxGet: privacyCheck(wrapper, privacyMode, 'ajaxGet'),
+      pixelGet: privacyCheck(wrapper, privacyMode, 'pixelGet')
     }
 
     wrapper.reportErrors()
