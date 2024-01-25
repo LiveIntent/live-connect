@@ -104,7 +104,7 @@ function standardInitialization(liveConnectConfig: LiveConnectConfig, externalSt
       contextElementsLength: liveConnectConfig.contextElementsLength || 0
     }
 
-    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus, enrichPrivacyMode(liveConnectConfig).privacyMode)
 
     const stateWithStorage =
       enrichPage(enrichStorageStrategy(enrichPrivacyMode(validLiveConnectConfig)))

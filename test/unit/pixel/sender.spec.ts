@@ -20,13 +20,14 @@ describe('PixelSender', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pixelStub: SinonStub<any[], any>
   let calls: WrappedCallHandler
+  // let privacy:
 
   beforeEach(() => {
     jsdom('', {
       url: 'http://www.example.com'
     })
     eventBus = LocalEventBus()
-    calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
+    calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus, false)
     ajaxRequests = []
     pixelRequests = []
     // @ts-ignore
