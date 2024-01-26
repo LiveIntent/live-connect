@@ -1,6 +1,0 @@
-[90m2024-01-25T13:42:58.160Z[39m [96mINFO[39m [97m@wdio/browserstack-service[39m app is not defined in browserstack-service config, skipping ...
-[90m2024-01-25T13:42:58.160Z[39m [32mDEBUG[39m [97m@wdio/browserstack-service[39m Sending launch start event
-[90m2024-01-25T13:42:58.171Z[39m [31mERROR[39m [97m@wdio/browserstack-service[39m Data upload to BrowserStack Test Observability failed due to RequestError: Expected value which is `string`, received value of type `undefined`.
-[90m2024-01-25T13:43:03.960Z[39m [31mERROR[39m [97m@wdio/browserstack-service[39m Error in executing getUserCaps with args [object Object]: TypeError: Cannot read properties of undefined (reading 'capabilities')
-[90m2024-01-25T13:43:03.962Z[39m [31mERROR[39m [97m@wdio/browserstack-service[39m [Crash_Report_Upload] Failed to parse user credentials while reporting crash
-[90m2024-01-25T13:43:05.854Z[39m [32mDEBUG[39m [97m@wdio/browserstack-service[39m Inside OnComplete hook..
