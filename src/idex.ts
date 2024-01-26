@@ -53,7 +53,6 @@ export class IdentityResolver {
       .addOptional('duid', nonNullConfig.peopleVerifiedId)
       .addOptional('us_privacy', nonNullConfig.usPrivacyString)
       .addOptional('gdpr', onNonNull(nonNullConfig.gdprApplies, v => v ? 1 : 0))
-      .addOptional('n3pc', nonNullConfig.privacyMode ? 1 : undefined)
       .addOptional('gdpr_consent', nonNullConfig.gdprConsent)
       .addOptional('did', nonNullConfig.distributorId)
       .addOptional('gpp_s', nonNullConfig.gppString)

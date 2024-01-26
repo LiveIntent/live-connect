@@ -197,22 +197,6 @@ describe('IdentityResolver without cache', () => {
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
   })
 
-  it('should attach n3pc when in privacy mode', (done) => {
-    const response = { id: 112233 }
-    const identityResolver = new IdentityResolver({
-      privacyMode: true,
-      distributorId: 'did-0001'
-    }, calls)
-    const successCallback = (responseAsJson: unknown) => {
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?n3pc=1&did=did-0001')
-      expect(errors).to.be.empty()
-      expect(responseAsJson).to.be.eql(response)
-      done()
-    }
-    identityResolver.resolve(successCallback)
-    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
-  })
-
   it('should return the default empty response and emit error if response is 500', (done) => {
     const identityResolver = new IdentityResolver({}, calls)
     const errorCallback = (error) => {
@@ -261,7 +245,7 @@ describe('IdentityResolver without cache', () => {
       expect(callCount).to.be.eql(1)
       expect(errors).to.be.empty()
       expect(responseAsJson).to.be.eql(response)
-      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?n3pc=1&resolve=md5')
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?resolve=md5')
       expect(responseAsJson).to.be.eql(response)
       expect(callCount).to.be.eql(1)
       done()
