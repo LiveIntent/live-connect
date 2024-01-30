@@ -72,7 +72,6 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'nb=1', // privacyMode
       'gdpr_consent=test-gdpr-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -80,7 +79,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
   })
 
-  it('should set nb to 1, and gdpr to 1 when the gdprApplies is defined but has a non boolean value', () => {
+  it('should set gdpr to 1 when the gdprApplies is defined but has a non boolean value', () => {
     const pixelData = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
@@ -122,7 +121,6 @@ describe('EventComposition', () => {
       'us_privacy=1---', // usPrivacyString
       'wpn=test%20wrapper%20name', // wrapperName
       'gdpr=1', // gdprApplies
-      'nb=1', // privacyMode
       'gdpr_consent=test-consent-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
@@ -170,7 +168,7 @@ describe('EventComposition', () => {
     expect(event.asQuery().toQueryString()).to.eql('?us_privacy=1---')
   })
 
-  it('should send gdpr and nb as 1 & gdprConsent', () => {
+  it('should send gdpr as 1 & gdprConsent', () => {
     const pixelData = {
       eventSource: { eventName: 'viewContent' },
       gdprApplies: true,
@@ -178,7 +176,7 @@ describe('EventComposition', () => {
     }
     const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)))
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&nb=1&gdpr_consent=some-string`)
+    expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&gdpr_consent=some-string`)
   })
 
   it('should send gdpr 0 if gdprApplies is false', () => {

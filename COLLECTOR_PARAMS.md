@@ -34,8 +34,6 @@
 - the value of the `config.usPrivacyString` config parameter.
 ### `gdpr`
 - the value of the `config.gdprApplies` config parameter.
-### `nb`
-- if present, it indicates to not send bakers in the response; derived from privacy settings (currently, only `config.gdprApplies` is evaluated).
 ### `gdpr_consent`
 - the value of the `config.gdprConsent` config parameter.
 ### `dtstmp`

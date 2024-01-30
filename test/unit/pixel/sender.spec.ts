@@ -76,13 +76,13 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('sends a request with nb values when gdprApplies is true when sendAjax', (done) => {
+  it('sends a request when gdprApplies is true when sendAjax', (done) => {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1&nb=1/)
+      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1/)
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy'], ['gdpr', '1'], ['nb', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy'], ['gdpr', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 

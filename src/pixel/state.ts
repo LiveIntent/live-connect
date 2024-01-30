@@ -74,7 +74,6 @@ export class StateWrapper {
       .addOptional('us_privacy', state.usPrivacyString)
       .addOptional('wpn', state.wrapperName)
       .addOptional('gdpr', onNonNull(state.gdprApplies, v => v ? '1' : '0'))
-      .addOptional('nb', state.privacyMode ? '1' : undefined)
       .addOptional('gdpr_consent', state.gdprConsent)
       .addOptional('refr', state.referrer)
       .addOptional('c', state.contextElements)
