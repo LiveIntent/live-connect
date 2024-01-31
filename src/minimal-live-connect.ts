@@ -24,7 +24,7 @@ function _minimalInitialization(liveConnectConfig: LiveConnectConfig, externalSt
 
     const storageHandler = WrappedReadOnlyStorageHandler.make(stateWithStorage.storageStrategy, externalStorageHandler, eventBus)
 
-    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus)
+    const callHandler = new WrappedCallHandler(externalCallHandler, eventBus, enrichPrivacyMode(liveConnectConfig).privacyMode)
 
     const enrichedState =
       enrichIdentifiers(storageHandler, eventBus)(

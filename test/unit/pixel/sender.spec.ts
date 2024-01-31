@@ -20,13 +20,14 @@ describe('PixelSender', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pixelStub: SinonStub<any[], any>
   let calls: WrappedCallHandler
+  // let privacy:
 
   beforeEach(() => {
     jsdom('', {
       url: 'http://www.example.com'
     })
     eventBus = LocalEventBus()
-    calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus)
+    calls = new WrappedCallHandler(new DefaultCallHandler(), eventBus, false)
     ajaxRequests = []
     pixelRequests = []
     // @ts-ignore
@@ -75,13 +76,13 @@ describe('PixelSender', () => {
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
-  it('sends a request with n3pc, n3pct and nb values when gdprApplies is true when sendAjax', (done) => {
+  it('sends a request when gdprApplies is true when sendAjax', (done) => {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1&n3pc=1&n3pct=1&nb=1/)
+      expect(ajaxRequests[0].url).to.match(/http:\/\/localhost\/j\?dtstmp=\d+&xxx=yyy&gdpr=1/)
       done()
     }
     const sender = new PixelSender({ collectorUrl: 'http://localhost', callHandler: calls, eventBus })
-    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy'], ['gdpr', '1'], ['n3pc', '1'], ['n3pct', '1'], ['nb', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
+    sender.sendAjax({ asQuery: () => new QueryBuilder([['xxx', 'yyy'], ['gdpr', '1']]), sendsPixel: () => true } as StateWrapper, { onLoad: successCallback })
     ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
   })
 
