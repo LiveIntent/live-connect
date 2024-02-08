@@ -43,6 +43,7 @@ export class StateWrapper {
   asQuery(): QueryBuilder {
     const state = this.data
 
+    // roughly add parameters in order of importance as the url might get truncated
     const builder = new QueryBuilder()
       .addOptional('aid', state.appId)
       .addOptional('did', state.distributorId)
