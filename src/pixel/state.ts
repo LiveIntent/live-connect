@@ -43,6 +43,7 @@ export class StateWrapper {
   asQuery(): QueryBuilder {
     const state = this.data
 
+    // roughly add parameters in order of importance as the url might get truncated
     const builder = new QueryBuilder()
       .addOptional('aid', state.appId)
       .addOptional('did', state.distributorId)
@@ -76,11 +77,11 @@ export class StateWrapper {
       .addOptional('gdpr', onNonNull(state.gdprApplies, v => v ? '1' : '0'))
       .addOptional('gdpr_consent', state.gdprConsent)
       .addOptional('refr', state.referrer)
-      .addOptional('c', state.contextElements)
       .addOptional('gpp_s', state.gppString)
       .addOptional('gpp_as', state.gppApplicableSections?.join(','))
       .addOptional('cd', state.cookieDomain)
       .addOptional('ic', encodeIdCookie(state.resolvedIdCookie), { stripEmpty: false })
+      .addOptional('c', state.contextElements)
 
     return builder
   }

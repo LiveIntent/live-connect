@@ -7,6 +7,7 @@ import { mergeObjects } from '../../../src/pixel/fiddler'
 import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus'
 import { UrlCollectionModes } from '../../../src/model/url-collection-mode'
+import { State } from '../../../src/types'
 
 use(dirtyChai)
 
@@ -31,7 +32,7 @@ describe('EventComposition', () => {
   })
 
   it('should append c parameter last', () => {
-    const pixelData = {
+    const pixelData: State = {
       contextElements: '<title>This title is a test</title>',
       appId: '9898',
       eventSource: { eventName: 'viewContent' },
@@ -54,7 +55,11 @@ describe('EventComposition', () => {
       wrapperName: 'test wrapper name',
       gdprApplies: true,
       gdprConsent: 'test-gdpr-string',
-      referrer: 'https://some.test.referrer.com'
+      referrer: 'https://some.test.referrer.com',
+      resolvedIdCookie: '123',
+      gppString: 'test-gpp-string',
+      gppApplicableSections: [1, 2, 3],
+      cookieDomain: 'test-cookie-domain'
     }
     const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)))
 
@@ -74,6 +79,10 @@ describe('EventComposition', () => {
       'gdpr=1', // gdprApplies
       'gdpr_consent=test-gdpr-string', // gdprConsent
       'refr=https%3A%2F%2Fsome.test.referrer.com', // referrer
+      'gpp_s=test-gpp-string', // GPP string
+      'gpp_as=1%2C2%2C3', // GPP applicable sections
+      'cd=test-cookie-domain', // cookieDomain
+      'ic=123', // resolvedIdCookie
       'c=%3Ctitle%3EThis%20title%20is%20a%20test%3C%2Ftitle%3E' // contextElements, low priority parameter
     ]
     expect(event.asQuery().toQueryString()).to.eql('?'.concat(expectedPairs.join('&')))
@@ -404,16 +413,12 @@ describe('EventComposition', () => {
 
   it('should send ic if idcookie is resolved', () => {
     const eventBus = LocalEventBus()
-    const pixelData = {
-      resolvedIdCookie: '123'
-    }
+    const resolvedIdCookie = '123'
+    const pixelData = { resolvedIdCookie }
     const event = new StateWrapper(pixelData, eventBus)
 
-    // golden test. md5 hash of 123
-    const expected = '202cb962ac59075b964b07152d234b70'
-
     expect(event.data).to.eql(pixelData)
-    expect(event.asQuery().toQueryString()).to.eql(`?ic=${expected}`)
+    expect(event.asQuery().toQueryString()).to.eql(`?ic=${resolvedIdCookie}`)
   })
 
   it('should send empty ic if idcookie fails to be resolved', () => {

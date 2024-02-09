@@ -1,5 +1,4 @@
-import { isArray, nonNull, onNonNull } from 'live-connect-common'
-import { md5 } from 'tiny-hashes/dist'
+import { isArray, nonNull } from 'live-connect-common'
 
 export type ParamValue = string | number | boolean
 export type ParamOptions = {
@@ -72,5 +71,5 @@ export class QueryBuilder {
 
 // for use with QueryBuilder#addOptionalParam. Null has a special meaning for the idCookie.
 export function encodeIdCookie(value: string | null | undefined): string | undefined {
-  return value === null ? '' : onNonNull(value, md5)
+  return value === null ? '' : value
 }
