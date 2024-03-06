@@ -15,7 +15,7 @@ import {
   sendEvent,
   waitForBakerRequests,
   waitForRequests
-} from './helpers/browser'
+} from './helpers/browser.js'
 import dirtyChai from 'dirty-chai'
 import fs from 'fs'
 import path from 'path'
