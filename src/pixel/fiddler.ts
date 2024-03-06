@@ -1,8 +1,8 @@
-import { extractEmail } from '../utils/email'
-import { decodeValue } from '../utils/url'
-import { extractHashValue, hashEmail, isHash } from '../utils/hash'
+import { extractEmail } from '../utils/email.js'
+import { decodeValue } from '../utils/url.js'
+import { extractHashValue, hashEmail, isHash } from '../utils/hash.js'
 import { isArray, isObject, safeToString, trim } from 'live-connect-common'
-import { HashedEmail } from '../types'
+import { HashedEmail } from '../types.js'
 
 const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']

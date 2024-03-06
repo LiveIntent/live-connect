@@ -1,6 +1,6 @@
 import { trim } from 'live-connect-common'
-import { hashEmail } from '../utils/hash'
-import { HashedEmail } from '../types'
+import { hashEmail } from '../utils/hash.js'
+import { HashedEmail } from '../types.js'
 
 const emailRegex = () => /\S+(@|%40)\S+\.\S+/
 

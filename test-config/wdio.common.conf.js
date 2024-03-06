@@ -100,13 +100,5 @@ export default reportDir => ({
   mochaOpts: {
     ui: 'bdd',
     timeout: 60000
-  },
-  autoCompileOpts: {
-    autoCompile: true,
-    // see https://github.com/TypeStrong/ts-node#cli-and-programmatic-options
-    // for all available options
-    tsNodeOpts: {
-      transpileOnly: true
-    }
   }
 })

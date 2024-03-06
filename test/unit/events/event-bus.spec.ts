@@ -1,8 +1,8 @@
 import { expect, use } from 'chai'
 import jsdom from 'global-jsdom'
 import dirtyChai from 'dirty-chai'
-import { GlobalEventBus, getAvailableBus, LocalEventBus } from '../../../src/events/event-bus'
-import * as C from '../../../src/utils/consts'
+import { GlobalEventBus, getAvailableBus, LocalEventBus } from '../../../src/events/event-bus.js'
+import * as C from '../../../src/utils/consts.js'
 
 use(dirtyChai)
 

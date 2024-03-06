@@ -34,7 +34,7 @@ export default {
         }
     }),
     resolve({ preferBuiltins: true }),
-    babel({ babelHelpers: 'runtime' }),
+    babel({ babelHelpers: 'bundled' }),
     strip(),
     terser()
   ]

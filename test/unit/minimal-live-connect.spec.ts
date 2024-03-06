@@ -3,10 +3,10 @@
 import jsdom from 'global-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
-import { MinimalLiveConnect, LiveConnect } from '../../src'
+import { MinimalLiveConnect, LiveConnect } from '../../src/index.js'
 import { DefaultStorageHandler, DefaultCallHandler } from 'live-connect-handlers'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../src/events/event-bus'
+import { LocalEventBus } from '../../src/events/event-bus.js'
 
 use(dirtyChai)
 

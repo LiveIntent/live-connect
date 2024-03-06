@@ -2,7 +2,7 @@
 
 import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
-import { getPage, getReferrer, getContextElements, loadedDomain } from '../../../src/utils/page'
+import { getPage, getReferrer, getContextElements, loadedDomain } from '../../../src/utils/page.js'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

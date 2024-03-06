@@ -1,8 +1,13 @@
 {
   "presets": [
     [
-      "@babel/preset-env"
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "corejs": "3",
+        "debug": false
+      }
     ]
   ],
-  "plugins": ["@babel/plugin-transform-runtime"]
+  "exclude": ["./node_modules/core-js"] // polyfilling core-js will lead to a circular dependency
 }

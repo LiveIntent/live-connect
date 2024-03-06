@@ -105,8 +105,8 @@ jobs:
           name: Run unit tests
           command: npm run test:unit
       - run:
-          name: Run chrome tests in docker
-          command: npm run test:it:docker:chrome
+          name: Run chrome tests
+          command: npm run test:it:local-chrome
       - store_test_results:
           path: test-results
       - store_artifacts:

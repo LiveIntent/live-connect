@@ -1,14 +1,14 @@
 import { expect, use } from 'chai'
 import jsdom from 'global-jsdom'
 import sinon, { SinonFakeXMLHttpRequest, SinonStub } from 'sinon'
-import { PixelSender } from '../../../src/pixel/sender'
+import { PixelSender } from '../../../src/pixel/sender.js'
 import { ERRORS_CHANNEL, ErrorDetails, EventBus } from 'live-connect-common'
 import { DefaultCallHandler } from 'live-connect-handlers'
-import { StateWrapper } from '../../../src/pixel/state'
+import { StateWrapper } from '../../../src/pixel/state.js'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../../src/events/event-bus'
-import { WrappedCallHandler } from '../../../src/handlers/call-handler'
-import { QueryBuilder } from '../../../src/internal'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
+import { WrappedCallHandler } from '../../../src/handlers/call-handler.js'
+import { QueryBuilder } from '../../../src/internal.js'
 
 use(dirtyChai)
 

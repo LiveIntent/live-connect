@@ -2,16 +2,16 @@
 
 import jsdom from 'global-jsdom'
 import sinon from 'sinon'
-import { urlParams } from '../../src/utils/url'
+import { urlParams } from '../../src/utils/url.js'
 import { expect, use } from 'chai'
-import { StandardLiveConnect, LiveConnect } from '../../src'
-import { base64UrlEncode } from '../../src/utils/b64'
+import { StandardLiveConnect, LiveConnect } from '../../src/index.js'
+import { base64UrlEncode } from '../../src/utils/b64.js'
 import { ERRORS_CHANNEL } from 'live-connect-common'
 import { DefaultStorageHandler, DefaultCallHandler } from 'live-connect-handlers'
-import { hashEmail } from '../../src/utils/hash'
+import { hashEmail } from '../../src/utils/hash.js'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../src/events/event-bus'
-import { WrappedStorageHandler } from '../../src/handlers/storage-handler'
+import { LocalEventBus } from '../../src/events/event-bus.js'
+import { WrappedStorageHandler } from '../../src/handlers/storage-handler.js'
 
 use(dirtyChai)
 const eventBus = LocalEventBus()

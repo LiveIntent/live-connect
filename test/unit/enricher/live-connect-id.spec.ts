@@ -1,13 +1,13 @@
 import { expect, use } from 'chai'
-import { enrichLiveConnectId } from '../../../src/enrichers/live-connect-id'
+import { enrichLiveConnectId } from '../../../src/enrichers/live-connect-id.js'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon from 'sinon'
 import jsdom from 'global-jsdom'
 import dirtyChai from 'dirty-chai'
-import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
-import { LocalEventBus } from '../../../src/events/event-bus'
-import { StorageHandlerBackedCache } from '../../../src/cache'
-import { StorageStrategies, StorageStrategy } from '../../../src/model/storage-strategy'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler.js'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
+import { StorageHandlerBackedCache } from '../../../src/cache.js'
+import { StorageStrategies, StorageStrategy } from '../../../src/model/storage-strategy.js'
 import { expiresInHours } from 'live-connect-common'
 
 use(dirtyChai)

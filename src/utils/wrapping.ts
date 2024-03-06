@@ -1,4 +1,4 @@
-import { EventBus } from '../types'
+import { EventBus } from '../types.js'
 import { isFunction, isObject } from 'live-connect-common'
 
 export type Wrapped<T> = NonNullable<T> | (() => undefined)

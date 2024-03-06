@@ -1,20 +1,19 @@
-import common from './wdio.common.conf.mjs'
+import commonConfig from './wdio.common.conf.js'
 
 export const config = {
-  ...common('local'),
+  ...commonConfig('local'),
 
-  //
-  // If you have trouble getting all important capabilities together, check out the
-  // Sauce Labs platform configurator - a great tool to configure your capabilities:
-  // https://docs.saucelabs.com/reference/platforms-configurator
-  //
   capabilities: [{
     browserName: 'chrome',
+    browserVersion: 'stable',
     'goog:chromeOptions': {
-      args: ['--disable-gpu']
+      args: [
+        '--disable-gpu',
+        '--disable-features=ProcessPerSiteUpToMainFrameThreshold' // messes with debugger
+      ]
     }
   }],
-  //
+
   // Set a base URL in order to shorten url command calls. If your `url` parameter starts
   // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
   // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url

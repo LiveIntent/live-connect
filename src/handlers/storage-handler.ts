@@ -1,6 +1,6 @@
-import { StorageStrategies, StorageStrategy } from '../model/storage-strategy'
+import { StorageStrategies, StorageStrategy } from '../model/storage-strategy.js'
 import { EventBus, ReadOnlyStorageHandler, StorageHandler, strEqualsIgnoreCase } from 'live-connect-common'
-import { Wrapped, WrappingContext } from '../utils/wrapping'
+import { Wrapped, WrappingContext } from '../utils/wrapping.js'
 
 const noop = () => undefined
 

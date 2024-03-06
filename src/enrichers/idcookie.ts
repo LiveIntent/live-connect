@@ -1,5 +1,5 @@
-import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
-import { Enricher, State } from '../types'
+import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler.js'
+import { Enricher, State } from '../types.js'
 
 type Input = Pick<State, 'idCookie' | 'peopleVerifiedId'>
 type Output = Pick<State, 'resolvedIdCookie'>

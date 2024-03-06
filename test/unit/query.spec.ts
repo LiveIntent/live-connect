@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import dirtyChai from 'dirty-chai'
-import { QueryBuilder } from '../../src/internal'
+import { QueryBuilder } from '../../src/internal.js'
 
 use(dirtyChai)
 

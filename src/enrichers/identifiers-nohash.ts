@@ -1,7 +1,7 @@
-import { containsEmailField, isEmail } from '../utils/email'
+import { containsEmailField, isEmail } from '../utils/email.js'
 import { safeToString, isArray, trim } from 'live-connect-common'
-import { Enricher, EventBus, RetrievedIdentifier } from '../types'
-import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
+import { Enricher, EventBus, RetrievedIdentifier } from '../types.js'
+import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler.js'
 
 type Input = { identifiersToResolve: string | string[] }
 type Output = { retrievedIdentifiers: RetrievedIdentifier[] }

@@ -4,7 +4,6 @@ import cleaner from 'rollup-plugin-cleaner'
 import mjsEntry from 'rollup-plugin-mjs-entry'
 import dts from 'rollup-plugin-dts'
 import del from "rollup-plugin-delete";
-import terser from '@rollup/plugin-terser'
 
 const OUTPUT_DIR = './dist'
 
@@ -13,7 +12,9 @@ export default [
         input: ['./src/index.ts', './src/internal.ts'],
         output: [
             {
-                dir: `${OUTPUT_DIR}`,
+                dir: OUTPUT_DIR,
+                entryFileNames: '[name].cjs',
+                chunkFileNames: '[name]-[hash].cjs',
                 format: 'cjs',
                 sourcemap: true
             }
@@ -27,14 +28,11 @@ export default [
                 }
             }),
             strip(),
-            terser(),
             mjsEntry() // https://nodejs.org/api/packages.html#packages_dual_commonjs_es_module_packages
         ],
         external: [
             'live-connect-common',
-            'tiny-hashes/md5',
-            'tiny-hashes/sha1',
-            'tiny-hashes/sha256',
+            'tiny-hashes'
         ]
     },
     {

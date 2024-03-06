@@ -1,4 +1,4 @@
-import { btoa as btoaFromLib } from './btoa'
+import { btoa as btoaFromLib } from './btoa.js'
 import { isFunction } from 'live-connect-common'
 
 function _safeBtoa(s: string): string {

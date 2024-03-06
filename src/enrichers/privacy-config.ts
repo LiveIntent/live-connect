@@ -1,4 +1,4 @@
-import { Enricher } from '../types'
+import { Enricher } from '../types.js'
 
 type Input = { gdprApplies?: boolean, gppApplicableSections?: number[] }
 type Output = { privacyMode: boolean }

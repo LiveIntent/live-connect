@@ -1,5 +1,5 @@
 import { EventBus, isObject, expiresInDays } from 'live-connect-common'
-import { WrappedStorageHandler } from './handlers/storage-handler'
+import { WrappedStorageHandler } from './handlers/storage-handler.js'
 
 const DEFAULT_COOKIE_EXPIRATION_DAYS = 730
 
