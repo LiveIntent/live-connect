@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { assert, expect, use } from 'chai'
-import * as serverUtil from './helpers/mock-server'
+import * as serverUtil from './helpers/mock-server.js'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
