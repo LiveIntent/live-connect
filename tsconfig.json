@@ -6,7 +6,7 @@
     "resolveJsonModule": true,
     "strict": true,
     "declaration": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
     "noEmitOnError": true,

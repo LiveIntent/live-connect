@@ -8,6 +8,5 @@
         "debug": false
       }
     ]
-  ],
-  "exclude": ["./node_modules/core-js"] // polyfilling core-js will lead to a circular dependency
+  ]
 }

@@ -1,11 +1,11 @@
 import strip from '@rollup/plugin-strip'
 import ts from '@rollup/plugin-typescript'
 import cleaner from 'rollup-plugin-cleaner'
-import mjsEntry from 'rollup-plugin-mjs-entry'
 import dts from 'rollup-plugin-dts'
 import del from "rollup-plugin-delete";
 
 const OUTPUT_DIR = './dist'
+const DECLARATION_DIR = `${OUTPUT_DIR}/dts`
 
 export default [
     {
@@ -16,19 +16,20 @@ export default [
                 entryFileNames: '[name].cjs',
                 chunkFileNames: '[name]-[hash].cjs',
                 format: 'cjs',
-                sourcemap: true
+                sourcemap: false
+            },
+            {
+                dir: OUTPUT_DIR,
+                entryFileNames: '[name].mjs',
+                chunkFileNames: '[name]-[hash].mjs',
+                format: 'es',
+                sourcemap: false
             }
         ],
         plugins: [
             cleaner({ targets: [OUTPUT_DIR] }),
-            ts({
-                compilerOptions: {
-                    outDir: OUTPUT_DIR,
-                    declarationDir: `${OUTPUT_DIR}/dts`,
-                }
-            }),
-            strip(),
-            mjsEntry() // https://nodejs.org/api/packages.html#packages_dual_commonjs_es_module_packages
+            ts({ compilerOptions: { declarationDir: DECLARATION_DIR } }),
+            strip()
         ],
         external: [
             'live-connect-common',
@@ -37,10 +38,10 @@ export default [
     },
     {
         input: {
-            index: `${OUTPUT_DIR}/dts/src/index.d.ts`,
-            internal: `${OUTPUT_DIR}/dts/src/internal.d.ts`
+            index: `${DECLARATION_DIR}/src/index.d.ts`,
+            internal: `${DECLARATION_DIR}/src/internal.d.ts`
         },
         output: [{ dir: OUTPUT_DIR, format: 'es' }],
-        plugins: [dts(), del({ targets: `${OUTPUT_DIR}/dts`, hook: 'buildEnd' })],
+        plugins: [dts(), del({ targets: DECLARATION_DIR, hook: 'buildEnd' })],
     }
 ]
