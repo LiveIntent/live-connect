@@ -1,12 +1,12 @@
 import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
-import { WrappedStorageHandler } from '../../src/handlers/storage-handler'
+import { WrappedStorageHandler } from '../../src/handlers/storage-handler.js'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon, { SinonStub } from 'sinon'
 import { EventBus, expiresInDays } from 'live-connect-common'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../src/events/event-bus'
-import { StorageHandlerBackedCache } from '../../src/cache'
+import { LocalEventBus } from '../../src/events/event-bus.js'
+import { StorageHandlerBackedCache } from '../../src/cache.js'
 
 use(dirtyChai)
 

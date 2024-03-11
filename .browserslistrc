@@ -1,5 +1,6 @@
 # https://github.com/browserslist/browserslist#readme
-safari 7
+safari 10
 chrome 45
+firefox 52
 not dead
 > 0.2%

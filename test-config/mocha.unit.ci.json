@@ -1,0 +1,10 @@
+{
+  "spec": "test/unit/**/*.spec.ts"
+  "reporter": "mocha-junit-reporter",
+  "reporterOptions": [
+    "mochaFile=./test-results/unit/results.xml"
+  ],
+  "node-option": [
+    "loader=ts-node/esm"
+  ]
+}

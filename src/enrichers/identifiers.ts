@@ -1,7 +1,7 @@
-import { replaceEmailsWithHashes } from '../utils/email'
+import { replaceEmailsWithHashes } from '../utils/email.js'
 import { safeToString, isString, isArray } from 'live-connect-common'
-import { EventBus, HashedEmail, RetrievedIdentifier, Enricher } from '../types'
-import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
+import { EventBus, HashedEmail, RetrievedIdentifier, Enricher } from '../types.js'
+import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler.js'
 
 type Input = { identifiersToResolve: string | string[] }
 type Output = { retrievedIdentifiers: RetrievedIdentifier[], hashesFromIdentifiers: HashedEmail[] }

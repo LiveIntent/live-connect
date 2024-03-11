@@ -1,7 +1,7 @@
-import { PixelSender } from '../pixel/sender'
-import { StateWrapper } from '../pixel/state'
+import { PixelSender } from '../pixel/sender.js'
+import { StateWrapper } from '../pixel/state.js'
 import { ERRORS_CHANNEL, ErrorDetails, isRecord, isString } from 'live-connect-common'
-import { EventBus, State } from '../types'
+import { EventBus, State } from '../types.js'
 
 const MAX_ERROR_FIELD_LENGTH = 120
 

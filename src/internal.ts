@@ -1,10 +1,10 @@
 // no backwards compatibility guarantees for internal APIs
-export * from './initializer'
-export * from './minimal-live-connect'
-export * from './standard-live-connect'
+export * from './initializer.js'
+export * from './minimal-live-connect.js'
+export * from './standard-live-connect.js'
 
-export { QueryBuilder, encodeIdCookie } from './utils/query'
+export { QueryBuilder, encodeIdCookie } from './utils/query.js'
 
-export { DurableCache, StorageHandlerBackedCache } from './cache'
-export { WrappedStorageHandler } from './handlers/storage-handler'
-export { InternalLiveConnect, LiveConnectConfig, State } from './types'
+export { DurableCache, StorageHandlerBackedCache } from './cache.js'
+export { WrappedStorageHandler } from './handlers/storage-handler.js'
+export { InternalLiveConnect, LiveConnectConfig, State } from './types.js'

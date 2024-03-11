@@ -1,4 +1,4 @@
-import { EventBus, LiveConnectConfig } from '../types'
+import { EventBus, LiveConnectConfig } from '../types.js'
 
 export function removeInvalidPairs(config: LiveConnectConfig, eventBus: EventBus): LiveConnectConfig {
   if (config && config.appId && config.distributorId) {

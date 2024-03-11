@@ -1,5 +1,5 @@
-import { md5, sha1, sha256 } from 'tiny-hashes/dist'
-import { HashedEmail } from '../types'
+import { md5, sha1, sha256 } from 'tiny-hashes'
+import { HashedEmail } from '../types.js'
 import { trim } from 'live-connect-common'
 
 const hashLikeRegex = () => /(\s+)?[a-f0-9]{32,64}(\s+)?/gi

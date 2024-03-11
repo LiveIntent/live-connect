@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import dirtyChai from 'dirty-chai'
-import { removeInvalidPairs } from '../../../src/config-validators/remove-invalid-pairs'
-import { LocalEventBus } from '../../../src/events/event-bus'
+import { removeInvalidPairs } from '../../../src/config-validators/remove-invalid-pairs.js'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
 
 use(dirtyChai)
 

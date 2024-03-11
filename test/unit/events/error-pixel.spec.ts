@@ -1,12 +1,12 @@
 import { expect, use } from 'chai'
 import jsdom from 'global-jsdom'
 import sinon from 'sinon'
-import * as errorPixel from '../../../src/events/error-pixel'
-import { PixelSender } from '../../../src/pixel/sender'
-import { LocalEventBus } from '../../../src/events/event-bus'
+import * as errorPixel from '../../../src/events/error-pixel.js'
+import { PixelSender } from '../../../src/pixel/sender.js'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
 import { ERRORS_CHANNEL, EventBus } from 'live-connect-common'
 import dirtyChai from 'dirty-chai'
-import { StateWrapper } from '../../../src/pixel/state'
+import { StateWrapper } from '../../../src/pixel/state.js'
 
 use(dirtyChai)
 

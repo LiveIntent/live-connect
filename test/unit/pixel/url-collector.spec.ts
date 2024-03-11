@@ -1,7 +1,7 @@
 import { expect, use } from 'chai'
 import dirtyChai from 'dirty-chai'
-import { UrlCollectionModes } from '../../../src/model/url-collection-mode'
-import { collectUrl } from '../../../src/pixel/url-collector'
+import { UrlCollectionModes } from '../../../src/model/url-collection-mode.js'
+import { collectUrl } from '../../../src/pixel/url-collector.js'
 
 use(dirtyChai)
 

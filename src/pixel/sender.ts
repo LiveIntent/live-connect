@@ -1,7 +1,7 @@
 import { isArray, isFunction } from 'live-connect-common'
-import { EventBus } from '../types'
-import { StateWrapper } from './state'
-import { WrappedCallHandler } from '../handlers/call-handler'
+import { EventBus } from '../types.js'
+import { StateWrapper } from './state.js'
+import { WrappedCallHandler } from '../handlers/call-handler.js'
 
 export type PixelSenderOpts = {
   collectorUrl?: string,

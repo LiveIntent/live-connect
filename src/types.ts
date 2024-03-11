@@ -1,8 +1,8 @@
-import { DurableCache } from './cache'
-import { WrappedStorageHandler } from './handlers/storage-handler'
-import { ResolutionMetadata } from './idex'
-import { StorageStrategy } from './model/storage-strategy'
-import { UrlCollectionMode } from './model/url-collection-mode'
+import { DurableCache } from './cache.js'
+import { WrappedStorageHandler } from './handlers/storage-handler.js'
+import { ResolutionMetadata } from './idex.js'
+import { StorageStrategy } from './model/storage-strategy.js'
+import { UrlCollectionMode } from './model/url-collection-mode.js'
 import { ErrorDetails } from 'live-connect-common'
 
 export type Enricher<in In extends object, out Out extends object> =

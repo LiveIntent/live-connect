@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { ReplayEmitter, wrapError, isFunction, ERRORS_CHANNEL } from 'live-connect-common'
-import { EventBus } from '../types'
-import * as C from '../utils/consts'
+import { EventBus } from '../types.js'
+import * as C from '../utils/consts.js'
 
 function initBus(size?: number): EventBus {
   if (typeof size === 'number' && size >= 0) {

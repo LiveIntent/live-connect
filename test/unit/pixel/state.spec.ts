@@ -1,13 +1,13 @@
 // @ts-nocheck
 import { expect, use } from 'chai'
-import { hashEmail } from '../../../src/utils/hash'
-import { enrichPrivacyMode } from '../../../src/enrichers/privacy-config'
-import { StateWrapper } from '../../../src/pixel/state'
-import { mergeObjects } from '../../../src/pixel/fiddler'
+import { hashEmail } from '../../../src/utils/hash.js'
+import { enrichPrivacyMode } from '../../../src/enrichers/privacy-config.js'
+import { StateWrapper } from '../../../src/pixel/state.js'
+import { mergeObjects } from '../../../src/pixel/fiddler.js'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../../src/events/event-bus'
-import { UrlCollectionModes } from '../../../src/model/url-collection-mode'
-import { State } from '../../../src/types'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
+import { UrlCollectionModes } from '../../../src/model/url-collection-mode.js'
+import { State } from '../../../src/types.js'
 
 use(dirtyChai)
 

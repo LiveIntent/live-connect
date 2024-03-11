@@ -1,48 +1,42 @@
 import strip from '@rollup/plugin-strip'
 import ts from '@rollup/plugin-typescript'
 import cleaner from 'rollup-plugin-cleaner'
-import mjsEntry from 'rollup-plugin-mjs-entry'
 import dts from 'rollup-plugin-dts'
 import del from "rollup-plugin-delete";
-import terser from '@rollup/plugin-terser'
+import mjsEntry from 'rollup-plugin-mjs-entry'
 
 const OUTPUT_DIR = './dist'
+const DECLARATION_DIR = `${OUTPUT_DIR}/dts`
 
 export default [
     {
         input: ['./src/index.ts', './src/internal.ts'],
         output: [
             {
-                dir: `${OUTPUT_DIR}`,
+                dir: OUTPUT_DIR,
+                entryFileNames: '[name].cjs',
+                chunkFileNames: '[name]-[hash].cjs',
                 format: 'cjs',
-                sourcemap: true
+                sourcemap: false
             }
         ],
         plugins: [
             cleaner({ targets: [OUTPUT_DIR] }),
-            ts({
-                compilerOptions: {
-                    outDir: OUTPUT_DIR,
-                    declarationDir: `${OUTPUT_DIR}/dts`,
-                }
-            }),
+            ts({ compilerOptions: { declarationDir: DECLARATION_DIR } }),
             strip(),
-            terser(),
             mjsEntry() // https://nodejs.org/api/packages.html#packages_dual_commonjs_es_module_packages
         ],
         external: [
             'live-connect-common',
-            'tiny-hashes/md5',
-            'tiny-hashes/sha1',
-            'tiny-hashes/sha256',
+            'tiny-hashes'
         ]
     },
     {
         input: {
-            index: `${OUTPUT_DIR}/dts/src/index.d.ts`,
-            internal: `${OUTPUT_DIR}/dts/src/internal.d.ts`
+            index: `${DECLARATION_DIR}/src/index.d.ts`,
+            internal: `${DECLARATION_DIR}/src/internal.d.ts`
         },
         output: [{ dir: OUTPUT_DIR, format: 'es' }],
-        plugins: [dts(), del({ targets: `${OUTPUT_DIR}/dts`, hook: 'buildEnd' })],
+        plugins: [dts(), del({ targets: DECLARATION_DIR, hook: 'buildEnd' })],
     }
 ]

@@ -1,5 +1,5 @@
 import { EventBus, CallHandler } from 'live-connect-common'
-import { Wrapped, WrappingContext } from '../utils/wrapping'
+import { Wrapped, WrappingContext } from '../utils/wrapping.js'
 
 const empty = () => undefined
 

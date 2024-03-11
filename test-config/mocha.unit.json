@@ -1,3 +1,6 @@
 {
-  "spec": "test/unit/**/*.spec.ts"
+  "spec": "test/unit/**/*.spec.ts",
+  "node-option": [
+    "loader=ts-node/esm"
+  ]
 }

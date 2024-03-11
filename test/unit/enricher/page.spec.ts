@@ -1,6 +1,6 @@
 import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
-import { enrichPage } from '../../../src/enrichers/page'
+import { enrichPage } from '../../../src/enrichers/page.js'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { assert, expect, use } from 'chai'
-import * as serverUtil from './helpers/mock-server'
+import * as serverUtil from './helpers/mock-server.js'
 import {
   deleteAllCookies,
   fetchResolvedIdentity,
@@ -15,7 +15,7 @@ import {
   sendEvent,
   waitForBakerRequests,
   waitForRequests
-} from './helpers/browser'
+} from './helpers/browser.js'
 import dirtyChai from 'dirty-chai'
 import fs from 'fs'
 import path from 'path'
