@@ -3,6 +3,7 @@ import { QueryBuilder, encodeIdCookie } from './utils/query.js'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts.js'
 import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types.js'
 import { WrappedCallHandler } from './handlers/call-handler.js'
+import { stripQueryAndPath } from './pixel/url-collector.js'
 
 const ID_COOKIE_ATTR = 'idCookie'
 
@@ -27,6 +28,7 @@ export class IdentityResolver {
   resolvedIdCookie?: string | null
   generateIdCookie: boolean
   peopleVerifiedId?: string
+  pageUrl?: string
 
   constructor (
     config: State,
@@ -48,6 +50,7 @@ export class IdentityResolver {
     this.resolvedIdCookie = nonNullConfig.resolvedIdCookie
     this.generateIdCookie = this.idexConfig.idCookieMode === 'generated'
     this.peopleVerifiedId = nonNullConfig.peopleVerifiedId
+    this.pageUrl = nonNullConfig.pageUrl
 
     this.query = new QueryBuilder()
       .addOptional('duid', nonNullConfig.peopleVerifiedId)
@@ -59,6 +62,7 @@ export class IdentityResolver {
       .addOptional('gpp_as', nonNullConfig.gppApplicableSections?.join(','))
       .addOptional('cd', nonNullConfig.cookieDomain)
       .addOptional('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
+      .addOptional('pu', onNonNull(nonNullConfig.pageUrl, stripQueryAndPath))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.query.add(retrievedIdentifier.name, retrievedIdentifier.value)
