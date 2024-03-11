@@ -62,7 +62,7 @@ export class IdentityResolver {
       .addOptional('gpp_as', nonNullConfig.gppApplicableSections?.join(','))
       .addOptional('cd', nonNullConfig.cookieDomain)
       .addOptional('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
-      .addOptional('pu', stripQueryAndPath(nonNullConfig.pageUrl))
+      .addOptional('pu', onNonNull(nonNullConfig.pageUrl, stripQueryAndPath))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.query.add(retrievedIdentifier.name, retrievedIdentifier.value)

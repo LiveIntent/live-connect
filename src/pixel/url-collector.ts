@@ -29,8 +29,8 @@ export function collectUrl(state: UrlState): [string, boolean, string[]] {
   return [url.toString(), pathRemoved, blockedParams]
 }
 
-export function stripQueryAndPath(pageUrl?: string): string | undefined {
-  if (pageUrl === undefined || pageUrl.length === 0) {
+export function stripQueryAndPath(pageUrl: string): string | undefined {
+  if (pageUrl.length === 0) {
     return undefined
   } else {
     const url = new ParsedUrl(pageUrl)
