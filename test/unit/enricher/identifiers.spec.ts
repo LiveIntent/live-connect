@@ -1,11 +1,11 @@
 import { expect, use } from 'chai'
-import { enrichIdentifiers } from '../../../src/enrichers/identifiers'
+import { enrichIdentifiers } from '../../../src/enrichers/identifiers.js'
 import jsdom from 'global-jsdom'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 import sinon from 'sinon'
 import dirtyChai from 'dirty-chai'
-import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
-import { LocalEventBus } from '../../../src/events/event-bus'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler.js'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
 
 use(dirtyChai)
 

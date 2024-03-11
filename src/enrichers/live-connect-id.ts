@@ -1,9 +1,9 @@
-import { ulid } from '../utils/ulid'
-import { domainHash } from '../utils/hash'
-import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
-import { Enricher } from '../types'
-import { WrappedStorageHandler } from '../handlers/storage-handler'
-import { DurableCache } from '../cache'
+import { ulid } from '../utils/ulid.js'
+import { domainHash } from '../utils/hash.js'
+import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts.js'
+import { Enricher } from '../types.js'
+import { WrappedStorageHandler } from '../handlers/storage-handler.js'
+import { DurableCache } from '../cache.js'
 
 const NEXT_GEN_FP_NAME = '_lc2_fpi'
 

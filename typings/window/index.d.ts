@@ -1,4 +1,4 @@
-import { InternalLiveConnect } from '../types'
+import { InternalLiveConnect } from '../../src/types.js'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

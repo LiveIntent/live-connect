@@ -1,6 +1,6 @@
-import { WrappedStorageHandler } from '../handlers/storage-handler'
-import { Enricher } from '../types'
-import { determineHighestWritableDomain } from '../utils/domain'
+import { WrappedStorageHandler } from '../handlers/storage-handler.js'
+import { Enricher } from '../types.js'
+import { determineHighestWritableDomain } from '../utils/domain.js'
 
 type Input = object
 type Output = { cookieDomain: string }

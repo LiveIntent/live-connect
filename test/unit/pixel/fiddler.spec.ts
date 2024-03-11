@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
-import { fiddle } from '../../../src/pixel/fiddler'
-import { hashEmail } from '../../../src/utils/hash'
+import { fiddle } from '../../../src/pixel/fiddler.js'
+import { hashEmail } from '../../../src/utils/hash.js'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

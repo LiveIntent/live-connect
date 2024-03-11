@@ -1,4 +1,4 @@
-import { replacer, MASK } from '../../../src/pixel/stringify'
+import { replacer, MASK } from '../../../src/pixel/stringify.js'
 import { expect, use } from 'chai'
 import dirtyChai from 'dirty-chai'
 

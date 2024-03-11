@@ -1,8 +1,8 @@
-import { LocalEventBus } from '../../../src/events/event-bus'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
 import { DefaultCallHandler, DefaultStorageHandler } from 'live-connect-handlers'
-import { StandardLiveConnect } from '../../../src'
-import { mergeObjects } from '../../../src/pixel/fiddler'
-import { LiveConnectConfig } from '../../../src/types'
+import { StandardLiveConnect } from '../../../src/index.js'
+import { mergeObjects } from '../../../src/pixel/fiddler.js'
+import { LiveConnectConfig } from '../../../src/types.js'
 
 const customerSpecifics = (window as unknown as { LI: LiveConnectConfig }).LI || {}
 const queue = window.liQ || []

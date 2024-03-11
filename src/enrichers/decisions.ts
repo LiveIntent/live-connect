@@ -1,7 +1,7 @@
-import { Enricher, EventBus } from '../types'
-import { getQueryParameter, ParsedParam } from '../utils/url'
+import { Enricher, EventBus } from '../types.js'
+import { getQueryParameter, ParsedParam } from '../utils/url.js'
 import { trim, isUUID, expiresInDays } from 'live-connect-common'
-import { WrappedStorageHandler } from '../handlers/storage-handler'
+import { WrappedStorageHandler } from '../handlers/storage-handler.js'
 
 type Input = { pageUrl?: string, cookieDomain: string }
 type Output = { decisionIds: string[] }

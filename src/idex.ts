@@ -1,9 +1,9 @@
 import { isFunction, isObject, isString, onNonNull } from 'live-connect-common'
-import { QueryBuilder, encodeIdCookie } from './utils/query'
-import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts'
-import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types'
-import { WrappedCallHandler } from './handlers/call-handler'
-import { stripQueryAndPath } from './pixel/url-collector'
+import { QueryBuilder, encodeIdCookie } from './utils/query.js'
+import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts.js'
+import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types.js'
+import { WrappedCallHandler } from './handlers/call-handler.js'
+import { stripQueryAndPath } from './pixel/url-collector.js'
 
 const ID_COOKIE_ATTR = 'idCookie'
 

@@ -1,6 +1,6 @@
-import { UrlCollectionMode, UrlCollectionModes } from '../model/url-collection-mode'
-import { LiveConnectConfig } from '../types'
-import { ParsedParam, ParsedUrl, urlParamsArray } from '../utils/url'
+import { UrlCollectionMode, UrlCollectionModes } from '../model/url-collection-mode.js'
+import { LiveConnectConfig } from '../types.js'
+import { ParsedParam, ParsedUrl, urlParamsArray } from '../utils/url.js'
 
 type UrlParam = ParsedParam | ParsedParam[]
 type UrlState = {

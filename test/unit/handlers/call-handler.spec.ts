@@ -1,9 +1,9 @@
 import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
 import sinon, { SinonStub } from 'sinon'
-import { WrappedCallHandler } from '../../../src/handlers/call-handler'
+import { WrappedCallHandler } from '../../../src/handlers/call-handler.js'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../../src/events/event-bus'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
 import { CallHandler, EventBus } from 'live-connect-common'
 
 use(dirtyChai)

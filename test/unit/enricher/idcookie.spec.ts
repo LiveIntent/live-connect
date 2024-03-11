@@ -2,9 +2,9 @@ import { expect, use } from 'chai'
 import jsdom from 'global-jsdom'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 import dirtyChai from 'dirty-chai'
-import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
-import { LocalEventBus } from '../../../src/events/event-bus'
-import { enrichIdCookie } from '../../../src/enrichers/idcookie'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler.js'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
+import { enrichIdCookie } from '../../../src/enrichers/idcookie.js'
 
 use(dirtyChai)
 

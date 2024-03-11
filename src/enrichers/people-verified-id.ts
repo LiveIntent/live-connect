@@ -1,6 +1,6 @@
-import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts'
-import { Enricher, EventBus } from '../types'
-import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler'
+import { PEOPLE_VERIFIED_LS_ENTRY } from '../utils/consts.js'
+import { Enricher, EventBus } from '../types.js'
+import { WrappedReadOnlyStorageHandler } from '../handlers/storage-handler.js'
 
 type Input = { peopleVerifiedId?: string }
 type Output = { peopleVerifiedId?: string }

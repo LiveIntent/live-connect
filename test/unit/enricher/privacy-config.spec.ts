@@ -1,5 +1,5 @@
 import { expect, use } from 'chai'
-import { enrichPrivacyMode } from '../../../src/enrichers/privacy-config'
+import { enrichPrivacyMode } from '../../../src/enrichers/privacy-config.js'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

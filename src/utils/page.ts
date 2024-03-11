@@ -1,5 +1,5 @@
-import { base64UrlEncode } from './b64'
-import { replaceEmailsWithHashes } from './email'
+import { base64UrlEncode } from './b64.js'
+import { replaceEmailsWithHashes } from './email.js'
 
 export function loadedDomain(): string {
   return (document.domain || (document.location && document.location.host)) || (window && window.location && window.location.host) || 'localhost'

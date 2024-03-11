@@ -13,36 +13,36 @@
   "engines": {
     "node": ">=18"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.cjs.mjs",
   "types": "./dist/index.d.ts",
-  "type": "commonjs",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.cjs.mjs"
     },
     "./internal": {
       "types": "./dist/internal.d.ts",
-      "require": "./dist/internal.js",
-      "import": "./dist/internal.mjs"
+      "require": "./dist/internal.cjs",
+      "import": "./dist/internal.cjs.mjs"
     },
     "./package.json": "./package.json"
   },
   "files": [
     "dist/*",
+    "src/*",
     "COLLECTOR_PARAMS.md",
     "CONFIGURATION_OPTIONS.md"
   ],
   "scripts": {
-    "test:unit": "npm run lint && ts-mocha -p ./tsconfig-test.json --config test-config/mocha.unit.json",
+    "test:unit": "npm run lint && mocha --config test-config/mocha.unit.json",
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "test:it:browserstack": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.browserstack.conf.mjs",
-    "test:it:docker:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.docker.chrome.conf.mjs",
-    "test:it:local:chrome": "npm run build-test-resources && TS_NODE_PROJECT=./tsconfig-test.json wdio test-config/wdio.local.chrome.conf.mjs",
-    "build": "rollup -c rollup/dist.config.mjs",
-    "build-test-resources": "rollup -c rollup/test-resources.config.mjs",
+    "test:it:browserstack": "npm run build-test-resources && wdio test-config/wdio.browserstack.conf.js",
+    "test:it:local-chrome": "npm run build-test-resources && wdio test-config/wdio.local-chrome.conf.js",
+    "build": "rollup -c rollup/dist.config.js",
+    "build-test-resources": "rollup -c rollup/test-resources.config.js",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "fix-js": "eslint --fix 'src/**/*.ts' 'test/**/*.ts' || exit 0",
     "release:ci:prepatch": "release-it patch --preRelease=alpha-$(git rev-parse --short HEAD) --ci",
@@ -60,9 +60,7 @@
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.22.5",
     "@babel/preset-env": "^7.22.5",
-    "@babel/runtime": "^7.22.5",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",
@@ -81,13 +79,12 @@
     "@types/sinon": "^17.0.1",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "@wdio/browserstack-service": "^8.11.2",
-    "@wdio/cli": "^8.11.2",
-    "@wdio/junit-reporter": "^8.11.0",
-    "@wdio/local-runner": "^8.11.2",
-    "@wdio/mocha-framework": "^8.11.0",
-    "@wdio/selenium-standalone-service": "^8.11.0",
-    "@wdio/spec-reporter": "^8.11.2",
+    "@wdio/browserstack-service": "^8.32.4",
+    "@wdio/cli": "^8.32.4",
+    "@wdio/junit-reporter": "^8.32.4",
+    "@wdio/local-runner": "^8.32.4",
+    "@wdio/mocha-framework": "^8.32.4",
+    "@wdio/spec-reporter": "^8.32.4",
     "chai": "^4.3.7",
     "chai-spies": "^1.0.0",
     "compression": "^1.7.4",
@@ -116,11 +113,11 @@
     "sinon": "^17.0.0",
     "sinon-chai": "^3.7.0",
     "tiny-uuid4": "^1.0.1",
-    "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6",
-    "url": "^0.11.1",
-    "wdio-chromedriver-service": "8.1.1",
-    "wdio-docker-service": "3.2.1"
+    "url": "^0.11.1"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.9.6"
   }
 }

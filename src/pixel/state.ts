@@ -1,10 +1,10 @@
-import { base64UrlEncode } from '../utils/b64'
-import { replacer } from './stringify'
-import { fiddle, mergeObjects } from './fiddler'
+import { base64UrlEncode } from '../utils/b64.js'
+import { replacer } from './stringify.js'
+import { fiddle, mergeObjects } from './fiddler.js'
 import { isObject, trim, isArray, nonNull, onNonNull } from 'live-connect-common'
-import { QueryBuilder, encodeIdCookie } from '../utils/query'
-import { EventBus, State } from '../types'
-import { collectUrl } from './url-collector'
+import { QueryBuilder, encodeIdCookie } from '../utils/query.js'
+import { EventBus, State } from '../types.js'
+import { collectUrl } from './url-collector.js'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 

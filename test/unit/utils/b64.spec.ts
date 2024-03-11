@@ -1,6 +1,6 @@
 import jsdom from 'global-jsdom'
 import { expect, use } from 'chai'
-import { base64UrlEncode } from '../../../src/utils/b64'
+import { base64UrlEncode } from '../../../src/utils/b64.js'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

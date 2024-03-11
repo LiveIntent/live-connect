@@ -3,9 +3,9 @@
 import jsdom from 'global-jsdom'
 import sinon from 'sinon'
 import { expect, use } from 'chai'
-import { IdentityResolver, ResolutionMetadata } from '../../../src/idex'
+import { IdentityResolver, ResolutionMetadata } from '../../../src/idex.js'
 import { DefaultCallHandler } from 'live-connect-handlers'
-import { LocalEventBus } from '../../../src/events/event-bus'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
 import dirtyChai from 'dirty-chai'
 
 use(dirtyChai)

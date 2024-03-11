@@ -1,14 +1,14 @@
 import { expect, use } from 'chai'
-import { enrichDecisionIds } from '../../../src/enrichers/decisions'
+import { enrichDecisionIds } from '../../../src/enrichers/decisions.js'
 import { DefaultStorageHandler } from 'live-connect-handlers'
 // @ts-expect-error
 import uuid from 'tiny-uuid4'
 import sinon, { SinonSandbox } from 'sinon'
 import jsdom from 'global-jsdom'
 import dirtyChai from 'dirty-chai'
-import { LocalEventBus } from '../../../src/events/event-bus'
-import { WrappedStorageHandler } from '../../../src/handlers/storage-handler'
-import { withResource } from '../test-utils/with-resources'
+import { LocalEventBus } from '../../../src/events/event-bus.js'
+import { WrappedStorageHandler } from '../../../src/handlers/storage-handler.js'
+import { withResource } from '../test-utils/with-resources.js'
 import { EventBus } from 'live-connect-common'
 
 use(dirtyChai)
