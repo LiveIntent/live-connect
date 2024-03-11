@@ -29,6 +29,17 @@ export function collectUrl(state: UrlState): [string, boolean, string[]] {
   return [url.toString(), pathRemoved, blockedParams]
 }
 
+export function stripQueryAndPath(pageUrl?: string): string {
+  if (pageUrl === undefined || pageUrl.length === 0) {
+    return ''
+  } else {
+    const url = new ParsedUrl(pageUrl)
+    url.pathname = '/'
+    url.search = ''
+    return url.toString()
+  }
+}
+
 function isPathRemoved(url: ParsedUrl, conf: LiveConnectConfig): boolean {
   return conf.urlCollectionMode === UrlCollectionModes.noPath && url.pathname.length > 1
 }

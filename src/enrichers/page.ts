@@ -1,5 +1,5 @@
 import { Enricher } from '../types'
-import { getPage, getReferrer, getContextElements } from '../utils/page'
+import { getPage, getReferrer, getContextElements, getPa } from '../utils/page'
 
 type Input = { privacyMode: boolean, contextSelectors: string, contextElementsLength: number }
 type Output = { pageUrl?: string, referrer?: string, contextElements: string }
