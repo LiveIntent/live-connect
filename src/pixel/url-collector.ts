@@ -34,7 +34,7 @@ export function stripQueryAndPath(pageUrl?: string): string {
     return ''
   } else {
     const url = new ParsedUrl(pageUrl)
-    url.pathname = '/'
+    url.pathname = ''
     url.search = ''
     return url.toString()
   }
