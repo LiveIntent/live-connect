@@ -286,6 +286,19 @@ describe('IdentityResolver without cache', () => {
     )
   })
 
+  it('should attach the page URL without path and query parameters', (done) => {
+    const value = 'foo'
+    const identityResolver = new IdentityResolver({ pageUrl: "https://www.test.page.url.com/a/b/c?x=1&y=2", identityResolutionConfig: { requestedAttributes: ['uid2'] } }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq(`https://idx.liadm.com/idex/unknown/any?resolve=uid2&pu=https%3A%2F%2Fwww.test.page.url.com`)
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql({ idCookie: value })
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
+  })
+
   it('should resolve the idcookie', (done) => {
     const value = 'foo'
     const identityResolver = new IdentityResolver({ resolvedIdCookie: value, identityResolutionConfig: { idCookieMode: 'provided', requestedAttributes: ['idCookie'] } }, calls)
