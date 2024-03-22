@@ -14,19 +14,19 @@
     "node": ">=18"
   },
   "main": "./dist/index.cjs",
-  "module": "./dist/index.cjs.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "require": "./dist/index.cjs",
-      "import": "./dist/index.cjs.mjs"
+      "import": "./dist/index.mjs"
     },
     "./internal": {
       "types": "./dist/internal.d.ts",
       "require": "./dist/internal.cjs",
-      "import": "./dist/internal.cjs.mjs"
+      "import": "./dist/internal.mjs"
     },
     "./package.json": "./package.json"
   },
@@ -108,8 +108,6 @@
     "rollup-plugin-cleaner": "^1.0.0",
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-dts": "^6.0.1",
-    "rollup-plugin-mjs-entry": "^0.1.1",
-    "serialize-javascript": ">=6.0.1",
     "sinon": "^17.0.0",
     "sinon-chai": "^3.7.0",
     "tiny-uuid4": "^1.0.1",
