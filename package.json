@@ -30,7 +30,7 @@
     },
     "./prebid": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/prebid.mjs"
+      "require": "./dist/prebid.cjs"
     },
     "./package.json": "./package.json"
   },

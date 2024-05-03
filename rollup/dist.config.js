@@ -14,7 +14,7 @@ const prebid = {
     input: "./src/index.ts",
     tsOutput: `${OUTPUT_DIR}/prebid.ts.mjs`,
     babelOutput: `${OUTPUT_DIR}/prebid.babel.mjs`,
-    output: `${OUTPUT_DIR}/prebid.mjs`
+    output: `${OUTPUT_DIR}/prebid.cjs`
 }
 
 export default [
@@ -89,7 +89,7 @@ export default [
         input: prebid.babelOutput,
         output: {
             file: prebid.output,
-            format: 'esm',
+            format: 'cjs',
             sourcemap: false
         },
         plugins: [
