@@ -35,7 +35,7 @@ export default [
       }),
       commonJs({ sourceMap: false }),
       resolve(),
-      ts({compilerOptions: { declaration: false }}),
+      ts(),
     ]
   },
   // transpile with babel

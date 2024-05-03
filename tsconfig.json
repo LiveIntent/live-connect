@@ -5,7 +5,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
-    "declaration": true,
+    "declaration": false,
     "sourceMap": false,
     "moduleResolution": "NodeNext",
     "module": "NodeNext",
