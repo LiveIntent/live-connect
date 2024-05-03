@@ -47,10 +47,7 @@ export default [
       sourcemap: false
     },
     plugins: [
-      babel({
-        babelHelpers: 'bundled',
-        configFile: path.resolve('prebid.babel.config.json')
-      }),
+      babel({ babelHelpers: 'bundled' }),
       del({ targets: tsOutput, hook: 'buildEnd' })
     ],
     external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later

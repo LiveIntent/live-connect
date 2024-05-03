@@ -79,7 +79,7 @@ export default [
           sourcemap: false
         },
         plugins: [
-          babel({ babelHelpers: 'bundled' }),
+          babel({ babelHelpers: 'bundled', configFile: './rollup/prebid.babel.config.json' }),
           del({ targets: prebid.tsOutput, hook: 'buildEnd' })
         ],
         external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later
