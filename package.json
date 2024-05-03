@@ -28,6 +28,9 @@
       "require": "./dist/internal.cjs",
       "import": "./dist/internal.mjs"
     },
+    "./prebid": {
+      "import": "./dist/prebid.mjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [

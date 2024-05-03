@@ -1,0 +1,13 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "useBuiltIns": "usage",
+        "corejs": "3",
+        "debug": false
+      }
+    ]
+  ],
+  "targets": "> 0.25%, not IE 11, not op_mini all"
+}

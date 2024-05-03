@@ -35,7 +35,7 @@ export default [
       }),
       commonJs({ sourceMap: false }),
       resolve(),
-      ts({compilerOptions: { declaration: false }}),
+      ts(),
     ]
   },
   // transpile with babel
@@ -47,7 +47,10 @@ export default [
       sourcemap: false
     },
     plugins: [
-      babel({ babelHelpers: 'bundled' }),
+      babel({
+        babelHelpers: 'bundled',
+        configFile: path.resolve('prebid.babel.config.json')
+      }),
       del({ targets: tsOutput, hook: 'buildEnd' })
     ],
     external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later
