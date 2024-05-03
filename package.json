@@ -29,6 +29,7 @@
       "import": "./dist/internal.mjs"
     },
     "./prebid": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/prebid.mjs"
     },
     "./package.json": "./package.json"
