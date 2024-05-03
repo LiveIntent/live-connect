@@ -60,43 +60,43 @@ export default [
     {
         input: prebid.input,
         output: {
-          file: prebid.tsOutput,
-          format: 'esm',
-          sourcemap: false
+            file: prebid.tsOutput,
+            format: 'esm',
+            sourcemap: false
         },
         plugins: [
-          commonJs({ sourceMap: false }),
-          resolve(),
-          ts(),
+            commonJs({ sourceMap: false }),
+            resolve(),
+            ts(),
         ]
-      },
-      // transpile with babel
-      {
+    },
+    // transpile with babel
+    {
         input: prebid.tsOutput,
         output: {
-          file: prebid.babelOutput,
-          format: 'esm',
-          sourcemap: false
+            file: prebid.babelOutput,
+            format: 'esm',
+            sourcemap: false
         },
         plugins: [
-          babel({ babelHelpers: 'bundled', configFile: './rollup/prebid.babel.config.json' }),
-          del({ targets: prebid.tsOutput, hook: 'buildEnd' })
+            babel({ babelHelpers: 'bundled', configFile: './rollup/prebid.babel.config.json' }),
+            del({ targets: prebid.tsOutput, hook: 'buildEnd' })
         ],
         external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later
-      },
-      // minify and bundle
-      {
+    },
+    // minify and bundle
+    {
         input: prebid.babelOutput,
         output: {
-          file: prebid.output,
-          format: 'esm',
-          sourcemap: false
+            file: prebid.output,
+            format: 'esm',
+            sourcemap: false
         },
         plugins: [
-          commonJs({ sourceMap: false }),
-          resolve(),
-          strip(),
-          del({ targets: prebid.babelOutput, hook: 'buildEnd' })
+            commonJs({ sourceMap: false }),
+            resolve(),
+            strip(),
+            del({ targets: prebid.babelOutput, hook: 'buildEnd' })
         ]
-      },
+    },
 ]
