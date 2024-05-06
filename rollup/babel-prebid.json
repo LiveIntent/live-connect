@@ -1,0 +1,23 @@
+{
+  "presets": [
+    [
+      // despite the name this will only do syntax transformations
+      "@babel/preset-env"
+    ]
+  ],
+  "plugins": [
+    [
+      // replace babel helpers with imports
+      "@babel/plugin-transform-runtime"
+    ],
+    [
+      // install pure polyfills
+      "polyfill-corejs3",
+      {
+        "method": "usage-pure",
+        "version": "3.3"
+      }
+    ]
+  ],
+  "targets": "> 0.25%, not IE 11, not op_mini all" // keep in sync with https://github.com/prebid/Prebid.js/blob/master/package.json#L20
+}

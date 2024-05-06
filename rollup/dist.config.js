@@ -79,10 +79,13 @@ export default [
             sourcemap: false
         },
         plugins: [
-            babel({ babelHelpers: 'bundled', configFile: './rollup/prebid.babel.config.json' }),
+            babel({ babelHelpers: 'runtime', configFile: './rollup/babel-prebid.json' }),
             del({ targets: prebid.tsOutput, hook: 'buildEnd' })
         ],
-        external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later
+        external: [
+            /@babel\/runtime-corejs3/,
+            /core-js-pure/
+        ]
     },
     // minify and bundle
     {

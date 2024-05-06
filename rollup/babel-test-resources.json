@@ -1,0 +1,23 @@
+{
+  "presets": [
+    [
+      // despite the name this will only do syntax transformations
+      "@babel/preset-env"
+    ]
+  ],
+  "plugins": [
+    [
+      // replace babel helpers with imports
+      "@babel/plugin-transform-runtime"
+    ],
+    [
+      // install pure polyfills
+      "polyfill-corejs3",
+      {
+        "method": "usage-pure",
+        "version": "3.3"
+      }
+    ]
+  ],
+  "targets": "safari 10, chrome 45, firefox 52, not dead, > 0.2%"
+}
