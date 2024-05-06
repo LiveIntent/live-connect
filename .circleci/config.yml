@@ -85,7 +85,7 @@ references:
   set_ssh_key: &set_ssh_key
     add_ssh_keys:
       fingerprints:
-        - "17:a6:0f:32:c6:9e:b1:9e:cc:12:e6:d8:2d:9e:57:3e"
+        - "7a:01:2b:33:51:54:c5:3d:d5:e6:da:12:14:09:53:b7"
 
   reset_package_lock: &reset_package_lock
     run:
