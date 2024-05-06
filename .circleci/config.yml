@@ -57,13 +57,10 @@ references:
 
   npm_install: &npm_install
     run:
-      name: Npm install
-      command: npm install
-
-  npm_install_additional_docker_deps: &npm_install_additional_docker_deps
-    run:
-      name: Npm install additional deps
-      command: npm install --no-save @rollup/rollup-linux-x64-gnu
+      name: Install dependencies
+      command: |
+        npm install
+        npm install --no-save @rollup/rollup-linux-x64-gnu
 
   host_setup: &host_setup
     run:
@@ -105,7 +102,6 @@ jobs:
       - node/install:
           node-version:  << pipeline.parameters.node_version >>
       - *npm_install
-      - *npm_install_additional_docker_deps
       - *save_cache
       - run:
           name: Run unit tests

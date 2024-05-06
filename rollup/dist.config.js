@@ -11,95 +11,95 @@ const OUTPUT_DIR = './dist'
 const DECLARATION_DIR = `${OUTPUT_DIR}/dts`
 
 const prebid = {
-    input: "./src/index.ts",
-    tsOutput: `${OUTPUT_DIR}/prebid.ts.mjs`,
-    babelOutput: `${OUTPUT_DIR}/prebid.babel.mjs`,
-    output: `${OUTPUT_DIR}/prebid.cjs`
+  input: "./src/index.ts",
+  tsOutput: `${OUTPUT_DIR}/prebid.ts.mjs`,
+  babelOutput: `${OUTPUT_DIR}/prebid.babel.mjs`,
+  output: `${OUTPUT_DIR}/prebid.cjs`
 }
 
 export default [
-    {
-        input: ['./src/index.ts', './src/internal.ts'],
-        output: [
-            {
-                dir: OUTPUT_DIR,
-                entryFileNames: '[name].cjs',
-                chunkFileNames: '[name]-[hash].cjs',
-                format: 'cjs',
-                sourcemap: false
-            },
-            {
-                dir: OUTPUT_DIR,
-                entryFileNames: '[name].mjs',
-                chunkFileNames: '[name]-[hash].mjs',
-                format: 'es',
-                sourcemap: false
-            }
-        ],
-        plugins: [
-            cleaner({ targets: [OUTPUT_DIR] }),
-            ts({ compilerOptions: { declaration: true, declarationDir: DECLARATION_DIR } }),
-            strip()
-        ],
-        external: [
-            'live-connect-common',
-            'tiny-hashes'
-        ]
+  {
+    input: ['./src/index.ts', './src/internal.ts'],
+    output: [
+      {
+        dir: OUTPUT_DIR,
+        entryFileNames: '[name].cjs',
+        chunkFileNames: '[name]-[hash].cjs',
+        format: 'cjs',
+        sourcemap: false
+      },
+      {
+        dir: OUTPUT_DIR,
+        entryFileNames: '[name].mjs',
+        chunkFileNames: '[name]-[hash].mjs',
+        format: 'es',
+        sourcemap: false
+      }
+    ],
+    plugins: [
+      cleaner({ targets: [OUTPUT_DIR] }),
+      ts({ compilerOptions: { declaration: true, declarationDir: DECLARATION_DIR } }),
+      strip()
+    ],
+    external: [
+      'live-connect-common',
+      'tiny-hashes'
+    ]
+  },
+  {
+    input: {
+      index: `${DECLARATION_DIR}/src/index.d.ts`,
+      internal: `${DECLARATION_DIR}/src/internal.d.ts`
     },
-    {
-        input: {
-            index: `${DECLARATION_DIR}/src/index.d.ts`,
-            internal: `${DECLARATION_DIR}/src/internal.d.ts`
-        },
-        output: [{ dir: OUTPUT_DIR, format: 'es' }],
-        plugins: [dts(), del({ targets: DECLARATION_DIR, hook: 'buildEnd' })],
+    output: [{ dir: OUTPUT_DIR, format: 'es' }],
+    plugins: [dts(), del({ targets: DECLARATION_DIR, hook: 'buildEnd' })],
+  },
+  //
+  // prebid build
+  //
+  {
+    input: prebid.input,
+    output: {
+      file: prebid.tsOutput,
+      format: 'esm',
+      sourcemap: false
     },
-    //
-    // prebid build
-    //
-    {
-        input: prebid.input,
-        output: {
-            file: prebid.tsOutput,
-            format: 'esm',
-            sourcemap: false
-        },
-        plugins: [
-            commonJs({ sourceMap: false }),
-            resolve(),
-            ts(),
-        ]
+    plugins: [
+      commonJs({ sourceMap: false }),
+      resolve(),
+      ts(),
+    ]
+  },
+  // transpile with babel
+  {
+    input: prebid.tsOutput,
+    output: {
+      file: prebid.babelOutput,
+      format: 'esm',
+      sourcemap: false
     },
-    // transpile with babel
-    {
-        input: prebid.tsOutput,
-        output: {
-            file: prebid.babelOutput,
-            format: 'esm',
-            sourcemap: false
-        },
-        plugins: [
-            babel({ babelHelpers: 'runtime', configFile: './rollup/babel-prebid.json' }),
-            del({ targets: prebid.tsOutput, hook: 'buildEnd' })
-        ],
-        external: [
-            /@babel\/runtime-corejs3/,
-            /core-js-pure/
-        ]
+    plugins: [
+      babel({ babelHelpers: 'runtime', configFile: './rollup/babel-prebid.json' }),
+      del({ targets: prebid.tsOutput, hook: 'buildEnd' })
+    ],
+    external: [
+      /@babel\/runtime-corejs3/,
+      /core-js-pure/
+    ]
+  },
+  // minify and bundle
+  {
+    input: prebid.babelOutput,
+    output: {
+      file: prebid.output,
+      format: 'cjs',
+      sourcemap: false
     },
-    // minify and bundle
-    {
-        input: prebid.babelOutput,
-        output: {
-            file: prebid.output,
-            format: 'cjs',
-            sourcemap: false
-        },
-        plugins: [
-            commonJs({ sourceMap: false }),
-            resolve(),
-            strip(),
-            del({ targets: prebid.babelOutput, hook: 'buildEnd' })
-        ]
-    },
+    plugins: [
+      commonJs({ sourceMap: false }),
+      resolve(),
+      strip(),
+      del({ targets: prebid.babelOutput, hook: 'buildEnd' })
+    ]
+  },
 ]

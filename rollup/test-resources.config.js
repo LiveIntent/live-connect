@@ -28,7 +28,7 @@ export default [
       sourcemap: false
     },
     plugins: [
-      cleaner({targets: [OUTPUT_DIR]}),
+      cleaner({ targets: [OUTPUT_DIR] }),
       replace({
         preventAssignment: true,
         LC_VERSION: JSON.stringify(`${packageJson.versionPrefix}${packageJson.version}`)
