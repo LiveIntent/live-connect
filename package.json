@@ -64,7 +64,10 @@
     "tiny-hashes": "1.0.1"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.22.5",
+    "@babel/plugin-transform-runtime": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/runtime": "^7.24.0",
+    "@babel/runtime-corejs3": "^7.24.0",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",

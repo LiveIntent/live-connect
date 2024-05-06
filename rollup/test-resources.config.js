@@ -47,7 +47,7 @@ export default [
       sourcemap: false
     },
     plugins: [
-      babel({ babelHelpers: 'bundled' }),
+      babel({ babelHelpers: 'bundled', configFile: './rollup/babel-test-resources.json' }),
       del({ targets: tsOutput, hook: 'buildEnd' })
     ],
     external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later
