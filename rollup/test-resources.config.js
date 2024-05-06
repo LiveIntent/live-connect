@@ -50,7 +50,10 @@ export default [
       babel({ babelHelpers: 'runtime', configFile: './rollup/babel-test-resources.json' }),
       del({ targets: tsOutput, hook: 'buildEnd' })
     ],
-    external: [/core-js\/modules/] // will insert `import 'core-js/modules/...'`, we'll resolve this later
+    external: [
+      /@babel\/runtime-corejs3/,
+      /core-js-pure/
+    ]
   },
   // minify and bundle
   {
