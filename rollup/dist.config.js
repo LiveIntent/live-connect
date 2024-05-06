@@ -14,7 +14,7 @@ const prebid = {
   input: "./src/index.ts",
   tsOutput: `${OUTPUT_DIR}/prebid.ts.mjs`,
   babelOutput: `${OUTPUT_DIR}/prebid.babel.mjs`,
-  output: `${OUTPUT_DIR}/prebid.cjs`
+  output: (ext) => `${OUTPUT_DIR}/prebid.${ext}`
 }
 
 export default [
@@ -32,7 +32,7 @@ export default [
         dir: OUTPUT_DIR,
         entryFileNames: '[name].mjs',
         chunkFileNames: '[name]-[hash].mjs',
-        format: 'es',
+        format: 'esm',
         sourcemap: false
       }
     ],
@@ -90,11 +90,18 @@ export default [
   // minify and bundle
   {
     input: prebid.babelOutput,
-    output: {
-      file: prebid.output,
-      format: 'cjs',
-      sourcemap: false
-    },
+    output: [
+      {
+        file: prebid.output('cjs'),
+        format: 'cjs',
+        sourcemap: false
+      },
+      {
+        file: prebid.output('mjs'),
+        format: 'esm',
+        sourcemap: false
+      }
+    ],
     plugins: [
       commonJs({ sourceMap: false }),
       resolve(),

@@ -30,7 +30,8 @@
     },
     "./prebid": {
       "types": "./dist/index.d.ts",
-      "require": "./dist/prebid.cjs"
+      "require": "./dist/prebid.cjs",
+      "import": "./dist/prebid.mjs"
     },
     "./package.json": "./package.json"
   },
@@ -45,8 +46,8 @@
     "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "test:it:browserstack": "npm run build-test-resources && wdio test-config/wdio.browserstack.conf.js",
     "test:it:local-chrome": "npm run build-test-resources && wdio test-config/wdio.local-chrome.conf.js",
-    "build": "rollup -c rollup/dist.config.js",
-    "build-test-resources": "rollup -c rollup/test-resources.config.js",
+    "build": "rollup --failAfterWarnings -c rollup/dist.config.js",
+    "build-test-resources": "rollup --failAfterWarnings -c rollup/test-resources.config.js",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "fix-js": "eslint --fix 'src/**/*.ts' 'test/**/*.ts' || exit 0",
     "release:ci:prepatch": "release-it patch --preRelease=alpha-$(git rev-parse --short HEAD) --ci",
@@ -66,7 +67,7 @@
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.24.0",
     "@babel/preset-env": "^7.24.0",
-    "@babel/runtime-corejs3": "^7.24.0",
+    "@babel/runtime-corejs3": "^7.24.5",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-commonjs": "^25.0.4",
     "@rollup/plugin-node-resolve": "^15.2.1",
