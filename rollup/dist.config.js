@@ -2,7 +2,7 @@ import strip from '@rollup/plugin-strip'
 import ts from '@rollup/plugin-typescript'
 import cleaner from 'rollup-plugin-cleaner'
 import dts from 'rollup-plugin-dts'
-import del from "rollup-plugin-delete";
+import { del } from '@kineticcafe/rollup-plugin-delete'
 import commonJs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
 import babel from '@rollup/plugin-babel'
@@ -11,7 +11,7 @@ const OUTPUT_DIR = './dist'
 const DECLARATION_DIR = `${OUTPUT_DIR}/dts`
 
 const prebid = {
-  input: "./src/index.ts",
+  input: './src/index.ts',
   tsOutput: `${OUTPUT_DIR}/prebid.ts.mjs`,
   babelOutput: `${OUTPUT_DIR}/prebid.babel.mjs`,
   output: (ext) => `${OUTPUT_DIR}/prebid.${ext}`
@@ -52,7 +52,7 @@ export default [
       internal: `${DECLARATION_DIR}/src/internal.d.ts`
     },
     output: [{ dir: OUTPUT_DIR, format: 'es' }],
-    plugins: [dts(), del({ targets: DECLARATION_DIR, hook: 'buildEnd' })],
+    plugins: [dts(), del({ targets: DECLARATION_DIR, hook: 'buildEnd' })]
   },
   //
   // prebid build
@@ -67,7 +67,7 @@ export default [
     plugins: [
       commonJs({ sourceMap: false }),
       resolve(),
-      ts(),
+      ts()
     ]
   },
   // transpile with babel
