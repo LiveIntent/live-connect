@@ -5,7 +5,7 @@
     "url": "git+https://github.com/liveintent-berlin/live-connect.git"
   },
   "description": "LiveConnect, The first party identity provider",
-  "version": "7.0.0-alpha-3f278be.0",
+  "version": "7.0.0-alpha-3f278be.1",
   "versionPrefix": "live-connect-v",
   "license": "Apache-2.0",
   "private": false,
