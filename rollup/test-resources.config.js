@@ -8,7 +8,7 @@ import path from 'path'
 import babel from '@rollup/plugin-babel'
 import resolve from '@rollup/plugin-node-resolve'
 import commonJs from '@rollup/plugin-commonjs'
-import del from "rollup-plugin-delete";
+import { del } from '@kineticcafe/rollup-plugin-delete'
 
 const packageJson = JSON.parse(fs.readFileSync(path.resolve('package.json'), { encoding: 'utf-8' }))
 
@@ -35,7 +35,7 @@ export default [
       }),
       commonJs({ sourceMap: false }),
       resolve(),
-      ts(),
+      ts()
     ]
   },
   // transpile with babel
