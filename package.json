@@ -91,7 +91,7 @@
     "@wdio/cli": "^8.39.1",
     "@wdio/junit-reporter": "^8.39.0",
     "@wdio/local-runner": "^8.39.1",
-    "@wdio/mocha-framework": "^8.39.0",
+    "@wdio/mocha-framework": "^9.0.0",
     "@wdio/spec-reporter": "^8.39.0",
     "babel-plugin-polyfill-corejs3": "^0.10.4",
     "chai": "^4.4.1",
