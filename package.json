@@ -106,7 +106,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.4.0",
     "eslint-plugin-typescript-formatter": "0.0.2",
-    "eslint-plugin-wdio": "^8.37.0",
+    "eslint-plugin-wdio": "^9.0.5",
     "express": "^4.19.2",
     "global-jsdom": "^24.0.0",
     "live-connect-handlers": "^3.0.0",
