@@ -108,7 +108,7 @@
     "eslint-plugin-typescript-formatter": "0.0.2",
     "eslint-plugin-wdio": "^9.0.5",
     "express": "^4.19.2",
-    "global-jsdom": "^24.0.0",
+    "global-jsdom": "^25.0.0",
     "live-connect-handlers": "^3.0.0",
     "mocha": "^10.6.0",
     "mocha-junit-reporter": "^2.2.1",
