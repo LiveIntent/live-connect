@@ -67,7 +67,7 @@ describe('PixelSender', () => {
 
   it('defaults to production if none set when sendAjax', (done) => {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?dtstmp=\d+&xxx=yyy/)
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp\.liadm\.com\/j\?dtstmp=\d+&xxx=yyy/)
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
@@ -110,10 +110,10 @@ describe('PixelSender', () => {
     pixelStub = sandbox.stub(calls, 'pixelGet').callsFake((uri) => {
       bakersCount++
       if (bakersCount === 1) {
-        expect(uri).to.match(/https:\/\/baker1.com\/baker\?dtstmp=\d+/)
+        expect(uri).to.match(/https:\/\/baker1\.com\/baker\?dtstmp=\d+/)
       }
       if (bakersCount === 2) {
-        expect(uri).to.match(/https:\/\/baker2.com\/baker\?dtstmp=\d+/)
+        expect(uri).to.match(/https:\/\/baker2\.com\/baker\?dtstmp=\d+/)
         done()
       }
     })
@@ -165,7 +165,7 @@ describe('PixelSender', () => {
 
   it('defaults to production if none set when sendAjax', (done) => {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?dtstmp=\d+&xxx=yyy/)
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp\.liadm\.com\/j\?dtstmp=\d+&xxx=yyy/)
       done()
     }
     const sender = new PixelSender({ callHandler: calls, eventBus })
@@ -185,7 +185,7 @@ describe('PixelSender', () => {
   it('defaults to production if none set when sendPixel', () => {
     const sender = new PixelSender({ callHandler: calls, eventBus })
     sender.sendPixel(stubbedStateWrapper)
-    expect(pixelRequests[0].uri).to.match(/https:\/\/rp.liadm.com\/p\?dtstmp=\d+&xxx=yyy/)
+    expect(pixelRequests[0].uri).to.match(/https:\/\/rp\.liadm\.com\/p\?dtstmp=\d+&xxx=yyy/)
     expect(pixelRequests[0].onload).to.be.undefined()
   })
 
@@ -214,7 +214,7 @@ describe('PixelSender', () => {
 
   it('sends headers', (done) => {
     const successCallback = () => {
-      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?dtstmp=\d+&xxx=yyy/)
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp\.liadm\.com\/j\?dtstmp=\d+&xxx=yyy/)
       expect(ajaxRequests[0].requestHeaders['X-LI-Provided-User-Agent']).to.eql('Mozilla/5.0')
       done()
     }
