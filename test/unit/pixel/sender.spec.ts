@@ -211,4 +211,23 @@ describe('PixelSender', () => {
     sender.sendPixel(stubbedStateWrapper1)
     expect(pixelRequests).to.be.empty()
   })
+
+  it('sends headers', (done) => {
+    const successCallback = () => {
+      expect(ajaxRequests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?dtstmp=\d+&xxx=yyy/)
+      expect(ajaxRequests[0].requestHeaders['X-LI-Provided-User-Agent']).to.eql('Mozilla/5.0')
+      done()
+    }
+    const sender = new PixelSender({ callHandler: calls, eventBus })
+    const stubbedStateWrapper1: StateWrapper = {
+      data: stubbedStateWrapper.data,
+      asQuery: stubbedStateWrapper.asQuery,
+      sendsPixel: stubbedStateWrapper.sendsPixel,
+      asHeaders: () => ({ 'X-LI-Provided-User-Agent': 'Mozilla/5.0' }),
+      setHashedEmail: stubbedStateWrapper.setHashedEmail,
+      getHashedEmail: stubbedStateWrapper.getHashedEmail
+    }
+    sender.sendAjax(stubbedStateWrapper1, { onLoad: successCallback })
+    ajaxRequests[0].respond(200, { 'Content-Type': 'application/json' }, '{}')
+  })
 })

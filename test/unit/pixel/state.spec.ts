@@ -425,4 +425,37 @@ describe('EventComposition', () => {
     })
     expect(event.asQuery().toQueryString()).to.eql('?se=e30&ic=')
   })
+
+  it('should extract ipv4', () => {
+    const eventBus = LocalEventBus()
+    const eventSource = {
+      ipv4: '127.0.0.1'
+    }
+    const event = StateWrapper.fromEvent({}, eventSource, eventBus)
+
+    expect(event.asQuery().toQueryString()).to.eql('?se=eyJpcHY0IjoiMTI3LjAuMC4xIn0&pip=MTI3LjAuMC4x')
+  })
+
+  it('should extract ipv6', () => {
+    const eventBus = LocalEventBus()
+    const eventSource = {
+      ipv6: '4c15:c00b:125f:4c5c:66db:5c16:05bb:0fc5'
+    }
+    const event = StateWrapper.fromEvent({}, eventSource, eventBus)
+
+    expect(event.asQuery().toQueryString()).to.eql('?se=eyJpcHY2IjoiNGMxNTpjMDBiOjEyNWY6NGM1Yzo2NmRiOjVjMTY6MDViYjowZmM1In0&pip6=NGMxNTpjMDBiOjEyNWY6NGM1Yzo2NmRiOjVjMTY6MDViYjowZmM1')
+  })
+
+  it('should extract userAgent', () => {
+    const eventBus = LocalEventBus()
+    const eventSource = {
+      userAgent: 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
+    }
+    const event = StateWrapper.fromEvent({}, eventSource, eventBus)
+
+    expect(event.asQuery().toQueryString()).to.eql('?se=eyJ1c2VyQWdlbnQiOiJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCA2LjE7IFdpbjY0OyB4NjQ7IHJ2OjQ3LjApIEdlY2tvLzIwMTAwMTAxIEZpcmVmb3gvNDcuMCJ9')
+    expect(event.asHeaders()).to.eql({
+      'X-LI-Provided-User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
+    })
+  })
 })
