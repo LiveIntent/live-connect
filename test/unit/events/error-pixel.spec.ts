@@ -61,16 +61,14 @@ describe('ErrorPixel', () => {
     const longText = 'x'.repeat(200)
     const error = new Error(longText)
     const result = errorPixel.asErrorDetails(error)
-    expect(result.errorDetails.message.length).to.eq(123)
+    expect(result.message.length).to.eq(123)
   })
 
   it('should send the default error if none was sent', () => {
     const result = errorPixel.asErrorDetails(null)
     expect(result).to.deep.equal({
-      errorDetails: {
-        message: 'Unknown message',
-        name: 'Unknown name'
-      }
+      message: 'Unknown message',
+      name: 'Unknown name'
     })
   })
 })

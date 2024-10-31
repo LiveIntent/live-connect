@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { expect, use } from 'chai'
 import { hashEmail } from '../../../src/utils/hash.js'
 import { enrichPrivacyMode } from '../../../src/enrichers/privacy-config.js'
@@ -8,6 +7,7 @@ import dirtyChai from 'dirty-chai'
 import { LocalEventBus } from '../../../src/events/event-bus.js'
 import { UrlCollectionModes } from '../../../src/model/url-collection-mode.js'
 import { State } from '../../../src/types.js'
+import { ErrorDetails } from 'live-connect-common'
 
 use(dirtyChai)
 
@@ -15,19 +15,19 @@ const COMMA = encodeURIComponent(',')
 describe('EventComposition', () => {
   it('should construct an event out of anything', () => {
     const pixelData = { appId: '9898' }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.data).to.eql({ appId: '9898', eventSource: {} })
   })
 
   it('should construct valid params for valid members', () => {
     const pixelData = { appId: '9898' }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898&se=e30')
   })
 
   it('should ignore empty fields', () => {
     const pixelData = { appId: '9898', contextElements: '' }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898&se=e30')
   })
 
@@ -38,7 +38,6 @@ describe('EventComposition', () => {
       liveConnectId: '213245',
       trackerVersion: 'test tracker',
       pageUrl: 'https://wwww.example.com?sss',
-      errorDetails: { testError: 'testError' },
       retrievedIdentifiers: [{
         name: 'sample_cookie',
         value: 'sample_value'
@@ -60,7 +59,7 @@ describe('EventComposition', () => {
       gppApplicableSections: [1, 2, 3],
       cookieDomain: 'test-cookie-domain'
     }
-    const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
+    const event = StateWrapper.fromEvent(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -68,7 +67,6 @@ describe('EventComposition', () => {
       'duid=213245', // liveConnectId
       'tv=test%20tracker', // trackerVersion
       'pu=https%3A%2F%2Fwwww.example.com%3Fsss', // pageUrl
-      'ae=eyJ0ZXN0RXJyb3IiOiJ0ZXN0RXJyb3IifQ', // base64 of errorDetails
       'ext_sample_cookie=sample_value', // retrievedIdentifiers
       'scre=75524519292e51ad6f761baa82d07d76%2Cec3685d99c376b4ee14a5b985a05fc23e21235cb%2Ce168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72', // comma-separated hashesFromIdentifiers
       'li_did=1%2C2', // decisionIds
@@ -108,11 +106,11 @@ describe('EventComposition', () => {
       hashedEmail: ['eb2684ead8e942b6c4dc7465de66460a'],
       usPrivacyString: '1---',
       wrapperName: 'test wrapper name',
-      gdprApplies: 'a',
+      gdprApplies: 'a' as unknown as boolean,
       gdprConsent: 'test-consent-string',
       referrer: 'https://some.test.referrer.com'
     }
-    const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
+    const event = StateWrapper.fromEvent(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
 
     const expectedPairs = [
       'aid=9898', // appId
@@ -140,7 +138,7 @@ describe('EventComposition', () => {
       appId: '9898',
       randomField: 2135523
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql('?aid=9898&se=e30')
   })
 
@@ -149,7 +147,7 @@ describe('EventComposition', () => {
       appId: '9898'
     }
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
-    const event = new StateWrapper(pixelData, { eventName: 'viewContent' })
+    const event = StateWrapper.fromEvent(pixelData, { eventName: 'viewContent' })
     expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}`)
   })
 
@@ -158,7 +156,7 @@ describe('EventComposition', () => {
       gppString: 'test-gpp-string',
       gppApplicableSections: [1, 2, 3]
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     const expectedPairs = [
       'se=e30', // eventSource
       'gpp_s=test-gpp-string', // GPP string
@@ -171,7 +169,7 @@ describe('EventComposition', () => {
     const pixelData = {
       usPrivacyString: '1---'
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql('?se=e30&us_privacy=1---')
   })
 
@@ -180,7 +178,7 @@ describe('EventComposition', () => {
       gdprApplies: true,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
+    const event = StateWrapper.fromEvent(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=1&gdpr_consent=some-string`)
   })
@@ -190,7 +188,7 @@ describe('EventComposition', () => {
       gdprApplies: false,
       gdprConsent: 'some-string'
     }
-    const event = new StateWrapper(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
+    const event = StateWrapper.fromEvent(mergeObjects(pixelData, enrichPrivacyMode(pixelData)), { eventName: 'viewContent' })
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCJ9'
     expect(event.asQuery().toQueryString()).to.eql(`?se=${b64EncodedEventSource}&gdpr=0&gdpr_consent=some-string`)
   })
@@ -198,19 +196,19 @@ describe('EventComposition', () => {
   it('should send the tracker name', () => {
     const trackerVersion = 'some-name'
     const pixelData = { trackerVersion }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&tv=${trackerVersion}`)
   })
 
   it('should ignore nullable fields', () => {
-    const event = new StateWrapper({}, {})
+    const event = StateWrapper.fromEvent({}, {})
     expect(event.asQuery().toQueryString()).to.eql('?se=e30')
   })
 
   it('should send the page url', () => {
     const pageUrl = 'https://wwww.example.com?sss'
     const pixelData = { pageUrl }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&pu=${encodeURIComponent(pageUrl)}`)
   })
 
@@ -221,7 +219,7 @@ describe('EventComposition', () => {
       urlCollectionMode: UrlCollectionModes.noPath,
       queryParametersFilter: '^(foo|bar)$'
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     const expectedUrl = 'https://www.example.com/?query=v1&id=v4'
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&pu=${encodeURIComponent(expectedUrl)}&pu_rp=1&pu_rqp=foo${COMMA}bar`)
   })
@@ -233,16 +231,13 @@ describe('EventComposition', () => {
       urlCollectionMode: UrlCollectionModes.noPath,
       queryParametersFilter: '^(foo|bar)$'
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&pu=${encodeURIComponent(pageUrl)}`)
   })
 
   it('should send the application error', () => {
     const applicationError = { someKey: 'value' }
-    const pixelData = {
-      errorDetails: applicationError
-    }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromError({}, applicationError as unknown as ErrorDetails)
     const b64EncodedEventSource = 'eyJzb21lS2V5IjoidmFsdWUifQ'
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&ae=${b64EncodedEventSource}`)
   })
@@ -251,7 +246,7 @@ describe('EventComposition', () => {
     const pixelData = {
       appId: '9898'
     }
-    const event = new StateWrapper(pixelData, { eventName: 'viewContent' })
+    const event = StateWrapper.fromEvent(pixelData, { eventName: 'viewContent' })
 
     event.setHashedEmail(['foo'])
 
@@ -273,8 +268,8 @@ describe('EventComposition', () => {
     }
 
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCIsImVtYWlsIjoiICBlMTY4ZTBlZGExMWY0ZmJiOGZiZDdjZmU1Zjc1MGNkMGY3ZTdmNGQ4NjQ5ZGE2OGUwNzNlOTI3NTA0ZWM1ZDcyICAgICJ9'
-    const event = new StateWrapper(pixelData, event)
-    expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&e=e168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72`)
+    const wrapped = StateWrapper.fromEvent(pixelData, event)
+    expect(wrapped.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&e=e168e0eda11f4fbb8fbd7cfe5f750cd0f7e7f4d8649da68e073e927504ec5d72`)
   })
 
   it('should never send emails as plain text, and hash the email that is set in the source', () => {
@@ -288,8 +283,8 @@ describe('EventComposition', () => {
 
     const hashes = hashEmail('xxx@yyy.com')
     const b64EncodedEventSource = 'eyJldmVudE5hbWUiOiJ2aWV3Q29udGVudCIsImVtYWlsIjoiKioqKioqKioqIn0'
-    const event = new StateWrapper(pixelData, event)
-    expect(event.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&e=${hashes.md5}%2C${hashes.sha1}%2C${hashes.sha256}`)
+    const wrapped = StateWrapper.fromEvent(pixelData, event)
+    expect(wrapped.asQuery().toQueryString()).to.eql(`?aid=9898&se=${b64EncodedEventSource}&e=${hashes.md5}%2C${hashes.sha1}%2C${hashes.sha256}`)
   })
 
   it('should send the retrieved identifiers', () => {
@@ -305,7 +300,7 @@ describe('EventComposition', () => {
       retrievedIdentifiers: [cookie1, cookie2]
     }
 
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
 
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&ext_${cookie1.name}=${cookie1.value}&ext_${cookie2.name}=${cookie2.value}`)
   })
@@ -325,7 +320,7 @@ describe('EventComposition', () => {
       hashesFromIdentifiers: [hashes1, hashes2]
     }
 
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
 
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&scre=${hashes1.md5}${COMMA}${hashes1.sha1}${COMMA}${hashes1.sha256}&scre=${hashes2.md5}${COMMA}${hashes2.sha1}${COMMA}${hashes2.sha256}`)
   })
@@ -334,7 +329,7 @@ describe('EventComposition', () => {
     const pixelData = {
       decisionIds: ['1', '2']
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql(`?se=e30&li_did=1${COMMA}2`)
   })
 
@@ -342,7 +337,7 @@ describe('EventComposition', () => {
     const pixelData = {
       decisionIds: []
     }
-    const event = new StateWrapper(pixelData, {})
+    const event = StateWrapper.fromEvent(pixelData, {})
     expect(event.asQuery().toQueryString()).to.eql('?se=e30')
   })
 
@@ -352,28 +347,28 @@ describe('EventComposition', () => {
       email: '  xxx@yyy.com'
     }
 
-    expect(new StateWrapper({}, event1).sendsPixel()).to.be.false()
+    expect(StateWrapper.fromEvent({}, event1).sendsPixel()).to.be.false()
 
     const event2 = {
       eventName: 'setEmailHash',
       email: '  xxx@yyy.com'
     }
 
-    expect(new StateWrapper({}, event2).sendsPixel()).to.be.false()
+    expect(StateWrapper.fromEvent({}, event2).sendsPixel()).to.be.false()
 
     const event3 = {
       eventName: 'setHashedEmail',
       email: '  xxx@yyy.com'
     }
 
-    expect(new StateWrapper({}, event3).sendsPixel()).to.be.false()
+    expect(StateWrapper.fromEvent({}, event3).sendsPixel()).to.be.false()
 
     const event4 = {
       eventName: 'setContent',
       email: '  xxx@yyy.com'
     }
 
-    expect(new StateWrapper({}, event4).sendsPixel()).to.be.true()
+    expect(StateWrapper.fromEvent({}, event4).sendsPixel()).to.be.true()
   })
 
   it('should limit the number of items', () => {
@@ -382,7 +377,7 @@ describe('EventComposition', () => {
     }
     const providedItems = Array.from(Array(50).keys())
     const providedItemsCopy = [...providedItems]
-    const event = new StateWrapper(pixelData, { items: providedItems })
+    const event = StateWrapper.fromEvent(pixelData, { items: providedItems })
     expect(event.asQuery().toQueryString()).to.eql('?se=eyJpdGVtcyI6WzAsMSwyLDMsNCw1LDYsNyw4LDldfQ')
     // Making sure this works and that we're not changing the object for the customer
     expect(providedItems).to.eql(providedItemsCopy)
@@ -394,7 +389,7 @@ describe('EventComposition', () => {
       distributorId: 'did-9898',
       liveConnectId: '213245'
     }
-    const event = new StateWrapper(pixelData, {}, eventBus)
+    const event = StateWrapper.fromEvent(pixelData, {}, eventBus)
 
     expect(event.data).to.eql({
       distributorId: 'did-9898',
@@ -408,7 +403,7 @@ describe('EventComposition', () => {
     const eventBus = LocalEventBus()
     const resolvedIdCookie = '123'
     const pixelData = { resolvedIdCookie }
-    const event = new StateWrapper(pixelData, {}, eventBus)
+    const event = StateWrapper.fromEvent(pixelData, {}, eventBus)
 
     expect(event.data).to.eql({
       resolvedIdCookie,
@@ -422,7 +417,7 @@ describe('EventComposition', () => {
     const pixelData = {
       resolvedIdCookie: null
     }
-    const event = new StateWrapper(pixelData, {}, eventBus)
+    const event = StateWrapper.fromEvent(pixelData, {}, eventBus)
 
     expect(event.data).to.eql({
       resolvedIdCookie: null,

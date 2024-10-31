@@ -50,7 +50,8 @@ export interface LiveConnectConfig {
   peopleVerifiedId?: string
   gppString?: string
   gppApplicableSections?: number[]
-  idCookie?: IdCookieConfig
+  idCookie?: IdCookieConfig,
+  hashedEmail?: string[]
 }
 
 export type ResolutionParams = Record<string, string | string[]>
@@ -77,7 +78,6 @@ export interface State extends LiveConnectConfig {
   hashesFromIdentifiers?: HashedEmail[]
   decisionIds?: string[]
   peopleVerifiedId?: string
-  errorDetails?: ErrorDetails
   retrievedIdentifiers?: RetrievedIdentifier[]
   providedHash?: string
   contextSelectors?: string
@@ -89,15 +89,20 @@ export interface State extends LiveConnectConfig {
   resolvedIdCookie?: string | null // null signals failure to resolve,
 }
 
-export type FiddledExtraFields = {
+export type FiddlerExtraFields = {
   hashedEmail?: string[]
   providedIPV4?: string
   providedIPV6?: string
-  providedUserAgent?: string,
+  providedUserAgent?: string
   eventSource?: Record<string, unknown>
 }
 
-export type FiddledState = State & FiddledExtraFields
+export type ErrorDetailsExtraFields = {
+  errorDetails?: ErrorDetails
+}
+
+export type WrappedState = State & FiddlerExtraFields & ErrorDetailsExtraFields
+
 export interface ConfigMismatch {
   appId: (string | undefined)[]
   wrapperName: (string | undefined)[]

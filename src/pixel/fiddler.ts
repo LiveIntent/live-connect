@@ -2,7 +2,7 @@ import { extractEmail } from '../utils/email.js'
 import { decodeValue } from '../utils/url.js'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash.js'
 import { isArray, isObject, isRecord, safeToString, trim } from 'live-connect-common'
-import { FiddledExtraFields } from '../types.js'
+import { FiddlerExtraFields } from '../types.js'
 
 type AnyRecord = Record<string | symbol | number, unknown>
 
@@ -10,8 +10,8 @@ const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
 const HASH_BEARERS = ['email', 'emailhash', 'hash', 'hashedemail']
 
-function extractProvidedAttributes(eventSource: AnyRecord): FiddledExtraFields {
-  const extraFields: FiddledExtraFields = { eventSource }
+function extractProvidedAttributes(eventSource: AnyRecord): FiddlerExtraFields {
+  const extraFields: FiddlerExtraFields = { eventSource }
 
   // add provided email hashes. Only consider the first one found.
   for (const key of Object.keys(eventSource)) {
@@ -63,7 +63,7 @@ function limitItems(event: AnyRecord): AnyRecord {
   return limitedEvent
 }
 
-export function fiddle(event: object): FiddledExtraFields {
+export function fiddle(event: object): FiddlerExtraFields {
   if (isRecord(event)) {
     const extraAttributes = extractProvidedAttributes(event)
     return {

@@ -1,21 +1,25 @@
 import { base64UrlEncode } from '../utils/b64.js'
 import { replacer } from './stringify.js'
 import { fiddle, mergeObjects } from './fiddler.js'
-import { isObject, trim, isArray, nonNull, onNonNull, Headers } from 'live-connect-common'
+import { isObject, trim, isArray, nonNull, onNonNull, Headers, ErrorDetails } from 'live-connect-common'
 import { QueryBuilder, encodeIdCookie } from '../utils/query.js'
-import { EventBus, FiddledState, State } from '../types.js'
+import { EventBus, FiddlerExtraFields, State, WrappedState } from '../types.js'
 import { collectUrl } from './url-collector.js'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
 export class StateWrapper {
-  data: FiddledState
+  data: WrappedState
 
-  constructor (state: State, eventSource: object, eventBus?: EventBus) {
-    this.data = StateWrapper.safeFiddle(state, eventSource, eventBus)
+  private constructor (state: State, eventSource: object, error?: ErrorDetails, eventBus?: EventBus) {
+    const data: WrappedState = StateWrapper.safeFiddle(state, eventSource, eventBus)
+    if (error) {
+      data.errorDetails = error
+    }
+    this.data = data
   }
 
-  private static safeFiddle(state: State, eventSource: object, eventBus?: EventBus): FiddledState {
+  private static safeFiddle(state: State, eventSource: object, eventBus?: EventBus): State & FiddlerExtraFields {
     try {
       return mergeObjects(state, fiddle(JSON.parse(JSON.stringify(eventSource))))
     } catch (e) {
@@ -25,6 +29,14 @@ export class StateWrapper {
       }
       return {}
     }
+  }
+
+  static fromEvent(state: State, event: object, eventBus?: EventBus): StateWrapper {
+    return new StateWrapper(state, event, undefined, eventBus)
+  }
+
+  static fromError(state: State, error: ErrorDetails, eventBus?: EventBus): StateWrapper {
+    return new StateWrapper(state, {}, error, eventBus)
   }
 
   setHashedEmail(hashedEmail: string[]): void {

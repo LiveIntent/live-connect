@@ -29,7 +29,7 @@ function pushSingleEvent(event: unknown, pixelClient: PixelSender, enrichedState
     eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(JSON.stringify(event)))
   } else {
     // const stateWithEventSource: StateWithEventSource = { eventSource: event, ...enrichedState }
-    const wrapper = new StateWrapper(enrichedState, event, eventBus)
+    const wrapper = StateWrapper.fromEvent(enrichedState, event, eventBus)
 
     // const combined = wrapper.combineWith({ eventSource: event })
     if (wrapper.getHashedEmail().length > 0) {
