@@ -1,4 +1,4 @@
-import { EventBus, CallHandler } from 'live-connect-common'
+import { EventBus, CallHandler, Headers } from 'live-connect-common'
 import { Wrapped, WrappingContext } from '../utils/wrapping.js'
 
 const empty = () => undefined
@@ -28,9 +28,10 @@ export class WrappedCallHandler implements CallHandler {
     url: string,
     onSuccess: (responseText: string, response: unknown) => void,
     onError?: (error: unknown) => void,
-    timeout?: number
+    timeout?: number,
+    headers?: Headers
   ): void {
-    this.functions.ajaxGet(url, onSuccess, onError, timeout)
+    this.functions.ajaxGet(url, onSuccess, onError, timeout, headers)
   }
 
   pixelGet(

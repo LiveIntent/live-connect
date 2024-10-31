@@ -61,6 +61,9 @@ export class PixelSender {
   sendAjax(state: StateWrapper, opts: { onPreSend?: () => void, onLoad?: () => void } = {}): void {
     this.sendState(state, 'j', uri => {
       const go = (remainingRetries: number) => {
+        // additionally set headers extracted from the state only if the state is not empty
+        const headers = state.asHeaders()
+
         this.calls.ajaxGet(
           uri,
           bakersJson => {
@@ -75,7 +78,8 @@ export class PixelSender {
               go(remainingRetries - 1)
             }
           },
-          this.timeout
+          this.timeout,
+          headers
         )
       }
 

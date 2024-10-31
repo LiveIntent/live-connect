@@ -1,9 +1,10 @@
 import { isFunction, isObject, isString, onNonNull } from 'live-connect-common'
 import { QueryBuilder, encodeIdCookie } from './utils/query.js'
 import { DEFAULT_IDEX_AJAX_TIMEOUT, DEFAULT_IDEX_URL, DEFAULT_REQUESTED_ATTRIBUTES } from './utils/consts.js'
-import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier } from './types.js'
+import { IdentityResolutionConfig, State, ResolutionParams, EventBus, RetrievedIdentifier, ExtraIdexAttributes } from './types.js'
 import { WrappedCallHandler } from './handlers/call-handler.js'
 import { stripQueryAndPath } from './pixel/url-collector.js'
+import { base64UrlEncode } from './utils/b64.js'
 
 const ID_COOKIE_ATTR = 'idCookie'
 
@@ -20,6 +21,7 @@ export class IdentityResolver {
   publisherId: number | string
   url: string
   timeout: number
+  extraAttributes: ExtraIdexAttributes
   requestedAttributes: string[]
   // Be careful, this object is mutable. In cases where temporary changes are needed
   // - e.g. adding parameters that are only valid for one single call - ensure to copy it
@@ -40,6 +42,7 @@ export class IdentityResolver {
     this.eventBus = eventBus
     this.calls = calls
     this.idexConfig = nonNullConfig.identityResolutionConfig || {}
+    this.extraAttributes = this.idexConfig.extraAttributes || {}
     this.externalIds = nonNullConfig.retrievedIdentifiers || []
     this.source = this.idexConfig.source || 'unknown'
     this.publisherId = this.idexConfig.publisherId || 'any'
@@ -63,6 +66,8 @@ export class IdentityResolver {
       .addOptional('cd', nonNullConfig.cookieDomain)
       .addOptional('ic', encodeIdCookie(nonNullConfig.resolvedIdCookie), { stripEmpty: false })
       .addOptional('pu', onNonNull(nonNullConfig.pageUrl, stripQueryAndPath))
+      .addOptional('pip', onNonNull(this.extraAttributes.ipv4, v => base64UrlEncode(v)))
+      .addOptional('pip6', onNonNull(this.extraAttributes.ipv6, v => base64UrlEncode(v)))
 
     this.externalIds.forEach(retrievedIdentifier => {
       this.query.add(retrievedIdentifier.name, retrievedIdentifier.value)

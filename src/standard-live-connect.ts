@@ -1,7 +1,6 @@
 import { PixelSender } from './pixel/sender.js'
 import * as C from './utils/consts.js'
 import { StateWrapper } from './pixel/state.js'
-import { mergeObjects } from './pixel/fiddler.js'
 import { enrichPage } from './enrichers/page.js'
 import { enrichIdentifiers } from './enrichers/identifiers.js'
 import { enrichPrivacyMode } from './enrichers/privacy-config.js'
@@ -29,14 +28,19 @@ function pushSingleEvent(event: unknown, pixelClient: PixelSender, enrichedState
   } else if ('config' in event) {
     eventBus.emitErrorWithMessage('StrayConfig', 'Received a config after LC has already been initialised', new Error(JSON.stringify(event)))
   } else {
-    const wrapper = new StateWrapper(enrichedState, eventBus)
-    const combined = wrapper.combineWith({ eventSource: event })
-    hemStore.hashedEmail = hemStore.hashedEmail || combined.data.hashedEmail
-    const withHemStore = mergeObjects({ eventSource: event }, hemStore)
+    // const stateWithEventSource: StateWithEventSource = { eventSource: event, ...enrichedState }
+    const wrapper = new StateWrapper(enrichedState, event, eventBus)
+
+    // const combined = wrapper.combineWith({ eventSource: event })
+    if (wrapper.getHashedEmail().length > 0) {
+      hemStore.hashedEmail = wrapper.getHashedEmail()
+    } else if (hemStore.hashedEmail) {
+      wrapper.setHashedEmail(hemStore.hashedEmail)
+    }
 
     const onPreSend = () => eventBus.emit(C.PRELOAD_PIXEL, '0')
     const onLoad = () => eventBus.emit(C.PIXEL_SENT_PREFIX, enrichedState)
-    pixelClient.sendAjax(wrapper.combineWith(withHemStore), { onPreSend, onLoad })
+    pixelClient.sendAjax(wrapper, { onPreSend, onLoad })
   }
 }
 
