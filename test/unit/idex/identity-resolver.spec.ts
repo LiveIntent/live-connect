@@ -364,4 +364,30 @@ describe('IdentityResolver without cache', () => {
     identityResolver.resolve(successCallback)
     requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({}))
   })
+
+  it('should attach provided ipv4', (done) => {
+    const response = { id: 112233 }
+    const identityResolver = new IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { extraAttributes: { ipv4: '127.0.0.1' } } }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pip=MTI3LjAuMC4x')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
+
+  it('should attach the duid', (done) => {
+    const response = { id: 112233 }
+    const identityResolver = new IdentityResolver({ peopleVerifiedId: '987', identityResolutionConfig: { extraAttributes: { ipv6: '4c15:c00b:125f:4c5c:66db:5c16:05bb:0fc5' } } }, calls)
+    const successCallback = (responseAsJson) => {
+      expect(requestToComplete.url).to.eq('https://idx.liadm.com/idex/unknown/any?duid=987&pip6=NGMxNTpjMDBiOjEyNWY6NGM1Yzo2NmRiOjVjMTY6MDViYjowZmM1')
+      expect(errors).to.be.empty()
+      expect(responseAsJson).to.be.eql(response)
+      done()
+    }
+    identityResolver.resolve(successCallback)
+    requestToComplete.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(response))
+  })
 })
