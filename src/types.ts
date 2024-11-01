@@ -8,13 +8,19 @@ import { ErrorDetails } from 'live-connect-common'
 export type Enricher<in In extends object, out Out extends object> =
   <ActualIn extends In> (state: ActualIn) => ActualIn & Out
 
-export interface IdentityResolutionConfig {
+export type ExtraIdexAttributes = {
+  ipv4?: string
+  ipv6?: string
+}
+
+export type IdentityResolutionConfig = {
   url?: string
   ajaxTimeout?: number
   source?: string
   publisherId?: number
   requestedAttributes?: string[],
-  idCookieMode?: 'generated' | 'provided'
+  idCookieMode?: 'generated' | 'provided',
+  extraAttributes?: ExtraIdexAttributes
 }
 
 export type IdCookieConfig = {
@@ -44,7 +50,8 @@ export interface LiveConnectConfig {
   peopleVerifiedId?: string
   gppString?: string
   gppApplicableSections?: number[]
-  idCookie?: IdCookieConfig
+  idCookie?: IdCookieConfig,
+  hashedEmail?: string[]
 }
 
 export type ResolutionParams = Record<string, string | string[]>
@@ -71,9 +78,7 @@ export interface State extends LiveConnectConfig {
   hashesFromIdentifiers?: HashedEmail[]
   decisionIds?: string[]
   peopleVerifiedId?: string
-  errorDetails?: ErrorDetails
   retrievedIdentifiers?: RetrievedIdentifier[]
-  hashedEmail?: string[]
   providedHash?: string
   contextSelectors?: string
   contextElementsLength?: number
@@ -81,8 +86,22 @@ export interface State extends LiveConnectConfig {
   privacyMode?: boolean
   referrer?: string
   cookieDomain?: string
-  resolvedIdCookie?: string | null // null signals failure to resolve
+  resolvedIdCookie?: string | null // null signals failure to resolve,
 }
+
+export type FiddlerExtraFields = {
+  hashedEmail?: string[]
+  providedIPV4?: string
+  providedIPV6?: string
+  providedUserAgent?: string
+  eventSource?: Record<string, unknown>
+}
+
+export type ErrorDetailsExtraFields = {
+  errorDetails?: ErrorDetails
+}
+
+export type WrappedState = State & FiddlerExtraFields & ErrorDetailsExtraFields
 
 export interface ConfigMismatch {
   appId: (string | undefined)[]

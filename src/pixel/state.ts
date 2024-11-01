@@ -1,34 +1,50 @@
 import { base64UrlEncode } from '../utils/b64.js'
 import { replacer } from './stringify.js'
 import { fiddle, mergeObjects } from './fiddler.js'
-import { isObject, trim, isArray, nonNull, onNonNull } from 'live-connect-common'
+import { isObject, trim, isArray, nonNull, onNonNull, Headers, ErrorDetails } from 'live-connect-common'
 import { QueryBuilder, encodeIdCookie } from '../utils/query.js'
-import { EventBus, State } from '../types.js'
+import { EventBus, FiddlerExtraFields, State, WrappedState } from '../types.js'
 import { collectUrl } from './url-collector.js'
 
 const noOpEvents = ['setemail', 'setemailhash', 'sethashedemail']
 
 export class StateWrapper {
-  data: State
-  eventBus: EventBus
+  data: WrappedState
 
-  constructor (state: State, eventBus: EventBus) {
-    this.data = StateWrapper.safeFiddle(state, eventBus)
-    this.eventBus = eventBus
+  private constructor (state: State, eventSource: object, error?: ErrorDetails, eventBus?: EventBus) {
+    const data: WrappedState = StateWrapper.safeFiddle(state, eventSource, eventBus)
+    if (error) {
+      data.errorDetails = error
+    }
+    this.data = data
   }
 
-  private static safeFiddle(newInfo: State, eventBus: EventBus): State {
+  private static safeFiddle(state: State, eventSource: object, eventBus?: EventBus): State & FiddlerExtraFields {
     try {
-      return fiddle(JSON.parse(JSON.stringify(newInfo)))
+      return mergeObjects(state, fiddle(JSON.parse(JSON.stringify(eventSource))))
     } catch (e) {
       console.error(e)
-      eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
+      if (eventBus != null) {
+        eventBus.emitErrorWithMessage('StateCombineWith', 'Error while extracting event data', e)
+      }
       return {}
     }
   }
 
-  combineWith(newInfo: Partial<State>): StateWrapper {
-    return new StateWrapper(mergeObjects(this.data, newInfo), this.eventBus)
+  static fromEvent(state: State, event: object, eventBus?: EventBus): StateWrapper {
+    return new StateWrapper(state, event, undefined, eventBus)
+  }
+
+  static fromError(state: State, error: ErrorDetails, eventBus?: EventBus): StateWrapper {
+    return new StateWrapper(state, {}, error, eventBus)
+  }
+
+  setHashedEmail(hashedEmail: string[]): void {
+    this.data.hashedEmail = hashedEmail
+  }
+
+  getHashedEmail(): string[] {
+    return this.data.hashedEmail || []
   }
 
   sendsPixel() {
@@ -38,6 +54,12 @@ export class StateWrapper {
     const eventKey = eventKeys && eventKeys.length >= 1 && eventKeys[0]
     const eventName = eventKey && trim(source[eventKey as keyof typeof source])
     return !eventName || noOpEvents.indexOf(eventName.toLowerCase()) === -1
+  }
+
+  asHeaders(): Headers {
+    return {
+      'X-LI-Provided-User-Agent': this.data.providedUserAgent
+    }
   }
 
   asQuery(): QueryBuilder {
@@ -82,6 +104,8 @@ export class StateWrapper {
       .addOptional('cd', state.cookieDomain)
       .addOptional('ic', encodeIdCookie(state.resolvedIdCookie), { stripEmpty: false })
       .addOptional('c', state.contextElements)
+      .addOptional('pip', onNonNull(state.providedIPV4, v => base64UrlEncode(v)))
+      .addOptional('pip6', onNonNull(state.providedIPV6, v => base64UrlEncode(v)))
 
     return builder
   }

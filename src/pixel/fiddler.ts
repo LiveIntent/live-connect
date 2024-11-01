@@ -1,55 +1,77 @@
 import { extractEmail } from '../utils/email.js'
 import { decodeValue } from '../utils/url.js'
 import { extractHashValue, hashEmail, isHash } from '../utils/hash.js'
-import { isArray, isObject, safeToString, trim } from 'live-connect-common'
-import { HashedEmail } from '../types.js'
+import { isArray, isObject, isRecord, safeToString, trim } from 'live-connect-common'
+import { FiddlerExtraFields } from '../types.js'
+
+type AnyRecord = Record<string | symbol | number, unknown>
 
 const MAX_ITEMS = 10
 const LIMITING_KEYS = ['items', 'itemids']
 const HASH_BEARERS = ['email', 'emailhash', 'hash', 'hashedemail']
 
-function provided<A extends { eventSource?: Record<string, unknown> }>(state: A): A & { hashedEmail?: string[] } {
-  const eventSource = state.eventSource || {}
-  const objectKeys = Object.keys(eventSource)
-  for (const key of objectKeys) {
+function extractProvidedAttributes(eventSource: AnyRecord): FiddlerExtraFields {
+  const extraFields: FiddlerExtraFields = { eventSource }
+
+  // add provided email hashes. Only consider the first one found.
+  for (const key of Object.keys(eventSource)) {
     const lowerCased = key.toLowerCase()
     if (HASH_BEARERS.indexOf(lowerCased) > -1) {
-      const value = trim(safeToString(eventSource[key as keyof (typeof eventSource)]))
+      const value = trim(safeToString(eventSource[key]))
       const extractedEmail = extractEmail(value)
       const extractedHash = extractHashValue(value)
       if (extractedEmail) {
         const hashes = hashEmail(decodeValue(extractedEmail))
-        return mergeObjects({ hashedEmail: [hashes.md5, hashes.sha1, hashes.sha256] }, state)
+        extraFields.hashedEmail = [hashes.md5, hashes.sha1, hashes.sha256]
+        break
       } else if (extractedHash && isHash(extractedHash)) {
-        return mergeObjects({ hashedEmail: [extractedHash.toLowerCase()] }, state)
+        extraFields.hashedEmail = [extractedHash.toLowerCase()]
+        break
       }
     }
   }
-  return state
+
+  // add provided user agent
+  if (typeof eventSource.userAgent === 'string') {
+    extraFields.providedUserAgent = eventSource.userAgent
+  }
+
+  // add provided ip4 address
+  if (typeof eventSource.ipv4 === 'string') {
+    extraFields.providedIPV4 = eventSource.ipv4
+  }
+
+  // add provided ip6 address
+  if (typeof eventSource.ipv6 === 'string') {
+    extraFields.providedIPV6 = eventSource.ipv6
+  }
+
+  return extraFields
 }
 
-function itemsLimiter(state: { eventSource?: Record<string, unknown> }): Record<string, never> {
-  const event = state.eventSource || {}
+function limitItems(event: AnyRecord): AnyRecord {
+  const limitedEvent: AnyRecord = {}
   Object.keys(event).forEach(key => {
     const lowerCased = key.toLowerCase()
-    const value = event[key as keyof typeof event] as unknown
+    const value = event[key]
     if (LIMITING_KEYS.indexOf(lowerCased) > -1 && isArray(value) && value.length > MAX_ITEMS) {
-      value.length = MAX_ITEMS
+      limitedEvent[key] = value.slice(0, MAX_ITEMS)
+    } else {
+      limitedEvent[key] = value
     }
   })
-  return {}
+  return limitedEvent
 }
 
-const fiddlers = [provided, itemsLimiter]
-
-export function fiddle<A extends { eventSource?: Record<string, unknown> }>(state: A): A & { hashedEmail?: HashedEmail[] } {
-  function reducer<B extends object>(accumulator: A, func: (current: A) => B): A & B {
-    return mergeObjects(accumulator, func(accumulator))
-  }
-  if (isObject(state.eventSource)) {
-    return fiddlers.reduce(reducer, state)
+export function fiddle(event: object): FiddlerExtraFields {
+  if (isRecord(event)) {
+    const extraAttributes = extractProvidedAttributes(event)
+    return {
+      ...extraAttributes,
+      eventSource: limitItems(event)
+    }
   } else {
-    return state
+    return {}
   }
 }
 
