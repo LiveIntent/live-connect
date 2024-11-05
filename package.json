@@ -85,7 +85,7 @@
     "@types/jsdom-global": "^3.0.7",
     "@types/mocha": "^10.0.7",
     "@types/sinon": "^17.0.3",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
     "@typescript-eslint/parser": "^7.15.0",
     "@wdio/browserstack-service": "^9.0.1",
     "@wdio/cli": "^8.39.1",
