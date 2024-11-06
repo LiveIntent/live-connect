@@ -47,6 +47,10 @@
 ### `ic`
 - md5 hash of the resolved id cookie when configuration `config.idCookie` is used. Empty parameter encodes that an
 idcookie was configured but failed to resolve.
+### `pip`
+- contains a b64 encoded string of IPv4 address
+### `pip6`
+- contains a b64 encoded string of IPv6 address
 
 ## Example of a request to a default collectorUrl:
 `https://rp.liadm.com/p?tna=v1.0.16&aid=a-00co&lduid=a-00co--bda8cda1-9000-4632-8c64-06e04fa8d113&duid=df9f30ab37f2--01dwcepmbbbqm0hvj4wytvyss4&pu=https%3A%2F%2Fwww.example.com%2F&se=eyJldmVudCI6InZpZXdIb21lUGFnZSJ9&dtstmp=1577968744235`
