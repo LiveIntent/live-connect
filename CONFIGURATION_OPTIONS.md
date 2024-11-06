@@ -233,6 +233,21 @@ Example:
 }
 ```
 
+#### `identityResolutionConfig.extraAttributes` [Optional]
+IPv4 and IPv6 provided by prebid or clients.
+
+Example:
+```javascript
+{
+  identityResolutionConfig: {
+    extraAttributes: {
+      ipv4: '1.2.3.4',
+      ipv6: '2001:db8:3333:4444:5555:6666:7777:8888'
+    }
+  }
+}
+```
+
 ##### `contextSelectors` [Optional]
 The context selectors to collect from the current page.
 Example:
