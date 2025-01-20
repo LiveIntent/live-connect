@@ -57,12 +57,7 @@ export class StateWrapper {
   }
 
   asHeaders(): Headers {
-    return this.data.providedUserAgent ?
-    {
-      'X-LI-Provided-User-Agent': this.data.providedUserAgent
-    } : 
-    {
-    }
+    return this.data.providedUserAgent ? { 'X-LI-Provided-User-Agent': this.data.providedUserAgent } : {}
   }
 
   asQuery(): QueryBuilder {
