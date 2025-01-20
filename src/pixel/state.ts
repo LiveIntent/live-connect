@@ -57,8 +57,11 @@ export class StateWrapper {
   }
 
   asHeaders(): Headers {
-    return {
+    return this.data.providedUserAgent ?
+    {
       'X-LI-Provided-User-Agent': this.data.providedUserAgent
+    } : 
+    {
     }
   }
 
