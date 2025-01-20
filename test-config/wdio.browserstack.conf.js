@@ -24,10 +24,10 @@ const allCapabilities = [
   { browserName: 'Safari', browserVersion: '11.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'High Sierra' } },
   { browserName: 'Safari', browserVersion: '10.1', 'bstack:options': { ...commonBStackCapabilities, os: 'OS X', osVersion: 'Sierra' } },
 
-  { browserName: 'Safari', browserVersion: '15.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11', osVersion: '15', realMobile: true } },
+  { browserName: 'Safari', browserVersion: '15.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 15', osVersion: '15', realMobile: true } },
   { browserName: 'Safari', browserVersion: '14.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 12', osVersion: '14', realMobile: true } },
   { browserName: 'Safari', browserVersion: '13.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 11', osVersion: '13', realMobile: true } },
-  { browserName: 'Safari', browserVersion: '12.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 8', osVersion: '12', realMobile: true } },
+  { browserName: 'Safari', browserVersion: '12.0', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'iPhone 8', osVersion: '11', realMobile: true } },
 
   { browserName: 'Chrome', browserVersion: 'latest', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S21', osVersion: '11.0', realMobile: true } },
   { browserName: 'Chrome', browserVersion: '67', 'bstack:options': { ...commonBStackCapabilities, deviceName: 'Samsung Galaxy S8', osVersion: '7.0', realMobile: true } }
